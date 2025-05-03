@@ -1,0 +1,248 @@
+'use client'
+
+import type React from 'react'
+import Link from 'next/link'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight } from 'lucide-react'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { FcGoogle } from 'react-icons/fc'
+import { FaMicrosoft } from 'react-icons/fa'
+
+export default function SignupPage() {
+  const [signupMethod, setSignupMethod] = useState<'email' | 'google' | 'microsoft'>('email')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [step, setStep] = useState(1)
+
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    setTimeout(() => {
+      setIsLoading(false)
+      setStep(2)
+    }, 1500)
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+      <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-6 w-6 text-blue-500" />
+            <span className="font-bold text-xl">InterviewSense</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 py-12 flex items-center justify-center relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
+        <div className="container px-4 max-w-md relative z-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="gap-2 mb-8 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
+          >
+            <Link href="/">
+              <ChevronLeft className="h-4 w-4" />
+              Back to home
+            </Link>
+          </Button>
+
+          {step === 1 ? (
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
+              <CardHeader className="space-y-2 pt-8">
+                <CardTitle className="text-2xl text-center text-white">Create an account</CardTitle>
+                <CardDescription className="text-center text-zinc-400">
+                  Sign up to InterviewSense to track your progress
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6">
+                <RadioGroup
+                  value={signupMethod}
+                  onValueChange={(value) =>
+                    setSignupMethod(value as 'email' | 'google' | 'microsoft')
+                  }
+                  className="grid grid-cols-3 gap-4"
+                >
+                  {/* Email */}
+                  <div>
+                    <RadioGroupItem value="email" id="email-signup" className="peer sr-only" />
+                    <Label
+                      htmlFor="email-signup"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-4 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors"
+                    >
+                      <Mail className="mb-2 h-6 w-6 text-blue-500" />
+                      <span className="text-sm text-zinc-300">Email</span>
+                    </Label>
+                  </div>
+
+                  {/* Google */}
+                  <div>
+                    <RadioGroupItem value="google" id="google-signup" className="peer sr-only" />
+                    <Label
+                      htmlFor="google-signup"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-4 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors"
+                    >
+                      <FcGoogle className="mb-2 h-6 w-6" />
+                      <span className="text-sm text-zinc-300">Google</span>
+                    </Label>
+                  </div>
+
+                  {/* Microsoft */}
+                  <div>
+                    <RadioGroupItem value="microsoft" id="microsoft-signup" className="peer sr-only" />
+                    <Label
+                      htmlFor="microsoft-signup"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-4 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors"
+                    >
+                      <FaMicrosoft className="mb-2 h-6 w-6 text-blue-500" />
+                      <span className="text-sm text-zinc-300">Microsoft</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+
+                {signupMethod === 'email' ? (
+                  <form onSubmit={handleSignup} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="full-name" className="text-zinc-300">
+                        Full Name
+                      </Label>
+                      <Input
+                        id="full-name"
+                        placeholder="Your Name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        className="bg-zinc-800/70 border-zinc-700 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-address" className="text-zinc-300">
+                        Email
+                      </Label>
+                      <Input
+                        id="email-address"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="bg-zinc-800/70 border-zinc-700 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password" className="text-zinc-300">
+                        Password
+                      </Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        placeholder="Create a secure password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="bg-zinc-800/70 border-zinc-700 text-white"
+                      />
+                      <p className="text-xs text-zinc-500">Password must be at least 8 characters long</p>
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6 mt-2"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Creating your account...' : 'Create account'}
+                      {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+                    </Button>
+                  </form>
+                ) : (
+                  <div className="space-y-5">
+                    <p className="text-sm text-zinc-400 text-center">
+                      Continue signing up with your {signupMethod === 'google' ? 'Google' : 'Microsoft'} account
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full py-6"
+                      onClick={() => setIsLoading(true)}
+                      disabled={isLoading}
+                    >
+                      {signupMethod === 'google' ? (
+                        <>
+                          <FcGoogle className="h-5 w-5" />
+                          {isLoading ? 'Connecting...' : 'Continue with Google'}
+                        </>
+                      ) : (
+                        <>
+                          <FaMicrosoft className="h-5 w-5 text-blue-500" />
+                          {isLoading ? 'Connecting...' : 'Continue with Microsoft'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex flex-col pb-8 px-6">
+                <div className="text-sm text-zinc-400 text-center mt-4">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-blue-400 hover:text-blue-300">
+                    Log in
+                  </Link>
+                </div>
+              </CardFooter>
+            </Card>
+          ) : (
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
+              <CardHeader className="space-y-3 pt-10">
+                <div className="flex justify-center mb-2">
+                  <div className="bg-green-500/10 p-4 rounded-full">
+                    <CheckCircle2 className="h-12 w-12 text-green-500" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl text-center text-white">Account Created!</CardTitle>
+                <CardDescription className="text-center text-zinc-400">
+                  You're all set to start practicing for your interviews
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 text-center px-6">
+                <p className="text-zinc-300">
+                  {signupMethod === 'email'
+                    ? `We've sent a confirmation email to ${email}. Please verify your account to access all features.`
+                    : `Your ${signupMethod === 'google' ? 'Google' : 'Microsoft'} account has been connected successfully.`}
+                </p>
+              </CardContent>
+              <CardFooter className="flex justify-center pb-10">
+                <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8">
+                  <Link href="/start" className="flex items-center">
+                    Start Your First Interview
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      <footer className="py-8 border-t border-zinc-800 mt-auto bg-zinc-950">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center gap-2 mb-4 md:mb-0">
+              <MessageSquare className="h-5 w-5 text-blue-500" />
+              <span className="font-bold text-white">InterviewSense</span>
+            </div>
+            <p className="text-sm text-zinc-500">
+              © {new Date().getFullYear()} InterviewSense. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
