@@ -34,6 +34,8 @@
     ".next/types/**/*.ts",
     "build/types/**/*.ts",
     "next-env.d.ts",
+    "node_modules/types/**/*.ts",
+    "src/app/api/auth/[...nextauth]/route.js",
     "out/types/**/*.ts"
   ],
   "exclude": [
