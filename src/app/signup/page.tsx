@@ -13,7 +13,6 @@ import { FcGoogle } from 'react-icons/fc'
 import { FaMicrosoft } from 'react-icons/fa'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-// Using direct styling for alerts instead of Alert component
 
 export default function SignupPage() {
   const [signupMethod, setSignupMethod] = useState<'email' | 'google' | 'microsoft'>('email')
@@ -23,6 +22,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState<'email' | 'google' | 'microsoft' | false>(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [verificationSent, setVerificationSent] = useState(false)
   const router = useRouter()
 
   // Form validation
@@ -47,6 +47,7 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setVerificationSent(false)
     
     // Validate form
     if (!validateForm()) return
@@ -54,7 +55,6 @@ export default function SignupPage() {
     setIsLoading('email')
     
     try {
-      // Replace with your actual API call
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,12 +67,14 @@ export default function SignupPage() {
         throw new Error(data.message || 'Failed to create account')
       }
       
-      setSuccess('Account created successfully! Redirecting to login...')
+      // Show success message and indicate verification email was sent
+      setSuccess('Account created successfully!')
+      setVerificationSent(true)
       
-      // Redirect to login or verification page
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      // Clear form fields
+      setEmail('')
+      setPassword('')
+      setFullName('')
     } catch (error) {
       console.error('Signup error:', error)
       setError(error instanceof Error ? error.message : 'Failed to create account. Please try again.')
@@ -107,6 +109,94 @@ export default function SignupPage() {
       setError('Failed to sign in with Microsoft. Please try again.')
       setIsLoading(false)
     }
+  }
+
+  // If verification email has been sent, show verification instructions
+  if (verificationSent) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+        {/* Header */}
+        <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <MessageSquare className="h-6 w-6 text-blue-500" />
+              <span className="font-semibold text-white">InterviewSense</span>
+            </Link>
+            <nav>
+              <Link href="/login">
+                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
+              </Link>
+            </nav>
+          </div>
+        </header>
+
+        <div className="flex-1 py-12 flex items-center justify-center relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
+          <div className="container px-4 max-w-md relative z-10">
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
+              <CardHeader className="space-y-2 pt-8">
+                <div className="flex justify-center mb-4">
+                  <Mail className="h-12 w-12 text-blue-500" />
+                </div>
+                <CardTitle className="text-2xl text-center text-white">Check your email</CardTitle>
+                <CardDescription className="text-center text-zinc-400">
+                  A verification link has been sent to <span className="text-blue-400">{email}</span>. Please check your inbox and click the link to verify your email address.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 px-6">
+                <div className="p-4 rounded-lg bg-zinc-700/30 border border-zinc-700">
+                  <p className="text-sm text-zinc-300">
+                    If you don't see the email in your inbox, please check your spam folder. The email comes from <span className="text-blue-400">noreply@interviewsense.com</span>
+                  </p>
+                </div>
+                
+                <div className="flex flex-col space-y-4">
+                  <Button 
+                    onClick={() => setVerificationSent(false)}
+                    variant="outline" 
+                    className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full"
+                  >
+                    Go back to sign up
+                  </Button>
+                  
+                  <Link href="/login">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full" 
+                    >
+                      Continue to login
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col pb-8 px-6">
+                <div className="text-sm text-zinc-400 text-center mt-4">
+                  Need help?{' '}
+                  <Link href="/contact" className="text-blue-400 hover:text-blue-300">
+                    Contact support
+                  </Link>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="py-8 border-t border-zinc-800 mt-auto bg-zinc-950">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <span className="font-semibold text-white">InterviewSense</span>
+              </div>
+              <div className="text-sm text-zinc-500">
+                © {new Date().getFullYear()} InterviewSense. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    )
   }
 
   return (

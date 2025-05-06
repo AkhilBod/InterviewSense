@@ -15,10 +15,10 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
-  const [loginMethod, setLoginMethod] = useState<'email' | 'google' | 'microsoft' | 'magic-link'>('email')
+  const [loginMethod, setLoginMethod] = useState<'email' | 'google' | 'microsoft'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState<'email' | 'google' | 'microsoft' | 'magic-link' | false>(false)
+  const [isLoading, setIsLoading] = useState<'email' | 'google' | 'microsoft' | false>(false)
   const [error, setError] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -62,36 +62,6 @@ export default function LoginPage() {
     } catch (error) {
       console.error('Login error:', error)
       setError(error instanceof Error ? error.message : 'Failed to sign in. Please check your credentials.')
-      setIsLoading(false)
-    }
-  }
-
-  // Handle magic link email
-  const handleMagicLinkEmail = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address')
-      return
-    }
-    
-    setIsLoading('magic-link')
-    
-    try {
-      const result = await signIn('email', {
-        email,
-        redirect: false,
-      })
-      
-      if (result?.ok) {
-        router.push('/verify-request')
-      } else {
-        throw new Error('Failed to send magic link')
-      }
-    } catch (error) {
-      console.error('Magic link error:', error)
-      setError(error instanceof Error ? error.message : 'Failed to send magic link. Please try again.')
       setIsLoading(false)
     }
   }
@@ -169,9 +139,9 @@ export default function LoginPage() {
               <RadioGroup
                 value={loginMethod}
                 onValueChange={(value) =>
-                  setLoginMethod(value as 'email' | 'google' | 'microsoft' | 'magic-link')
+                  setLoginMethod(value as 'email' | 'google' | 'microsoft')
                 }
-                className="grid grid-cols-4 gap-3"
+                className="grid grid-cols-3 gap-3"
               >
                 {/* Email Option */}
                 <div>
@@ -179,15 +149,6 @@ export default function LoginPage() {
                   <Label htmlFor="email-login" className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-3 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors">
                     <Mail className="mb-2 h-5 w-5 text-blue-500" />
                     <span className="text-xs text-zinc-300">Password</span>
-                  </Label>
-                </div>
-
-                {/* Magic Link Option */}
-                <div>
-                  <RadioGroupItem value="magic-link" id="magic-link-login" className="peer sr-only" />
-                  <Label htmlFor="magic-link-login" className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-3 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors">
-                    <Mail className="mb-2 h-5 w-5 text-green-500" />
-                    <span className="text-xs text-zinc-300">Magic Link</span>
                   </Label>
                 </div>
 
@@ -250,32 +211,6 @@ export default function LoginPage() {
                     {isLoading === 'email' ? 'Logging in...' : 'Log in'}
                     {isLoading !== 'email' && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
-                </form>
-              )}
-
-              {loginMethod === 'magic-link' && (
-                <form onSubmit={handleMagicLinkEmail} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="magic-email" className="text-zinc-300">Email</Label>
-                    <Input 
-                      id="magic-email" 
-                      type="email" 
-                      placeholder="your.email@example.com" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      required 
-                      className="bg-zinc-800/70 border-zinc-700 text-white" 
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-green-600 hover:bg-green-500 text-white rounded-full py-6 mt-2"
-                    disabled={isLoading === 'magic-link'}
-                  >
-                    {isLoading === 'magic-link' ? 'Sending link...' : 'Send magic link'}
-                    {isLoading !== 'magic-link' && <ArrowRight className="ml-2 h-4 w-4" />}
-                  </Button>
-                  <p className="text-xs text-zinc-500 text-center">We'll email you a magic link for password-free sign in</p>
                 </form>
               )}
 
