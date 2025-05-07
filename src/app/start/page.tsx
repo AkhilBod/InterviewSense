@@ -20,11 +20,17 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function StartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [jobDetails, setJobDetails] = useState({
+    jobTitle: '',
+    company: '',
+    industry: '',
+    experienceLevel: 'Entry-level'
+  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -49,6 +55,16 @@ export default function StartPage() {
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' })
+  }
+
+  const handleStartInterview = () => {
+    // Save job details to localStorage
+    localStorage.setItem('jobTitle', jobDetails.jobTitle)
+    localStorage.setItem('company', jobDetails.company)
+    localStorage.setItem('industry', jobDetails.industry)
+    localStorage.setItem('experienceLevel', jobDetails.experienceLevel)
+    
+    router.push('/interview')
   }
 
   return (
@@ -122,13 +138,14 @@ export default function StartPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="relative z-10 px-6 md:px-10">
-                <JobRoleSelect />
+                <JobRoleSelect onJobDetailsChange={setJobDetails} />
               </CardContent>
               <CardFooter className="flex flex-col space-y-4 pb-10 relative z-10 px-6 md:px-10">
                 <Button 
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6" 
                   size="lg"
-                  onClick={() => router.push('/interview')}
+                  onClick={handleStartInterview}
+                  disabled={!jobDetails.jobTitle}
                 >
                   <span className="flex items-center justify-center">
                     Start Mock Interview

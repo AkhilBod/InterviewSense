@@ -46,7 +46,16 @@ const commonJobRoles = [
   'Human Resources Specialist'
 ];
 
-export default function JobRoleSelect() {
+interface JobRoleSelectProps {
+  onJobDetailsChange: (details: {
+    jobTitle: string;
+    company: string;
+    industry: string;
+    experienceLevel: string;
+  }) => void;
+}
+
+export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps) {
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
   const [industry, setIndustry] = useState('');
@@ -57,6 +66,12 @@ export default function JobRoleSelect() {
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setJobTitle(value);
+    onJobDetailsChange({
+      jobTitle: value,
+      company,
+      industry,
+      experienceLevel: experience
+    });
 
     if (value.length > 2) {
       const filtered = commonJobRoles.filter(role =>
@@ -71,6 +86,43 @@ export default function JobRoleSelect() {
   const selectJobSuggestion = (suggestion: string) => {
     setJobTitle(suggestion);
     setJobSuggestions([]);
+    onJobDetailsChange({
+      jobTitle: suggestion,
+      company,
+      industry,
+      experienceLevel: experience
+    });
+  };
+
+  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCompany(value);
+    onJobDetailsChange({
+      jobTitle,
+      company: value,
+      industry,
+      experienceLevel: experience
+    });
+  };
+
+  const handleIndustryChange = (value: string) => {
+    setIndustry(value);
+    onJobDetailsChange({
+      jobTitle,
+      company,
+      industry: value,
+      experienceLevel: experience
+    });
+  };
+
+  const handleExperienceChange = (value: string) => {
+    setExperience(value);
+    onJobDetailsChange({
+      jobTitle,
+      company,
+      industry,
+      experienceLevel: value
+    });
   };
 
   return (
@@ -112,14 +164,14 @@ export default function JobRoleSelect() {
             id="company"
             placeholder="e.g. Google, Amazon, or leave blank for general"
             value={company}
-            onChange={(e) => setCompany(e.target.value)}
+            onChange={handleCompanyChange}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="industry">Industry</Label>
-            <Select value={industry} onValueChange={setIndustry}>
+            <Select value={industry} onValueChange={handleIndustryChange}>
               <SelectTrigger id="industry">
                 <SelectValue placeholder="Select industry" />
               </SelectTrigger>
@@ -133,7 +185,7 @@ export default function JobRoleSelect() {
 
           <div>
             <Label htmlFor="experience">Experience Level</Label>
-            <Select value={experience} onValueChange={setExperience}>
+            <Select value={experience} onValueChange={handleExperienceChange}>
               <SelectTrigger id="experience">
                 <SelectValue placeholder="Select experience level" />
               </SelectTrigger>

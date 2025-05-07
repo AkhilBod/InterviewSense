@@ -32,6 +32,7 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet';
 import InterviewFeedback from './components/interview-feedback';
+import { generateBehavioralQuestions } from '@/lib/gemini';
 
 const mockQuestions = [
   {
@@ -68,11 +69,70 @@ export default function InterviewPage() {
   const [progress, setProgress] = useState(0);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
+  const [questions, setQuestions] = useState<Array<{ id: number; question: string; type: string }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Preparing your interview...');
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const currentQuestion = mockQuestions[currentQuestionIndex];
-  const totalQuestions = mockQuestions.length;
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setLoadingMessage('Generating personalized questions...');
+        // Check if API key is available
+        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+          console.error('NEXT_PUBLIC_GEMINI_API_KEY is not set in environment variables');
+          setQuestions(mockQuestions);
+          setIsLoading(false);
+          return;
+        }
+
+        // Get job details from localStorage or state management
+        const jobDetails = {
+          jobTitle: localStorage.getItem('jobTitle') || 'Software Engineer',
+          company: localStorage.getItem('company') || '',
+          industry: localStorage.getItem('industry') || 'Technology',
+          experienceLevel: localStorage.getItem('experienceLevel') || 'Mid-level'
+        };
+
+        setLoadingMessage('Creating questions specific to your role...');
+        const behavioralQuestions = await generateBehavioralQuestions(jobDetails);
+        
+        setLoadingMessage('Finalizing your interview...');
+        // Add introduction and career questions
+        const allQuestions = [
+          {
+            id: 1,
+            question: "Tell me about yourself and your experience that's relevant to this role.",
+            type: "introduction"
+          },
+          ...behavioralQuestions.map((q: any, index: number) => ({
+            id: index + 2,
+            question: q.question,
+            type: "behavioral"
+          })),
+          {
+            id: behavioralQuestions.length + 2,
+            question: "Where do you see yourself in 5 years, and how does this role help you get there?",
+            type: "career"
+          }
+        ];
+
+        setQuestions(allQuestions);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        // Fallback to mock questions if API fails
+        setQuestions(mockQuestions);
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
+  const currentQuestion = questions[currentQuestionIndex] || mockQuestions[currentQuestionIndex];
+  const totalQuestions = questions.length || mockQuestions.length;
 
   useEffect(() => {
     setProgress(((currentQuestionIndex) / (totalQuestions - 1)) * 100);
@@ -84,12 +144,13 @@ export default function InterviewPage() {
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <p className="mt-4 text-zinc-400">{loadingMessage}</p>
+          <p className="mt-2 text-sm text-zinc-500">This may take a few moments...</p>
         </div>
       </div>
     );
@@ -316,7 +377,7 @@ export default function InterviewPage() {
           </SheetHeader>
           <div className="py-6">
             <ul className="space-y-4">
-              {mockQuestions.map((q, index) => (
+              {questions.map((q, index) => (
                 <li key={q.id} className="flex items-center gap-3">
                   <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
                     completedQuestions.includes(q.id)
