@@ -5,9 +5,9 @@ import { prisma } from '@/lib/prisma'; // Assuming prisma is initialized here
 import bcrypt from 'bcryptjs';
 import * as z from 'zod';
 import { nanoid } from 'nanoid';
-import { sendVerificationEmail } from '@/lib/email'; // Your email sending utility
+import { sendVerificationEmail } from '@/lib/email';
 
-// Define validation schema (remains the same)
+// Define validation schema
 const userSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
@@ -16,110 +16,97 @@ const userSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const { email, password, name } = await req.json();
 
     // Validate input
-    const validatedData = userSchema.parse(body);
-    const email = validatedData.email.toLowerCase(); // Standardize email to lowercase
-    const { password, name } = validatedData;
-
-    // 1. Check if a user with this email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email }, // Use the standardized lowercase email
-    });
-
-    if (existingUser) {
-      if (existingUser.emailVerified) {
-        // Email is genuinely in use by a VERIFIED user
-        return NextResponse.json(
-          { message: 'This email address is already registered and verified.' },
-          { status: 409 } // 409 Conflict
-        );
-      } else {
-        // Email exists but is NOT VERIFIED.
-        // We will delete the old unverified user and their associated verification tokens
-        // to allow the new registration attempt to proceed.
-        console.log(`Email ${email} was previously registered by unverified user ID: ${existingUser.id}. Deleting old record to allow new registration.`);
-
-        // A. Delete associated VerificationTokens for this email.
-        //    This assumes VerificationToken.identifier stores the email.
-        await prisma.verificationToken.deleteMany({
-          where: { identifier: existingUser.email }, // Use the email of the existing unverified user
-        });
-
-        // B. Delete the old unverified user.
-        //    If your Account and Session models have `onDelete: Cascade` linked to User,
-        //    their records will be cleaned up automatically.
-        await prisma.user.delete({
-          where: { email: existingUser.email }, // Use the email to ensure we delete the correct user
-        });
-        console.log(`Successfully deleted unverified user (ID: ${existingUser.id}) and their associated verification tokens for email: ${email}.`);
-        // Now, the flow will continue below to create a new user with this email.
-      }
-    }
-
-    // 2. Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 3. Create the new user (this happens if email was new, or old unverified user was deleted)
-    const newUser = await prisma.user.create({
-      data: {
-        email: email, // Store the standardized lowercase email
-        name,
-        password: hashedPassword,
-        // emailVerified will be null by default as per your Prisma schema (DateTime?)
-        // createdAt will be set by @default(now())
-      },
-    });
-
-    // 4. Generate verification token (expires in 24 hours - as in your original code)
-    const token = nanoid(32);
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    await prisma.verificationToken.create({
-      data: {
-        identifier: newUser.email, // Use the email of the newly created user
-        token,
-        expires,
-      },
-    });
-
-    // 5. Send verification email
-    await sendVerificationEmail(newUser.email, token);
-
-    // 6. Prepare user data for response (remove password)
-    const { password: _, ...userWithoutPassword } = newUser;
-
-    return NextResponse.json(
-      {
-        message: 'User created successfully. Please check your email to verify your account.',
-        user: userWithoutPassword,
-      },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    console.error('Signup error:', error);
-
-    if (error instanceof z.ZodError) {
+    if (!email || !password || !name) {
       return NextResponse.json(
-        { message: 'Validation error', errors: error.errors },
+        { message: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Fallback for unique constraint violations if the above logic somehow misses a case
-    // (e.g., race condition, though unlikely with this flow for email).
-    // Or if another field had a unique constraint issue.
-    if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        return NextResponse.json({ message: 'This email address is already in use.' }, { status: 409 });
+    // Check if user already exists and is verified
+    const existingUser = await prisma.user.findUnique({
+      where: { 
+        email: email.toLowerCase(),
+        emailVerified: { not: null } // Only consider verified users
+      },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { message: 'User with this email already exists' },
+        { status: 400 }
+      );
     }
 
+    // Check for unverified user
+    const unverifiedUser = await prisma.user.findUnique({
+      where: { 
+        email: email.toLowerCase(),
+        emailVerified: null
+      },
+    });
+
+    // If there's an unverified user, delete it to allow re-registration
+    if (unverifiedUser) {
+      // Delete any existing verification tokens first
+      await prisma.verificationToken.deleteMany({
+        where: { identifier: email.toLowerCase() }
+      });
+      
+      // Then delete the user
+      await prisma.user.delete({
+        where: { id: unverifiedUser.id }
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate verification token
+    const verificationToken = nanoid(32);
+    const tokenExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Create user and verification token in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      // Create the user
+      const newUser = await tx.user.create({
+        data: {
+          email: email.toLowerCase(),
+          name,
+          password: hashedPassword,
+        },
+      });
+
+      // Create verification token
+      await tx.verificationToken.create({
+        data: {
+          identifier: email.toLowerCase(),
+          token: verificationToken,
+          expires: tokenExpiration,
+        },
+      });
+
+      return newUser;
+    });
+
+    // Send verification email
+    await sendVerificationEmail(email.toLowerCase(), verificationToken);
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     return NextResponse.json(
-      { message: 'An unexpected error occurred. Failed to create user.' },
+      { message: 'User created successfully', user: userWithoutPassword },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Signup error:', error);
+    return NextResponse.json(
+      { message: 'Error creating user' },
       { status: 500 }
     );
   }
-  // No prisma.$disconnect() here, assuming a shared Prisma client instance as is common in Next.js
-  // (e.g., initialized in @/lib/prisma.ts)
 }

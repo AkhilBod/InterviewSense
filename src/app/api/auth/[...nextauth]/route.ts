@@ -1,6 +1,5 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
-import AzureADProvider from 'next-auth/providers/azure-ad'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
@@ -11,8 +10,11 @@ import { prisma } from '@/lib/prisma' // Import the proper prisma instance
 declare module "next-auth" {
   interface User {
     id: string
-    email: string
+    email: string // email is non-optional in the User interface by default
     name?: string | null
+    // Ensure these match your Prisma schema if you use them directly on the User object
+    emailVerified?: Date | null;
+    password?: string | null;
   }
   
   interface Session {
@@ -21,6 +23,7 @@ declare module "next-auth" {
       email: string
       name?: string | null
       image?: string | null
+      // Add any other custom session user properties here
     }
   }
 }
@@ -28,13 +31,14 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
+    // Add any other custom JWT properties here
   }
 }
 
-export const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
-    // Email provider for email/password verification 
+    // Email provider for magic link sign-in and email verification
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -56,22 +60,27 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('Please enter both email and password')
         }
     
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email,
+            email: credentials.email.toLowerCase(),
           },
         })
     
-        if (!user || !user.password) {
-          return null
+        if (!user || !user.email) {
+          throw new Error('No user found with this email')
+        }
+
+        // If user signed up via OAuth, they might not have a password
+        if (!user.password) {
+          throw new Error('This email is registered with Google. Please sign in using Google.')
         }
     
         // Check if email is verified
         if (!user.emailVerified) {
-          throw new Error('Please verify your email address before logging in.');
+          throw new Error('Please verify your email address before logging in. Check your inbox for a verification link.')
         }
     
         const isPasswordValid = await bcrypt.compare(
@@ -80,7 +89,7 @@ export const authOptions: NextAuthOptions = {
         )
     
         if (!isPasswordValid) {
-          return null
+          throw new Error('Invalid password')
         }
     
         return {
@@ -88,28 +97,32 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
         }
-      },
+      }
     }),
     
     // Google provider
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    
-    // Microsoft provider
-    AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID!,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID,
+      /**
+       * This option allows NextAuth.js to automatically link an OAuth account
+       * (like this Google account) to an existing user record in your database
+       * if the email address provided by Google matches the email of an existing user.
+       * This is useful if a user initially signed up via email/password or another
+       * OAuth provider and then tries to sign in with Google using the same email.
+       * * IMPORTANT: Only enable this if you trust that the email from the OAuth
+       * provider (Google, in this case) has been securely verified by them.
+       * For major providers like Google, this is generally a safe assumption.
+       */
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   pages: {
-    signIn: '/login',
-    signOut: '/',
-    error: '/login', // Error code passed in query string as ?error=
-    verifyRequest: '/verify-request', // (used for check email message)
-    newUser: '/start' // New users will be directed here on first sign in
+    signIn: '/login', // Redirect users to your custom login page
+    signOut: 'http://localhost:3000/',      // Redirect users to homepage after sign out
+    error: '/login',   // Redirect users to login page on error (e.g., OAuthAccountNotLinked if linking is off)
+    verifyRequest: '/verify-request', // Page shown after email for magic link has been sent
+    newUser: '/start'  // Redirect new users to this page on their first sign-in (OAuth or Email)
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -119,19 +132,18 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id
+      if (session.user) {
+        session.user.id = token.id as string
       }
       return session
     }
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt', // Using JSON Web Tokens for session management
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.AUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
-};
-
-const handler = NextAuth(authOptions);
+  secret: process.env.AUTH_SECRET, // A random string used to hash tokens, sign cookies and generate cryptographic keys.
+  debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
+});
 
 export { handler as GET, handler as POST };

@@ -1,10 +1,56 @@
+'use client'
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, ChevronLeft, ArrowRight } from "lucide-react"
+import { MessageSquare, ChevronLeft, ArrowRight, User } from "lucide-react"
 import JobRoleSelect from "./components/job-role-select"
+import { useRouter } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+import { useEffect } from 'react'
 
 export default function StartPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' })
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
       {/* Header */}
@@ -12,10 +58,40 @@ export default function StartPage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-6 w-6 text-blue-500" />
-            <Link href="/">
-                        InterviewSense
+            <Link href="/" className="font-bold text-xl">
+              InterviewSense
             </Link>
           </div>
+          <nav className="flex items-center gap-4">
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-zinc-900 border-zinc-800" align="end">
+                  <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                  <DropdownMenuItem 
+                    className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            )}
+          </nav>
         </div>
       </header>
 
@@ -49,11 +125,15 @@ export default function StartPage() {
                 <JobRoleSelect />
               </CardContent>
               <CardFooter className="flex flex-col space-y-4 pb-10 relative z-10 px-6 md:px-10">
-                <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6" size="lg" asChild>
-                  <Link href="/interview" className="flex items-center justify-center">
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6" 
+                  size="lg"
+                  onClick={() => router.push('/interview')}
+                >
+                  <span className="flex items-center justify-center">
                     Start Mock Interview
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  </span>
                 </Button>
                 <p className="text-sm text-zinc-400 text-center">
                   We'll create a personalized interview based on the job role you selected.

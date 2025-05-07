@@ -2,28 +2,49 @@
 
 import type React from 'react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react'
+import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight, AlertCircle, LogOut, User } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FcGoogle } from 'react-icons/fc'
-import { FaMicrosoft } from 'react-icons/fa'
-import { signIn } from 'next-auth/react'
+import { signIn, signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function SignupPage() {
-  const [signupMethod, setSignupMethod] = useState<'email' | 'google' | 'microsoft'>('email')
+  const { data: session } = useSession()
+  const [signupMethod, setSignupMethod] = useState<'email' | 'google'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [isLoading, setIsLoading] = useState<'email' | 'google' | 'microsoft' | false>(false)
+  const [isLoading, setIsLoading] = useState<'email' | 'google' | false>(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [verificationSent, setVerificationSent] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
   const router = useRouter()
+
+  // Handle cooldown timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [cooldown])
 
   // Form validation
   const validateForm = () => {
@@ -71,8 +92,7 @@ export default function SignupPage() {
       setSuccess('Account created successfully!')
       setVerificationSent(true)
       
-      // Clear form fields
-      setEmail('')
+      // Only clear password and name, keep email for resend functionality
       setPassword('')
       setFullName('')
     } catch (error) {
@@ -97,16 +117,34 @@ export default function SignupPage() {
     }
   }
 
-  // Handle Microsoft Sign In
-  const handleMicrosoftSignIn = async () => {
-    setIsLoading('microsoft')
+  const handleResendVerification = async () => {
+    if (cooldown > 0) {
+      setError(`Please wait ${cooldown} seconds before requesting another verification email`)
+      return
+    }
+
+    setIsLoading('email')
     setError('')
     
     try {
-      await signIn('azure-ad', { callbackUrl: '/start' })
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to resend verification email')
+      }
+      
+      setSuccess('A new verification link has been sent to your email')
+      setCooldown(60) // Start 60 second cooldown
     } catch (error) {
-      console.error('Microsoft Sign-In Error:', error)
-      setError('Failed to sign in with Microsoft. Please try again.')
+      console.error('Resend verification error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to resend verification email')
+    } finally {
       setIsLoading(false)
     }
   }
@@ -135,15 +173,31 @@ export default function SignupPage() {
           <div className="container px-4 max-w-md relative z-10">
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
               <CardHeader className="space-y-2 pt-8">
-                <div className="flex justify-center mb-4">
-                  <Mail className="h-12 w-12 text-blue-500" />
+                <div className="mx-auto bg-blue-900/20 p-3 rounded-full border border-blue-800/50 mb-2">
+                  <Mail className="h-8 w-8 text-blue-400" />
                 </div>
                 <CardTitle className="text-2xl text-center text-white">Check your email</CardTitle>
                 <CardDescription className="text-center text-zinc-400">
-                  A verification link has been sent to <span className="text-blue-400">{email}</span>. Please check your inbox and click the link to verify your email address.
+                  A verification link has been sent to {email}. Please check your inbox and click the link to verify your email address.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-6">
+                {/* Error message */}
+                {error && (
+                  <div className="flex items-center gap-2 p-3 rounded-md bg-red-900/30 border border-red-800 text-red-200">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
+                
+                {/* Success message */}
+                {success && (
+                  <div className="flex items-center gap-2 p-3 rounded-md bg-green-900/30 border border-green-800 text-green-200">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                    <p className="text-sm">{success}</p>
+                  </div>
+                )}
+
                 <div className="p-4 rounded-lg bg-zinc-700/30 border border-zinc-700">
                   <p className="text-sm text-zinc-300">
                     If you don't see the email in your inbox, please check your spam folder. The email comes from <span className="text-blue-400">noreply@interviewsense.com</span>
@@ -151,6 +205,16 @@ export default function SignupPage() {
                 </div>
                 
                 <div className="flex flex-col space-y-4">
+                  <Button 
+                    onClick={handleResendVerification}
+                    variant="outline" 
+                    className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full"
+                    disabled={isLoading === 'email' || cooldown > 0}
+                  >
+                    {isLoading === 'email' ? 'Sending...' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend verification email'}
+                    {!isLoading && cooldown === 0 && <ArrowRight className="ml-2 h-4 w-4" />}
+                  </Button>
+
                   <Button 
                     onClick={() => setVerificationSent(false)}
                     variant="outline" 
@@ -208,10 +272,46 @@ export default function SignupPage() {
             <MessageSquare className="h-6 w-6 text-blue-500" />
             <span className="font-semibold text-white">InterviewSense</span>
           </Link>
-          <nav>
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
-            </Link>
+          <nav className="flex items-center gap-4">
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {session.user?.name && (
+                        <p className="font-medium text-sm text-white">{session.user.name}</p>
+                      )}
+                      {session.user?.email && (
+                        <p className="w-[200px] truncate text-sm text-zinc-400">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuItem
+                    className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -252,9 +352,9 @@ export default function SignupPage() {
               <RadioGroup
                 value={signupMethod}
                 onValueChange={(value) =>
-                  setSignupMethod(value as 'email' | 'google' | 'microsoft')
+                  setSignupMethod(value as 'email' | 'google')
                 }
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-2 gap-4"
               >
                 {/* Email Option */}
                 <div>
@@ -271,15 +371,6 @@ export default function SignupPage() {
                   <Label htmlFor="google-signup" className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-4 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors">
                     <FcGoogle className="mb-2 h-6 w-6" />
                     <span className="text-sm text-zinc-300">Google</span>
-                  </Label>
-                </div>
-
-                {/* Microsoft Option */}
-                <div>
-                  <RadioGroupItem value="microsoft" id="microsoft-signup" className="peer sr-only" />
-                  <Label htmlFor="microsoft-signup" className="flex flex-col items-center justify-between rounded-md border-2 border-zinc-700 bg-zinc-800/70 p-4 hover:bg-zinc-800 hover:border-zinc-600 peer-data-[state=checked]:border-blue-500 cursor-pointer transition-colors">
-                    <FaMicrosoft className="mb-2 h-6 w-6 text-blue-500" />
-                    <span className="text-sm text-zinc-300">Microsoft</span>
                   </Label>
                 </div>
               </RadioGroup>
@@ -332,28 +423,19 @@ export default function SignupPage() {
                     {isLoading !== 'email' && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                 </form>
-              ) : ( // Google or Microsoft Selected
+              ) : ( // Google Selected
                 <div className="space-y-5">
                   <p className="text-sm text-zinc-400 text-center">
-                    Continue signing up with your {signupMethod === 'google' ? 'Google' : 'Microsoft'} account
+                    Continue signing up with your Google account
                   </p>
                   <Button
                     variant="outline"
                     className="w-full gap-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full py-6"
-                    onClick={signupMethod === 'google' ? handleGoogleSignIn : handleMicrosoftSignIn}
-                    disabled={isLoading === 'google' || isLoading === 'microsoft'}
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading === 'google'}
                   >
-                    {signupMethod === 'google' ? (
-                      <>
-                        <FcGoogle className="h-5 w-5" />
-                        {isLoading === 'google' ? 'Connecting...' : 'Continue with Google'}
-                      </>
-                    ) : ( // Microsoft
-                      <>
-                        <FaMicrosoft className="h-5 w-5 text-blue-500" />
-                        {isLoading === 'microsoft' ? 'Connecting...' : 'Continue with Microsoft'}
-                      </>
-                    )}
+                    <FcGoogle className="h-5 w-5" />
+                    {isLoading === 'google' ? 'Connecting...' : 'Continue with Google'}
                   </Button>
                 </div>
               )}

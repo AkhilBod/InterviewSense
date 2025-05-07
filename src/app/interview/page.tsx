@@ -5,9 +5,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save } from 'lucide-react';
+import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
 import {
   Sheet,
   SheetContent,
@@ -53,6 +68,8 @@ export default function InterviewPage() {
   const [progress, setProgress] = useState(0);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const currentQuestion = mockQuestions[currentQuestionIndex];
   const totalQuestions = mockQuestions.length;
@@ -60,6 +77,27 @@ export default function InterviewPage() {
   useEffect(() => {
     setProgress(((currentQuestionIndex) / (totalQuestions - 1)) * 100);
   }, [currentQuestionIndex, totalQuestions]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
@@ -93,6 +131,10 @@ export default function InterviewPage() {
 
   const showFeedback = () => setFeedbackVisible(true);
 
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' })
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-white">
       <header className="border-b border-slate-800">
@@ -101,9 +143,39 @@ export default function InterviewPage() {
             <MessageSquare className="h-6 w-6 text-blue-500" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
-          <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
-            <Link href="/start">Exit Interview</Link>
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
+              <Link href="/start">Exit Interview</Link>
+            </Button>
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
+                  <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem 
+                    className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
