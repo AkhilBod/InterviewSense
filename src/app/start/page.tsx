@@ -22,14 +22,29 @@ import {
 } from "@/components/ui/avatar"
 import { useEffect, useState } from 'react'
 
+interface JobDetails {
+  jobTitle: string;
+  company: string;
+  industry: string;
+  experienceLevel: string;
+  jobAd: string;
+  resume: File | null;
+  interviewType: string;
+  interviewStage: string;
+}
+
 export default function StartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [jobDetails, setJobDetails] = useState({
+  const [jobDetails, setJobDetails] = useState<JobDetails>({
     jobTitle: '',
     company: '',
     industry: '',
-    experienceLevel: 'Entry-level'
+    experienceLevel: '',
+    jobAd: '',
+    resume: null,
+    interviewType: 'Mixed',
+    interviewStage: 'Initial Screening'
   })
 
   useEffect(() => {
@@ -63,7 +78,17 @@ export default function StartPage() {
     localStorage.setItem('company', jobDetails.company)
     localStorage.setItem('industry', jobDetails.industry)
     localStorage.setItem('experienceLevel', jobDetails.experienceLevel)
+    localStorage.setItem('jobAd', jobDetails.jobAd)
+    localStorage.setItem('interviewType', jobDetails.interviewType)
+    localStorage.setItem('interviewStage', jobDetails.interviewStage)
     
+    // Handle resume file if present
+    if (jobDetails.resume) {
+      // You might want to handle the resume file differently
+      // For now, we'll just store the filename
+      localStorage.setItem('resumeFileName', jobDetails.resume.name)
+    }
+
     router.push('/interview')
   }
 

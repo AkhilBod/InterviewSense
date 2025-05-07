@@ -15,6 +15,9 @@ import {
   CardContent
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Upload } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Common job industries
 const industries = [
@@ -46,12 +49,33 @@ const commonJobRoles = [
   'Human Resources Specialist'
 ];
 
+const interviewTypes = [
+  'Technical',
+  'Behavioral',
+  'Mixed',
+  'Case Study',
+  'System Design',
+  'Leadership'
+];
+
+const interviewStages = [
+  'Initial Screening',
+  'Technical Assessment',
+  'Team Interview',
+  'Final Round',
+  'Executive Interview'
+];
+
 interface JobRoleSelectProps {
   onJobDetailsChange: (details: {
     jobTitle: string;
     company: string;
     industry: string;
     experienceLevel: string;
+    jobAd: string;
+    resume: File | null;
+    interviewType: string;
+    interviewStage: string;
   }) => void;
 }
 
@@ -60,18 +84,17 @@ export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps
   const [company, setCompany] = useState('');
   const [industry, setIndustry] = useState('');
   const [experience, setExperience] = useState('Entry-level');
+  const [jobAd, setJobAd] = useState('');
+  const [resume, setResume] = useState<File | null>(null);
+  const [interviewType, setInterviewType] = useState('Mixed');
+  const [interviewStage, setInterviewStage] = useState('Initial Screening');
   const [jobSuggestions, setJobSuggestions] = useState<string[]>([]);
 
   // Show suggestions as user types job title
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setJobTitle(value);
-    onJobDetailsChange({
-      jobTitle: value,
-      company,
-      industry,
-      experienceLevel: experience
-    });
+    updateJobDetails(value, company, industry, experience, jobAd, resume, interviewType, interviewStage);
 
     if (value.length > 2) {
       const filtered = commonJobRoles.filter(role =>
@@ -86,42 +109,66 @@ export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps
   const selectJobSuggestion = (suggestion: string) => {
     setJobTitle(suggestion);
     setJobSuggestions([]);
-    onJobDetailsChange({
-      jobTitle: suggestion,
-      company,
-      industry,
-      experienceLevel: experience
-    });
+    updateJobDetails(suggestion, company, industry, experience, jobAd, resume, interviewType, interviewStage);
   };
 
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setCompany(value);
-    onJobDetailsChange({
-      jobTitle,
-      company: value,
-      industry,
-      experienceLevel: experience
-    });
+    updateJobDetails(jobTitle, value, industry, experience, jobAd, resume, interviewType, interviewStage);
   };
 
   const handleIndustryChange = (value: string) => {
     setIndustry(value);
-    onJobDetailsChange({
-      jobTitle,
-      company,
-      industry: value,
-      experienceLevel: experience
-    });
+    updateJobDetails(jobTitle, company, value, experience, jobAd, resume, interviewType, interviewStage);
   };
 
   const handleExperienceChange = (value: string) => {
     setExperience(value);
+    updateJobDetails(jobTitle, company, industry, value, jobAd, resume, interviewType, interviewStage);
+  };
+
+  const handleJobAdChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setJobAd(value);
+    updateJobDetails(jobTitle, company, industry, experience, value, resume, interviewType, interviewStage);
+  };
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setResume(file);
+    updateJobDetails(jobTitle, company, industry, experience, jobAd, file, interviewType, interviewStage);
+  };
+
+  const handleInterviewTypeChange = (value: string) => {
+    setInterviewType(value);
+    updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, value, interviewStage);
+  };
+
+  const handleInterviewStageChange = (value: string) => {
+    setInterviewStage(value);
+    updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, interviewType, value);
+  };
+
+  const updateJobDetails = (
+    title: string,
+    comp: string,
+    ind: string,
+    exp: string,
+    ad: string,
+    res: File | null,
+    type: string,
+    stage: string
+  ) => {
     onJobDetailsChange({
-      jobTitle,
-      company,
-      industry,
-      experienceLevel: value
+      jobTitle: title,
+      company: comp,
+      industry: ind,
+      experienceLevel: exp,
+      jobAd: ad || '',
+      resume: res,
+      interviewType: type,
+      interviewStage: stage
     });
   };
 
@@ -195,6 +242,71 @@ export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps
                 <SelectItem value="Senior">Senior</SelectItem>
                 <SelectItem value="Manager">Manager</SelectItem>
                 <SelectItem value="Executive">Executive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="jobAd">Job Description (Optional)</Label>
+          <Textarea
+            id="jobAd"
+            placeholder="Paste the job description here for more personalized questions..."
+            value={jobAd}
+            onChange={handleJobAdChange}
+            className="min-h-[100px]"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="resume">Resume Upload (Optional)</Label>
+          <div className="mt-1 flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+              onClick={() => document.getElementById('resume-upload')?.click()}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {resume ? resume.name : 'Upload Resume'}
+            </Button>
+            <input
+              id="resume-upload"
+              name="resume-upload"
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx"
+              onChange={handleResumeChange}
+            />
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">PDF, DOC, or DOCX up to 10MB</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="interviewType">Interview Type</Label>
+            <Select value={interviewType} onValueChange={handleInterviewTypeChange}>
+              <SelectTrigger id="interviewType">
+                <SelectValue placeholder="Select interview type" />
+              </SelectTrigger>
+              <SelectContent>
+                {interviewTypes.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="interviewStage">Interview Stage</Label>
+            <Select value={interviewStage} onValueChange={handleInterviewStageChange}>
+              <SelectTrigger id="interviewStage">
+                <SelectValue placeholder="Select interview stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {interviewStages.map((stage) => (
+                  <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
