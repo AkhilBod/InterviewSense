@@ -109,25 +109,25 @@ export async function sendVerificationEmail(email: string, token: string) {
             .button {
               display: inline-block;
               background: #2563eb;
-              color: #fff;
+              color: #ffffff !important;
               padding: 12px 30px;
               text-decoration: none;
-              border-radius: 4px;
+              border-radius: 9999px;
               font-weight: 600;
+              transition: background-color 0.2s;
+              text-align: center;
+              line-height: 1.5;
             }
             
-            .link-container {
-              margin: 24px 0;
-              padding: 16px;
-              background: #f1f5f9;
-              border-radius: 4px;
-              word-break: break-all;
+            .button:hover {
+              background: #1d4ed8;
             }
             
-            .link {
-              color: #2563eb;
-              font-size: 14px;
-              font-family: monospace;
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              color: #71717a;
+              font-size: 0.875rem;
             }
             
             .note {
@@ -164,7 +164,7 @@ export async function sendVerificationEmail(email: string, token: string) {
         <body>
           <div class="container">
             <div class="header">
-              <div class="title">Verify your email address</div>
+              <div class="title">InterviewSense</div>
             </div>
             
             <div class="content">
@@ -204,4 +204,4 @@ export async function sendVerificationEmail(email: string, token: string) {
     console.error('Verification email error:', error);
     throw error;
   }
-}
+} 
