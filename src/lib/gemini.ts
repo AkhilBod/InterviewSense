@@ -26,7 +26,7 @@ export async function generateBehavioralQuestions(jobDetails: JobDetails) {
     if (jobDetails.interviewType === 'Technical') {
       typeInstructions = `Focus on technical skills, coding, algorithms, system design, and problem-solving. Include questions about relevant technologies, frameworks, and technical scenarios for a ${jobDetails.jobTitle}.`;
     } else if (jobDetails.interviewType === 'Behavioral') {
-      typeInstructions = `Generate 10 behavioral questions, with 3-4 questions specifically about the company (${jobDetails.company}) and its culture, values, and work environment. The remaining questions should focus on past experiences, soft skills, teamwork, leadership, conflict resolution, and cultural fit. Include scenario-based questions relevant to the ${jobDetails.jobTitle} role.`;
+      typeInstructions = `Focus on past experiences, soft skills, teamwork, leadership, conflict resolution, and cultural fit. Include scenario-based questions relevant to the ${jobDetails.jobTitle} role.`;
     } else if (jobDetails.interviewType === 'Case Study') {
       typeInstructions = `Focus on analytical thinking, business problem-solving, and case-based scenarios relevant to the role.`;
     } else if (jobDetails.interviewType === 'System Design') {
@@ -37,7 +37,7 @@ export async function generateBehavioralQuestions(jobDetails: JobDetails) {
       typeInstructions = `Include a mix of technical and behavioral questions.`;
     }
 
-    const prompt = `Generate 10 interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry.\n\nThis is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.\n\n${jobDetails.jobAd ? `Here is the job description to reference:\n${jobDetails.jobAd}\n\n` : ''}${typeInstructions}\n\nMake sure the questions are appropriate for a ${jobDetails.experienceLevel} level position.\n\nReturn ONLY a JSON array of objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
+    const prompt = `Generate 20 interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry.\n\nThis is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.\n\n${jobDetails.jobAd ? `Here is the job description to reference:\n${jobDetails.jobAd}\n\n` : ''}${typeInstructions}\n\nMake sure the questions are appropriate for a ${jobDetails.experienceLevel} level position.\n\nReturn ONLY a JSON array of objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
 
     console.log('Sending prompt to Gemini:', prompt);
     const result = await model.generateContent(prompt);

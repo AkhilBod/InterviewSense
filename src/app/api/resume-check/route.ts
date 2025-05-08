@@ -1,84 +1,161 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY!);
+// Ensure GOOGLE_AI_KEY is set in your environment variables
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
-  console.log("=== Resume Check API Started ===");
-  try {
-    console.log("Parsing form data...");
-    const formData = await req.formData();
-    const file = formData.get("resume") as File;
-    const jobTitle = formData.get("jobTitle") as string;
-    const company = formData.get("company") as string;
-    const jobDescription = formData.get("jobDescription") as string;
+    console.log("=== Resume Check API Started (Direct File Upload Method) ===");
+    try {
+        console.log("Parsing form data...");
+        const formData = await req.formData();
+        const file = formData.get("resume") as Blob | null;
+        const jobTitle = formData.get("jobTitle") as string | null;
+        const company = formData.get("company") as string | null;
+        const jobDescription = formData.get("jobDescription") as string | null;
 
-    console.log("Received data:", {
-      fileName: file?.name,
-      fileSize: file?.size,
-      jobTitle,
-      company,
-      jobDescriptionLength: jobDescription?.length
-    });
+        console.log("Received data:", {
+            fileName: file?.name,
+            fileSize: file?.size,
+            fileType: file?.type,
+            jobTitle,
+            company,
+            jobDescriptionLength: jobDescription?.length
+        });
 
-    if (!file || !jobTitle) {
-      console.log("Missing required fields");
-      return NextResponse.json(
-        { error: "Resume and job title are required" },
-        { status: 400 }
-      );
+        if (!file || !jobTitle) {
+            console.log("Missing required fields: resume or jobTitle");
+            const errorResponse = { error: "Resume file and job title are required." };
+            console.log("Error Response:", errorResponse);
+            return NextResponse.json(errorResponse, { status: 400 });
+        }
+
+        // MIME types generally supported by Gemini 1.5 Flash/Pro for file inputs.
+        // Always refer to the official Google AI documentation for the most up-to-date list.
+        const supportedMimeTypes = [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+            "application/msword", // .doc (Gemini's success with .doc can vary; .docx or PDF are more reliable)
+            "text/plain",
+            "text/markdown",
+            "text/html",
+            "text/css",
+            "text/javascript",
+            "application/x-javascript",
+            "text/x-typescript",
+            "application/x-typescript",
+            "text/csv",
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+            // Add more supported types if needed, e.g., for code files, other image/video types
+        ];
+
+        if (!file.type || !supportedMimeTypes.includes(file.type)) {
+            console.log(`Unsupported file type: ${file.type}`);
+            const errorResponse = {
+                error: `Unsupported file type: '${file.type}'. Please try PDF, DOCX, DOC, or common text/image formats.`
+            };
+            console.log("Error Response:", errorResponse);
+            return NextResponse.json(errorResponse, { status: 400 });
+        }
+
+        console.log("Converting file to base64...");
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64File = buffer.toString('base64');
+
+        // Using gemini-1.5-flash-latest. You can switch to gemini-1.5-pro-latest for potentially higher quality.
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+
+        // Create the text prompt with proper escaping to avoid nested quotation issues
+        const textPromptPart = {
+            text: `You are an expert resume reviewer. Analyze the provided resume (which is attached as a file) for a ${jobTitle} position${company ? ` at ${company}` : ""}.
+${jobDescription ? `\nConsider the following job description for your analysis:\n---\n${jobDescription}\n---\n` : ""}
+
+Based on the resume content (which you will extract from the attached file), please provide:
+1.  **Overall Assessment:** A brief summary of the resume's suitability for the role.
+2.  **Key Strengths:** Highlight specific aspects of the resume that are strong and relevant.
+3.  **Areas for Improvement:** Identify sections or points that could be enhanced.
+4.  **Specific Suggestions:** Offer actionable advice to better align the resume with the target role and (if provided) the job description. Focus on content, phrasing, and impact.
+5.  **ATS Optimization Tips:** Provide suggestions to improve the resume's compatibility with Applicant Tracking Systems (ATS), such as keyword usage and formatting considerations based on the file's content.
+6.  **Format and Presentation Feedback:** Comment on the layout, readability, and overall presentation as observed from the file.
+
+Format your response in clear sections. Use bullet points for lists of suggestions or observations. Be constructive and professional.`
+        };
+
+        const filePart = {
+            inlineData: {
+                mimeType: file.type,
+                data: base64File,
+            },
+        };
+
+        const generationConfig = {
+            temperature: 0.7,
+            topK: 1, // Default, can be tuned
+            topP: 1, // Default, can be tuned
+            maxOutputTokens: 8192, // Check model limits, 8192 is common for Gemini 1.5 Flash
+        };
+
+        const safetySettings = [
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+        ];
+
+        console.log("Sending request to Gemini with file and prompt...");
+        // console.log("Text prompt (first 300 chars):", textPromptPart.text.substring(0,300) + "...");
+
+        const result = await model.generateContent({
+            contents: [{ 
+                role: "user", 
+                parts: [filePart, textPromptPart] 
+            }],
+            generationConfig,
+            safetySettings
+        });
+
+        const geminiResponse = result.response;
+        const analysisText = geminiResponse?.text() ?? null; // Using nullish coalescing
+
+        if (!analysisText) {
+            console.log("No response text from Gemini. Prompt Feedback:", geminiResponse?.promptFeedback);
+            const noResponseError = { error: "Failed to get analysis from AI. The AI did not return any text. This could be due to content restrictions or processing issues." };
+            console.log("Error Response:", noResponseError);
+            return NextResponse.json(noResponseError, { status: 500 });
+        }
+
+        console.log("Received response from Gemini, length:", analysisText.length);
+        // console.log("Response sample (first 200 chars):", analysisText.substring(0, 200) + "...");
+
+        console.log("=== Resume Check API Completed Successfully ===");
+        return NextResponse.json({ analysis: analysisText });
+
+    } catch (error: any) {
+        console.error("=== Resume Check API Error ===");
+        console.error("Error details:", error);
+        let errorMessage = `Failed to analyze resume. Please try again.`;
+
+        if (error.message) {
+            console.error("Error message:", error.message);
+            errorMessage += ` Server Error: ${error.message}`;
+        }
+        
+        // If the error object has response details from Gemini (e.g. for safety blocks)
+        if (error.response && error.response.promptFeedback) {
+            console.error("Gemini Prompt Feedback:", error.response.promptFeedback);
+            errorMessage += ` (AI processing issue: ${JSON.stringify(error.response.promptFeedback)})`;
+        } else if (error.status && error.details) { // For errors structured differently by the SDK
+             console.error("Gemini API Error Status:", error.status, "Details:", error.details);
+             errorMessage += ` (AI API Error: ${error.details})`;
+        }
+
+        const errorResponse = { error: errorMessage };
+        console.log("Error Response:", errorResponse);
+        return NextResponse.json(errorResponse, { status: 500 });
     }
-
-    // Process file in memory
-    console.log("Processing file:", file.name);
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileContent = buffer.toString('utf-8');
-
-    console.log("Creating Gemini prompt");
-    // Create Gemini prompt
-    const prompt = `Analyze this resume for a ${jobTitle} position${company ? ` at ${company}` : ""}:
-    
-Resume Content:
-${fileContent}
-
-${jobDescription ? `Job Description:\n${jobDescription}\n` : ""}
-
-Please provide:
-1. Overall assessment
-2. Key strengths
-3. Areas for improvement
-4. Specific suggestions to better align with the role
-5. ATS optimization tips
-6. Format and presentation feedback
-
-Format the response in clear sections with bullet points where appropriate.`;
-
-    console.log("Sending request to Gemini");
-    // Get Gemini response
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    if (!text) {
-      console.log("No response from Gemini");
-      return NextResponse.json(
-        { error: "Failed to get analysis from AI. Please try again." },
-        { status: 500 }
-      );
-    }
-    console.log("Received response from Gemini, length:", text.length);
-
-    console.log("=== Resume Check API Completed Successfully ===");
-    return NextResponse.json({ analysis: text });
-  } catch (error) {
-    console.error("=== Resume Check API Error ===");
-    console.error("Error details:", error);
-    return NextResponse.json(
-      { error: "Failed to analyze resume. Please try again." },
-      { status: 500 }
-    );
-  }
-} 
+}
