@@ -122,7 +122,7 @@ const handler = NextAuth({
     signOut: 'http://localhost:3000/',      // Redirect users to homepage after sign out
     error: '/login',   // Redirect users to login page on error (e.g., OAuthAccountNotLinked if linking is off)
     verifyRequest: '/verify-request', // Page shown after email for magic link has been sent
-    newUser: '/start'  // Redirect new users to this page on their first sign-in (OAuth or Email)
+    newUser: '/dashboard'  // Redirect new users to dashboard on their first sign-in (OAuth or Email)
   },
   callbacks: {
     async jwt({ token, user }) {

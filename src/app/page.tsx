@@ -22,7 +22,7 @@ export default function Home() {
   }, [])
 
   const handleGetStartedClick = () => {
-    router.push(isAuthenticated ? "/start" : "/signup")
+    router.push('/dashboard')
   }
 
   return (

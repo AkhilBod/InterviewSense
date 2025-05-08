@@ -22,58 +22,22 @@ export async function generateBehavioralQuestions(jobDetails: JobDetails) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const prompt = `Generate 20 interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry. 
-    
-    This is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.
-    
-    ${jobDetails.jobAd ? `Here is the job description to reference:\n${jobDetails.jobAd}\n\n` : ''}
-    
-    The questions should be tailored based on:
-    1. Interview Type (${jobDetails.interviewType}):
-       ${jobDetails.interviewType === 'Technical' ? '- Focus on technical skills, problem-solving, and coding/system design' :
-         jobDetails.interviewType === 'Behavioral' ? '- Focus on past experiences, soft skills, and cultural fit' :
-         jobDetails.interviewType === 'Case Study' ? '- Focus on analytical thinking and business problem-solving' :
-         jobDetails.interviewType === 'System Design' ? '- Focus on architecture, scalability, and technical decision-making' :
-         jobDetails.interviewType === 'Leadership' ? '- Focus on team management, decision-making, and strategic thinking' :
-         '- Mix of technical and behavioral questions'}
-    
-    2. Interview Stage (${jobDetails.interviewStage}):
-       ${jobDetails.interviewStage === 'Initial Screening' ? '- Focus on basic qualifications and cultural fit' :
-         jobDetails.interviewStage === 'Technical Assessment' ? '- Focus on core technical skills and problem-solving' :
-         jobDetails.interviewStage === 'Team Interview' ? '- Focus on collaboration and team dynamics' :
-         jobDetails.interviewStage === 'Final Round' ? '- Focus on strategic thinking and long-term fit' :
-         '- Focus on executive-level decision making and vision'}
-    
-    Include a mix of:
-    1. 5-6 highly specific questions about:
-       - ${jobDetails.company ? jobDetails.company + "'s" : 'The company\'s'} business context and products
-       - Technical skills and tools mentioned in the job description
-       - Industry-specific challenges in ${jobDetails.industry}
-       - Role-specific scenarios for ${jobDetails.jobTitle}
-    
-    2. 4-5 questions about:
-       - Real-world scenarios and technical knowledge
-       - Problem-solving approaches
-       - Industry best practices
-       - Tools and technologies used in this role
-    
-    3. 4-5 questions about:
-       - Industry trends and challenges in ${jobDetails.industry}
-       - Market dynamics and competition
-       - Future of the industry
-       - Role evolution and growth
-    
-    4. 5-6 general questions about:
-       - Leadership and team management
-       - Problem-solving and decision-making
-       - Communication and collaboration
-       - Innovation and creativity
-       - Conflict resolution
-       - Time management and prioritization
-    
-    Make sure the questions are appropriate for a ${jobDetails.experienceLevel} level position.
-    
-    Return ONLY a JSON array of objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
+    let typeInstructions = '';
+    if (jobDetails.interviewType === 'Technical') {
+      typeInstructions = `Focus on technical skills, coding, algorithms, system design, and problem-solving. Include questions about relevant technologies, frameworks, and technical scenarios for a ${jobDetails.jobTitle}.`;
+    } else if (jobDetails.interviewType === 'Behavioral') {
+      typeInstructions = `Generate 10 behavioral questions, with 3-4 questions specifically about the company (${jobDetails.company}) and its culture, values, and work environment. The remaining questions should focus on past experiences, soft skills, teamwork, leadership, conflict resolution, and cultural fit. Include scenario-based questions relevant to the ${jobDetails.jobTitle} role.`;
+    } else if (jobDetails.interviewType === 'Case Study') {
+      typeInstructions = `Focus on analytical thinking, business problem-solving, and case-based scenarios relevant to the role.`;
+    } else if (jobDetails.interviewType === 'System Design') {
+      typeInstructions = `Focus on architecture, scalability, technical decision-making, and system design scenarios for a ${jobDetails.jobTitle}.`;
+    } else if (jobDetails.interviewType === 'Leadership') {
+      typeInstructions = `Focus on team management, decision-making, strategic thinking, and leadership scenarios.`;
+    } else {
+      typeInstructions = `Include a mix of technical and behavioral questions.`;
+    }
+
+    const prompt = `Generate 10 interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry.\n\nThis is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.\n\n${jobDetails.jobAd ? `Here is the job description to reference:\n${jobDetails.jobAd}\n\n` : ''}${typeInstructions}\n\nMake sure the questions are appropriate for a ${jobDetails.experienceLevel} level position.\n\nReturn ONLY a JSON array of objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
 
     console.log('Sending prompt to Gemini:', prompt);
     const result = await model.generateContent(prompt);

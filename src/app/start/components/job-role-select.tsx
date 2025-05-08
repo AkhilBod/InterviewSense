@@ -77,24 +77,25 @@ interface JobRoleSelectProps {
     interviewType: string;
     interviewStage: string;
   }) => void;
+  interviewType: string;
 }
 
-export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps) {
+export default function JobRoleSelect({ onJobDetailsChange, interviewType }: JobRoleSelectProps) {
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
   const [industry, setIndustry] = useState('');
   const [experience, setExperience] = useState('Entry-level');
   const [jobAd, setJobAd] = useState('');
   const [resume, setResume] = useState<File | null>(null);
-  const [interviewType, setInterviewType] = useState('Mixed');
   const [interviewStage, setInterviewStage] = useState('Initial Screening');
   const [jobSuggestions, setJobSuggestions] = useState<string[]>([]);
+  const [interviewTypeState, setInterviewTypeState] = useState(interviewType);
 
   // Show suggestions as user types job title
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setJobTitle(value);
-    updateJobDetails(value, company, industry, experience, jobAd, resume, interviewType, interviewStage);
+    updateJobDetails(value, company, industry, experience, jobAd, resume, interviewTypeState, interviewStage);
 
     if (value.length > 2) {
       const filtered = commonJobRoles.filter(role =>
@@ -109,45 +110,45 @@ export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps
   const selectJobSuggestion = (suggestion: string) => {
     setJobTitle(suggestion);
     setJobSuggestions([]);
-    updateJobDetails(suggestion, company, industry, experience, jobAd, resume, interviewType, interviewStage);
+    updateJobDetails(suggestion, company, industry, experience, jobAd, resume, interviewTypeState, interviewStage);
   };
 
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setCompany(value);
-    updateJobDetails(jobTitle, value, industry, experience, jobAd, resume, interviewType, interviewStage);
+    updateJobDetails(jobTitle, value, industry, experience, jobAd, resume, interviewTypeState, interviewStage);
   };
 
   const handleIndustryChange = (value: string) => {
     setIndustry(value);
-    updateJobDetails(jobTitle, company, value, experience, jobAd, resume, interviewType, interviewStage);
+    updateJobDetails(jobTitle, company, value, experience, jobAd, resume, interviewTypeState, interviewStage);
   };
 
   const handleExperienceChange = (value: string) => {
     setExperience(value);
-    updateJobDetails(jobTitle, company, industry, value, jobAd, resume, interviewType, interviewStage);
+    updateJobDetails(jobTitle, company, industry, value, jobAd, resume, interviewTypeState, interviewStage);
   };
 
   const handleJobAdChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setJobAd(value);
-    updateJobDetails(jobTitle, company, industry, experience, value, resume, interviewType, interviewStage);
+    updateJobDetails(jobTitle, company, industry, experience, value, resume, interviewTypeState, interviewStage);
   };
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setResume(file);
-    updateJobDetails(jobTitle, company, industry, experience, jobAd, file, interviewType, interviewStage);
+    updateJobDetails(jobTitle, company, industry, experience, jobAd, file, interviewTypeState, interviewStage);
   };
 
   const handleInterviewTypeChange = (value: string) => {
-    setInterviewType(value);
+    setInterviewTypeState(value);
     updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, value, interviewStage);
   };
 
   const handleInterviewStageChange = (value: string) => {
     setInterviewStage(value);
-    updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, interviewType, value);
+    updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, interviewTypeState, value);
   };
 
   const updateJobDetails = (
@@ -285,7 +286,7 @@ export default function JobRoleSelect({ onJobDetailsChange }: JobRoleSelectProps
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="interviewType">Interview Type</Label>
-            <Select value={interviewType} onValueChange={handleInterviewTypeChange}>
+            <Select value={interviewTypeState} onValueChange={handleInterviewTypeChange}>
               <SelectTrigger id="interviewType">
                 <SelectValue placeholder="Select interview type" />
               </SelectTrigger>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { MessageSquare, ChevronLeft, ArrowRight, User } from "lucide-react"
 import JobRoleSelect from "./components/job-role-select"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import {
   DropdownMenu,
@@ -36,6 +36,8 @@ interface JobDetails {
 export default function StartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get('type');
   const [jobDetails, setJobDetails] = useState<JobDetails>({
     jobTitle: '',
     company: '',
@@ -43,7 +45,7 @@ export default function StartPage() {
     experienceLevel: '',
     jobAd: '',
     resume: null,
-    interviewType: 'Mixed',
+    interviewType: typeParam === 'technical' ? 'Technical' : typeParam === 'behavioral' ? 'Behavioral' : 'Mixed',
     interviewStage: 'Initial Screening'
   })
 
@@ -146,7 +148,7 @@ export default function StartPage() {
               asChild
               className="gap-2 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
             >
-              <Link href="/">
+              <Link href="/dashboard">
                 <ChevronLeft className="h-4 w-4" />
                 Back to home
               </Link>
@@ -163,7 +165,7 @@ export default function StartPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="relative z-10 px-6 md:px-10">
-                <JobRoleSelect onJobDetailsChange={setJobDetails} />
+                <JobRoleSelect onJobDetailsChange={setJobDetails} interviewType={jobDetails.interviewType} />
               </CardContent>
               <CardFooter className="flex flex-col space-y-4 pb-10 relative z-10 px-6 md:px-10">
                 <Button 

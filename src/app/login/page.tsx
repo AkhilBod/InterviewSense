@@ -124,7 +124,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/start')
+      router.push('/dashboard')
     } catch (error) {
       setError('An error occurred during sign in')
     } finally {
@@ -135,7 +135,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError(null)
     try {
-      await signIn('google', { callbackUrl: '/start' })
+      await signIn('google', { callbackUrl: '/dashboard' })
     } catch (error) {
       setError('Error signing in with Google')
     }
