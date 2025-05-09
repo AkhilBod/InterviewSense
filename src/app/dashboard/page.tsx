@@ -26,15 +26,32 @@ export default function DashboardPage() {
     }
 
     if (status === 'authenticated') {
-      // Check if the user has completed the onboarding questionnaire
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-      
-      if (!onboardingCompleted) {
-        // User hasn't completed the questionnaire, redirect to it
-        router.push('/questionnaire');
-      } else {
-        setIsLoading(false);
-      }
+      const checkOnboardingStatus = async () => {
+        try {
+          // Check database first
+          const response = await fetch('/api/user/onboarding/status');
+          const data = await response.json();
+          
+          if (!data.onboardingCompleted) {
+            router.push('/questionnaire');
+            return;
+          }
+          
+          // If database check passes, check localStorage as backup
+          const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+          if (!onboardingCompleted) {
+            router.push('/questionnaire');
+            return;
+          }
+          
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+          setIsLoading(false);
+        }
+      };
+
+      checkOnboardingStatus();
     }
   }, [status, router]);
 

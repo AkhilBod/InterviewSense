@@ -39,11 +39,27 @@ export default function Questionnaire() {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      // Save all answers to localStorage or database
+      // Save all answers to localStorage
       localStorage.setItem('onboardingCompleted', 'true');
       localStorage.setItem('usageGoals', JSON.stringify(usageGoals));
       localStorage.setItem('role', role);
       localStorage.setItem('referralSource', referralSource === 'Other' ? otherReferral : referralSource);
+      
+      // Save onboarding status to database
+      fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          onboardingCompleted: true,
+          usageGoals,
+          role,
+          referralSource: referralSource === 'Other' ? otherReferral : referralSource,
+        }),
+      }).catch(error => {
+        console.error('Failed to save onboarding status:', error);
+      });
       
       // Redirect to dashboard
       router.push('/dashboard');

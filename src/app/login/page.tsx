@@ -121,16 +121,32 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError(result.error)
+        setIsLoading(false)
         return
       }
 
-      // Check if user has completed onboarding before redirecting
+      // First check database for onboarding status
+      try {
+        const response = await fetch('/api/user/onboarding/status')
+        const data = await response.json()
+        
+        if (!data.onboardingCompleted) {
+          router.push('/questionnaire')
+          return
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error)
+      }
+      
+      // If we get here, either the API call failed or onboarding is completed
+      // Check localStorage as backup
       const onboardingCompleted = localStorage.getItem('onboardingCompleted')
       if (!onboardingCompleted) {
         router.push('/questionnaire')
-      } else {
-        router.push('/dashboard')
+        return
       }
+      
+      router.push('/dashboard')
     } catch (error) {
       setError('An error occurred during sign in')
     } finally {

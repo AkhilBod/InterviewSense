@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
           email: email.toLowerCase(),
           name,
           password: hashedPassword,
+          onboardingCompleted: false,
         },
       });
 

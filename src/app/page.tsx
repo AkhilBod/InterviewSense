@@ -25,7 +25,7 @@ export default function Home() {
     if (status === 'authenticated') {
       router.push('/dashboard')
     } else {
-      router.push('/login')
+      router.push('/signup')
     }
   }
 

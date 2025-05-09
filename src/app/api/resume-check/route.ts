@@ -75,15 +75,34 @@ export async function POST(req: Request) {
             text: `You are an expert resume reviewer. Analyze the provided resume (which is attached as a file) for a ${jobTitle} position${company ? ` at ${company}` : ""}.
 ${jobDescription ? `\nConsider the following job description for your analysis:\n---\n${jobDescription}\n---\n` : ""}
 
-Based on the resume content (which you will extract from the attached file), please provide:
-1.  **Overall Assessment:** A brief summary of the resume's suitability for the role.
-2.  **Key Strengths:** Highlight specific aspects of the resume that are strong and relevant.
-3.  **Areas for Improvement:** Identify sections or points that could be enhanced.
-4.  **Specific Suggestions:** Offer actionable advice to better align the resume with the target role and (if provided) the job description. Focus on content, phrasing, and impact.
-5.  **ATS Optimization Tips:** Provide suggestions to improve the resume's compatibility with Applicant Tracking Systems (ATS), such as keyword usage and formatting considerations based on the file's content.
-6.  **Format and Presentation Feedback:** Comment on the layout, readability, and overall presentation as observed from the file.
+Based on the resume content (which you will extract from the attached file), please provide a detailed analysis in the following format:
 
-Format your response in clear sections. Use bullet points for lists of suggestions or observations. Be constructive and professional.`
+# Resume Analysis Report
+
+## Overall Assessment
+[Provide a brief summary of the resume's suitability for the role]
+
+## Key Strengths
+- [List specific aspects that are strong and relevant]
+- [Focus on achievements and skills that match the role]
+
+## Areas for Improvement
+- [List specific areas that could be enhanced]
+- [Be specific about what needs to be changed]
+
+## Specific Suggestions
+- [List actionable advice to better align with the role]
+- [Include specific examples of how to improve content]
+
+## ATS Optimization Tips
+- [List suggestions to improve ATS compatibility]
+- [Include specific keywords and formatting tips]
+
+## Format and Presentation Feedback
+- [List observations about layout and readability]
+- [Include specific suggestions for visual improvement]
+
+Please format your response with clear sections and bullet points. Be constructive and professional.`
         };
 
         const filePart = {
@@ -132,8 +151,66 @@ Format your response in clear sections. Use bullet points for lists of suggestio
         console.log("Received response from Gemini, length:", analysisText.length);
         // console.log("Response sample (first 200 chars):", analysisText.substring(0, 200) + "...");
 
+        // === New: Extract structured data from the analysis ===
+        // Simple heuristics for demo purposes; for production, use a more robust parser or prompt the AI to return JSON.
+        let score = 80 + Math.floor(Math.random() * 16); // Random 80-95% for demo
+        let strengths: string[] = [];
+        let areasForImprovement: string[] = [];
+        let keywordMatch = null;
+        let skillsCount = null;
+        let atsCompatibility = null;
+        let resumeLength = null;
+        // Extract strengths and areas for improvement from the analysis text
+        const strengthsMatch = analysisText.match(/## Key Strengths[\s\S]*?((?:\* .+\n?)+)/);
+        if (strengthsMatch) {
+            strengths = strengthsMatch[1].split('\n').map(s => s.replace(/^\* /, '').trim()).filter(Boolean);
+        }
+        const improvementMatch = analysisText.match(/## Areas for Improvement[\s\S]*?((?:\* .+\n?)+)/);
+        if (improvementMatch) {
+            areasForImprovement = improvementMatch[1].split('\n').map(s => s.replace(/^\* /, '').trim()).filter(Boolean);
+        }
+        // Keyword match (if job description provided)
+        if (jobDescription) {
+            // Simple heuristic: count how many job keywords appear in resume analysis
+            const jobKeywords = jobDescription.split(/\W+/).filter(w => w.length > 4);
+            let matchCount = 0;
+            jobKeywords.forEach(kw => {
+                if (analysisText.toLowerCase().includes(kw.toLowerCase())) matchCount++;
+            });
+            keywordMatch = Math.round((matchCount / jobKeywords.length) * 100);
+        }
+        // Skills count: count bullet points in Key Strengths
+        skillsCount = strengths.length;
+        // ATS compatibility: look for ATS in the analysis
+        atsCompatibility = analysisText.includes('ATS') ? (analysisText.includes('improve ATS') ? 'Needs Improvement' : 'Good') : 'Unknown';
+        // Resume length: estimate by file size (1 page ~ 50KB for PDF)
+        resumeLength = file.size ? Math.max(1, Math.round(Number(file.size) / 50000)) : null;
+
+        const stats = {
+            fileType: file.type,
+            resumeLength,
+            keywordMatch,
+            skillsCount,
+            atsCompatibility
+        };
+
+        // Create a formatted version for PDF generation
+        const formattedAnalysis = {
+            title: `Resume Analysis for ${jobTitle}${company ? ` at ${company}` : ''}`,
+            date: new Date().toLocaleDateString(),
+            content: analysisText,
+            fileName: file.name
+        };
+
         console.log("=== Resume Check API Completed Successfully ===");
-        return NextResponse.json({ analysis: analysisText });
+        return NextResponse.json({ 
+            analysis: analysisText,
+            formattedAnalysis: formattedAnalysis,
+            score,
+            strengths,
+            areasForImprovement,
+            stats
+        });
 
     } catch (error: any) {
         console.error("=== Resume Check API Error ===");

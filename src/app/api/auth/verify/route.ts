@@ -56,11 +56,14 @@ export async function GET(req: NextRequest) {
       emailVerified: user.emailVerified
     });
     
-    // Update the user's email verification status
+    // Update the user's email verification status and ensure onboarding is not completed
     try {
       await prisma.user.update({
         where: { id: user.id },
-        data: { emailVerified: new Date() }
+        data: { 
+          emailVerified: new Date(),
+          onboardingCompleted: false // Ensure user goes through onboarding
+        }
       });
       console.log('Updated user email verification status');
     } catch (updateError) {
