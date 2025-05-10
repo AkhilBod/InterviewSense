@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hash } from 'bcryptjs'
+import { getToken } from 'next-auth/jwt'
 
 export async function POST(req: Request) {
   try {
@@ -53,8 +54,18 @@ export async function POST(req: Request) {
       where: { id: resetToken.id },
     })
 
+    // Create a session token
+    const sessionToken = await getToken({ 
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      raw: true
+    })
+
     return NextResponse.json(
-      { message: 'Password has been reset successfully' },
+      { 
+        message: 'Password has been reset successfully',
+        sessionToken
+      },
       { status: 200 }
     )
   } catch (error) {

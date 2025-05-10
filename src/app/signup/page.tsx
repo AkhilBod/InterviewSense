@@ -109,7 +109,7 @@ export default function SignupPage() {
     setError('')
     
     try {
-      await signIn('google', { callbackUrl: '/start' })
+      await signIn('google', { callbackUrl: '/dashboard' })
     } catch (error) {
       console.error('Google Sign-In Error:', error)
       setError('Failed to sign in with Google. Please try again.')

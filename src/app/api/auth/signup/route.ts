@@ -26,10 +26,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // Check if user already exists and is verified
     const existingUser = await prisma.user.findUnique({
       where: { 
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         emailVerified: { not: null } // Only consider verified users
       },
     });
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
     // Check for unverified user
     const unverifiedUser = await prisma.user.findUnique({
       where: { 
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         emailVerified: null
       },
     });
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (unverifiedUser) {
       // Delete any existing verification tokens first
       await prisma.verificationToken.deleteMany({
-        where: { identifier: email.toLowerCase() }
+        where: { identifier: normalizedEmail }
       });
       
       // Then delete the user
@@ -65,36 +67,30 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Create user first
+    const user = await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        name,
+        password: hashedPassword,
+      },
+    });
+
     // Generate verification token
     const verificationToken = nanoid(32);
     const tokenExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Create user and verification token in a transaction
-    const user = await prisma.$transaction(async (tx) => {
-      // Create the user
-      const newUser = await tx.user.create({
-        data: {
-          email: email.toLowerCase(),
-          name,
-          password: hashedPassword,
-          onboardingCompleted: false,
-        },
-      });
-
-      // Create verification token
-      await tx.verificationToken.create({
-        data: {
-          identifier: email.toLowerCase(),
-          token: verificationToken,
-          expires: tokenExpiration,
-        },
-      });
-
-      return newUser;
+    // Create verification token
+    await prisma.verificationToken.create({
+      data: {
+        identifier: normalizedEmail,
+        token: verificationToken,
+        expires: tokenExpiration,
+      },
     });
 
     // Send verification email
-    await sendVerificationEmail(email.toLowerCase(), verificationToken);
+    await sendVerificationEmail(normalizedEmail, verificationToken);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;

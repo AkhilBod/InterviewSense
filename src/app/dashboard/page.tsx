@@ -28,18 +28,10 @@ export default function DashboardPage() {
     if (status === 'authenticated') {
       const checkOnboardingStatus = async () => {
         try {
-          // Check database first
           const response = await fetch('/api/user/onboarding/status');
           const data = await response.json();
           
           if (!data.onboardingCompleted) {
-            router.push('/questionnaire');
-            return;
-          }
-          
-          // If database check passes, check localStorage as backup
-          const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-          if (!onboardingCompleted) {
             router.push('/questionnaire');
             return;
           }
@@ -55,10 +47,15 @@ export default function DashboardPage() {
     }
   }, [status, router]);
 
-  if (status === 'loading' || isLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-zinc-900 text-white">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-    </div>;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

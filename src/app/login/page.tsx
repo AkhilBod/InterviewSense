@@ -49,6 +49,10 @@ export default function LoginPage() {
   // Handle error and success from URL parameters
   useEffect(() => {
     const error = searchParams.get('error')
+    const success = searchParams.get('success')
+    const autoLogin = searchParams.get('autoLogin')
+    const userEmail = searchParams.get('email')
+
     if (error) {
       switch (error) {
         case 'CredentialsSignin':
@@ -101,9 +105,13 @@ export default function LoginPage() {
       }
     }
 
-    const success = searchParams.get('success')
     if (success === 'email-verified') {
-      setSuccess('Your email has been verified successfully. You can now log in.')
+      setSuccess('Your email has been verified successfully.')
+      if (autoLogin === 'true' && userEmail) {
+        setEmail(userEmail)
+        // Trigger automatic login
+        handleEmailLogin(new Event('submit') as any)
+      }
     }
   }, [searchParams])
 
@@ -125,7 +133,7 @@ export default function LoginPage() {
         return
       }
 
-      // First check database for onboarding status
+      // Check onboarding status
       try {
         const response = await fetch('/api/user/onboarding/status')
         const data = await response.json()
@@ -134,19 +142,12 @@ export default function LoginPage() {
           router.push('/questionnaire')
           return
         }
+        
+        router.push('/dashboard')
       } catch (error) {
         console.error('Error checking onboarding status:', error)
+        router.push('/dashboard')
       }
-      
-      // If we get here, either the API call failed or onboarding is completed
-      // Check localStorage as backup
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted')
-      if (!onboardingCompleted) {
-        router.push('/questionnaire')
-        return
-      }
-      
-      router.push('/dashboard')
     } catch (error) {
       setError('An error occurred during sign in')
     } finally {

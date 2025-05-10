@@ -59,10 +59,15 @@ export default function ResetPasswordPage() {
       setPassword('')
       setConfirmPassword('')
       
-      // Redirect to login page after 3 seconds
-      setTimeout(() => {
-        router.push('/login')
-      }, 3000)
+      // Redirect to dashboard with the session token
+      if (data.sessionToken) {
+        router.push(`/dashboard?token=${data.sessionToken}&success=password-reset`)
+      } else {
+        // Fallback to login page if no session token
+        setTimeout(() => {
+          router.push('/login')
+        }, 3000)
+      }
     } catch (error) {
       console.error('Password reset error:', error)
       setError(error instanceof Error ? error.message : 'Failed to reset password. Please try again.')

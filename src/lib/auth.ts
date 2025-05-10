@@ -4,6 +4,7 @@ import { prisma } from './prisma';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -31,7 +32,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid credentials');
         }
 
-        // Check if email is verified
+        // Check email verification for credentials provider
         if (!user.emailVerified) {
           throw new Error('Please verify your email before logging in');
         }
@@ -55,7 +56,8 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/login',
@@ -68,36 +70,45 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      // For OAuth providers, check email verification
+      // For OAuth providers (like Google), automatically verify email
       if (account?.type === 'oauth') {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+        try {
+          // For OAuth providers, we can trust the email is verified
+          const verifiedDate = new Date();
 
-        // If user doesn't exist, this is their first sign in
-        if (!dbUser) {
-          // Create user with verified email
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name,
-              image: user.image,
-              emailVerified: new Date(),
-              onboardingCompleted: false,
-            },
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
           });
-          return true;
-        }
 
-        // If user exists but email not verified, verify it now
-        if (!dbUser.emailVerified) {
+          // If user doesn't exist, create new user with verified email
+          if (!dbUser) {
+            await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name,
+                image: user.image,
+                emailVerified: verifiedDate,
+                onboardingCompleted: false,
+              } as Prisma.UserCreateInput,
+            });
+            return true;
+          }
+
+          // If user exists, ensure email is verified and update other fields
           await prisma.user.update({
             where: { id: dbUser.id },
-            data: { emailVerified: new Date() },
+            data: {
+              emailVerified: verifiedDate,
+              name: user.name,
+              image: user.image,
+            } as Prisma.UserUpdateInput,
           });
-        }
 
-        return true;
+          return true;
+        } catch (error) {
+          console.error('Error in signIn callback:', error);
+          return false;
+        }
       }
 
       return true;
@@ -112,25 +123,31 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user }) {
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          email: token.email as string,
-        },
-      });
+      try {
+        const dbUser = await prisma.user.findFirst({
+          where: {
+            email: token.email as string,
+          },
+        });
 
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id;
+        if (!dbUser) {
+          if (user) {
+            token.id = user?.id;
+          }
+          return token;
         }
+
+        return {
+          id: dbUser.id,
+          name: dbUser.name || '',
+          email: dbUser.email || '',
+          picture: dbUser.image || '',
+        };
+      } catch (error) {
+        console.error('Error in jwt callback:', error);
         return token;
       }
-
-      return {
-        id: dbUser.id,
-        name: dbUser.name || '',
-        email: dbUser.email || '',
-        picture: dbUser.image || '',
-      };
     }
-  }
+  },
+  debug: process.env.NODE_ENV === 'development',
 }; 

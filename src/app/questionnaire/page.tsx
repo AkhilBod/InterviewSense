@@ -21,6 +21,8 @@ export default function Questionnaire() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 4;
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for questionnaire answers
   const [usageGoals, setUsageGoals] = useState<string[]>([]);
@@ -36,40 +38,54 @@ export default function Questionnaire() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < totalSteps) {
       setStep(step + 1);
+      setError(null);
     } else {
-      // Save all answers to localStorage
-      localStorage.setItem('onboardingCompleted', 'true');
-      localStorage.setItem('usageGoals', JSON.stringify(usageGoals));
-      localStorage.setItem('role', role);
-      localStorage.setItem('referralSource', referralSource === 'Other' ? otherReferral : referralSource);
-      
-      // Save onboarding status to database
-      fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          onboardingCompleted: true,
-          usageGoals,
-          role,
-          referralSource: referralSource === 'Other' ? otherReferral : referralSource,
-        }),
-      }).catch(error => {
+      try {
+        setIsSubmitting(true);
+        setError(null);
+        
+        // Save all answers to localStorage
+        localStorage.setItem('onboardingCompleted', 'true');
+        localStorage.setItem('usageGoals', JSON.stringify(usageGoals));
+        localStorage.setItem('role', role);
+        localStorage.setItem('referralSource', referralSource === 'Other' ? otherReferral : referralSource);
+        
+        // Save onboarding status to database
+        const response = await fetch('/api/user/onboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to save onboarding status');
+        }
+
+        // Only redirect after successful API call
+        router.push('/dashboard');
+      } catch (error) {
         console.error('Failed to save onboarding status:', error);
-      });
-      
-      // Redirect to dashboard
-      router.push('/dashboard');
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
+      setError(null);
     }
   };
 
@@ -91,6 +107,12 @@ export default function Questionnaire() {
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Left panel - Form */}
           <div className="p-8 flex flex-col">
+            {error && (
+              <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+                {error}
+              </div>
+            )}
+            
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <div className="bg-blue-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
@@ -279,7 +301,7 @@ export default function Questionnaire() {
               <Button 
                 variant="outline" 
                 onClick={handleBack}
-                disabled={step === 1}
+                disabled={step === 1 || isSubmitting}
                 className="border-slate-700 text-slate-300 hover:bg-slate-800"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
@@ -289,10 +311,19 @@ export default function Questionnaire() {
               <Button 
                 onClick={handleNext}
                 className="bg-blue-600 hover:bg-blue-700"
-                disabled={(step === 1 && usageGoals.length === 0) || (step === 2 && !role)}
+                disabled={(step === 1 && usageGoals.length === 0) || (step === 2 && !role) || isSubmitting}
               >
-                {step === totalSteps ? 'Finish' : 'Next'}
-                {step !== totalSteps && <ChevronRight className="h-4 w-4 ml-2" />}
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    {step === totalSteps ? 'Finish' : 'Next'}
+                    {step !== totalSteps && <ChevronRight className="h-4 w-4 ml-2" />}
+                  </>
+                )}
               </Button>
             </div>
           </div>
