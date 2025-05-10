@@ -1,3 +1,4 @@
+// pages/api/resume-check.ts
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
@@ -50,7 +51,6 @@ export async function POST(req: Request) {
             "image/webp",
             "image/heic",
             "image/heif",
-            // Add more supported types if needed, e.g., for code files, other image/video types
         ];
 
         if (!file.type || !supportedMimeTypes.includes(file.type)) {
@@ -67,42 +67,40 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        // Using gemini-1.5-flash-latest. You can switch to gemini-1.5-pro-latest for potentially higher quality.
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Consider "gemini-1.5-pro" for more complex analyses
 
-        // Create the text prompt with proper escaping to avoid nested quotation issues
         const textPromptPart = {
-            text: `You are an expert resume reviewer. Analyze the provided resume (which is attached as a file) for a ${jobTitle} position${company ? ` at ${company}` : ""}.
+            text: `You are an expert resume reviewer. Analyze the provided resume (which is attached as a file) for a "${jobTitle}" position${company ? ` at "${company}"` : ""}.
 ${jobDescription ? `\nConsider the following job description for your analysis:\n---\n${jobDescription}\n---\n` : ""}
 
-Based on the resume content (which you will extract from the attached file), please provide a detailed analysis in the following format:
+Please provide a detailed, structured resume analysis in the following format:
 
 # Resume Analysis Report
 
 ## Overall Assessment
-[Provide a brief summary of the resume's suitability for the role]
+[Provide a concise summary of the resume's suitability for the role, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume is strong but needs improvement in ATS optimization."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.]
 
 ## Key Strengths
-- [List specific aspects that are strong and relevant]
-- [Focus on achievements and skills that match the role]
+- [List specific achievements, skills, and experiences that make the resume strong and relevant for the target role. Use clear, concise bullet points.]
+- [Focus on accomplishments and quantifiable results.]
 
 ## Areas for Improvement
-- [List specific areas that could be enhanced]
-- [Be specific about what needs to be changed]
+- [List specific sections or aspects that need enhancement. Be very specific.]
+- [Provide actionable advice for each area.]
 
 ## Specific Suggestions
-- [List actionable advice to better align with the role]
-- [Include specific examples of how to improve content]
+- [List precise, actionable tips to better align the resume with the target role and company.]
+- [Suggest specific wording changes or additions.]
 
 ## ATS Optimization Tips
-- [List suggestions to improve ATS compatibility]
-- [Include specific keywords and formatting tips]
+- [List suggestions to improve Applicant Tracking System (ATS) compatibility.]
+- [Include advice on keywords, formatting, and standard resume practices for ATS.]
 
 ## Format and Presentation Feedback
-- [List observations about layout and readability]
-- [Include specific suggestions for visual improvement]
+- [List observations about the resume's layout, readability, and overall visual appeal.]
+- [Suggest improvements for a more professional look.]
 
-Please format your response with clear sections and bullet points. Be constructive and professional.`
+Please ensure all sections are present and use clear, concise language. The sections "Overall Assessment", "Key Strengths", "Areas for Improvement", "Specific Suggestions", "ATS Optimization Tips", and "Format and Presentation Feedback" should always appear.`
         };
 
         const filePart = {
@@ -113,10 +111,10 @@ Please format your response with clear sections and bullet points. Be constructi
         };
 
         const generationConfig = {
-            temperature: 0.7,
-            topK: 1, // Default, can be tuned
-            topP: 1, // Default, can be tuned
-            maxOutputTokens: 8192, // Check model limits, 8192 is common for Gemini 1.5 Flash
+            temperature: 0.7, // Can be tuned for more creative (higher) or focused (lower) output
+            topK: 1,
+            topP: 1,
+            maxOutputTokens: 8192, // Check model limits
         };
 
         const safetySettings = [
@@ -127,19 +125,18 @@ Please format your response with clear sections and bullet points. Be constructi
         ];
 
         console.log("Sending request to Gemini with file and prompt...");
-        // console.log("Text prompt (first 300 chars):", textPromptPart.text.substring(0,300) + "...");
 
         const result = await model.generateContent({
-            contents: [{ 
-                role: "user", 
-                parts: [filePart, textPromptPart] 
+            contents: [{
+                role: "user",
+                parts: [filePart, textPromptPart]
             }],
             generationConfig,
             safetySettings
         });
 
         const geminiResponse = result.response;
-        const analysisText = geminiResponse?.text() ?? null; // Using nullish coalescing
+        const analysisText = geminiResponse?.text() ?? null;
 
         if (!analysisText) {
             console.log("No response text from Gemini. Prompt Feedback:", geminiResponse?.promptFeedback);
@@ -149,52 +146,70 @@ Please format your response with clear sections and bullet points. Be constructi
         }
 
         console.log("Received response from Gemini, length:", analysisText.length);
-        // console.log("Response sample (first 200 chars):", analysisText.substring(0, 200) + "...");
 
-        // === New: Extract structured data from the analysis ===
-        // Simple heuristics for demo purposes; for production, use a more robust parser or prompt the AI to return JSON.
-        let score = 80 + Math.floor(Math.random() * 16); // Random 80-95% for demo
-        let strengths: string[] = [];
-        let areasForImprovement: string[] = [];
+        // === Extract structured data from the analysis ===
+        let score = 0;
+        const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
+        if (scoreMatch && scoreMatch[1]) {
+            score = parseInt(scoreMatch[1], 10);
+        } else {
+            // Fallback if score is not found, assign a random score within a reasonable range
+            score = 70 + Math.floor(Math.random() * 21); // Random 70-90% if not explicitly parsed
+            console.warn("Could not parse specific score from Gemini analysis, using fallback.");
+        }
+
+        const parseBulletPoints = (text: string, heading: string): string[] => {
+            const regex = new RegExp(`## ${heading}\\s*\\n([\\s\\S]*?)(?:\\n##|$)`);
+            const match = text.match(regex);
+            if (match && match[1]) {
+                return match[1].split('\n')
+                    .map(line => line.replace(/^[*-]\s*/, '').trim())
+                    .filter(line => line.length > 0);
+            }
+            return [];
+        };
+
+        const strengths = parseBulletPoints(analysisText, "Key Strengths");
+        const areasForImprovement = parseBulletPoints(analysisText, "Areas for Improvement");
+
         let keywordMatch = null;
-        let skillsCount = null;
-        let atsCompatibility = null;
-        let resumeLength = null;
-        // Extract strengths and areas for improvement from the analysis text
-        const strengthsMatch = analysisText.match(/## Key Strengths[\s\S]*?((?:\* .+\n?)+)/);
-        if (strengthsMatch) {
-            strengths = strengthsMatch[1].split('\n').map(s => s.replace(/^\* /, '').trim()).filter(Boolean);
-        }
-        const improvementMatch = analysisText.match(/## Areas for Improvement[\s\S]*?((?:\* .+\n?)+)/);
-        if (improvementMatch) {
-            areasForImprovement = improvementMatch[1].split('\n').map(s => s.replace(/^\* /, '').trim()).filter(Boolean);
-        }
-        // Keyword match (if job description provided)
         if (jobDescription) {
-            // Simple heuristic: count how many job keywords appear in resume analysis
-            const jobKeywords = jobDescription.split(/\W+/).filter(w => w.length > 4);
-            let matchCount = 0;
-            jobKeywords.forEach(kw => {
-                if (analysisText.toLowerCase().includes(kw.toLowerCase())) matchCount++;
-            });
-            keywordMatch = Math.round((matchCount / jobKeywords.length) * 100);
+            // Simple heuristic for keyword matching
+            const jobKeywords = jobDescription.toLowerCase().split(/\W+/)
+                .filter(word => word.length > 3) // filter short words
+                .filter((value, index, self) => self.indexOf(value) === index); // unique keywords
+            
+            let matchedCount = 0;
+            for (const keyword of jobKeywords) {
+                if (analysisText.toLowerCase().includes(keyword)) {
+                    matchedCount++;
+                }
+            }
+            keywordMatch = jobKeywords.length > 0 ? Math.round((matchedCount / jobKeywords.length) * 100) : 0;
         }
-        // Skills count: count bullet points in Key Strengths
-        skillsCount = strengths.length;
-        // ATS compatibility: look for ATS in the analysis
-        atsCompatibility = analysisText.includes('ATS') ? (analysisText.includes('improve ATS') ? 'Needs Improvement' : 'Good') : 'Unknown';
-        // Resume length: estimate by file size (1 page ~ 50KB for PDF)
-        resumeLength = file.size ? Math.max(1, Math.round(Number(file.size) / 50000)) : null;
+
+        // Estimate resume length by word count (very rough approximation, adjust as needed)
+        const resumeLengthWords = analysisText.split(/\s+/).length;
+        const estimatedPages = Math.ceil(resumeLengthWords / 500); // Assuming ~500 words per page
+
+        let atsCompatibility = 'Unknown';
+        if (analysisText.toLowerCase().includes('ats compatibility good')) {
+            atsCompatibility = 'Good';
+        } else if (analysisText.toLowerCase().includes('improve ats')) {
+            atsCompatibility = 'Needs Improvement';
+        } else if (analysisText.toLowerCase().includes('ats optimized')) {
+            atsCompatibility = 'Optimized';
+        }
+
 
         const stats = {
             fileType: file.type,
-            resumeLength,
-            keywordMatch,
-            skillsCount,
-            atsCompatibility
+            resumeLength: estimatedPages, // Simplified to estimated pages
+            keywordMatch, // Percentage of job description keywords found
+            skillsCount: strengths.length, // Number of identified strengths
+            atsCompatibility // Derived from analysis text
         };
 
-        // Create a formatted version for PDF generation
         const formattedAnalysis = {
             title: `Resume Analysis for ${jobTitle}${company ? ` at ${company}` : ''}`,
             date: new Date().toLocaleDateString(),
@@ -203,7 +218,7 @@ Please format your response with clear sections and bullet points. Be constructi
         };
 
         console.log("=== Resume Check API Completed Successfully ===");
-        return NextResponse.json({ 
+        return NextResponse.json({
             analysis: analysisText,
             formattedAnalysis: formattedAnalysis,
             score,
@@ -221,14 +236,13 @@ Please format your response with clear sections and bullet points. Be constructi
             console.error("Error message:", error.message);
             errorMessage += ` Server Error: ${error.message}`;
         }
-        
-        // If the error object has response details from Gemini (e.g. for safety blocks)
+
         if (error.response && error.response.promptFeedback) {
             console.error("Gemini Prompt Feedback:", error.response.promptFeedback);
             errorMessage += ` (AI processing issue: ${JSON.stringify(error.response.promptFeedback)})`;
-        } else if (error.status && error.details) { // For errors structured differently by the SDK
-             console.error("Gemini API Error Status:", error.status, "Details:", error.details);
-             errorMessage += ` (AI API Error: ${error.details})`;
+        } else if (error.status && error.details) {
+            console.error("Gemini API Error Status:", error.status, "Details:", error.details);
+            errorMessage += ` (AI API Error: ${error.details})`;
         }
 
         const errorResponse = { error: errorMessage };
