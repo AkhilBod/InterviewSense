@@ -126,10 +126,10 @@ export default function DashboardPage() {
           <div className="bg-zinc-800 rounded-2xl shadow-xl p-10 flex flex-col items-start gap-6 hover:bg-zinc-700 transition-colors min-h-[260px]">
             <Brain className="h-12 w-12 text-green-400" />
             <div>
-              <h2 className="font-semibold text-2xl">Technical Interview</h2>
-              <p className="text-zinc-400 text-base mb-6">Sharpen your technical skills with coding and system design questions.</p>
+              <h2 className="font-semibold text-2xl">Technical Assessment</h2>
+              <p className="text-white text-base mb-6">Practice real LeetCode-style coding questions tailored to your company, role, and difficulty.</p>
               <Button asChild size="lg" className="bg-green-600 hover:bg-green-500 rounded-full px-8 py-3">
-                <Link href="/start?type=technical">Start</Link>
+                <Link href="/dashboard/technical">Start</Link>
               </Button>
             </div>
           </div>

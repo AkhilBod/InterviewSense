@@ -60,7 +60,6 @@ const interviewTypes = [
 
 const interviewStages = [
   'Initial Screening',
-  'Technical Assessment',
   'Team Interview',
   'Final Round',
   'Executive Interview'
