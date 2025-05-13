@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight, AlertCircle, LogOut, User } from 'lucide-react'
+import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight, AlertCircle, LogOut, User, Brain } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FcGoogle } from 'react-icons/fc'
 import { signIn, signOut, useSession } from 'next-auth/react'
@@ -157,7 +157,7 @@ export default function SignupPage() {
         <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+              <Brain className="h-6 w-6 text-blue-500" />
               <span className="font-semibold text-white">InterviewSense</span>
             </Link>
             <nav>
@@ -250,7 +250,7 @@ export default function SignupPage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <Brain className="h-5 w-5 text-blue-500" />
                 <span className="font-semibold text-white">InterviewSense</span>
               </div>
               <div className="text-sm text-zinc-500">
@@ -269,7 +269,7 @@ export default function SignupPage() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-blue-500" />
+            <Brain className="h-6 w-6 text-blue-500" />
             <span className="font-semibold text-white">InterviewSense</span>
           </Link>
           <nav className="flex items-center gap-4">
@@ -457,7 +457,7 @@ export default function SignupPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-blue-500" />
+              <Brain className="h-5 w-5 text-blue-500" />
               <span className="font-semibold text-white">InterviewSense</span>
             </div>
             <div className="text-sm text-zinc-500">

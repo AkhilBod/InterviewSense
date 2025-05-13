@@ -64,7 +64,7 @@ export default function DashboardPage() {
         {/* Header with profile dropdown */}
         <header className="mb-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-blue-500" />
+            <Brain className="h-6 w-6 text-blue-500" />
             <h1 className="text-3xl font-bold">Dashboard</h1>
           </div>
           <nav className="flex items-center gap-4">
