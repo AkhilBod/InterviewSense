@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +13,12 @@ import {
   AvatarImage
 } from '@/components/ui/avatar';
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
+import { toast } from "@/components/ui/use-toast";
 
 export default function ResultsPage() {
-  const interviewSummary = {
+  const [isLoading, setIsLoading] = useState(true);
+  const [interviewSummary, setInterviewSummary] = useState<InterviewSummary>({
     jobRole: "Software Engineer",
     company: "Google",
     date: new Date().toLocaleDateString(),
@@ -39,7 +43,53 @@ export default function ResultsPage() {
       missed: 7,
       mostImpactful: ["algorithms", "distributed systems", "scalability"]
     }
-  };
+  });
+  
+  useEffect(() => {
+    const loadInterviewSummary = async () => {
+      setIsLoading(true);
+      try {
+        // Check if we have answers stored
+        const answersJson = localStorage.getItem('interviewAnswers');
+        if (!answersJson) {
+          toast({
+            title: "No interview data found",
+            description: "Using sample data instead",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        // Generate the summary using all answers and resume
+        const summary = await generateInterviewSummary();
+        setInterviewSummary(summary);
+        
+        // Check if resume was used
+        const resumeText = localStorage.getItem('resume') || '';
+        const hasResume = resumeText.trim() !== '';
+        
+        if (hasResume) {
+          toast({
+            title: "Resume-enhanced analysis",
+            description: "Your interview analysis includes resume context",
+            variant: "default",
+          });
+        }
+      } catch (error) {
+        console.error('Error loading interview summary:', error);
+        toast({
+          title: "Error generating summary",
+          description: "Using sample data instead",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadInterviewSummary();
+  }, []);
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "text-green-500";
@@ -55,6 +105,18 @@ export default function ResultsPage() {
     return "bg-red-600";
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Analyzing your interview performance...</p>
+          <p className="mt-2 text-sm text-zinc-500">This may take a few moments...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <ProtectedRoute>
       <div className="flex flex-col min-h-screen bg-slate-900 text-white">

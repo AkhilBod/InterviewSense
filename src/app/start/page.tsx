@@ -86,8 +86,15 @@ export default function StartPage() {
     
     // Handle resume file if present
     if (jobDetails.resume) {
-      // You might want to handle the resume file differently
-      // For now, we'll just store the filename
+      // Read the resume file content
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const resumeText = e.target?.result;
+        if (typeof resumeText === 'string') {
+          localStorage.setItem('resume', resumeText);
+        }
+      };
+      reader.readAsText(jobDetails.resume);
       localStorage.setItem('resumeFileName', jobDetails.resume.name)
     }
 
