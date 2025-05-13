@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, ChevronLeft, ChevronRight, LightbulbIcon, Mic, Clock, BarChart, FileText } from 'lucide-react';
+import { MessageSquare, ChevronLeft, ChevronRight, LightbulbIcon, Mic, Clock, BarChart, FileText, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -96,7 +96,7 @@ export default function Questionnaire() {
         <header className="border-b border-slate-800">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+              <Brain className="h-6 w-6 text-blue-500" />
               <span className="font-bold text-xl">InterviewSense</span>
             </div>
             {/* Profile dropdown with sign out */}
@@ -333,7 +333,7 @@ export default function Questionnaire() {
             <div className="max-w-md w-full flex flex-col items-center justify-center">
               <div className="flex flex-col items-center justify-center">
                 <div className="rounded-full bg-blue-500 h-24 w-24 flex items-center justify-center mb-6 shadow-lg">
-                  <MessageSquare className="h-12 w-12 text-white" />
+                  <Brain className="h-12 w-12 text-white" />
                 </div>
                 <h2 className="text-xl font-semibold text-white mb-2 text-center">Welcome to InterviewSense</h2>
                 <p className="text-slate-300 text-center max-w-xs">

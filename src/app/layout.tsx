@@ -10,6 +10,15 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'InterviewSense',
   description: 'AI-powered interview preparation',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    apple: { url: '/apple-icon.svg', type: 'image/svg+xml' }
+  },
+  manifest: '/manifest.json',
+  themeColor: '#3b82f6',
 }
 
 export default function RootLayout({

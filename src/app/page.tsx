@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, MessageSquare } from "lucide-react"
+import { ArrowRight, MessageSquare, Brain } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, UserCog, RotateCcw, Quote, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -35,7 +35,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-blue-500" />
+            <Brain className="h-6 w-6 text-blue-500" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">

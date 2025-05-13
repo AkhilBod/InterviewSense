@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer } from 'lucide-react';
+import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, Brain } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -124,7 +124,7 @@ export default function ResultsPage() {
         <header className="border-b border-slate-800">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+              <Brain className="h-6 w-6 text-blue-500" />
               <span className="font-bold text-xl">InterviewSense</span>
             </div>
             <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">

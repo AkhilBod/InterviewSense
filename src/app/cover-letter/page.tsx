@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Brain } from "lucide-react";
 import jsPDF from 'jspdf'; // Import jsPDF
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -136,7 +136,7 @@ export default function CoverLetterPage() {
         <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+              <Brain className="h-6 w-6 text-blue-500" />
               <span className="font-semibold text-white">InterviewSense</span>
             </Link>
             <nav className="flex items-center gap-4">
