@@ -74,6 +74,7 @@ export default function InterviewPage() {
   const [visibleQuestions, setVisibleQuestions] = useState<Array<{ id: number; question: string; type: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('Preparing your interview...');
+  const [allAnswers, setAllAnswers] = useState<{[key: number]: string}>({});
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -105,8 +106,8 @@ export default function InterviewPage() {
         
         setLoadingMessage('Finalizing your interview...');
         
-        // Validate that we have exactly 100 questions from Gemini
-        if (!Array.isArray(behavioralQuestions) || behavioralQuestions.length !== 100) {
+        // Validate that we have exactly 20 questions from Gemini
+        if (!Array.isArray(behavioralQuestions) || behavioralQuestions.length !== 20) {
           throw new Error('Invalid number of questions received from API');
         }
 
@@ -118,13 +119,17 @@ export default function InterviewPage() {
         }));
 
         // Validate final question count
-        if (allQuestions.length !== 100) {
+        if (allQuestions.length !== 20) {
           throw new Error('Invalid total number of questions');
         }
 
         setQuestions(allQuestions);
-        // Initially show first 10 questions
-        setVisibleQuestions(allQuestions.slice(0, 10));
+        // Show all 20 questions
+        setVisibleQuestions(allQuestions);
+        
+        // Save visible questions to localStorage for later use in results page
+        localStorage.setItem('visibleQuestions', JSON.stringify(allQuestions));
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -138,13 +143,7 @@ export default function InterviewPage() {
     fetchQuestions();
   }, []);
 
-  const loadMoreQuestions = () => {
-    const currentLength = visibleQuestions.length;
-    if (currentLength < questions.length) {
-      const nextQuestions = questions.slice(currentLength, currentLength + 10);
-      setVisibleQuestions([...visibleQuestions, ...nextQuestions]);
-    }
-  };
+  // No longer need loadMoreQuestions as we display all 20 questions by default
 
   const currentQuestion = visibleQuestions[currentQuestionIndex] || mockQuestions[currentQuestionIndex];
   const totalQuestions = visibleQuestions.length || mockQuestions.length;
@@ -188,6 +187,13 @@ export default function InterviewPage() {
         setCompletedQuestions([...completedQuestions, currentQuestion.id]);
       }
 
+      // Store the answer for this question
+      const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
+      setAllAnswers(updatedAnswers);
+      
+      // Save to localStorage
+      localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+
       if (currentQuestionIndex < totalQuestions - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setAnswer('');
@@ -201,18 +207,22 @@ export default function InterviewPage() {
       if (!completedQuestions.includes(currentQuestion.id)) {
         setCompletedQuestions([...completedQuestions, currentQuestion.id]);
       }
+      
+      // Store the final answer
+      const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
+      setAllAnswers(updatedAnswers);
+      
+      // Save all answers to localStorage
+      localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+
+      // Save completed questions count for results page
+      localStorage.setItem('completedQuestionsCount', String(completedQuestions.length + 1));
+      
       router.push('/results');
     }
   };
-
-  const handleGenerateMore = () => {
-    if (visibleQuestions.length < questions.length) {
-      loadMoreQuestions();
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setAnswer('');
-      setFeedbackVisible(false);
-    }
-  };
+  
+  // No longer need handleGenerateMore as we display all 20 questions by default
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
@@ -359,14 +369,7 @@ export default function InterviewPage() {
                           <>Complete <Save className="h-4 w-4" /></>
                         )}
                       </Button>
-                      {currentQuestionIndex === totalQuestions - 1 && visibleQuestions.length < questions.length && (
-                        <Button
-                          onClick={handleGenerateMore}
-                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
-                        >
-                          Generate More
-                        </Button>
-                      )}
+                      {/* All questions are shown by default */}
                     </div>
                   </CardFooter>
                 </Card>
@@ -374,7 +377,7 @@ export default function InterviewPage() {
 
               <div className="lg:col-span-1">
                 {feedbackVisible ? (
-                  <InterviewFeedback answer={answer} />
+                  <InterviewFeedback answer={answer} question={questions[currentQuestionIndex]?.question} />
                 ) : (
                   <Card className="bg-slate-800 border-slate-700 text-slate-100">
                     <CardHeader>

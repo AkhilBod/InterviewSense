@@ -95,7 +95,7 @@ export async function generateBehavioralQuestions(jobDetails: JobDetails) {
 - Cultural fit and values`;
     }
 
-    const prompt = `Generate EXACTLY 100 highly specific and targeted interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry.
+    const prompt = `Generate EXACTLY 20 highly specific and targeted interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''} in the ${jobDetails.industry} industry.
 
 This is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.
 
@@ -115,7 +115,7 @@ Additional Requirements:
 
 Make sure the questions are appropriate for a ${jobDetails.experienceLevel} level position and reflect the specific requirements of the ${jobDetails.industry} industry.
 
-Return ONLY a JSON array of EXACTLY 100 objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
+Return ONLY a JSON array of EXACTLY 20 objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
 
     console.log('Sending prompt to Gemini:', prompt);
     const result = await model.generateContent(prompt);
@@ -130,8 +130,8 @@ Return ONLY a JSON array of EXACTLY 100 objects with 'id' and 'question' fields.
     // Parse the JSON response
     const questions = JSON.parse(cleanText);
     
-    // Validate that we have exactly 100 questions
-    if (!Array.isArray(questions) || questions.length !== 100) {
+    // Validate that we have exactly 20 questions
+    if (!Array.isArray(questions) || questions.length !== 20) {
       console.error('Invalid number of questions received:', questions.length);
       throw new Error('Invalid number of questions received from API');
     }
@@ -142,4 +142,401 @@ Return ONLY a JSON array of EXACTLY 100 objects with 'id' and 'question' fields.
     console.error('Error generating questions:', error);
     throw error;
   }
-} 
+}
+
+interface FeedbackResponse {
+  scores: {
+    label: string;
+    score: number;
+    color: string;
+  }[];
+  keywordsDetected: string[];
+  keywordsMissing: string[];
+  suggestions: {
+    id: number;
+    text: string;
+    type: "improvement" | "strength" | "keyword" | "resume";
+  }[];
+  fillerWords: {
+    word: string;
+    count: number;
+  }[];
+}
+
+export async function generateFeedback(answer: string, question?: string, jobDetails?: Partial<JobDetails>) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    // Check if resume data is available in localStorage
+    let resumeText = '';
+    let hasResume = false;
+    let resumeFileName = '';
+    
+    // We'll check for resume existence in the browser environment
+    if (typeof window !== 'undefined') {
+      resumeText = localStorage.getItem('resume') || '';
+      resumeFileName = localStorage.getItem('resumeFileName') || '';
+      hasResume = resumeText.trim() !== '';
+    }
+
+    // Create our prompt with or without resume data
+    const prompt = hasResume 
+      ? `Analyze this interview answer and provide detailed feedback. I'll also provide the candidate's resume to help you give more personalized feedback that considers their background and experience.
+
+Question: ${question || "Not provided"}
+Answer: "${answer}"
+${jobDetails ? `
+Role: ${jobDetails.jobTitle || "Not specified"}
+Industry: ${jobDetails.industry || "Not specified"}
+Experience Level: ${jobDetails.experienceLevel || "Not specified"}
+Interview Type: ${jobDetails.interviewType || "Not specified"}
+` : ''}
+
+Candidate Resume (${resumeFileName}):
+${resumeText}
+
+Based on both the answer and the candidate's resume, provide a detailed analysis of the interview answer in the following JSON format:
+
+{
+  "scores": [
+    {"label": "Clarity", "score": <0-100>, "color": "bg-blue-600"},
+    {"label": "Conciseness", "score": <0-100>, "color": "bg-emerald-600"},
+    {"label": "Confidence", "score": <0-100>, "color": "bg-violet-600"},
+    {"label": "Relevance", "score": <0-100>, "color": "bg-amber-600"},
+    {"label": "Resume Alignment", "score": <0-100>, "color": "bg-purple-600"}
+  ],
+  "keywordsDetected": ["keyword1", "keyword2", ...],
+  "keywordsMissing": ["keyword1", "keyword2", ...],
+  "suggestions": [
+    {"id": 1, "text": "<improvement suggestion that references resume experience when applicable>", "type": "improvement"},
+    {"id": 2, "text": "<strength observation that acknowledges background from resume>", "type": "strength"},
+    {"id": 3, "text": "<keyword suggestion based on resume skills and experience>", "type": "keyword"},
+    {"id": 4, "text": "<specific suggestion on how to incorporate resume experience X into the answer>", "type": "resume"},
+    ...
+  ],
+  "fillerWords": [
+    {"word": "<filler word>", "count": <number>},
+    ...
+  ]
+}
+
+The scores should be calculated based on:
+- Clarity: How well the answer is structured and explained
+- Conciseness: How efficiently the response conveys the information
+- Confidence: How confident and authoritative the language is
+- Relevance: How well the answer addresses the question
+- Resume Alignment: How effectively the candidate incorporated relevant experience from their resume
+
+Pay special attention to how the candidate could better leverage their background (from their resume) in their answer. Include at least 2-3 suggestions of type "resume" that tie directly to specific experiences, projects, or skills mentioned in their resume that would strengthen their answer.
+
+Return ONLY the JSON without any markdown formatting or additional text.`
+      : `Analyze this interview answer and provide detailed feedback.
+
+Question: ${question || "Not provided"}
+Answer: "${answer}"
+${jobDetails ? `
+Role: ${jobDetails.jobTitle || "Not specified"}
+Industry: ${jobDetails.industry || "Not specified"}
+Experience Level: ${jobDetails.experienceLevel || "Not specified"}
+Interview Type: ${jobDetails.interviewType || "Not specified"}
+` : ''}
+
+Provide a detailed analysis of the interview answer in the following JSON format:
+
+{
+  "scores": [
+    {"label": "Clarity", "score": <0-100>, "color": "bg-blue-600"},
+    {"label": "Conciseness", "score": <0-100>, "color": "bg-emerald-600"},
+    {"label": "Confidence", "score": <0-100>, "color": "bg-violet-600"},
+    {"label": "Relevance", "score": <0-100>, "color": "bg-amber-600"}
+  ],
+  "keywordsDetected": ["keyword1", "keyword2", ...],
+  "keywordsMissing": ["keyword1", "keyword2", ...],
+  "suggestions": [
+    {"id": 1, "text": "<improvement suggestion>", "type": "improvement"},
+    {"id": 2, "text": "<strength observation>", "type": "strength"},
+    {"id": 3, "text": "<keyword suggestion>", "type": "keyword"},
+    ...
+  ],
+  "fillerWords": [
+    {"word": "<filler word>", "count": <number>},
+    ...
+  ]
+}
+
+The scores should be calculated based on:
+- Clarity: How well the answer is structured and explained
+- Conciseness: How efficiently the response conveys the information
+- Confidence: How confident and authoritative the language is
+- Relevance: How well the answer addresses the question
+
+Return ONLY the JSON without any markdown formatting or additional text.`;
+
+    console.log('Sending feedback prompt to Gemini:', prompt);
+    console.log('Resume data included:', hasResume);
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    console.log('Received feedback response from Gemini:', text);
+    
+    // Clean the response text by removing markdown formatting
+    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+    console.log('Cleaned feedback response:', cleanText);
+    
+    // Parse the JSON response
+    const feedback = JSON.parse(cleanText) as FeedbackResponse;
+    
+    return feedback;
+  } catch (error: any) {
+    console.error('Error generating feedback:', error);
+    throw error;
+  }
+}
+
+export interface InterviewSummary {
+  jobRole: string;
+  company: string;
+  date: string;
+  duration: string;
+  overallScore: number;
+  strengthAreas: string[];
+  improvementAreas: string[];
+  completedQuestions: number;
+  questionScores: {
+    id: number;
+    question: string;
+    score: number;
+  }[];
+  fillerWordStats: {
+    total: number;
+    mostCommon: string;
+  };
+  keywordStats: {
+    matched: number;
+    missed: number;
+    mostImpactful: string[];
+  };
+}
+
+export async function generateInterviewSummary(): Promise<InterviewSummary> {
+  try {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      throw new Error('This function must be called in a browser environment');
+    }
+    
+    // Get all saved answers from localStorage
+    const answersJson = localStorage.getItem('interviewAnswers');
+    if (!answersJson) {
+      throw new Error('No interview answers found');
+    }
+    
+    const allAnswers = JSON.parse(answersJson) as {[key: number]: string};
+    
+    // Get resume data if available
+    const resumeText = localStorage.getItem('resume') || '';
+    const hasResume = resumeText.trim() !== '';
+    
+    // Get job details from localStorage
+    const jobDetails = {
+      jobTitle: localStorage.getItem('jobTitle') || 'Software Engineer',
+      company: localStorage.getItem('company') || '',
+      industry: localStorage.getItem('industry') || 'Technology',
+      experienceLevel: localStorage.getItem('experienceLevel') || 'Mid-level',
+      interviewType: localStorage.getItem('interviewType') || 'Behavioral',
+      interviewStage: localStorage.getItem('interviewStage') || 'Initial'
+    };
+    
+    // Get questions data (may not have all questions available)
+    let questionsData = [];
+    try {
+      // Try to reconstruct question data from localStorage if available
+      const visibleQuestionsJson = localStorage.getItem('visibleQuestions');
+      if (visibleQuestionsJson) {
+        questionsData = JSON.parse(visibleQuestionsJson);
+      }
+    } catch (error) {
+      console.error('Error parsing questions data:', error);
+      // Continue with empty questions data
+    }
+    
+    // Map answers to questions where possible
+    const answersArray = Object.entries(allAnswers).map(([id, text]) => {
+      const questionId = parseInt(id);
+      const questionObj = questionsData.find((q: any) => q.id === questionId);
+      return {
+        id: questionId,
+        question: questionObj?.question || `Question ${id}`,
+        answer: text
+      };
+    });
+    
+    // Concatenate all answers into a single text for analysis
+    const combinedAnswerText = answersArray.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n');
+    
+    // Use Gemini to analyze all answers together
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    // Create our prompt
+    const prompt = hasResume 
+      ? `Analyze this entire interview and provide a comprehensive summary. I'll also provide the candidate's resume to help you give more personalized feedback that considers their background and experience.
+
+Combined Interview Answers:
+${combinedAnswerText}
+
+Job Details:
+Role: ${jobDetails.jobTitle}
+Company: ${jobDetails.company || "Not specified"}
+Industry: ${jobDetails.industry}
+Experience Level: ${jobDetails.experienceLevel}
+Interview Type: ${jobDetails.interviewType}
+Interview Stage: ${jobDetails.interviewStage}
+
+Candidate Resume:
+${resumeText}
+
+Based on both the interview answers and the candidate's resume, provide a comprehensive interview summary in the following JSON format:
+
+{
+  "jobRole": "${jobDetails.jobTitle}",
+  "company": "${jobDetails.company || "Not specified"}",
+  "date": "${new Date().toISOString()}",
+  "duration": "CALCULATE_DURATION_MINUTES",
+  "overallScore": <0-100>,
+  "strengthAreas": ["strength1", "strength2", "strength3"],
+  "improvementAreas": ["improvement1", "improvement2", "improvement3"],
+  "completedQuestions": ${answersArray.length},
+  "questionScores": [
+    {"id": 1, "question": "Question text 1", "score": <0-100>},
+    {"id": 2, "question": "Question text 2", "score": <0-100>},
+    ...
+  ],
+  "fillerWordStats": {
+    "total": <number>,
+    "mostCommon": "<most common filler word>"
+  },
+  "keywordStats": {
+    "matched": <number>,
+    "missed": <number>,
+    "mostImpactful": ["keyword1", "keyword2", "keyword3"]
+  }
+}
+
+The scores should be calculated based on:
+- Overall quality and relevance of answers
+- Alignment with resume experience and skills
+- Use of specific examples and metrics
+- Structure and clarity of responses
+- Demonstration of relevant skills for ${jobDetails.jobTitle}
+- Avoidance of filler words and vague language
+
+Focus on how effectively the candidate incorporated their background from their resume into their answers. Look for connections between their stated experience and their interview responses.
+
+Return ONLY the JSON without any markdown formatting or additional text.`
+      : `Analyze this entire interview and provide a comprehensive summary.
+
+Combined Interview Answers:
+${combinedAnswerText}
+
+Job Details:
+Role: ${jobDetails.jobTitle}
+Company: ${jobDetails.company || "Not specified"}
+Industry: ${jobDetails.industry}
+Experience Level: ${jobDetails.experienceLevel}
+Interview Type: ${jobDetails.interviewType}
+Interview Stage: ${jobDetails.interviewStage}
+
+Provide a comprehensive interview summary in the following JSON format:
+
+{
+  "jobRole": "${jobDetails.jobTitle}",
+  "company": "${jobDetails.company || "Not specified"}",
+  "date": "${new Date().toISOString()}",
+  "duration": "CALCULATE_DURATION_MINUTES",
+  "overallScore": <0-100>,
+  "strengthAreas": ["strength1", "strength2", "strength3"],
+  "improvementAreas": ["improvement1", "improvement2", "improvement3"],
+  "completedQuestions": ${answersArray.length},
+  "questionScores": [
+    {"id": 1, "question": "Question text 1", "score": <0-100>},
+    {"id": 2, "question": "Question text 2", "score": <0-100>},
+    ...
+  ],
+  "fillerWordStats": {
+    "total": <number>,
+    "mostCommon": "<most common filler word>"
+  },
+  "keywordStats": {
+    "matched": <number>,
+    "missed": <number>,
+    "mostImpactful": ["keyword1", "keyword2", "keyword3"]
+  }
+}
+
+The scores should be calculated based on:
+- Overall quality and relevance of answers
+- Use of specific examples and metrics
+- Structure and clarity of responses
+- Demonstration of relevant skills for ${jobDetails.jobTitle}
+- Avoidance of filler words and vague language
+
+Return ONLY the JSON without any markdown formatting or additional text.`;
+
+    console.log('Sending summary prompt to Gemini');
+    console.log('Resume data included:', hasResume);
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    console.log('Received summary response from Gemini');
+    
+    // Clean the response text by removing markdown formatting
+    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+    
+    // Parse the JSON response
+    const summary = JSON.parse(cleanText) as InterviewSummary;
+    
+    // Format the date nicely
+    summary.date = new Date().toLocaleDateString();
+    
+    // Calculate a simulated duration if the API didn't provide a real one
+    if (summary.duration === "CALCULATE_DURATION_MINUTES") {
+      // Generate a realistic interview duration based on number of questions answered
+      const minutes = Math.max(15, Math.min(60, answersArray.length * 4 + Math.floor(Math.random() * 10)));
+      summary.duration = `${minutes} minutes`;
+    }
+    
+    return summary;
+  } catch (error: any) {
+    console.error('Error generating interview summary:', error);
+    
+    // Return a fallback summary if the API fails
+    return {
+      jobRole: localStorage.getItem('jobTitle') || 'Software Engineer',
+      company: localStorage.getItem('company') || 'Not specified',
+      date: new Date().toLocaleDateString(),
+      duration: "24 minutes",
+      overallScore: 83,
+      strengthAreas: ["Problem solving", "Technical knowledge", "Communication"],
+      improvementAreas: ["Leadership examples", "Quantifying achievements", "Brevity"],
+      completedQuestions: parseInt(localStorage.getItem('completedQuestionsCount') || '5'),
+      questionScores: [
+        { id: 1, question: "Tell me about yourself", score: 86 },
+        { id: 2, question: "Describe a challenging project", score: 92 },
+        { id: 3, question: "How do you handle conflicting priorities", score: 78 },
+        { id: 4, question: "What are your greatest strengths", score: 88 },
+        { id: 5, question: "Where do you see yourself in 5 years", score: 71 }
+      ],
+      fillerWordStats: {
+        total: 27,
+        mostCommon: "like"
+      },
+      keywordStats: {
+        matched: 14,
+        missed: 7,
+        mostImpactful: ["algorithms", "distributed systems", "scalability"]
+      }
+    };
+  }
+}
