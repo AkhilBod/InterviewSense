@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, BarChart, MessageSquare, ChevronLeft, Download, Printer, Share2, Brain } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { toast } from "@/components/ui/use-toast";
+import { exportToPDF, printReport, shareReport, formatTechnicalReportForSharing } from "@/lib/export";
 
 export interface TechnicalAssessmentResult {
   company: string;
@@ -278,7 +279,7 @@ export default function TechnicalAssessmentResultsPage() {
               </Button>
             </div>
 
-            <div className="max-w-5xl mx-auto">
+            <div id="technical-results-content" className="max-w-5xl mx-auto">
               {/* Summary Card */}
               <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
                 <CardHeader className="pb-4 border-b border-slate-700">
@@ -321,13 +322,31 @@ export default function TechnicalAssessmentResultsPage() {
                 </CardContent>
                 <CardFooter className="pt-0">
                   <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={() => exportToPDF('technical-results-content', `Technical_Assessment_${result.role.replace(/\s+/g, '_')}_${result.date}`)}
+                    >
                       <Download className="h-4 w-4" /> Download Report
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={printReport}
+                    >
                       <Printer className="h-4 w-4" /> Print
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={() => shareReport(
+                        `Technical Assessment for ${result.role} at ${result.company}`,
+                        formatTechnicalReportForSharing(result)
+                      )}
+                    >
                       <Share2 className="h-4 w-4" /> Share
                     </Button>
                   </div>

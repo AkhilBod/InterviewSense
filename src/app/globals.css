@@ -40,3 +40,54 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Hide navigation elements and buttons when printing */
+  header,
+  nav,
+  footer,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure content is visible on white background */
+  #technical-results-content,
+  #interview-results-content,
+  #feedback-content {
+    background-color: white !important;
+    color: black !important;
+    padding: 20px !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Style cards for print */
+  .card {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    background-color: white !important;
+    color: black !important;
+    break-inside: avoid !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Improve progress bars and badges for print */
+  .progress, [class*="bg-"] {
+    background-color: #f1f1f1 !important;
+    border: 1px solid #ddd !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Print on separate pages */
+  .page-break {
+    page-break-before: always !important;
+  }
+}

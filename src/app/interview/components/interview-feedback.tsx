@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { Bookmark, RefreshCw, CheckCircle, AlertCircle, Key, User } from "lucide-react"
+import { Bookmark, RefreshCw, CheckCircle, AlertCircle, Key, User, Download, Printer, Share2 } from "lucide-react"
 import { generateFeedback } from "@/lib/gemini"
 import { toast } from "@/components/ui/use-toast"
+import { exportToPDF, printReport, shareReport } from "@/lib/export"
 
 type FeedbackScore = {
   label: string
@@ -256,7 +257,7 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div id="feedback-content" className="space-y-6">
       <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -403,13 +404,30 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-center pt-2">
+      <div className="flex justify-center gap-2 pt-2">
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full px-6"
+          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
+          onClick={() => exportToPDF('feedback-content', `Interview_Feedback_${new Date().toISOString().split('T')[0]}`)}
         >
-          <Bookmark className="h-4 w-4" /> Save Feedback
+          <Download className="h-3 w-3" /> Download
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
+          onClick={printReport}
+        >
+          <Printer className="h-3 w-3" /> Print
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
+          onClick={() => shareReport("Interview Feedback", "Interview feedback for this question")}
+        >
+          <Share2 className="h-3 w-3" /> Share
         </Button>
       </div>
     </div>
