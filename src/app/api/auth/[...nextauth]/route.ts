@@ -5,6 +5,8 @@ import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma' // Import the proper prisma instance
+import { applyRateLimit } from '@/lib/rate-limit'
+import { NextResponse } from 'next/server'
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -119,7 +121,7 @@ const handler = NextAuth({
   ],
   pages: {
     signIn: '/login', // Redirect users to your custom login page
-    signOut: 'http://localhost:3000/',      // Redirect users to homepage after sign out
+    signOut: '/',      // Redirect users to homepage after sign out (using relative URL)
     error: '/login',   // Redirect users to login page on error (e.g., OAuthAccountNotLinked if linking is off)
     verifyRequest: '/verify-request', // Page shown after email for magic link has been sent
     newUser: '/dashboard'  // Redirect new users to dashboard on their first sign-in (OAuth or Email)
@@ -146,4 +148,45 @@ const handler = NextAuth({
   debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 });
 
-export { handler as GET, handler as POST };
+// Apply rate limiting for different auth operations
+export async function GET(req: Request) {
+  // Less strict rate limiting for GET requests (sessions, etc.)
+  const { success, message } = await applyRateLimit(req, {
+    windowMs: 60 * 1000, // 1 minute
+    max: 60,  // 60 requests per minute (1 per second)
+    message: 'Too many authentication attempts, please try again later.',
+  });
+  
+  if (!success) {
+    return NextResponse.json({ error: message }, { status: 429 });
+  }
+  
+  return handler(req);
+}
+
+export async function POST(req: Request) {
+  // Clone the request to read its body for checking the specific auth operation
+  const clonedReq = req.clone();
+  let body;
+  try {
+    body = await clonedReq.json();
+  } catch (e) {
+    body = {};
+  }
+  
+  // Check if this is a login/signup attempt vs other operations
+  const isLoginAttempt = body?.csrfToken && (body?.email || body?.password);
+  
+  // Apply stricter rate limiting for login attempts
+  const { success, message } = await applyRateLimit(req, {
+    windowMs: isLoginAttempt ? 5 * 60 * 1000 : 60 * 1000, // 5 minutes for login, 1 minute for others
+    max: isLoginAttempt ? 5 : 10,  // 5 login attempts per 5 minutes, 10 per minute for others
+    message: 'Too many sign-in attempts, please try again later.',
+  });
+  
+  if (!success) {
+    return NextResponse.json({ error: message }, { status: 429 });
+  }
+  
+  return handler(req);
+};

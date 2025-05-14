@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import * as z from 'zod';
 import { nanoid } from 'nanoid';
 import { sendVerificationEmail } from '@/lib/email';
+import { applyRateLimit } from '@/lib/rate-limit';
 
 // Define validation schema
 const userSchema = z.object({
@@ -16,6 +17,17 @@ const userSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Apply rate limiting - strict for signup to prevent abuse
+    const { success, message } = await applyRateLimit(req, {
+      windowMs: 60 * 60 * 1000, // 1 hour window
+      max: 5, // 5 signup attempts per hour per IP
+      message: 'Too many signup attempts. Please try again later.',
+    });
+    
+    if (!success) {
+      return NextResponse.json({ message }, { status: 429 });
+    }
+    
     const { email, password, name } = await req.json();
 
     // Validate input

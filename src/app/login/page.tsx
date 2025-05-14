@@ -240,7 +240,7 @@ export default function LoginPage() {
                   </div>
                   <DropdownMenuItem
                     className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                    onClick={() => signOut({ callbackUrl: 'http://localhost:3000/' })}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
