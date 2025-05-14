@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Brain } from 'lucide-react';
+import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Brain, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession, signOut } from 'next-auth/react';
@@ -31,9 +31,11 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet';
+import { toast } from "@/components/ui/use-toast";
 import InterviewFeedback from './components/interview-feedback';
 import { generateBehavioralQuestions } from '@/lib/gemini';
-import ProtectedRoute from '@/components/ProtectedRoute'
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { AssemblyAI } from 'assemblyai';
 
 const mockQuestions = [
   {
@@ -77,6 +79,16 @@ export default function InterviewPage() {
   const [allAnswers, setAllAnswers] = useState<{[key: number]: string}>({});
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  // Audio recording states and refs
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  
+  // AssemblyAI will be initialized in the transcription function
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -174,10 +186,116 @@ export default function InterviewPage() {
     return null;
   }
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    if (isRecording && answer === '') {
-      setAnswer("This is a simulated transcription of your answer.");
+  // Start or stop the recording process
+  const toggleRecording = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+      }
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = recorder;
+        audioChunksRef.current = [];
+        
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+        
+        recorder.onstop = async () => {
+          // Create a blob from audio chunks
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+          setAudioChunks(audioChunksRef.current);
+          
+          // Create a URL for the audio blob
+          const audioUrl = URL.createObjectURL(audioBlob);
+          setAudioUrl(audioUrl);
+          
+          // Start transcription
+          await transcribeAudio(audioBlob);
+        };
+        
+        recorder.start();
+        setIsRecording(true);
+        setMediaRecorder(recorder);
+        
+        toast({
+          title: "Recording started",
+          description: "Speak clearly into your microphone",
+        });
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        toast({
+          title: "Microphone Error",
+          description: "Could not access your microphone. Please check permissions.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+  
+  // Transcribe audio using AssemblyAI
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      setIsTranscribing(true);
+      toast({
+        title: "Transcribing audio",
+        description: "This may take a few moments...",
+      });
+      
+      // Convert blob to file
+      const file = new File([audioBlob], "audio-recording.wav", { type: "audio/wav" });
+      
+      // Initialize the AssemblyAI client
+      const client = new AssemblyAI({
+        apiKey: process.env.NEXT_PUBLIC_ASSEMBLYAI_API_KEY || '3e66f3d395eb4ca19c6755d06662fd5a'
+      });
+      
+      // Transcribe using the v4 API
+      const transcript = await client.transcripts.transcribe({
+        audio: file,
+        sentiment_analysis: true
+      });
+      
+      if (transcript && transcript.text) {
+        // Set the transcribed text as the answer and reset feedback visibility
+        setAnswer(transcript.text);
+        setFeedbackVisible(false);
+        
+        // Get sentiment analysis if available
+        let sentimentMessage = "";
+        if (transcript.sentiment_analysis_results && transcript.sentiment_analysis_results.length > 0) {
+          const sentimentResult = transcript.sentiment_analysis_results[0];
+          const sentiment = sentimentResult.sentiment;
+          const confidence = sentimentResult.confidence;
+          sentimentMessage = `Your answer has a ${sentiment.toLowerCase()} tone (${Math.round(confidence * 100)}% confidence).`;
+        }
+        
+        toast({
+          title: "Transcription complete",
+          description: sentimentMessage || "Your answer has been transcribed.",
+        });
+      } else {
+        toast({
+          title: "Transcription issue",
+          description: "Could not transcribe audio clearly. Please try again or type your answer.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast({
+        title: "Transcription failed",
+        description: "There was an error transcribing your audio. Please try again or type your answer.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTranscribing(false);
     }
   };
 
@@ -322,10 +440,15 @@ export default function InterviewPage() {
                           size="sm"
                           className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
                           onClick={toggleRecording}
+                          disabled={isTranscribing}
                         >
                           {isRecording ? (
                             <>
                               <MicOff className="h-4 w-4" /> Stop Recording
+                            </>
+                          ) : isTranscribing ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" /> Transcribing...
                             </>
                           ) : (
                             <>
@@ -334,9 +457,16 @@ export default function InterviewPage() {
                           )}
                         </Button>
                         <p className="text-xs text-slate-400">
-                          {isRecording ? "Recording in progress..." : "Click to start recording your answer"}
+                          {isRecording 
+                            ? "Recording in progress..." 
+                            : isTranscribing 
+                              ? "Transcribing your answer..." 
+                              : audioUrl 
+                                ? "Audio recorded and transcribed" 
+                                : "Click to start recording your answer"}
                         </p>
                       </div>
+                      {/* Audio player removed as requested */}
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-between">
