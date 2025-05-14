@@ -14,6 +14,7 @@ type FeedbackScore = {
   score: number
   color: string
   icon?: string
+  isAudio?: boolean
 }
 
 type Suggestion = {
@@ -99,6 +100,9 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
       setScores([
         { label: "Clarity", score: Math.floor(Math.random() * 30) + 70, color: "bg-blue-600" },
         { label: "Conciseness", score: Math.floor(Math.random() * 30) + 65, color: "bg-emerald-600" },
+        { label: "Vocal Tone", score: Math.floor(Math.random() * 25) + 70, color: "bg-purple-600", isAudio: true },
+        { label: "Speech Pace", score: Math.floor(Math.random() * 20) + 75, color: "bg-amber-600", isAudio: true },
+        { label: "Voice Clarity", score: Math.floor(Math.random() * 25) + 70, color: "bg-indigo-600", isAudio: true },
         { label: "Confidence", score: Math.floor(Math.random() * 30) + 60, color: "bg-violet-600" },
         { label: "Relevance", score: Math.floor(Math.random() * 30) + 75, color: "bg-amber-600" },
       ]);
@@ -129,6 +133,21 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
           text: "Include industry-specific terms relevant to the role",
           type: "keyword",
         },
+        {
+          id: 5,
+          text: "Your speaking pace was well-balanced and easy to follow",
+          type: "strength",
+        },
+        {
+          id: 6,
+          text: "Consider varying your vocal tone to emphasize key points",
+          type: "improvement",
+        },
+        {
+          id: 7,
+          text: "Reduce background noise when recording for clearer audio",
+          type: "improvement",
+        },
       ]);
 
       // Generate mock filler words
@@ -137,6 +156,9 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
         { word: "like", count: Math.floor(Math.random() * 6) + 2 },
         { word: "you know", count: Math.floor(Math.random() * 3) },
         { word: "so", count: Math.floor(Math.random() * 7) + 3 },
+        { word: "actually", count: Math.floor(Math.random() * 4) + 1 },
+        { word: "basically", count: Math.floor(Math.random() * 3) },
+        { word: "long pauses", count: Math.floor(Math.random() * 2) + 1 },
       ]);
     };
 
