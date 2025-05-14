@@ -15,6 +15,7 @@ import {
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
 import { toast } from "@/components/ui/use-toast";
+import { exportToPDF, printReport, shareReport, formatInterviewReportForSharing } from "@/lib/export";
 
 export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -144,7 +145,7 @@ export default function ResultsPage() {
               </Button>
             </div>
 
-            <div className="max-w-5xl mx-auto">
+            <div id="interview-results-content" className="max-w-5xl mx-auto">
               {/* Summary Card */}
               <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
                 <CardHeader className="pb-4 border-b border-slate-700">
@@ -206,13 +207,31 @@ export default function ResultsPage() {
                 </CardContent>
                 <CardFooter className="pt-0">
                   <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={() => exportToPDF('interview-results-content', `Interview_${interviewSummary.jobRole.replace(/\s+/g, '_')}_${interviewSummary.company.replace(/\s+/g, '_')}`)}
+                    >
                       <Download className="h-4 w-4" /> Download Report
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={printReport}
+                    >
                       <Printer className="h-4 w-4" /> Print
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      onClick={() => shareReport(
+                        `Interview Feedback for ${interviewSummary.jobRole} at ${interviewSummary.company}`,
+                        formatInterviewReportForSharing(interviewSummary)
+                      )}
+                    >
                       <Share2 className="h-4 w-4" /> Share
                     </Button>
                   </div>
