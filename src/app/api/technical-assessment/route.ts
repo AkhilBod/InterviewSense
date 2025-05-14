@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
+// Generate a technical interview question
 export async function POST(req: Request) {
   try {
     const { company, role, difficulty } = await req.json();
@@ -35,6 +36,101 @@ Format it exactly like a real LeetCode problem. Do NOT include solution template
     console.error('Error generating question:', error);
     return NextResponse.json(
       { error: 'Failed to generate question' },
+      { status: 500 }
+    );
+  }
+}
+
+// Analyze the submitted code solution and explanation
+export async function PUT(req: Request) {
+  try {
+    const { 
+      company, 
+      role, 
+      difficulty, 
+      question, 
+      code, 
+      explanation 
+    } = await req.json();
+
+    // Use Gemini 2.0 Flash for faster analysis
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    // Prompt for code analysis
+    const analysisPrompt = `
+You are a technical interviewer for ${company} evaluating a candidate for a ${role} position.
+The candidate has just solved the following ${difficulty} difficulty coding problem:
+
+${question}
+
+Their code solution is:
+\`\`\`
+${code}
+\`\`\`
+
+Their verbal explanation is:
+"${explanation}"
+
+Please analyze both the code and the explanation and provide:
+1. A score for the code (0-100) based on correctness, efficiency, readability, and best practices
+2. A score for the explanation (0-100) based on clarity, technical depth, and understanding
+3. Overall score (0-100)
+4. 2-3 specific strengths 
+5. 2-3 specific areas for improvement
+6. Detailed feedback on the code
+7. Detailed feedback on the explanation
+
+Format your response as valid JSON with the following structure:
+{
+  "codeScore": number,
+  "explanationScore": number,
+  "overallScore": number,
+  "strengths": string[],
+  "improvementAreas": string[],
+  "codeFeedback": string,
+  "explanationFeedback": string
+}
+`;
+
+    // Generate the analysis
+    const result = await model.generateContent(analysisPrompt);
+    const response = await result.response;
+    let analysisText = response.text();
+    
+    // Sometimes Gemini might wrap the JSON in markdown code blocks or add extra text
+    // Try to extract just the JSON part
+    const jsonRegex = /```json\s*([\s\S]*?)\s*```|(\{[\s\S]*\})/;
+    const match = analysisText.match(jsonRegex);
+    if (match) {
+      analysisText = match[1] || match[2];
+    }          // Parse the JSON response
+    try {
+      const analysis = JSON.parse(analysisText);
+      
+      // Ensure all expected fields are available
+      const validatedAnalysis = {
+        codeScore: analysis.codeScore || 0,
+        explanationScore: analysis.explanationScore || 0,
+        overallScore: analysis.overallScore || 0,
+        strengths: Array.isArray(analysis.strengths) ? analysis.strengths : ["Good effort"],
+        improvementAreas: Array.isArray(analysis.improvementAreas) ? analysis.improvementAreas : ["Practice more"],
+        codeFeedback: analysis.codeFeedback || "No specific code feedback available.",
+        explanationFeedback: analysis.explanationFeedback || "No specific explanation feedback available."
+      };
+      
+      console.log("Analysis response validated:", validatedAnalysis);
+      return NextResponse.json(validatedAnalysis);
+    } catch (parseError) {
+      console.error('Error parsing JSON from Gemini:', parseError);
+      return NextResponse.json(
+        { error: 'Failed to parse analysis result' },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Error analyzing solution:', error);
+    return NextResponse.json(
+      { error: 'Failed to analyze solution' },
       { status: 500 }
     );
   }

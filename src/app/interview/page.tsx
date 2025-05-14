@@ -98,7 +98,8 @@ export default function InterviewPage() {
         if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
           console.error('NEXT_PUBLIC_GEMINI_API_KEY is not set in environment variables');
           setQuestions(mockQuestions);
-          setVisibleQuestions(mockQuestions);
+          setVisibleQuestions(mockQuestions.slice(0, 5));
+          localStorage.setItem('allQuestions', JSON.stringify(mockQuestions));
           setIsLoading(false);
           return;
         }
@@ -136,18 +137,20 @@ export default function InterviewPage() {
         }
 
         setQuestions(allQuestions);
-        // Show all 20 questions
-        setVisibleQuestions(allQuestions);
+        // Show only the first 5 questions initially
+        setVisibleQuestions(allQuestions.slice(0, 5));
         
-        // Save visible questions to localStorage for later use in results page
-        localStorage.setItem('visibleQuestions', JSON.stringify(allQuestions));
+        // Save all questions to localStorage for later use
+        localStorage.setItem('allQuestions', JSON.stringify(allQuestions));
         
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching questions:', error);
         // Fallback to mock questions if API fails
         setQuestions(mockQuestions);
-        setVisibleQuestions(mockQuestions);
+        // Show only the first 5 mock questions initially
+        setVisibleQuestions(mockQuestions.slice(0, 5));
+        localStorage.setItem('allQuestions', JSON.stringify(mockQuestions));
         setIsLoading(false);
       }
     };
@@ -155,14 +158,50 @@ export default function InterviewPage() {
     fetchQuestions();
   }, []);
 
-  // No longer need loadMoreQuestions as we display all 20 questions by default
+  // Function to load the next batch of 5 questions
+  const loadMoreQuestions = () => {
+    const currentCount = visibleQuestions.length;
+    const nextBatch = questions.slice(currentCount, currentCount + 5);
+    
+    if (nextBatch.length > 0) {
+      // Add the next 5 questions to visible questions
+      setVisibleQuestions([...visibleQuestions, ...nextBatch]);
+      
+      // Move to the next question (first of the new batch)
+      setCurrentQuestionIndex(currentCount);
+      setAnswer('');
+      setFeedbackVisible(false);
+      
+      toast({
+        title: "New questions loaded",
+        description: `${nextBatch.length} more interview questions have been added.`,
+      });
+    }
+  };
+
+  // Function to complete the interview early
+  const completeEarly = () => {
+    // Save the answers we have so far
+    localStorage.setItem('interviewAnswers', JSON.stringify(allAnswers));
+    
+    // Save the questions that were actually seen and answered
+    localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
+    
+    // Save completed questions count for results page
+    localStorage.setItem('completedQuestionsCount', String(completedQuestions.length));
+    
+    // Navigate to results page
+    router.push('/results');
+  };
 
   const currentQuestion = visibleQuestions[currentQuestionIndex] || mockQuestions[currentQuestionIndex];
   const totalQuestions = visibleQuestions.length || mockQuestions.length;
 
   useEffect(() => {
-    setProgress(((currentQuestionIndex) / (totalQuestions - 1)) * 100);
-  }, [currentQuestionIndex, totalQuestions]);
+    // Calculate progress based on visible questions
+    const visibleQuestionsCount = visibleQuestions.length;
+    setProgress(((currentQuestionIndex) / (visibleQuestionsCount - 1)) * 100);
+  }, [currentQuestionIndex, visibleQuestions.length]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -333,6 +372,9 @@ export default function InterviewPage() {
       // Save all answers to localStorage
       localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
 
+      // Save the questions that were actually shown to localStorage for results page
+      localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
+      
       // Save completed questions count for results page
       localStorage.setItem('completedQuestionsCount', String(completedQuestions.length + 1));
       
@@ -408,7 +450,8 @@ export default function InterviewPage() {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2 text-slate-300">
                 <p className="text-sm font-medium">
-                  Question {currentQuestionIndex + 1} of {totalQuestions}
+                  Question {currentQuestionIndex + 1} of {visibleQuestions.length}
+                  {visibleQuestions.length < questions.length && <span className="text-xs text-slate-400"> (showing {visibleQuestions.length} of {questions.length} available)</span>}
                 </p>
                 <p className="text-sm">{completedQuestions.length} completed</p>
               </div>
@@ -479,27 +522,64 @@ export default function InterviewPage() {
                       <ChevronLeft className="h-4 w-4" /> Previous
                     </Button>
                     <div className="flex gap-2">
+                      {/* Show Load More button on multiples of 5, otherwise show feedback button */}
                       {answer.trim() !== '' && !feedbackVisible && (
+                        <>
+                          {((currentQuestionIndex + 1) % 5 === 0 && visibleQuestions.length < questions.length) ? (
+                            <Button
+                              variant="outline"
+                              onClick={loadMoreQuestions}
+                              className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                            >
+                              <RefreshCw className="h-4 w-4" /> Show 5 More
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              onClick={showFeedback}
+                              className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                            >
+                              <BarChart className="h-4 w-4" /> Get Feedback
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      
+                      {/* Show different buttons on multiples of 5 (except the final question) */}
+                      {((currentQuestionIndex + 1) % 5 === 0 && currentQuestionIndex !== visibleQuestions.length - 1) ? (
+                        <>
+                          <Button
+                            onClick={completeEarly}
+                            disabled={answer.trim() === ''}
+                            className="gap-2 bg-slate-700 hover:bg-slate-800 text-white"
+                          >
+                            <>Complete <Save className="h-4 w-4" /></>
+                          </Button>
+                          
+                          {/* Show "More Questions" button if there are more available */}
+                          {visibleQuestions.length < questions.length && (
+                            <Button
+                              onClick={loadMoreQuestions}
+                              disabled={answer.trim() === ''}
+                              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <>Next 5 <ChevronRight className="h-4 w-4" /></>
+                            </Button>
+                          )}
+                        </>
+                      ) : (
                         <Button
-                          variant="outline"
-                          onClick={showFeedback}
-                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                          onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
+                          disabled={answer.trim() === ''}
+                          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                         >
-                          <BarChart className="h-4 w-4" /> Get Feedback
+                          {currentQuestionIndex < visibleQuestions.length - 1 ? (
+                            <>Next <ChevronRight className="h-4 w-4" /></>
+                          ) : (
+                            <>Complete <Save className="h-4 w-4" /></>
+                          )}
                         </Button>
                       )}
-                      <Button
-                        onClick={currentQuestionIndex < totalQuestions - 1 ? handleNextQuestion : handleComplete}
-                        disabled={answer.trim() === ''}
-                        className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {currentQuestionIndex < totalQuestions - 1 ? (
-                          <>Next <ChevronRight className="h-4 w-4" /></>
-                        ) : (
-                          <>Complete <Save className="h-4 w-4" /></>
-                        )}
-                      </Button>
-                      {/* All questions are shown by default */}
                     </div>
                   </CardFooter>
                 </Card>
