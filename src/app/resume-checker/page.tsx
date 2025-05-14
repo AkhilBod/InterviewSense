@@ -439,13 +439,73 @@ export default function ResumeCheckerPage() {
                     </CardContent>
                     <CardFooter className="pt-0">
                       <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
-                        <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                          onClick={() => {
+                            if (resumeData) {
+                              // Create a text blob with the report data
+                              const reportContent = `
+# Resume Analysis Report for ${resumeData.jobTitle} position
+Date: ${new Date().toLocaleDateString()}
+Overall Score: ${resumeData.overallScore}%
+
+## Key Strengths
+${resumeData.strengths.map(s => `- ${s}`).join('\n')}
+
+## Areas for Improvement
+${resumeData.improvementAreas.map(a => `- ${a}`).join('\n')}
+
+## Full Analysis
+${resumeData.analysis}
+                              `.trim();
+                              
+                              const blob = new Blob([reportContent], { type: 'text/plain' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `ResumeAnalysis-${new Date().toISOString().slice(0, 10)}.txt`;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                            }
+                          }}
+                        >
                           <Download className="h-4 w-4" /> Download Report
                         </Button>
-                        <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                          onClick={() => {
+                            window.print();
+                          }}
+                        >
                           <Printer className="h-4 w-4" /> Print
                         </Button>
-                        <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                          onClick={() => {
+                            if (navigator.share && resumeData) {
+                              navigator.share({
+                                title: `Resume Analysis for ${resumeData.jobTitle} position`,
+                                text: `Check out my resume analysis from InterviewSense: Score ${resumeData.overallScore}%`,
+                                url: window.location.href
+                              }).catch(err => {
+                                console.error('Error sharing:', err);
+                                alert('Sharing failed. You can manually copy the URL and share it.');
+                              });
+                            } else {
+                              navigator.clipboard.writeText(window.location.href)
+                                .then(() => alert('Report link copied to clipboard!'))
+                                .catch(err => console.error('Failed to copy:', err));
+                            }
+                          }}
+                        >
                           <Share2 className="h-4 w-4" /> Share
                         </Button>
                       </div>
@@ -492,26 +552,18 @@ export default function ResumeCheckerPage() {
                       <CardTitle className="text-lg">What's Next?</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" onClick={handleBackToChecker}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center">
+                        <Button variant="outline" className="h-auto py-6 px-8 w-full flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" onClick={handleBackToChecker}>
                           <RefreshCw className="h-6 w-6 mb-2" />
                           <span className="text-base font-medium">Refine Resume</span>
                           <span className="text-xs text-slate-400 mt-1">Make edits and get new feedback</span>
                         </Button>
 
-                        <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
+                        <Button variant="outline" className="h-auto py-6 px-8 w-full flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
                           <Link href="/interview">
                             <MessageSquare className="h-6 w-6 mb-2" />
                             <span className="text-base font-medium">Practice Interview</span>
                             <span className="text-xs text-slate-400 mt-1">Prepare for your next interview</span>
-                          </Link>
-                        </Button>
-
-                        <Button className="h-auto py-6 flex flex-col bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                          <Link href="/upgrade">
-                            <FileText className="h-6 w-6 mb-2" />
-                            <span className="text-base font-medium">Get Expert Review</span>
-                            <span className="text-xs mt-1">Connect with a human resume expert</span>
                           </Link>
                         </Button>
                       </div>

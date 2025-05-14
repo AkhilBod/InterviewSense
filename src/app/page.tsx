@@ -68,13 +68,11 @@ export default function Home() {
                 <Button asChild variant="ghost" className="text-zinc-300 hover:text-white hover:bg-zinc-800/70">
                   <Link href="/login">Log in</Link>
                 </Button>
-                <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white">
-                  <button
-                    onClick={handleGetStartedClick}
-                    className="text-lg px-5 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
-                  >
-                    Get Started Free
-                  </button>
+                <Button 
+                  onClick={handleGetStartedClick} 
+                  className="bg-blue-600 hover:bg-blue-500 text-white"
+                >
+                  Get Started Free
                 </Button>
               </>
             )}
@@ -96,16 +94,11 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                asChild
+                onClick={handleGetStartedClick}
                 size="lg"
-                className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full"
+                className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
               >
-                <button
-                  onClick={handleGetStartedClick}
-                  className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
-                >
-                  Start Practicing Now <ArrowRight className="ml-2 h-5 w-5" />
-                </button>
+                Start Practicing Now <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
                 asChild
@@ -208,12 +201,13 @@ export default function Home() {
             })}
           </div>
           <div className="text-center mt-16">
-          <button
+          <Button
             onClick={handleGetStartedClick}
+            size="lg"
             className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full"
           >
             Start Your First Mock Interview
-          </button>
+          </Button>
 
           </div>
         </div>

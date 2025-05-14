@@ -2,9 +2,21 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 import { sendEmail } from '@/lib/email'
+import { applyRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
   try {
+    // Apply rate limiting - strict for password reset to prevent enumeration attacks
+    const { success, message } = await applyRateLimit(req, {
+      windowMs: 15 * 60 * 1000, // 15 minute window
+      max: 3, // 3 password reset requests per 15 minutes per IP
+      message: 'Too many password reset attempts. Please try again later.',
+    });
+    
+    if (!success) {
+      return NextResponse.json({ message }, { status: 429 });
+    }
+    
     const { email } = await req.json()
 
     if (!email) {

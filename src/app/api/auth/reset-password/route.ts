@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hash } from 'bcryptjs'
+import { applyRateLimit } from '@/lib/rate-limit'
 import { getToken } from 'next-auth/jwt'
 
 export async function POST(req: Request) {
   try {
+    // Apply rate limiting - restrict password reset attempts
+    const { success, message } = await applyRateLimit(req, {
+      windowMs: 10 * 60 * 1000, // 10 minute window
+      max: 5, // 5 reset password attempts per 10 minutes per IP
+      message: 'Too many password reset attempts. Please try again later.',
+    });
+    
+    if (!success) {
+      return NextResponse.json({ message }, { status: 429 });
+    }
+    
     const { token, password } = await req.json()
 
     if (!token || !password) {
@@ -54,17 +66,12 @@ export async function POST(req: Request) {
       where: { id: resetToken.id },
     })
 
-    // Create a session token
-    const sessionToken = await getToken({ 
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-      raw: true
-    })
+    // We don't need to create a session token in the App Router
+    // The user will be redirected to login with their new password
 
     return NextResponse.json(
       { 
         message: 'Password has been reset successfully',
-        sessionToken
       },
       { status: 200 }
     )
