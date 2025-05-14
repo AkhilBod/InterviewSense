@@ -339,7 +339,7 @@ export default function ResultsPage() {
                   <CardTitle className="text-lg">What's Next?</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
                     <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
                       <Link href="/start">
                         <RefreshCw className="h-6 w-6 mb-2" />
@@ -348,19 +348,11 @@ export default function ResultsPage() {
                       </Link>
                     </Button>
 
-                    <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
+                    <Button className="h-auto py-6 flex flex-col bg-blue-600 hover:bg-blue-700 text-white" asChild>
                       <Link href="/interview">
                         <BarChart className="h-6 w-6 mb-2" />
                         <span className="text-base font-medium">Retry Interview</span>
-                        <span className="text-xs text-slate-400 mt-1">Apply feedback and improve</span>
-                      </Link>
-                    </Button>
-
-                    <Button className="h-auto py-6 flex flex-col bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                      <Link href="/upgrade">
-                        <MessageSquare className="h-6 w-6 mb-2" />
-                        <span className="text-base font-medium">Get Expert Coaching</span>
-                        <span className="text-xs mt-1">Connect with a human coach</span>
+                        <span className="text-xs mt-1">Apply feedback and improve</span>
                       </Link>
                     </Button>
                   </div>

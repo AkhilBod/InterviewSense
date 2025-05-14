@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, Mic, MicOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from "@/components/ui/use-toast";
+import { AssemblyAI } from 'assemblyai';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -160,8 +162,14 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [code, setCode] = useState('');
   const [thoughtProcess, setThoughtProcess] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Audio recording refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,13 +189,118 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
     }
   };
 
-  const startRecording = () => {
-    setIsRecording(true);
-    // TODO: Implement recording functionality
+  // Start or stop the recording process
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+      
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+      
+      recorder.onstop = async () => {
+        // Create a blob from audio chunks
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        
+        // Create a URL for the audio blob
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudioUrl(audioUrl);
+        
+        // Start transcription
+        await transcribeAudio(audioBlob);
+      };
+      
+      recorder.start();
+      setIsRecording(true);
+      
+      toast({
+        title: "Recording started",
+        description: "Explain your solution clearly into your microphone",
+      });
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Could not access your microphone. Please check permissions.",
+        variant: "destructive"
+      });
+    }
   };
+
   const stopRecording = () => {
-    setIsRecording(false);
-    // TODO: Implement stop recording functionality
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      
+      // Stop all audio tracks from the stream
+      if (mediaRecorderRef.current.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
+    }
+  };
+
+  // Transcribe audio using AssemblyAI
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      setIsTranscribing(true);
+      toast({
+        title: "Transcribing audio",
+        description: "This may take a few moments...",
+      });
+      
+      // Convert blob to file
+      const file = new File([audioBlob], "technical-explanation.wav", { type: "audio/wav" });
+      
+      // Initialize the AssemblyAI client
+      const client = new AssemblyAI({
+        apiKey: process.env.NEXT_PUBLIC_ASSEMBLYAI_API_KEY || '3e66f3d395eb4ca19c6755d06662fd5a'
+      });
+      
+      // Transcribe using the v4 API
+      const transcript = await client.transcripts.transcribe({
+        audio: file,
+        sentiment_analysis: true
+      });
+      
+      if (transcript && transcript.text) {
+        // Set the transcribed text as the thought process
+        setThoughtProcess(transcript.text);
+        
+        // Get sentiment analysis if available
+        let sentimentMessage = "";
+        if (transcript.sentiment_analysis_results && transcript.sentiment_analysis_results.length > 0) {
+          const sentimentResult = transcript.sentiment_analysis_results[0];
+          const sentiment = sentimentResult.sentiment;
+          const confidence = sentimentResult.confidence;
+          sentimentMessage = `Your explanation has a ${sentiment.toLowerCase()} tone (${Math.round(confidence * 100)}% confidence).`;
+        }
+        
+        toast({
+          title: "Transcription complete",
+          description: sentimentMessage || "Your explanation has been transcribed.",
+        });
+      } else {
+        toast({
+          title: "Transcription issue",
+          description: "Could not transcribe audio clearly. Please try again or type your explanation.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast({
+        title: "Transcription failed",
+        description: "There was an error transcribing your audio. Please try again or type your explanation.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTranscribing(false);
+    }
   };
 
   // Parse the question for display
@@ -288,23 +401,111 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label>Thought Process</Label>
-              <div className="flex gap-2">
+              <Label>Explain Your Solution</Label>
+              <div className="flex gap-2 items-center">
                 <Button
                   variant={isRecording ? "destructive" : "default"}
                   onClick={isRecording ? stopRecording : startRecording}
+                  disabled={isTranscribing}
+                  className="flex items-center"
                 >
-                  {isRecording ? "Stop Recording" : "Start Recording"}
+                  {isRecording ? (
+                    <>
+                      <MicOff className="mr-2 h-4 w-4" />
+                      Stop Recording
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="mr-2 h-4 w-4" />
+                      Record Explanation
+                    </>
+                  )}
                 </Button>
+                {isTranscribing && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Transcribing your explanation...
+                  </div>
+                )}
+                {audioUrl && !isTranscribing && (
+                  <audio src={audioUrl} controls className="ml-2 h-8" />
+                )}
               </div>
               <Textarea
                 value={thoughtProcess}
                 onChange={(e) => setThoughtProcess(e.target.value)}
                 className="h-[200px]"
-                placeholder="Record your thought process here..."
+                placeholder="Record or type your explanation of the solution here..."
               />
             </div>
-            <Button onClick={onComplete}>Submit Solution</Button>
+            <Button 
+              onClick={() => {
+                if (!code) {
+                  toast({
+                    title: "Missing code solution",
+                    description: "Please provide your code solution before submitting.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                if (!thoughtProcess) {
+                  toast({
+                    title: "Missing explanation",
+                    description: "Please provide an explanation for your solution before submitting.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                // Store necessary data in localStorage for results page
+                const technicalAssessmentData = {
+                  company,
+                  role,
+                  date: new Date().toISOString(),
+                  difficulty,
+                  questions: [{
+                    id: 1,
+                    leetCodeTitle: parsed?.title || "Technical Question",
+                    prompt: question,
+                    code,
+                    codeLanguage: code.includes("def ") ? "python" : "javascript", // Simple language detection
+                    explanation: thoughtProcess,
+                    audioUrl: audioUrl
+                  }]
+                };
+                
+                try {
+                  // First clear any previous results to avoid confusion
+                  localStorage.removeItem("technicalAssessmentResult");
+                  
+                  // Then save the new assessment data
+                  localStorage.setItem("technicalAssessmentData", JSON.stringify(technicalAssessmentData));
+                  
+                  toast({
+                    title: "Solution submitted",
+                    description: "Your solution has been submitted for analysis."
+                  });
+                  
+                  if (onComplete) {
+                    onComplete();
+                  } else {
+                    router.push('/technical-assessment/results');
+                  }
+                } catch (error) {
+                  console.error("Error saving assessment data:", error);
+                  toast({
+                    title: "Error submitting solution",
+                    description: "There was an error saving your solution. Please try again.",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              disabled={!code || !thoughtProcess}
+              className="flex items-center bg-blue-600 hover:bg-blue-700"
+            >
+              Submit Solution
+            </Button>
           </CardContent>
         </Card>
       )}
