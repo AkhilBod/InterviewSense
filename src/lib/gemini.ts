@@ -540,3 +540,93 @@ Return ONLY the JSON without any markdown formatting or additional text.`;
     };
   }
 }
+
+// Audio transcription and analysis using Gemini
+export async function transcribeAndAnalyzeAudio(audioBlob: Blob) {
+  try {
+    console.log("Starting audio transcription with Gemini");
+    
+    // Convert the audio blob to a base64 string
+    const base64Audio = await blobToBase64(audioBlob);
+    
+    // Initialize the Gemini model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    // Create a request with the audio content
+    const prompt = `
+    I'm providing an audio file of a person speaking during a job interview. Please:
+    
+    1. Transcribe the audio content accurately.
+    2. Analyze the speaking style (clarity, pace, confidence).
+    3. Identify any filler words or phrases (like "um", "uh", "you know", etc.).
+    4. Provide a brief sentiment analysis (positive, neutral, negative tone).
+    
+    Return your response in this JSON format:
+    {
+      "transcription": "Full transcription of the audio here...",
+      "analysis": {
+        "clarity": "Rating from 1-10 with brief explanation",
+        "pace": "Rating from 1-10 with brief explanation",
+        "confidence": "Rating from 1-10 with brief explanation"
+      },
+      "filler_words": [
+        {"word": "um", "count": 5},
+        {"word": "like", "count": 3}
+      ],
+      "sentiment": {"tone": "positive/neutral/negative", "confidence": 0.85}
+    }
+    
+    Only respond with this JSON format and nothing else.`;
+    
+    // Create parts including the audio file
+    const parts = [
+      {text: prompt},
+      {inlineData: {mimeType: audioBlob.type, data: base64Audio}}
+    ];
+    
+    console.log("Sending audio to Gemini for transcription and analysis");
+    
+    // Generate content with the audio
+    const result = await model.generateContent({
+      contents: [{role: "user", parts}]
+    });
+    
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log("Received transcription result from Gemini");
+    
+    // Parse the JSON response
+    try {
+      // Clean up any markdown formatting that might be in the response
+      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+      const transcriptionResult = JSON.parse(cleanText);
+      return transcriptionResult;
+    } catch (parseError) {
+      console.error("Failed to parse Gemini response:", parseError);
+      console.error("Response was:", text);
+      throw new Error("Invalid response format from transcription API");
+    }
+  } catch (error) {
+    console.error("Error in transcribing audio with Gemini:", error);
+    throw error;
+  }
+}
+
+// Helper function to convert Blob to base64
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      } else {
+        reject(new Error("FileReader did not return a string"));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}

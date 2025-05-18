@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, User, Mic, MicOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from "@/components/ui/use-toast";
-import { AssemblyAI } from 'assemblyai';
+import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -244,7 +244,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
     }
   };
 
-  // Transcribe audio using AssemblyAI
+  // Transcribe audio using Gemini
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true);
@@ -253,36 +253,50 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
         description: "This may take a few moments...",
       });
       
-      // Convert blob to file
-      const file = new File([audioBlob], "technical-explanation.wav", { type: "audio/wav" });
+      // Check if API key is available
+      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+        console.error("NEXT_PUBLIC_GEMINI_API_KEY is not defined. Check your .env file.");
+        toast({
+          title: "Configuration Error",
+          description: "API key for transcription is missing. Please contact support.",
+          variant: "destructive"
+        });
+        setIsTranscribing(false);
+        return;
+      }
       
-      // Initialize the AssemblyAI client
-      const client = new AssemblyAI({
-        apiKey: process.env.NEXT_PUBLIC_ASSEMBLYAI_API_KEY || '3e66f3d395eb4ca19c6755d06662fd5a'
-      });
+      // Use Gemini to transcribe and analyze audio
+      const transcriptResult = await transcribeAndAnalyzeAudio(audioBlob);
       
-      // Transcribe using the v4 API
-      const transcript = await client.transcripts.transcribe({
-        audio: file,
-        sentiment_analysis: true
-      });
+      console.log("Transcription response from Gemini:", transcriptResult);
       
-      if (transcript && transcript.text) {
+      if (transcriptResult && transcriptResult.transcription) {
         // Set the transcribed text as the thought process
-        setThoughtProcess(transcript.text);
+        setThoughtProcess(transcriptResult.transcription);
         
         // Get sentiment analysis if available
         let sentimentMessage = "";
-        if (transcript.sentiment_analysis_results && transcript.sentiment_analysis_results.length > 0) {
-          const sentimentResult = transcript.sentiment_analysis_results[0];
-          const sentiment = sentimentResult.sentiment;
-          const confidence = sentimentResult.confidence;
+        if (transcriptResult.sentiment) {
+          const sentiment = transcriptResult.sentiment.tone;
+          const confidence = transcriptResult.sentiment.confidence;
           sentimentMessage = `Your explanation has a ${sentiment.toLowerCase()} tone (${Math.round(confidence * 100)}% confidence).`;
+        }
+        
+        // Show filler words if any
+        let fillerWordsMessage = "";
+        if (transcriptResult.filler_words && transcriptResult.filler_words.length > 0) {
+          const fillerCount = transcriptResult.filler_words.reduce(
+            (sum: number, item: {word: string, count: number}) => sum + item.count, 
+            0
+          );
+          if (fillerCount > 0) {
+            fillerWordsMessage = ` You used ${fillerCount} filler words.`;
+          }
         }
         
         toast({
           title: "Transcription complete",
-          description: sentimentMessage || "Your explanation has been transcribed.",
+          description: sentimentMessage + fillerWordsMessage || "Your explanation has been transcribed.",
         });
       } else {
         toast({
@@ -293,9 +307,16 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
       }
     } catch (error) {
       console.error('Transcription error:', error);
+      let errorMessage = "There was an error transcribing your audio.";
+      
+      // Extract more specific error message if available
+      if (error instanceof Error) {
+        errorMessage += " Error: " + error.message;
+      }
+      
       toast({
         title: "Transcription failed",
-        description: "There was an error transcribing your audio. Please try again or type your explanation.",
+        description: errorMessage + " Please try again or type your explanation.",
         variant: "destructive"
       });
     } finally {
@@ -511,4 +532,4 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
       )}
     </div>
   );
-} 
+}
