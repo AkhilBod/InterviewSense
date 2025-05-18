@@ -106,14 +106,14 @@ function Questionnaire() {
 
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Left panel - Form */}
-          <div className="p-8 flex flex-col">
+          <div className="p-4 sm:p-6 md:p-8 flex flex-col">
             {error && (
-              <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+              <div className="mb-4 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm sm:text-base">
                 {error}
               </div>
             )}
             
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <div className="bg-blue-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
                   {step}
@@ -130,9 +130,9 @@ function Questionnaire() {
             {/* Step 1: Usage Goals */}
             {step === 1 && (
               <div className="animate-fadeIn">
-                <h1 className="text-3xl font-bold mb-6">How are you planning to use InterviewSense?</h1>
-                <p className="text-slate-400 mb-8">Choose one option so we can tailor your experience</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-6">How are you planning to use InterviewSense?</h1>
+                <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">Choose one option so we can tailor your experience</p>
+                <div className="flex flex-col gap-3">
                   {[
                     { value: 'practice-interviews', label: 'Practicing for job interviews' },
                     { value: 'update-resume', label: 'Updating Resume' },
@@ -141,7 +141,7 @@ function Questionnaire() {
                     <Button
                       key={option.value}
                       variant={usageGoals[0] === option.value ? "default" : "outline"}
-                      className={`justify-start px-4 py-8 h-auto text-left border border-slate-700 hover:bg-slate-800 ${
+                      className={`justify-start px-4 py-5 sm:py-8 h-auto text-left border border-slate-700 hover:bg-slate-800 ${
                         usageGoals[0] === option.value ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-transparent text-slate-300"
                       }`}
                       onClick={() => setUsageGoals([option.value])}
@@ -156,10 +156,10 @@ function Questionnaire() {
             {/* Step 2: Role Selection */}
             {step === 2 && (
               <div className="animate-fadeIn">
-                <h1 className="text-3xl font-bold mb-6">What's your role?</h1>
-                <p className="text-slate-400 mb-8">InterviewSense will tailor feedback to your role's communication needs</p>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-6">What's your role?</h1>
+                <p className="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base">InterviewSense will tailor feedback to your role's communication needs</p>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-h-[calc(100vh-240px)] overflow-y-auto pr-1">
                   {[
                     'Management', 'Student', 'Product Management', 'Design',
                     'Business Development', 'Educator', 'Engineering', 'Legal',
@@ -170,7 +170,7 @@ function Questionnaire() {
                     <Button
                       key={roleOption}
                       variant={role === roleOption ? "default" : "outline"}
-                      className={`justify-start px-4 py-8 h-auto text-left border border-slate-700 hover:bg-slate-800 ${
+                      className={`justify-start px-4 py-4 sm:py-6 h-auto text-left border border-slate-700 hover:bg-slate-800 text-sm sm:text-base ${
                         role === roleOption ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-transparent text-slate-300"
                       }`}
                       onClick={() => setRole(roleOption)}
@@ -181,7 +181,7 @@ function Questionnaire() {
                   
                   <Button 
                     variant={role === 'Other' ? "default" : "outline"}
-                    className={`justify-start px-4 py-8 h-auto text-left border border-slate-700 hover:bg-slate-800 ${
+                    className={`justify-start px-4 py-4 sm:py-6 h-auto text-left border border-slate-700 hover:bg-slate-800 text-sm sm:text-base ${
                       role === 'Other' ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-transparent text-slate-300"
                     }`}
                     onClick={() => setRole('Other')}
@@ -195,16 +195,16 @@ function Questionnaire() {
             {/* Step 3: Features */}
             {step === 3 && (
               <div className="animate-fadeIn">
-                <h1 className="text-3xl font-bold mb-6">How InterviewSense Will Help You</h1>
-                <div className="space-y-8 mt-8">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-6">How InterviewSense Will Help You</h1>
+                <div className="space-y-6 sm:space-y-8 mt-4 sm:mt-8 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
                   {/* 1. AI-Powered Mock Interviews */}
-                  <div className="flex items-start gap-4">
-                    <div className="text-blue-500 mt-1">
-                      <MessageSquare className="h-6 w-6" />
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="text-blue-500 mt-1 flex-shrink-0">
+                      <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-blue-400">AI-Powered Mock Interviews</h3>
-                      <p className="text-slate-400 mt-1">Generate realistic, role-specific interview questions using advanced AI. Practice with both technical and behavioral questions tailored to your job and industry.</p>
+                      <h3 className="text-base sm:text-lg font-semibold text-blue-400">AI-Powered Mock Interviews</h3>
+                      <p className="text-slate-400 mt-1 text-sm sm:text-base">Generate realistic, role-specific interview questions using advanced AI. Practice with both technical and behavioral questions tailored to your job and industry.</p>
                     </div>
                   </div>
                   {/* 2. Real-Time Voice & Text Analysis */}
@@ -264,14 +264,14 @@ function Questionnaire() {
             {/* Step 4: Referral Source */}
             {step === 4 && (
               <div className="animate-fadeIn">
-                <h1 className="text-3xl font-bold mb-6">How did you hear about InterviewSense?</h1>
-                <p className="text-slate-400 mb-8">Help us understand how you found us</p>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-6">How did you hear about InterviewSense?</h1>
+                <p className="text-slate-400 mb-4 sm:mb-8 text-sm sm:text-base">Help us understand how you found us</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-h-[calc(100vh-240px)] overflow-y-auto pr-1">
                   {['Google Search', 'Social Media', 'Friend or Colleague', 'Online Review', 'Professional Network', 'Other'].map((source) => (
                     <Button
                       key={source}
                       variant={referralSource === source ? "default" : "outline"}
-                      className={`justify-start px-4 py-8 h-auto text-left border border-slate-700 hover:bg-slate-800 ${
+                      className={`justify-start px-4 py-4 sm:py-6 h-auto text-left border border-slate-700 hover:bg-slate-800 text-sm sm:text-base ${
                         referralSource === source ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-transparent text-slate-300"
                       }`}
                       onClick={() => setReferralSource(source)}
@@ -282,7 +282,7 @@ function Questionnaire() {
                 </div>
                 {referralSource === 'Other' && (
                   <div className="mt-4">
-                    <Label htmlFor="other-source" className="font-medium mb-2 block">
+                    <Label htmlFor="other-source" className="font-medium mb-2 block text-sm sm:text-base">
                       Please specify:
                     </Label>
                     <Input 
@@ -297,31 +297,33 @@ function Questionnaire() {
               </div>
             )}
 
-            <div className="mt-auto pt-8 flex justify-between">
+            <div className="mt-auto pt-4 sm:pt-8 flex justify-between">
               <Button 
                 variant="outline" 
                 onClick={handleBack}
                 disabled={step === 1 || isSubmitting}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                className="border-slate-700 text-slate-300 hover:bg-slate-800 px-3 sm:px-4 py-2 text-sm sm:text-base"
+                size="sm"
               >
-                <ChevronLeft className="h-4 w-4 mr-2" />
+                <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
                 Back
               </Button>
               
               <Button 
                 onClick={handleNext}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-2 text-sm sm:text-base"
                 disabled={(step === 1 && usageGoals.length === 0) || (step === 2 && !role) || isSubmitting}
+                size="sm"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1 sm:mr-2" />
                     Saving...
                   </>
                 ) : (
                   <>
                     {step === totalSteps ? 'Finish' : 'Next'}
-                    {step !== totalSteps && <ChevronRight className="h-4 w-4 ml-2" />}
+                    {step !== totalSteps && <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />}
                   </>
                 )}
               </Button>
