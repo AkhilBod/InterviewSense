@@ -19,9 +19,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 
-export default function TechnicalAssessmentPage() {
+function TechnicalAssessmentPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -131,4 +131,19 @@ export default function TechnicalAssessmentPage() {
       </div>
     </div>
   )
+}
+
+export default function TechnicalAssessmentPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <TechnicalAssessmentPage />
+    </Suspense>
+  );
 }

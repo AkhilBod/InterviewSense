@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
 import { toast } from "@/components/ui/use-toast";
 import { exportToPDF, printReport, shareReport, formatInterviewReportForSharing } from "@/lib/export";
 
-export default function ResultsPage() {
+function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [interviewSummary, setInterviewSummary] = useState<InterviewSummary>({
     jobRole: "Software Engineer",
@@ -390,5 +390,20 @@ export default function ResultsPage() {
         </footer>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function ResultsPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResultsPage />
+    </Suspense>
   );
 }

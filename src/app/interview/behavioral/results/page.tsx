@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface Answer {
   audioUrl?: string;
 }
 
-export default function BehavioralResults() {
+function BehavioralResults() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<{[key: number]: Answer}>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -137,5 +137,20 @@ export default function BehavioralResults() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function BehavioralResultsWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BehavioralResults />
+    </Suspense>
   );
 }
