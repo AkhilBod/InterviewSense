@@ -59,13 +59,22 @@ export function MicrophonePermissionGuide({ isOpen, onClose }: MicrophonePermiss
         );
       case "Safari":
         return (
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>Click on "Safari" in the menu bar</li>
-            <li>Select "Settings for This Website" (or "Preferences" → "Websites")</li>
-            <li>Find "Microphone" in the list</li>
-            <li>Change the permission to "Allow"</li>
-            <li>Reload the page</li>
-          </ol>
+          <>
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 text-yellow-700">
+              <p className="font-bold">Safari Troubleshooting:</p>
+              <p>Safari users may need to take additional steps for microphone access to work properly.</p>
+            </div>
+            <ol className="list-decimal pl-5 space-y-2">
+              <li><strong>When prompted</strong>, click "Allow" to grant microphone access</li>
+              <li>If audio still doesn't work, <strong>click on "Safari" in the menu bar</strong> (top of screen)</li>
+              <li>Select "Settings for This Website" in the dropdown</li>
+              <li>Find "Microphone" in the list and change to "Allow"</li>
+              <li>Next, go to <strong>System Preferences → Security & Privacy → Privacy → Microphone</strong></li>
+              <li>Make sure Safari is checked in the list of apps allowed to use your microphone</li>
+              <li>If changes were made, <strong>completely quit Safari</strong> (Command+Q) and restart it</li>
+              <li>As a last resort, try using Chrome or Firefox which have better audio recording support</li>
+            </ol>
+          </>
         );
       case "Edge":
         return (
@@ -113,11 +122,24 @@ export function MicrophonePermissionGuide({ isOpen, onClose }: MicrophonePermiss
               <li>Another application may be using your microphone</li>
               <li>Your microphone might be muted at the hardware level</li>
               <li>You may need to select the correct microphone if you have multiple devices</li>
+              {browser === "Safari" && (
+                <>
+                  <li className="font-medium">Safari-specific: Make sure your Mac's Privacy settings allow microphone access</li>
+                  <li className="font-medium">Go to System Preferences → Security & Privacy → Privacy → Microphone and ensure Safari is checked</li>
+                  <li className="font-medium">You may need to completely restart Safari after changing permissions</li>
+                </>
+              )}
             </ul>
           </div>
         </div>
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-2">
+          {browser === "Safari" && (
+            <p className="text-amber-500 text-xs italic mb-2 w-full">
+              Note: Safari has limited recording support. If problems persist after following all steps, 
+              we recommend using Chrome or Firefox for the best interview experience.
+            </p>
+          )}
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>

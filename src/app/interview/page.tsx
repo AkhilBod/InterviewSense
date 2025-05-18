@@ -213,6 +213,28 @@ function InterviewPage() {
       router.push('/login');
     }
   }, [status, router]);
+  
+  // Add cleanup effect to ensure recording is stopped when component unmounts
+  useEffect(() => {
+    // Return cleanup function
+    return () => {
+      // Stop recording if active when component unmounts
+      if (isRecording && mediaRecorderRef.current) {
+        console.log("Cleanup: Stopping recording on unmount");
+        try {
+          if (mediaRecorderRef.current.state === "recording") {
+            mediaRecorderRef.current.stop();
+          }
+          
+          if (mediaRecorderRef.current.stream) {
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+          }
+        } catch (err) {
+          console.error("Error during recording cleanup:", err);
+        }
+      }
+    };
+  }, [isRecording]);
 
   if (isLoading) {
     return (
@@ -235,8 +257,40 @@ function InterviewPage() {
     if (isRecording) {
       // Stop recording
       if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
+        try {
+          // Make sure we're stopping the recorder if it's active
+          if (mediaRecorderRef.current.state === "recording" || mediaRecorderRef.current.state === "paused") {
+            console.log("Stopping active recorder...");
+            mediaRecorderRef.current.stop();
+          } else {
+            console.log("Recorder already stopped, just cleaning up");
+          }
+          
+          // Stop all audio tracks from the stream to ensure proper cleanup
+          if (mediaRecorderRef.current.stream) {
+            console.log("Stopping all audio tracks...");
+            mediaRecorderRef.current.stream.getTracks().forEach(track => {
+              track.stop();
+              console.log("Track stopped:", track.kind, track.readyState);
+            });
+          }
+          
+          // Force UI update
+          setMediaRecorder(null);
+        } catch (stopError) {
+          console.error("Error stopping recording:", stopError);
+        }
+        
+        // Always update the recording state regardless of any errors
         setIsRecording(false);
+        toast({
+          title: "Recording stopped",
+          description: "Processing your audio..."
+        });
+      } else {
+        // No active recorder but UI shows recording, fix the state
+        setIsRecording(false);
+        console.warn("Recording state was active but no recorder found");
       }
     } else {
       try {
@@ -249,6 +303,16 @@ function InterviewPage() {
           });
           return;
         }
+        
+        // Browser detection for Safari-specific handling
+        const browserInfo = {
+          isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                   (navigator.userAgent.includes('AppleWebKit') && !navigator.userAgent.includes('Chrome'))
+        };
+        console.log("Browser detection:", {
+          isSafari: browserInfo.isSafari,
+          userAgent: navigator.userAgent
+        });
         
         // Do a pre-check on microphone accessibility
         const micTest = await testMicrophone();
@@ -267,21 +331,76 @@ function InterviewPage() {
         }
         
         // Try to request mic permission with better error detection
-        // Request audio with better quality settings
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        // Safari needs very simple audio constraints to work properly
+        const audioConstraints = browserInfo.isSafari ? { audio: true } : { 
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true,
             sampleRate: 48000,
           } 
+        };
+        
+        console.log("Using audio constraints:", audioConstraints);
+        const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+        
+        // Create MediaRecorder with browser-specific settings
+        let recorder: MediaRecorder;
+        let blobType = 'audio/webm';
+        
+        // We already have browserInfo.isSafari from above
+        console.log("Browser detection details:", {
+          isSafari: browserInfo.isSafari, 
+          userAgent: navigator.userAgent
         });
         
-        // Create a media recorder with a higher bitrate
-        const recorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus',
-          audioBitsPerSecond: 128000
-        });
+        if (browserInfo.isSafari) {
+          console.log("Safari detected, using fallback MediaRecorder configuration");
+          
+          // Safari needs special handling for MediaRecorder
+          try {
+            // Log which audio formats are supported
+            if (typeof MediaRecorder.isTypeSupported === 'function') {
+              console.log("Safari supported audio types:", {
+                mp4: MediaRecorder.isTypeSupported('audio/mp4'),
+                webm: MediaRecorder.isTypeSupported('audio/webm')
+              });
+            }
+            
+            // For Safari, use the most basic configuration possible
+            blobType = 'audio/mp4'; // For the final blob
+            recorder = new MediaRecorder(stream);
+            
+            console.log("Safari MediaRecorder created with state:", recorder.state);
+          } catch (error: any) {
+            console.error("Safari MediaRecorder creation failed:", error);
+            toast({
+              title: "Safari Microphone Setup",
+              description: "Debug info: " + (error?.message || "Unknown Safari audio error"),
+              variant: "destructive"
+            });
+            
+            // Final attempt with absolutely minimal configuration
+            try {
+              recorder = new MediaRecorder(stream);
+            } catch (finalError: any) {
+              console.error("Final Safari MediaRecorder attempt failed:", finalError);
+              throw new Error("Cannot initialize audio recording in Safari: " + (finalError?.message || "Unknown error"));
+            }
+          }
+        } else {
+          // Non-Safari browsers (Chrome, Firefox, etc)
+          try {
+            recorder = new MediaRecorder(stream, {
+              mimeType: 'audio/webm;codecs=opus',
+              audioBitsPerSecond: 128000
+            });
+          } catch (error: any) {
+            console.error("MediaRecorder error:", error);
+            // Fallback to basic configuration
+            recorder = new MediaRecorder(stream);
+          }
+        }
         
         mediaRecorderRef.current = recorder;
         audioChunksRef.current = [];
@@ -294,7 +413,7 @@ function InterviewPage() {
         
         recorder.onstop = async () => {
           // Create a blob from audio chunks
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: blobType });
           setAudioChunks(audioChunksRef.current);
           
           // Create a URL for the audio blob
@@ -305,7 +424,52 @@ function InterviewPage() {
           await transcribeAudio(audioBlob);
         };
         
-        recorder.start();
+        // For Safari, use special handling to ensure audio recording works
+        try {
+          if (browserInfo.isSafari) {
+            // Safari needs time slices to work more reliably
+            console.log("Starting Safari recorder with time slices");
+            recorder.start(500); // Get data every 500ms for more reliable recording
+            
+            // Store a timestamp to ensure we can force stop if needed
+            const recordingStartTime = Date.now();
+            
+            // Add recording cleanup after 2 minutes max (safety fallback)
+            setTimeout(() => {
+              if (isRecording && Date.now() - recordingStartTime > 2 * 60 * 1000) {
+                console.warn("Force stopping long-running Safari recording");
+                if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+                  try {
+                    mediaRecorderRef.current.stop();
+                    setIsRecording(false);
+                  } catch (err) {
+                    console.error("Error auto-stopping Safari recording:", err);
+                  }
+                }
+              }
+            }, 2 * 60 * 1000);
+            
+            // Add a debug toast to show Safari is being used
+            toast({
+              title: "Safari Recording Mode",
+              description: "Press the Stop button when you finish speaking.",
+            });
+          } else {
+            console.log("Starting standard recorder");
+            recorder.start();
+          }
+        } catch (startError: any) {
+          console.error("Error starting recorder:", startError);
+          toast({
+            title: "Recording Error",
+            description: "Could not start recording: " + (startError?.message || "Unknown error"),
+            variant: "destructive"
+          });
+          
+          // Make sure recording state is reset on error
+          setIsRecording(false);
+        }
+        
         setIsRecording(true);
         setMediaRecorder(recorder);
         
@@ -588,13 +752,13 @@ function InterviewPage() {
                           <Button
                             variant={isRecording ? "destructive" : "outline"}
                             size="sm"
-                            className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                            className={`gap-2 ${isRecording ? "bg-red-600 hover:bg-red-700 text-white border-red-700" : "border-slate-700 text-slate-300 hover:bg-slate-800"}`}
                             onClick={toggleRecording}
                             disabled={isTranscribing}
                           >
                             {isRecording ? (
                               <>
-                                <MicOff className="h-4 w-4" /> Stop Recording
+                                <MicOff className={`h-4 w-4 ${isRecording ? "animate-pulse" : ""}`} /> Stop Recording
                               </>
                             ) : isTranscribing ? (
                               <>
@@ -606,9 +770,9 @@ function InterviewPage() {
                               </>
                             )}
                           </Button>
-                          <p className="text-xs text-slate-400">
+                          <p className={`text-xs ${isRecording ? "text-red-400 font-medium" : "text-slate-400"}`}>
                             {isRecording 
-                              ? "Recording in progress..." 
+                              ? "● Recording in progress... (Click Stop when finished)" 
                               : isTranscribing 
                                 ? "Transcribing your answer..." 
                                 : audioUrl 
