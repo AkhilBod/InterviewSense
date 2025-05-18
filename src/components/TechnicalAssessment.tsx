@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, User, Mic, MicOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import { toast } from "@/components/ui/use-toast";
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
 import {
@@ -170,6 +171,10 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const { data: session } = useSession();
   const router = useRouter();
   
+  // Add state for LeetCode question number functionality
+  const [leetcodeNumber, setLeetcodeNumber] = useState('');
+  const [useCustomNumber, setUseCustomNumber] = useState(false);
+  
   // Add state for microphone permission guide
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
 
@@ -184,7 +189,13 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
       const response = await fetch('/api/technical-assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company, role, difficulty }),
+        body: JSON.stringify({ 
+          company, 
+          role, 
+          difficulty,
+          useCustomNumber,
+          leetcodeNumber: useCustomNumber ? leetcodeNumber : undefined
+        }),
       });
       const data = await response.json();
       setQuestion(data.question);
@@ -411,49 +422,96 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
         <CardHeader>
           <CardTitle>Technical Assessment</CardTitle>
           <CardDescription>
-            Get a personalized LeetCode question based on your target company and role
+            Get a personalized LeetCode question based on your target company and role or specify a LeetCode question number
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
-                <Input
-                  id="company"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="e.g., Google"
-                  required
-                />
+          <div className="mb-6">
+            <div className="flex items-center justify-between bg-zinc-800/50 p-4 rounded-lg border border-zinc-700/50">
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-10 rounded-full ${useCustomNumber ? 'bg-blue-500' : 'bg-zinc-600'}`}></div>
+                <div>
+                  <Label htmlFor="useCustomNumber" className="font-medium cursor-pointer block mb-0.5">
+                    {useCustomNumber ? 'Specific LeetCode Question' : 'Random Question Generation'}
+                  </Label>
+                  <p className="text-xs text-zinc-400">
+                    {useCustomNumber 
+                      ? 'Enter a LeetCode question number to get that exact problem' 
+                      : 'Generate a question based on company, role and difficulty'}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Input
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g., Software Engineer"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Question Difficulty</Label>
-                <Select value={difficulty} onValueChange={setDifficulty} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="easy">Easy</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="hard">Hard</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Switch
+                id="useCustomNumber"
+                checked={useCustomNumber}
+                onCheckedChange={setUseCustomNumber}
+              />
             </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {useCustomNumber ? (
+              <div className="space-y-2">
+                <Label htmlFor="leetcodeNumber">LeetCode Question Number</Label>
+                <Input
+                  id="leetcodeNumber"
+                  value={leetcodeNumber}
+                  onChange={(e) => setLeetcodeNumber(e.target.value)}
+                  placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
+                  required
+                  type="number"
+                  min="1"
+                  max="3000"
+                />
+                <p className="text-xs text-zinc-500">Enter the problem number from LeetCode (1-3000)</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    id="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g., Google"
+                    required={!useCustomNumber}
+                    disabled={useCustomNumber}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Input
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    placeholder="e.g., Software Engineer"
+                    required={!useCustomNumber}
+                    disabled={useCustomNumber}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty">Question Difficulty</Label>
+                  <Select 
+                    value={difficulty} 
+                    onValueChange={setDifficulty} 
+                    required={!useCustomNumber}
+                    disabled={useCustomNumber}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="easy">Easy</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Get Question
+              {useCustomNumber ? 'Get LeetCode Question' : 'Generate Random Question'}
             </Button>
           </form>
         </CardContent>
