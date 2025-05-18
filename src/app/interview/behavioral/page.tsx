@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import BehavioralQuestionSet from '../components/behavioral-question-set';
+import BehavioralQuestionSet from '../../interview/components/behavioral-question-set';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
