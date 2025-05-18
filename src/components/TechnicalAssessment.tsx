@@ -22,6 +22,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
+import { MicrophoneTest } from '@/components/MicrophoneTest';
+import { testMicrophone } from '@/lib/microphone';
 
 interface TechnicalAssessmentProps {
   onComplete?: () => void;
@@ -166,6 +169,9 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
+  
+  // Add state for microphone permission guide
+  const [showPermissionGuide, setShowPermissionGuide] = useState(false);
 
   // Audio recording refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -192,8 +198,47 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   // Start or stop the recording process
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      // First check if browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast({
+          title: "Browser Compatibility Error",
+          description: "Your browser doesn't support microphone access. Please try using Chrome, Firefox, or Safari.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Do a pre-check on microphone accessibility
+      const micTest = await testMicrophone();
+      if (!micTest.success) {
+        toast({
+          title: "Microphone Error",
+          description: micTest.message || "Could not access your microphone. Please check permissions.",
+          variant: "destructive"
+        });
+        
+        // Show the permission guide for denied permissions
+        if (micTest.message?.includes("denied") || micTest.message?.includes("settings")) {
+          setShowPermissionGuide(true);
+        }
+        return;
+      }
+      
+      // Request permission with improved error handling
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000,
+        } 
+      });
+      
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000
+      });
+      
       mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
       
@@ -205,7 +250,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
       
       recorder.onstop = async () => {
         // Create a blob from audio chunks
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         
         // Create a URL for the audio blob
         const audioUrl = URL.createObjectURL(audioBlob);
@@ -224,9 +269,42 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
       });
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      
+      // Provide more detailed error messages based on the error type
+      let errorMessage = "Could not access your microphone.";
+      
+      if (error instanceof DOMException) {
+        switch (error.name) {
+          case 'NotAllowedError':
+          case 'PermissionDeniedError':
+            errorMessage = "Microphone access was denied. Please allow microphone access in your browser settings and try again.";
+            // Show the microphone permission guide dialog
+            setShowPermissionGuide(true);
+            break;
+          case 'NotFoundError':
+          case 'DevicesNotFoundError':
+            errorMessage = "No microphone detected. Please connect a microphone and try again.";
+            break;
+          case 'NotReadableError':
+          case 'TrackStartError':
+            errorMessage = "Your microphone is in use by another application. Please close other applications that might be using your microphone.";
+            break;
+          case 'OverconstrainedError':
+            errorMessage = "Could not find a microphone that meets the requirements. Please try with different settings.";
+            break;
+          case 'AbortError':
+            errorMessage = "The microphone operation was aborted. Please try again.";
+            break;
+          case 'SecurityError':
+            errorMessage = "The use of your microphone is blocked by your browser's security settings.";
+            setShowPermissionGuide(true);
+            break;
+        }
+      }
+      
       toast({
         title: "Microphone Error",
-        description: "Could not access your microphone. Please check permissions.",
+        description: errorMessage + " Please check your browser settings.",
         variant: "destructive"
       });
     }
@@ -442,6 +520,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
                     </>
                   )}
                 </Button>
+                {!isRecording && <MicrophoneTest />}
                 {isTranscribing && (
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -530,6 +609,10 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
           </CardContent>
         </Card>
       )}
+      <MicrophonePermissionGuide 
+        isOpen={showPermissionGuide} 
+        onClose={() => setShowPermissionGuide(false)} 
+      />
     </div>
   );
 }
