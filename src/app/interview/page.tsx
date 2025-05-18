@@ -33,9 +33,8 @@ import {
 } from '@/components/ui/sheet';
 import { toast } from "@/components/ui/use-toast";
 import InterviewFeedback from './components/interview-feedback';
-import { generateBehavioralQuestions } from '@/lib/gemini';
+import { generateBehavioralQuestions, transcribeAndAnalyzeAudio } from '@/lib/gemini';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { AssemblyAI } from 'assemblyai';
 
 const mockQuestions = [
   {
@@ -235,8 +234,22 @@ function InterviewPage() {
       }
     } else {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
+        // Request audio with better quality settings
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+          } 
+        });
+        
+        // Create a media recorder with a higher bitrate
+        const recorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus',
+          audioBitsPerSecond: 128000
+        });
+        
         mediaRecorderRef.current = recorder;
         audioChunksRef.current = [];
         
@@ -248,7 +261,7 @@ function InterviewPage() {
         
         recorder.onstop = async () => {
           // Create a blob from audio chunks
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           setAudioChunks(audioChunksRef.current);
           
           // Create a URL for the audio blob
@@ -278,7 +291,7 @@ function InterviewPage() {
     }
   };
   
-  // Transcribe audio using AssemblyAI
+  // Transcribe audio using Gemini AI
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true);
@@ -287,39 +300,55 @@ function InterviewPage() {
         description: "This may take a few moments...",
       });
       
-      // Convert blob to file
-      const file = new File([audioBlob], "audio-recording.wav", { type: "audio/wav" });
+      console.log("Starting transcription with Gemini AI");
       
-      // Initialize the AssemblyAI client
-      const client = new AssemblyAI({
-        apiKey: process.env.NEXT_PUBLIC_ASSEMBLYAI_API_KEY || '3e66f3d395eb4ca19c6755d06662fd5a'
-      });
+      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+        console.error("NEXT_PUBLIC_GEMINI_API_KEY is not defined. Check your .env file.");
+        toast({
+          title: "Configuration Error",
+          description: "API key for transcription is missing. Please contact support.",
+          variant: "destructive"
+        });
+        setIsTranscribing(false);
+        return;
+      }
       
-      // Transcribe using the v4 API
-      const transcript = await client.transcripts.transcribe({
-        audio: file,
-        sentiment_analysis: true
-      });
+      // Use our new Gemini function to transcribe and analyze the audio
+      const transcriptResult = await transcribeAndAnalyzeAudio(audioBlob);
       
-      if (transcript && transcript.text) {
+      console.log("Transcription response from Gemini:", transcriptResult);
+      
+      if (transcriptResult && transcriptResult.transcription) {
         // Set the transcribed text as the answer and reset feedback visibility
-        setAnswer(transcript.text);
+        setAnswer(transcriptResult.transcription);
         setFeedbackVisible(false);
         
         // Get sentiment analysis if available
         let sentimentMessage = "";
-        if (transcript.sentiment_analysis_results && transcript.sentiment_analysis_results.length > 0) {
-          const sentimentResult = transcript.sentiment_analysis_results[0];
-          const sentiment = sentimentResult.sentiment;
-          const confidence = sentimentResult.confidence;
+        if (transcriptResult.sentiment) {
+          const sentiment = transcriptResult.sentiment.tone;
+          const confidence = transcriptResult.sentiment.confidence;
           sentimentMessage = `Your answer has a ${sentiment.toLowerCase()} tone (${Math.round(confidence * 100)}% confidence).`;
+        }
+        
+        // Show filler words if any
+        let fillerWordsMessage = "";
+        if (transcriptResult.filler_words && transcriptResult.filler_words.length > 0) {
+          const fillerCount = transcriptResult.filler_words.reduce(
+            (sum: number, item: {word: string, count: number}) => sum + item.count, 
+            0
+          );
+          if (fillerCount > 0) {
+            fillerWordsMessage = ` You used ${fillerCount} filler words.`;
+          }
         }
         
         toast({
           title: "Transcription complete",
-          description: sentimentMessage || "Your answer has been transcribed.",
+          description: sentimentMessage + fillerWordsMessage || "Your answer has been transcribed.",
         });
       } else {
+        console.error("Transcription failed: Empty or invalid response", transcriptResult);
         toast({
           title: "Transcription issue",
           description: "Could not transcribe audio clearly. Please try again or type your answer.",
@@ -328,9 +357,16 @@ function InterviewPage() {
       }
     } catch (error) {
       console.error('Transcription error:', error);
+      let errorMessage = "There was an error transcribing your audio.";
+      
+      // Extract more specific error message if available
+      if (error instanceof Error) {
+        errorMessage += " Error: " + error.message;
+      }
+      
       toast({
         title: "Transcription failed",
-        description: "There was an error transcribing your audio. Please try again or type your answer.",
+        description: errorMessage + " Please try again or type your answer.",
         variant: "destructive"
       });
     } finally {
