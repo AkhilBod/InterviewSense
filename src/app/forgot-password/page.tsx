@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { MessageSquare, ChevronLeft, Mail, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -139,4 +139,19 @@ export default function ForgotPasswordPage() {
       </div>
     </div>
   )
-} 
+}
+
+export default function ForgotPasswordPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ForgotPasswordPage />
+    </Suspense>
+  );
+}

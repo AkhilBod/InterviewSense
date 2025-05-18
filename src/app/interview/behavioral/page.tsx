@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function BehavioralInterviewPage() {
+function BehavioralInterviewPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -39,5 +39,20 @@ export default function BehavioralInterviewPage() {
         </Card>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function BehavioralInterviewPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BehavioralInterviewPage />
+    </Suspense>
   );
 }

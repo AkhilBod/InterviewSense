@@ -2,7 +2,7 @@
 
 import type React from 'react'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-export default function SignupPage() {
+function SignupPage() {
   const { data: session } = useSession()
   const [signupMethod, setSignupMethod] = useState<'email' | 'google'>('email')
   const [email, setEmail] = useState('')
@@ -468,4 +468,19 @@ export default function SignupPage() {
       </footer>
     </div>
   )
+}
+
+export default function SignupPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignupPage />
+    </Suspense>
+  );
 }

@@ -20,7 +20,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
 interface JobDetails {
   jobTitle: string;
@@ -33,7 +33,7 @@ interface JobDetails {
   interviewStage: string;
 }
 
-export default function StartPage() {
+function StartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams();
@@ -214,4 +214,19 @@ export default function StartPage() {
       </footer>
     </div>
   )
+}
+
+export default function StartPageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <StartPage />
+    </Suspense>
+  );
 }

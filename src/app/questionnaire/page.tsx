@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MessageSquare, ChevronLeft, ChevronRight, LightbulbIcon, Mic, Clock, BarChart, FileText, Brain } from 'lucide-react';
@@ -17,7 +17,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { User, LogOut } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute'
 
-export default function Questionnaire() {
+function Questionnaire() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 4;
@@ -346,7 +346,7 @@ export default function Questionnaire() {
       </div>
     </ProtectedRoute>
   );
-} 
+}
 
 function ProfileDropdown() {
   const { data: session } = useSession();
@@ -373,5 +373,20 @@ function ProfileDropdown() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+export default function QuestionnaireWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <Questionnaire />
+    </Suspense>
   );
 }
