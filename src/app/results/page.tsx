@@ -367,13 +367,7 @@ function ResultsPage() {
                       </Link>
                     </Button>
 
-                    <Button className="h-auto py-6 flex flex-col bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                      <Link href="/interview">
-                        <BarChart className="h-6 w-6 mb-2" />
-                        <span className="text-base font-medium">Retry Interview</span>
-                        <span className="text-xs mt-1">Apply feedback and improve</span>
-                      </Link>
-                    </Button>
+
                   </div>
                 </CardContent>
               </Card>
