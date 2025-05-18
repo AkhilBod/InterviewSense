@@ -119,81 +119,91 @@ export default function Home() {
         {/* Mobile Menu Drawer */}
         {mobileMenuOpen && (
           <div className="mobile-menu md:hidden">
-            <div className="fixed inset-0 bg-zinc-950/90 backdrop-blur-md z-40 transition-all duration-300">
-              <div className="flex flex-col p-6">
-                <div className="flex justify-end">
-                  <button 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-zinc-300 p-2"
-                    aria-label="Close menu"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                
-                <nav className="flex flex-col gap-4 mt-6">
-                  <Link 
-                    href="/" 
-                    className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800/50 rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                  <Link 
-                    href="/#features" 
-                    className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800/50 rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Features
-                  </Link>
-                  <Link
-                    href="/#how-it-works"
-                    className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800/50 rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    How It Works
-                  </Link>
-                  <Link
-                    href="/#testimonials"
-                    className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800/50 rounded-lg"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Testimonials
-                  </Link>
-                </nav>
-                
-                <div className="mt-8 space-y-4">
-                  {status === 'authenticated' ? (
-                    <Button 
-                      asChild 
-                      className="bg-blue-600 hover:bg-blue-500 text-white w-full"
+            <div className="fixed inset-0 z-50"> 
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black opacity-70" onClick={() => setMobileMenuOpen(false)}></div>
+              
+              {/* Menu Container */}
+              <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-zinc-950 border-l border-zinc-800 shadow-xl transform transition-all duration-300">
+                <div className="flex flex-col h-full overflow-y-auto">
+                  <div className="sticky top-0 bg-zinc-950 z-10 px-6 py-4 flex justify-between items-center border-b border-zinc-800">
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-5 w-5 text-blue-500" />
+                      <span className="font-bold text-lg">InterviewSense</span>
+                    </div>
+                    <button 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-zinc-300 p-2 hover:bg-zinc-800 rounded-full"
+                      aria-label="Close menu"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <nav className="flex flex-col py-6 px-6">
+                    <Link 
+                      href="/" 
+                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href="/dashboard">Go to Dashboard</Link>
-                    </Button>
-                  ) : (
-                    <>
+                      Home
+                    </Link>
+                    <Link 
+                      href="/#features" 
+                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Features
+                    </Link>
+                    <Link
+                      href="/#how-it-works"
+                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      How It Works
+                    </Link>
+                    <Link
+                      href="/#testimonials"
+                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Testimonials
+                    </Link>
+                  </nav>
+                  
+                  <div className="mt-auto p-6 border-t border-zinc-800">
+                    {status === 'authenticated' ? (
                       <Button 
                         asChild 
-                        variant="outline" 
-                        className="text-zinc-300 hover:text-white hover:bg-zinc-800/70 w-full"
+                        className="bg-blue-600 hover:bg-blue-500 text-white w-full"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link href="/login">Log in</Link>
+                        <Link href="/dashboard">Go to Dashboard</Link>
                       </Button>
-                      <Button 
-                        onClick={() => {
-                          setMobileMenuOpen(false)
-                          handleGetStartedClick()
-                        }}
-                        className="bg-blue-600 hover:bg-blue-500 text-white w-full"
-                      >
-                        Get Started Free
-                      </Button>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <Button 
+                          asChild 
+                          variant="outline" 
+                          className="text-zinc-300 hover:text-white hover:bg-zinc-800 w-full mb-3"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Link href="/login">Log in</Link>
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            setMobileMenuOpen(false)
+                            handleGetStartedClick()
+                          }}
+                          className="bg-blue-600 hover:bg-blue-500 text-white w-full"
+                        >
+                          Get Started Free
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -478,8 +488,7 @@ export default function Home() {
                   <span>Can I cancel my subscription at any time?</span>
                 </h3>
                 <p className="text-sm sm:text-base text-zinc-400 ml-6">
-                  Yes, you can cancel anytime through Manage Subscription on the Account page in the app, and you'll
-                  retain full access until the end of your billing period.
+                  We have no plan of making this paid, unless we can no longer support it.
                 </p>
               </div>
             </div>
