@@ -121,15 +121,15 @@ export default function Home() {
           <div className="mobile-menu md:hidden">
             <div className="fixed inset-0 z-50"> 
               {/* Overlay */}
-              <div className="absolute inset-0 bg-black opacity-70" onClick={() => setMobileMenuOpen(false)}></div>
+              <div className="absolute inset-0 bg-black opacity-80" onClick={() => setMobileMenuOpen(false)}></div>
               
               {/* Menu Container */}
-              <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-zinc-950 border-l border-zinc-800 shadow-xl transform transition-all duration-300">
-                <div className="flex flex-col h-full overflow-y-auto">
-                  <div className="sticky top-0 bg-zinc-950 z-10 px-6 py-4 flex justify-between items-center border-b border-zinc-800">
+              <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-black border-l border-zinc-800 shadow-xl">
+                <div className="flex flex-col h-full">
+                  <div className="bg-black px-6 py-4 flex justify-between items-center border-b border-zinc-800">
                     <div className="flex items-center gap-2">
                       <Brain className="h-5 w-5 text-blue-500" />
-                      <span className="font-bold text-lg">InterviewSense</span>
+                      <span className="font-bold text-lg text-white">InterviewSense</span>
                     </div>
                     <button 
                       onClick={() => setMobileMenuOpen(false)}
@@ -142,66 +142,89 @@ export default function Home() {
                     </button>
                   </div>
                   
-                  <nav className="flex flex-col py-6 px-6">
-                    <Link 
-                      href="/" 
-                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Home
-                    </Link>
-                    <Link 
-                      href="/#features" 
-                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Features
-                    </Link>
-                    <Link
-                      href="/#how-it-works"
-                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      How It Works
-                    </Link>
-                    <Link
-                      href="/#testimonials"
-                      className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Testimonials
-                    </Link>
-                  </nav>
+                  <div className="flex-1 overflow-y-auto bg-black">
+                    <nav className="flex flex-col py-6 px-6">
+                      <Link 
+                        href="/" 
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        Home
+                      </Link>
+                      <Link 
+                        href="/#features" 
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        Features
+                      </Link>
+                      <Link
+                        href="/#how-it-works"
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        How It Works
+                      </Link>
+                      <Link
+                        href="/#testimonials"
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        Testimonials
+                      </Link>
+                      <Link
+                        href="/#faq"
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        FAQ
+                      </Link>
+                      <Link
+                        href="/contact"
+                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2 text-blue-500">•</span>
+                        Contact
+                      </Link>
+                    </nav>
+                  </div>
                   
-                  <div className="mt-auto p-6 border-t border-zinc-800">
+                  <div className="p-6 border-t border-zinc-800 bg-black">
+                    <h3 className="text-sm uppercase text-zinc-500 font-medium mb-3">Account</h3>
                     {status === 'authenticated' ? (
                       <Button 
                         asChild 
-                        className="bg-blue-600 hover:bg-blue-500 text-white w-full"
+                        className="bg-blue-600 hover:bg-blue-500 text-white w-full font-medium"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Link href="/dashboard">Go to Dashboard</Link>
                       </Button>
                     ) : (
-                      <>
+                      <div className="space-y-3">
                         <Button 
                           asChild 
                           variant="outline" 
-                          className="text-zinc-300 hover:text-white hover:bg-zinc-800 w-full mb-3"
+                          className="text-white border-zinc-600 hover:text-white hover:bg-zinc-800 w-full font-medium"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <Link href="/login">Log in</Link>
                         </Button>
                         <Button 
                           onClick={() => {
-                            setMobileMenuOpen(false)
-                            handleGetStartedClick()
+                            setMobileMenuOpen(false);
+                            handleGetStartedClick();
                           }}
-                          className="bg-blue-600 hover:bg-blue-500 text-white w-full"
+                          className="bg-blue-600 hover:bg-blue-500 text-white w-full font-medium shadow-lg shadow-blue-500/20"
                         >
                           Get Started Free
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -364,7 +387,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center">
                   <div>
-                    <p className="font-medium text-white">Ethan Gray</p>
+                    <p className="font-medium text-white">Larry P</p>
                     <p className="text-xs sm:text-sm text-zinc-400">Senior Software Engineer at Google</p>
                   </div>
                 </div>
@@ -381,7 +404,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center">
                   <div>
-                    <p className="font-medium text-white">Akhil B</p>
+                    <p className="font-medium text-white">Bill G</p>
                     <p className="text-xs sm:text-sm text-zinc-400">Software Engineer Intern at Microsoft</p>
                   </div>
                 </div>
@@ -398,7 +421,7 @@ export default function Home() {
                 </p>
                 <div className="flex items-center"> 
                   <div>
-                    <p className="font-medium text-white">Justin Li</p>
+                    <p className="font-medium text-white">Mark Z</p>
                     <p className="text-xs sm:text-sm text-zinc-400">Full Stack Developer at Meta</p>
                   </div>
                 </div>
