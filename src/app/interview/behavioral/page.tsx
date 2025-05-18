@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import BehavioralQuestionSet from '../../interview/components/behavioral-question-set';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -33,7 +32,9 @@ export default function BehavioralInterviewPage() {
         
         <Card className="bg-zinc-950 border-zinc-800 shadow-xl">
           <CardContent className="p-6">
-            <BehavioralQuestionSet />
+            <div className="text-center py-8">
+              <p className="text-zinc-400">Behavioral questions feature is coming soon.</p>
+            </div>
           </CardContent>
         </Card>
       </div>
