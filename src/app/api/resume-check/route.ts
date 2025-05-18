@@ -70,35 +70,36 @@ export async function POST(req: Request) {
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Consider "gemini-1.5-pro" for more complex analyses
 
         const textPromptPart = {
-            text: `You are an expert resume reviewer. Analyze the provided resume (which is attached as a file) for a "${jobTitle}" position${company ? ` at "${company}"` : ""}.
-${jobDescription ? `\nConsider the following job description for your analysis:\n---\n${jobDescription}\n---\n` : ""}
+            text: `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume (which is attached as a file) with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
+${jobDescription ? `\nConsider the following job description for your role-specific analysis:\n---\n${jobDescription}\n---\n` : ""}
 
-Please provide a detailed, structured resume analysis in the following format:
+Please provide a detailed, structured resume analysis focused on this specific role in the following format:
 
-# Resume Analysis Report
+# Resume Analysis Report for ${jobTitle} Position
 
 ## Overall Assessment
-[Provide a concise summary of the resume's suitability for the role, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume is strong but needs improvement in ATS optimization."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.]
+[Provide a role-specific evaluation of the resume's suitability, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume demonstrates strong technical skills for the ${jobTitle} position but needs more emphasis on domain expertise."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.]
 
-## Key Strengths
-- [List specific achievements, skills, and experiences that make the resume strong and relevant for the target role. Use clear, concise bullet points.]
-- [Focus on accomplishments and quantifiable results.]
+## Role-Specific Strengths
+- [List achievements, skills, and experiences that align SPECIFICALLY with the ${jobTitle} position requirements]
+- [Focus on industry-relevant accomplishments and quantifiable results that matter for this role]
+- [Highlight technical skills, domain knowledge, or certifications particularly valuable for this position]
 
-## Areas for Improvement
-- [List specific sections or aspects that need enhancement. Be very specific.]
-- [Provide actionable advice for each area.]
+## Role-Specific Improvements Needed
+- [List aspects that need enhancement to better align with ${jobTitle} position expectations]
+- [Provide actionable advice tailored to this specific role and industry]
 
-## Specific Suggestions
-- [List precise, actionable tips to better align the resume with the target role and company.]
-- [Suggest specific wording changes or additions.]
+## Industry-Specific Recommendations
+- [Suggest precise additions of keywords, experiences, or accomplishments typical for successful candidates in this exact role]
+- [Recommend role-specific wording changes or enhancements based on industry standards]
 
-## ATS Optimization Tips
-- [List suggestions to improve Applicant Tracking System (ATS) compatibility.]
-- [Include advice on keywords, formatting, and standard resume practices for ATS.]
+## ATS Optimization for This Role
+- [List suggestions to improve Applicant Tracking System (ATS) compatibility specifically for ${jobTitle} positions]
+- [Include advice on industry-specific keywords and formatting practices for this role]
 
 ## Format and Presentation Feedback
-- [List observations about the resume's layout, readability, and overall visual appeal.]
-- [Suggest improvements for a more professional look.]
+- [Provide feedback on formatting with special attention to what hiring managers for ${jobTitle} positions typically expect]
+- [Suggest improvements aligned with industry standards for this specific role]
 
 Please ensure all sections are present and use clear, concise language. The sections "Overall Assessment", "Key Strengths", "Areas for Improvement", "Specific Suggestions", "ATS Optimization Tips", and "Format and Presentation Feedback" should always appear.`
         };

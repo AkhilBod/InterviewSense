@@ -459,13 +459,7 @@ export default function TechnicalAssessmentResultsPage() {
                         <span className="text-xs mt-1">Practice a new LeetCode question</span>
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
-                      <Link href="/dashboard/technical">
-                        <BarChart className="h-6 w-6 mb-2" />
-                        <span className="text-base font-medium">Retry Assessment</span>
-                        <span className="text-xs text-slate-400 mt-1">Apply feedback and improve</span>
-                      </Link>
-                    </Button>
+
                   </div>
                 </CardContent>
               </Card>

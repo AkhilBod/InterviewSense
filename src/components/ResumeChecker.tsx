@@ -409,9 +409,7 @@ export default function ResumeChecker() {
                 <Button variant="outline" className="flex items-center gap-2" disabled>
                   Share
                 </Button>
-                <Button variant="secondary" className="flex items-center gap-2" onClick={() => window.location.reload()}>
-                  Retry
-                </Button>
+
                 <Button variant="default" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white">
                   Get Expert Coaching
                 </Button>
