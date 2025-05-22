@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, MessageSquare, Brain } from "lucide-react"
+import { ArrowRight, MessageSquare, Brain, FileText } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, UserCog, RotateCcw, Quote, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -277,6 +277,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+            {/* Real Time Voice Analysis (original, kept) */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
@@ -292,31 +293,30 @@ export default function Home() {
               </CardContent>
             </Card>
 
+            {/* LeetCode Practice Feature */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
-                  <UserCog className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                  <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                 </div>
-                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">Personalized Training</h3>
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Training that knows you</h4>
+                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">LeetCode-Style Coding Practice</h3>
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Problems that Level You Up</h4>
                 <p className="text-sm md:text-base text-zinc-400">
-                  Every answer you give is matched against thousands of real-world successful interview responses. Our
-                  AI understands what top candidates say — and how they say it — for feedback tailored to your unique
-                  style.
+                  Practice with real LeetCode questions by number or topic. Get instant feedback on your code, see worked examples, and improve your problem-solving skills for technical interviews.
                 </p>
               </CardContent>
             </Card>
 
+            {/* Resume Review Feature */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group sm:col-span-2 md:col-span-1">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
-                  <RotateCcw className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                 </div>
-                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">Dynamic Adaptation</h3>
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Adapts as you speak</h4>
+                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">AI Resume Review</h3>
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Feedback that Gets You Hired</h4>
                 <p className="text-sm md:text-base text-zinc-400">
-                  Every answer you give helps shape the next question. If the AI notices you're struggling with a
-                  certain topic, it shifts gears and asks follow-up questions to help you improve right then and there.
+                  Upload your resume and get instant, detailed feedback. Our AI analyzes your resume for strengths, areas for improvement, ATS compatibility, and keyword match for your target job. Download a full report and get actionable suggestions to boost your chances.
                 </p>
               </CardContent>
             </Card>
@@ -584,59 +584,34 @@ export default function Home() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#pricing" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">Resources</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/blog" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/guides" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    Interview Guides
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/faq" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
+                  <Link href="#faq" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
                     FAQ
                   </Link>
                 </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">Support</h3>
+              <ul className="space-y-2">
                 <li>
-                  <Link href="/support" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    Support
+                  <Link href="/contact" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
+                    Contact Us
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h3>
+              <h3 className="font-semibold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/about" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
+                  <Link href="#" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
+                  <Link href="#" className="text-zinc-400 hover:text-blue-400 text-xs sm:text-sm">
                     Terms of Service
                   </Link>
                 </li>
