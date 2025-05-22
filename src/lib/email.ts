@@ -8,19 +8,41 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
   try {
+    // Get mail configuration from environment variables
+    const host = process.env.EMAIL_SERVER_HOST;
+    const port = Number(process.env.EMAIL_SERVER_PORT);
+    const user = process.env.EMAIL_SERVER_USER;
+    const pass = process.env.EMAIL_SERVER_PASSWORD;
+    const from = process.env.EMAIL_FROM;
+    
+    // Validate required email configuration
+    if (!host || !port || !user || !pass || !from) {
+      console.error('Missing email configuration:', { 
+        hostProvided: !!host, 
+        portProvided: !!port, 
+        userProvided: !!user, 
+        passProvided: !!pass,
+        fromProvided: !!from
+      });
+      throw new Error('Email configuration incomplete. Check environment variables.');
+    }
+    
     console.log('Creating transporter with:', {
-      host: process.env.EMAIL_SERVER_HOST,
-      port: process.env.EMAIL_SERVER_PORT,
-      user: process.env.EMAIL_SERVER_USER,
-      from: process.env.EMAIL_FROM,
+      host,
+      port,
+      user,
+      from,
+      secure: true,
     });
-
+    
+    // Create the nodemailer transporter
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_SERVER_HOST,
-      port: Number(process.env.EMAIL_SERVER_PORT),
+      host,
+      port,
+      secure: true, // use TLS
       auth: {
-        user: process.env.EMAIL_SERVER_USER,
-        pass: process.env.EMAIL_SERVER_PASSWORD,
+        user,
+        pass,
       },
     });
 
@@ -204,4 +226,4 @@ export async function sendVerificationEmail(email: string, token: string) {
     console.error('Verification email error:', error);
     throw error;
   }
-} 
+}

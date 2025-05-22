@@ -42,9 +42,9 @@ export async function POST(request: Request) {
     const formattedInquiryType = 
       inquiryType.charAt(0).toUpperCase() + inquiryType.slice(1);
 
-    // Send email to admin (akkiisan9@gmail.com)
+    // Send email to admin 
     await sendEmail({
-      to: "akkiisan9@gmail.com",
+      to: "akhil@interviewsense.org", // Use organization email since we're using SpaceMail now
       subject: `InterviewSense Contact Form: ${formattedInquiryType} Inquiry`,
       html: `
         <!DOCTYPE html>
