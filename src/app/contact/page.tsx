@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, ChevronLeft, Mail, Building2, Phone, CheckCircle2, ArrowRight } from "lucide-react"
+import { MessageSquare, ChevronLeft, Mail, Building2, Phone, CheckCircle2, ArrowRight, AlertCircle } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { toast } from "@/components/ui/use-toast"
 
 export default function ContactPage() {
   const [name, setName] = useState("")
@@ -20,16 +21,64 @@ export default function ContactPage() {
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError("")
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          company,
+          inquiryType,
+          message,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit contact form');
+      }
+
+      // Show success toast
+      toast({
+        title: "Message Sent!",
+        description: "We've received your inquiry and will respond shortly.",
+      });
+      
       setIsSubmitting(false)
       setIsSubmitted(true)
-    }, 1500)
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setIsSubmitting(false);
+      
+      // Show error toast
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "There was a problem sending your message. Please try again.",
+      });
+    }
+  }
+
+  const resetForm = () => {
+    setName("")
+    setEmail("")
+    setCompany("")
+    setInquiryType("enterprise")
+    setMessage("")
+    setIsSubmitted(false)
+    setError("")
   }
 
   return (
@@ -81,18 +130,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-white">Email Us</h3>
-                    <p className="text-zinc-400">support@interviewsense.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-blue-500/10 rounded-2xl p-3 flex items-center justify-center">
-                    <Phone className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-white">Call Us</h3>
-                    <p className="text-zinc-400">+1 (747) 312-1646</p>
-                    <p className="text-xs text-zinc-500">Monday - Friday, 9AM - 5PM EST</p>
+                    <p className="text-zinc-400">akhil@interviewsense.org</p>
                   </div>
                 </div>
               </div>
@@ -102,22 +140,34 @@ export default function ContactPage() {
               {isSubmitted ? (
                 <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
                   <CardHeader className="text-center pt-10">
-                    <div className="mx-auto mb-6 bg-green-500/10 p-4 rounded-full">
-                      <CheckCircle2 className="h-12 w-12 text-green-500" />
+                    <div className="mx-auto mb-6 bg-blue-500/10 p-4 rounded-full">
+                      <Mail className="h-12 w-12 text-blue-500" />
                     </div>
-                    <CardTitle className="text-2xl text-white">Message Sent!</CardTitle>
+                    <CardTitle className="text-2xl text-white">Thank You!</CardTitle>
                     <CardDescription className="text-zinc-400">
-                      Thank you for reaching out. We've received your inquiry and will respond shortly.
+                      Your message has been received. Our team will review your inquiry and get back to you shortly.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="text-center pb-10">
-                    <p className="mb-8 text-zinc-400">A confirmation email has been sent to {email}</p>
-                    <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8">
-                      <Link href="/">
-                        Return to Homepage
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <div className="mb-8 p-4 bg-zinc-700/20 rounded-lg border border-zinc-700/30">
+                      <p className="text-zinc-300 mb-1">We typically respond within 24 hours</p>
+                      <p className="text-zinc-400 text-sm">Please check your email at <span className="text-blue-400">{email}</span> for our response</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8">
+                        <Link href="/">
+                          Return to Homepage
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full"
+                        onClick={resetForm}
+                      >
+                        Send Another Message
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
@@ -125,10 +175,18 @@ export default function ContactPage() {
                   <CardHeader>
                     <CardTitle className="text-white">Contact Us</CardTitle>
                     <CardDescription className="text-zinc-400">
-                      Fill out the form below and we'll get back to you as soon as possible.
+                      Fill out the form below and we'll get back to you as soon as possible. 
+                      Your information is sent directly via email and is not stored in our database.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 mb-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <p className="text-sm">{error}</p>
+                      </div>
+                    )}
+                    
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-zinc-300">
