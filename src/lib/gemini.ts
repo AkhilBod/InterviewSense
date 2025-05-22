@@ -561,9 +561,11 @@ export async function transcribeAndAnalyzeAudio(audioBlob: Blob) {
     3. Identify any filler words or phrases (like "um", "uh", "you know", etc.).
     4. Provide a brief sentiment analysis (positive, neutral, negative tone).
     
+    If the audio is silent, empty, or contains no eligible speech, respond with a transcription value of "[No eligible speech detected]" and do not make up or hallucinate content. Do not invent a transcript if nothing is said.
+    
     Return your response in this JSON format:
     {
-      "transcription": "Full transcription of the audio here...",
+      "transcription": "Full transcription of the audio here... or [No eligible speech detected] if nothing was said.",
       "analysis": {
         "clarity": "Rating from 1-10 with brief explanation",
         "pace": "Rating from 1-10 with brief explanation",
