@@ -70,3 +70,6 @@ model PasswordResetToken {
 
   @@index([token])
 }
+
+// Note: We've removed the ContactInquiry model since we're now sending emails directly
+// without storing contact form data in the database.
