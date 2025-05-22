@@ -16,13 +16,11 @@ export default function Home() {
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/dashboard')
-    }
-  }, [status, router])
+  // No longer automatically redirect authenticated users
+  // This allows the homepage to be viewed by all users
 
   const handleGetStartedClick = () => {
+    // The button will still navigate to the appropriate page based on authentication status
     if (status === 'authenticated') {
       router.push('/dashboard')
     } else {
