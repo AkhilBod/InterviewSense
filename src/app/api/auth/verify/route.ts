@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   try {
@@ -59,6 +60,9 @@ export async function GET(request: Request) {
     await prisma.verificationToken.delete({
       where: { token: token }
     });
+    
+    // Send welcome email to the newly verified user
+    await sendWelcomeEmail(user.email, user.name || 'there');
 
     // Redirect to login page with auto-login parameters
     const redirectUrl = `${process.env.NEXTAUTH_URL}/login?success=email-verified&autoLogin=true&email=${encodeURIComponent(user.email)}`;
