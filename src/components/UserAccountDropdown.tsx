@@ -14,7 +14,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, LogOut, UserX } from 'lucide-react'
 import { deleteUserData } from '@/lib/account'
-import { useToast } from '@/components/ui/use-toast'export function UserAccountDropdown() {
+import { useToast } from '@/components/ui/use-toast'
+
+export function UserAccountDropdown() {
   const { data: session } = useSession()
   const router = useRouter()
   const { toast } = useToast()
