@@ -1,18 +1,12 @@
 "use client"
 
 import { Button } from '@/components/ui/button';
-import { Briefcase, Brain, FileText, FileCheck2, MessageSquare, User, LogOut } from 'lucide-react';
+import { Briefcase, Brain, FileText, FileCheck2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 
 function DashboardPage() {
   const { data: session, status } = useSession();
@@ -69,39 +63,7 @@ function DashboardPage() {
           </div>
           <nav className="flex items-center gap-4">
             {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-zinc-900 border-zinc-800" align="end">
-                  <div className="flex items-center gap-2 p-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-white text-sm">{session.user?.name}</span>
-                      <span className="text-xs text-zinc-400">{session.user?.email}</span>
-                    </div>
-                  </div>
-                  <DropdownMenuItem
-                    className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserAccountDropdown />
             ) : (
               <Link href="/login">
                 <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
