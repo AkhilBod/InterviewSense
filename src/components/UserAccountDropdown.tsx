@@ -69,7 +69,7 @@ export function UserAccountDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="rounded-full border-2 border-blue-500">
           <Avatar className="h-8 w-8">
             <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
             <AvatarFallback>{initials}</AvatarFallback>
@@ -96,7 +96,7 @@ export function UserAccountDropdown() {
           Dashboard
         </DropdownMenuItem>
         <DropdownMenuItem 
-          className="cursor-pointer text-red-500 focus:text-red-500"
+          className="cursor-pointer bg-red-900 text-white focus:bg-red-800 focus:text-white hover:bg-red-800 hover:text-white"
           onClick={handleDeleteUserData}
           disabled={isDeleting}
         >
