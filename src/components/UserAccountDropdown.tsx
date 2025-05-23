@@ -1,1 +1,112 @@
-"use client"import { useState } from 'react'import { useSession, signOut } from 'next-auth/react'import { useRouter } from 'next/navigation'import { Button } from '@/components/ui/button'import {   DropdownMenu,  DropdownMenuContent,  DropdownMenuItem,  DropdownMenuSeparator,  DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"import { User, LogOut, UserX } from 'lucide-react'import { deleteUserData } from '@/lib/account'import { useToast } from '@/components/ui/use-toast'export function UserAccountDropdown() {  const { data: session } = useSession()  const router = useRouter()  const { toast } = useToast()  const [isDeleting, setIsDeleting] = useState(false)  const handleSignOut = async () => {    await signOut({ redirect: true, callbackUrl: '/' })  }  const handleDeleteUserData = async () => {    if (!confirm('Are you sure you want to delete your personal data? This action cannot be undone.')) {      return    }        setIsDeleting(true)        try {      await deleteUserData()            toast({        title: "Data deleted successfully",        description: "Your personal information has been removed.",      })            // Optionally sign out after data deletion      await signOut({ redirect: true, callbackUrl: '/' })    } catch (error) {      toast({        title: "Error deleting data",        description: "There was a problem deleting your data. Please try again.",        variant: "destructive",      })    } finally {      setIsDeleting(false)    }  }  if (!session?.user) {    return null  }  const initials = session.user.name    ? session.user.name        .split(' ')        .map(part => part[0])        .join('')        .toUpperCase()    : 'U'  return (    <DropdownMenu>      <DropdownMenuTrigger asChild>        <Button variant="ghost" size="icon" className="rounded-full">          <Avatar className="h-8 w-8">            <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />            <AvatarFallback>{initials}</AvatarFallback>          </Avatar>        </Button>      </DropdownMenuTrigger>      <DropdownMenuContent align="end">        <div className="flex items-center justify-start gap-2 p-2">          <div className="flex flex-col space-y-1 leading-none">            {session.user.name && <p className="font-medium">{session.user.name}</p>}            {session.user.email && (              <p className="w-[200px] truncate text-sm text-muted-foreground">                {session.user.email}              </p>            )}          </div>        </div>        <DropdownMenuSeparator />        <DropdownMenuItem           className="cursor-pointer"          onClick={() => router.push('/dashboard')}        >          <User className="mr-2 h-4 w-4" />          Dashboard        </DropdownMenuItem>        <DropdownMenuItem           className="cursor-pointer text-red-500 focus:text-red-500"          onClick={handleDeleteUserData}          disabled={isDeleting}        >          <UserX className="mr-2 h-4 w-4" />          {isDeleting ? 'Deleting...' : 'Delete My Data'}        </DropdownMenuItem>        <DropdownMenuSeparator />        <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>          <LogOut className="mr-2 h-4 w-4" />          Sign Out        </DropdownMenuItem>      </DropdownMenuContent>    </DropdownMenu>  )}
+"use client"
+
+import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User, LogOut, UserX } from 'lucide-react'
+import { deleteUserData } from '@/lib/account'
+import { useToast } from '@/components/ui/use-toast'export function UserAccountDropdown() {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: '/' })
+  }
+
+  const handleDeleteUserData = async () => {
+    if (!confirm('Are you sure you want to delete your personal data? This action cannot be undone.')) {
+      return
+    }
+    
+    setIsDeleting(true)
+    
+    try {
+      await deleteUserData()
+      
+      toast({
+        title: "Data deleted successfully",
+        description: "Your personal information has been removed.",
+      })
+      
+      // Optionally sign out after data deletion
+      await signOut({ redirect: true, callbackUrl: '/' })
+    } catch (error) {
+      toast({
+        title: "Error deleting data",
+        description: "There was a problem deleting your data. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (!session?.user) {
+    return null
+  }
+
+  const initials = session.user.name
+    ? session.user.name
+        .split(' ')
+        .map(part => part[0])
+        .join('')
+        .toUpperCase()
+    : 'U'
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <div className="flex items-center justify-start gap-2 p-2">
+          <div className="flex flex-col space-y-1 leading-none">
+            {session.user.name && <p className="font-medium">{session.user.name}</p>}
+            {session.user.email && (
+              <p className="w-[200px] truncate text-sm text-muted-foreground">
+                {session.user.email}
+              </p>
+            )}
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="cursor-pointer"
+          onClick={() => router.push('/dashboard')}
+        >
+          <User className="mr-2 h-4 w-4" />
+          Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className="cursor-pointer text-red-500 focus:text-red-500"
+          onClick={handleDeleteUserData}
+          disabled={isDeleting}
+        >
+          <UserX className="mr-2 h-4 w-4" />
+          {isDeleting ? 'Deleting...' : 'Delete My Data'}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
