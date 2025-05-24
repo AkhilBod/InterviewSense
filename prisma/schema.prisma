@@ -1,29 +1,26 @@
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql" // You can change this to mysql, sqlite, etc.
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// NextAuth Models
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -37,25 +34,27 @@ model Session {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  name              String?
-  email             String    @unique
-  emailVerified     DateTime?
-  password          String?   // Hashed password for credentials provider
-  image             String?
-  onboardingCompleted Boolean @default(false)
-  accounts          Account[]
-  sessions          Session[]
-  verificationTokens VerificationToken[]
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  password            String?
+  image               String?
+  onboardingCompleted Boolean              @default(false)
+  credits             Int                  @default(10)
+  lastCreditReset     DateTime?
+  accounts            Account[]
   passwordResetTokens PasswordResetToken[]
+  sessions            Session[]
+  verificationTokens  VerificationToken[]
 }
 
 model VerificationToken {
-  id          String   @id @default(cuid())
-  identifier  String
-  token       String   @unique
-  expires     DateTime
-  user        User     @relation(fields: [identifier], references: [email])
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [identifier], references: [email])
 
   @@unique([identifier, token])
 }
@@ -64,12 +63,9 @@ model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expires   DateTime
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
 }
-
-// Note: We've removed the ContactInquiry model since we're now sending emails directly
-// without storing contact form data in the database.

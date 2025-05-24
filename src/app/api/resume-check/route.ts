@@ -1,22 +1,56 @@
 // pages/api/resume-check.ts
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // Ensure GOOGLE_AI_KEY is set in your environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const CREDIT_COST_RESUME = 1;
 
 export async function POST(req: Request) {
     console.log("=== Resume Check API Started (Direct File Upload Method) ===");
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Deduct credits
+        try {
+            const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // Pass along the session cookie if your API route is protected
+                    // This might require handling cookies on the server-side if not already done
+                    // For simplicity, assuming the /api/user/credits route can re-verify session
+                },
+                body: JSON.stringify({ featureType: 'resume' }),
+            });
+
+            if (!creditResponse.ok) {
+                const errorData = await creditResponse.json();
+                if (creditResponse.status === 402) { // Insufficient credits
+                    return NextResponse.json({ error: "Insufficient credits to check resume." }, { status: 402 });
+                }
+                return NextResponse.json({ error: errorData.error || "Failed to deduct credits." }, { status: creditResponse.status });
+            }
+        } catch (creditError) {
+            console.error("Credit deduction error:", creditError);
+            return NextResponse.json({ error: "Failed to process credit deduction." }, { status: 500 });
+        }
+
         console.log("Parsing form data...");
         const formData = await req.formData();
-        const file = formData.get("resume") as Blob | null;
+        const file = formData.get("resume") as File | null; // Changed Blob to File
         const jobTitle = formData.get("jobTitle") as string | null;
         const company = formData.get("company") as string | null;
         const jobDescription = formData.get("jobDescription") as string | null;
 
         console.log("Received data:", {
-            fileName: file?.name,
+            fileName: file?.name, // Now valid
             fileSize: file?.size,
             fileType: file?.type,
             jobTitle,
@@ -67,7 +101,7 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Consider "gemini-1.5-pro" for more complex analyses
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const textPromptPart = {
             text: `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume (which is attached as a file) with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
@@ -104,18 +138,11 @@ Please provide a detailed, structured resume analysis focused on this specific r
 Please ensure all sections are present and use clear, concise language. The sections "Overall Assessment", "Key Strengths", "Areas for Improvement", "Specific Suggestions", "ATS Optimization Tips", and "Format and Presentation Feedback" should always appear.`
         };
 
-        const filePart = {
-            inlineData: {
-                mimeType: file.type,
-                data: base64File,
-            },
-        };
-
         const generationConfig = {
-            temperature: 0.7, // Can be tuned for more creative (higher) or focused (lower) output
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: 8192, // Check model limits
+            temperature: 0.6, // Slightly more creative but still grounded
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 4096, // Increased for potentially longer, detailed analysis
         };
 
         const safetySettings = [
@@ -125,129 +152,98 @@ Please ensure all sections are present and use clear, concise language. The sect
             { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
         ];
 
-        console.log("Sending request to Gemini with file and prompt...");
+        const parts = [
+            textPromptPart,
+            {
+                inlineData: {
+                    mimeType: file.type,
+                    data: base64File,
+                },
+            },
+        ];
 
+        console.log("Sending request to Gemini API...");
         const result = await model.generateContent({
-            contents: [{
-                role: "user",
-                parts: [filePart, textPromptPart]
-            }],
+            contents: [{ role: "user", parts }],
             generationConfig,
-            safetySettings
+            safetySettings,
         });
 
-        const geminiResponse = result.response;
-        const analysisText = geminiResponse?.text() ?? null;
+        console.log("Gemini API response received.");
+        const response = result.response;
 
-        if (!analysisText) {
-            console.log("No response text from Gemini. Prompt Feedback:", geminiResponse?.promptFeedback);
-            const noResponseError = { error: "Failed to get analysis from AI. The AI did not return any text. This could be due to content restrictions or processing issues." };
-            console.log("Error Response:", noResponseError);
-            return NextResponse.json(noResponseError, { status: 500 });
+        if (!response || !response.candidates || response.candidates.length === 0) {
+            console.log("No content in Gemini response or response.text() is undefined.");
+            const errorResponse = { error: "Failed to generate resume analysis. No content received from AI." };
+            console.log("Error Response:", errorResponse);
+            return NextResponse.json(errorResponse, { status: 500 });
         }
 
-        console.log("Received response from Gemini, length:", analysisText.length);
+        const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+        
+        if (!analysisText) {
+            console.log("Empty analysis text from Gemini.");
+            const errorResponse = { error: "Failed to generate resume analysis. Received empty analysis." };
+            console.log("Error Response:", errorResponse);
+            return NextResponse.json(errorResponse, { status: 500 });
+        }
 
-        // === Extract structured data from the analysis ===
-        let score = 0;
+        console.log("Resume analysis generated successfully.");
+        // console.log("Analysis Text (first 500 chars):", analysisText.substring(0, 500));
+
+        // Attempt to parse the Overall Score
+        let overallScore = null;
         const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
         if (scoreMatch && scoreMatch[1]) {
-            score = parseInt(scoreMatch[1], 10);
+            overallScore = parseInt(scoreMatch[1], 10);
+            console.log(`Parsed Overall Score: ${overallScore}`);
         } else {
-            // Fallback if score is not found, assign a random score within a reasonable range
-            score = 70 + Math.floor(Math.random() * 21); // Random 70-90% if not explicitly parsed
-            console.warn("Could not parse specific score from Gemini analysis, using fallback.");
+            console.log("Could not parse Overall Score from the analysis.");
         }
 
-        const parseBulletPoints = (text: string, heading: string): string[] => {
-            const regex = new RegExp(`## ${heading}\\s*\\n([\\s\\S]*?)(?:\\n##|$)`);
-            const match = text.match(regex);
-            if (match && match[1]) {
-                return match[1].split('\n')
-                    .map(line => line.replace(/^[*-]\s*/, '').trim())
-                    .filter(line => line.length > 0);
-            }
-            return [];
-        };
+        const successResponse = { analysis: analysisText, overallScore };
+        // console.log("Success Response:", successResponse);
+        return NextResponse.json(successResponse);
 
-        const strengths = parseBulletPoints(analysisText, "Key Strengths");
-        const areasForImprovement = parseBulletPoints(analysisText, "Areas for Improvement");
+    } catch (error) {
+        console.error("Error in resume check API:", error);
+        let errorMessage = "An unexpected error occurred.";
+        let statusCode = 500;
 
-        let keywordMatch = null;
-        if (jobDescription) {
-            // Simple heuristic for keyword matching
-            const jobKeywords = jobDescription.toLowerCase().split(/\W+/)
-                .filter(word => word.length > 3) // filter short words
-                .filter((value, index, self) => self.indexOf(value) === index); // unique keywords
-            
-            let matchedCount = 0;
-            for (const keyword of jobKeywords) {
-                if (analysisText.toLowerCase().includes(keyword)) {
-                    matchedCount++;
-                }
-            }
-            keywordMatch = jobKeywords.length > 0 ? Math.round((matchedCount / jobKeywords.length) * 100) : 0;
+        if (error instanceof Error) {
+            errorMessage = error.message;
+            // You could add more specific error handling here if needed
+            // For example, if the error object has a specific code or name
         }
+        
+        // Log the detailed error for server-side debugging
+        console.error(`Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
 
-        // Estimate resume length by word count (very rough approximation, adjust as needed)
-        const resumeLengthWords = analysisText.split(/\s+/).length;
-        const estimatedPages = Math.ceil(resumeLengthWords / 500); // Assuming ~500 words per page
-
-        let atsCompatibility = 'Unknown';
-        if (analysisText.toLowerCase().includes('ats compatibility good')) {
-            atsCompatibility = 'Good';
-        } else if (analysisText.toLowerCase().includes('improve ats')) {
-            atsCompatibility = 'Needs Improvement';
-        } else if (analysisText.toLowerCase().includes('ats optimized')) {
-            atsCompatibility = 'Optimized';
-        }
-
-
-        const stats = {
-            fileType: file.type,
-            resumeLength: estimatedPages, // Simplified to estimated pages
-            keywordMatch, // Percentage of job description keywords found
-            skillsCount: strengths.length, // Number of identified strengths
-            atsCompatibility // Derived from analysis text
-        };
-
-        const formattedAnalysis = {
-            title: `Resume Analysis for ${jobTitle}${company ? ` at ${company}` : ''}`,
-            date: new Date().toLocaleDateString(),
-            content: analysisText,
-            fileName: file.name
-        };
-
-        console.log("=== Resume Check API Completed Successfully ===");
-        return NextResponse.json({
-            analysis: analysisText,
-            formattedAnalysis: formattedAnalysis,
-            score,
-            strengths,
-            areasForImprovement,
-            stats
-        });
-
-    } catch (error: any) {
-        console.error("=== Resume Check API Error ===");
-        console.error("Error details:", error);
-        let errorMessage = `Failed to analyze resume. Please try again.`;
-
-        if (error.message) {
-            console.error("Error message:", error.message);
-            errorMessage += ` Server Error: ${error.message}`;
-        }
-
-        if (error.response && error.response.promptFeedback) {
-            console.error("Gemini Prompt Feedback:", error.response.promptFeedback);
-            errorMessage += ` (AI processing issue: ${JSON.stringify(error.response.promptFeedback)})`;
-        } else if (error.status && error.details) {
-            console.error("Gemini API Error Status:", error.status, "Details:", error.details);
-            errorMessage += ` (AI API Error: ${error.details})`;
+        // Check if the error is from Gemini API (e.g., blocked content)
+        // This is a generic check; specific Gemini error types might need more detailed handling
+        // @ts-ignore
+        if (error.message && error.message.includes("SAFETY")) {
+            errorMessage = "The resume content triggered a safety filter. Please revise and try again.";
+            statusCode = 400; // Bad Request, as the input was problematic
         }
 
         const errorResponse = { error: errorMessage };
-        console.log("Error Response:", errorResponse);
-        return NextResponse.json(errorResponse, { status: 500 });
+        console.log("Final Error Response:", errorResponse);
+        return NextResponse.json(errorResponse, { status: statusCode });
     }
 }
+
+// Helper function to log request details (optional, for debugging)
+async function logRequestDetails(req: Request) {
+    const details = {
+        url: req.url,
+        method: req.method,
+        headers: Object.fromEntries(req.headers.entries()),
+    };
+    console.log("Incoming Request Details:", details);
+    // Avoid logging body directly if it contains sensitive or large data,
+    // or handle it carefully (e.g., clone and then read parts of it).
+}
+
+// Example of how you might call it at the beginning of your POST function:
+// await logRequestDetails(req.clone()); // Clone req if you need to read its body later

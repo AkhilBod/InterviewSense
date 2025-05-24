@@ -1,12 +1,42 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const CREDIT_COST_TECHNICAL = 2;
 
 // Generate a technical interview question
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Deduct credits for generating a question
+    // Note: The PUT request for analysis will also need credit deduction.
+    try {
+        const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ featureType: 'technical' }), // Assuming 'technical' covers question generation
+        });
+
+        if (!creditResponse.ok) {
+            const errorData = await creditResponse.json();
+            if (creditResponse.status === 402) {
+                return NextResponse.json({ error: "Insufficient credits to generate a technical question." }, { status: 402 });
+            }
+            return NextResponse.json({ error: errorData.error || "Failed to deduct credits." }, { status: creditResponse.status });
+        }
+    } catch (creditError) {
+        console.error("Credit deduction error (POST technical-assessment):", creditError);
+        return NextResponse.json({ error: "Failed to process credit deduction." }, { status: 500 });
+    }
+
     const { company, role, difficulty, useCustomNumber, leetcodeNumber } = await req.json();
 
     // Use Gemini 2.0 Flash
@@ -60,6 +90,32 @@ Format it exactly like a real LeetCode problem. Do NOT include solution template
 // Analyze the submitted code solution and explanation
 export async function PUT(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // IMPORTANT: Deduct credits for analysis as well. 
+    // This assumes analyzing a technical interview also costs 'technical' credits.
+    // If it has a different cost or should be free, adjust accordingly.
+    try {
+        const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ featureType: 'technical' }), // Or a different type like 'technicalAnalysis'
+        });
+
+        if (!creditResponse.ok) {
+            const errorData = await creditResponse.json();
+            if (creditResponse.status === 402) {
+                return NextResponse.json({ error: "Insufficient credits to analyze the solution." }, { status: 402 });
+            }
+            return NextResponse.json({ error: errorData.error || "Failed to deduct credits for analysis." }, { status: creditResponse.status });
+        }
+    } catch (creditError) {
+        console.error("Credit deduction error (PUT technical-assessment):", creditError);
+        return NextResponse.json({ error: "Failed to process credit deduction for analysis." }, { status: 500 });
+    }
+
     const { 
       company, 
       role, 
