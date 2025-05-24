@@ -297,7 +297,7 @@ function Questionnaire() {
               </div>
             )}
 
-            <div className="mt-auto pt-4 sm:pt-8 flex justify-between">
+            <div className="mt-auto pt-4 sm:pt-8 pb-8 sm:pb-0 flex justify-between">
               <Button 
                 variant="outline" 
                 onClick={handleBack}
