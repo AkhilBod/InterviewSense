@@ -89,6 +89,8 @@ export const authOptions: NextAuthOptions = {
                 image: user.image,
                 emailVerified: verifiedDate,
                 onboardingCompleted: false,
+                credits: 10, // Initialize with default credits
+                lastCreditReset: new Date(), // Set lastCreditReset to now
               } as Prisma.UserCreateInput,
             });
             return true;
@@ -150,4 +152,4 @@ export const authOptions: NextAuthOptions = {
     }
   },
   debug: process.env.NODE_ENV === 'development',
-}; 
+};

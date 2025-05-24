@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, Part } from "@google/generative-ai";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // Ensure GEMINI_API_KEY is set in your environment variables
 const apiKey = process.env.GEMINI_API_KEY;
@@ -7,6 +10,7 @@ if (!apiKey) {
     console.error("GEMINI_API_KEY is not set in environment variables.");
 }
 const genAI = new GoogleGenerativeAI(apiKey || "");
+const CREDIT_COST_COVER_LETTER = 1;
 
 const SUPPORTED_RESUME_MIME_TYPES = [
     "application/pdf",
@@ -18,6 +22,31 @@ const SUPPORTED_RESUME_MIME_TYPES = [
 export async function POST(req: Request) {
     console.log("=== Cover Letter Generation API Started ===");
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Deduct credits
+        try {
+            const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ featureType: 'coverLetter' }),
+            });
+
+            if (!creditResponse.ok) {
+                const errorData = await creditResponse.json();
+                if (creditResponse.status === 402) {
+                    return NextResponse.json({ error: "Insufficient credits to generate cover letter." }, { status: 402 });
+                }
+                return NextResponse.json({ error: errorData.error || "Failed to deduct credits." }, { status: creditResponse.status });
+            }
+        } catch (creditError) {
+            console.error("Credit deduction error:", creditError);
+            return NextResponse.json({ error: "Failed to process credit deduction." }, { status: 500 });
+        }
+
         console.log("Parsing form data...");
         const formData = await req.formData();
 
@@ -30,7 +59,7 @@ export async function POST(req: Request) {
         const candidateAddress = formData.get("candidateAddress") as string | null;
         const hiringManagerName = formData.get("hiringManagerName") as string | null;
         const hiringManagerTitle = formData.get("hiringManagerTitle") as string | null;
-        const resumeFile = formData.get("resume") as Blob | null;
+        const resumeFile = formData.get("resume") as File | null; // Changed Blob to File
 
         console.log("Received data:", {
             jobTitle,
