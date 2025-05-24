@@ -21,17 +21,12 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Update user to remove username (partial data deletion)
-    await prisma.user.update({
+    // Delete the user record from the database
+    await prisma.user.delete({
       where: { email: session.user.email },
-      data: { 
-        name: null,
-        // Add other fields you want to anonymize here
-        // For example: profile: null, preferences: null, etc.
-      },
     });
 
-    return NextResponse.json({ success: true, message: 'User data deleted successfully' });
+    return NextResponse.json({ success: true, message: 'User account deleted successfully' });
   } catch (error) {
     console.error('Error deleting user data:', error);
     return NextResponse.json({ error: 'Failed to delete user data' }, { status: 500 });
