@@ -48,13 +48,13 @@ function LoginPage() {
 
   // Handle error and success from URL parameters
   useEffect(() => {
-    const error = searchParams.get('error')
-    const success = searchParams.get('success')
-    const autoLogin = searchParams.get('autoLogin')
-    const userEmail = searchParams.get('email')
+    const errorParam = searchParams.get('error');
+    const successParam = searchParams.get('success');
+    const autoLogin = searchParams.get('autoLogin');
+    const userEmail = searchParams.get('email');
 
-    if (error) {
-      switch (error) {
+    if (errorParam) {
+      switch (errorParam) {
         case 'CredentialsSignin':
           setError('Invalid email or password')
           break
@@ -105,20 +105,30 @@ function LoginPage() {
       }
     }
 
-    if (success === 'email-verified') {
-      setSuccess('Your email has been verified successfully.')
+    if (successParam === 'email-verified') {
+      setSuccess('Your email has been verified successfully.');
       if (autoLogin === 'true' && userEmail) {
-        setEmail(userEmail)
-        // Trigger automatic login
-        handleEmailLogin(new Event('submit') as any)
+        setEmail(userEmail);
+        // It's generally not recommended to auto-submit forms programmatically
+        // for security and UX reasons. Consider prompting the user to click login.
+        // However, if auto-login is a strict requirement:
+        // Ensure password field is also populated if needed or handle appropriately.
       }
     }
-  }, [searchParams])
+    // Clear error and success messages from URL to prevent them from reappearing on refresh
+    // router.replace('/login', undefined); // Be cautious with this, might interfere with other logic
+  }, [searchParams, router]); // Added router to dependency array
 
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
+    e.preventDefault();
+    setError(null);
+
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      setIsLoading(false); // Ensure loading state is reset
+      return;
+    }
+    setIsLoading(true);
 
     try {
       const result = await signIn('credentials', {
