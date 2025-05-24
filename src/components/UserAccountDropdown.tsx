@@ -69,44 +69,54 @@ export function UserAccountDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full border-2 border-blue-500 bg-white hover:bg-blue-50">
-          <Avatar className="h-8 w-8 bg-blue-100 text-blue-600">
+        {/* Use primary color for border and hover states, slate for background */}
+        <Button variant="outline" size="icon" className="rounded-full border-2 border-primary bg-slate-800 hover:bg-slate-700 hover:border-primary/80">
+          {/* Avatar with primary color accents */}
+          <Avatar className="h-8 w-8 bg-primary/10 text-primary">
             <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
-            <AvatarFallback className="bg-blue-500 text-white font-bold">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-primary/20 text-primary font-semibold">{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
-        <div className="flex items-center justify-start gap-2 p-2 bg-blue-50">
-          <div className="flex flex-col space-y-1 leading-none">
-            {session.user.name && <p className="font-medium text-blue-800">{session.user.name}</p>}
+      {/* Dropdown content with slate background and primary accents */}
+      <DropdownMenuContent align="end" className="bg-slate-800/90 backdrop-blur-md border-slate-700 shadow-2xl text-slate-200 w-64">
+        <div className="flex items-center justify-start gap-3 p-3 bg-slate-700/50">
+          <Avatar className="h-10 w-10 bg-primary/10 text-primary">
+            <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+            <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">{initials}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col space-y-0.5 leading-none">
+            {session.user.name && <p className="font-semibold text-primary">{session.user.name}</p>}
             {session.user.email && (
-              <p className="w-[200px] truncate text-sm text-blue-600">
+              <p className="w-[180px] truncate text-sm text-slate-400">
                 {session.user.email}
               </p>
             )}
           </div>
         </div>
-        <DropdownMenuSeparator className="bg-gray-200" />
+        <DropdownMenuSeparator className="bg-slate-700" />
         <DropdownMenuItem 
-          className="cursor-pointer hover:bg-blue-50 text-blue-800"
+          className="cursor-pointer hover:bg-slate-700/70 focus:bg-slate-700/70 text-slate-300 hover:text-primary focus:text-primary"
           onClick={() => router.push('/dashboard')}
         >
-          <User className="mr-2 h-4 w-4 text-blue-600" />
+          <User className="mr-2 h-4 w-4 text-primary/80" />
           Dashboard
         </DropdownMenuItem>
         <DropdownMenuItem 
-          className="cursor-pointer bg-red-500 text-white hover:bg-red-600 focus:bg-red-700 focus:text-white"
+          className="cursor-pointer hover:bg-slate-700/70 focus:bg-slate-700/70 text-slate-300 hover:text-primary focus:text-primary"
+          onClick={handleSignOut}
+        >
+          <LogOut className="mr-2 h-4 w-4 text-primary/80" />
+          Sign Out
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-slate-700" />
+        <DropdownMenuItem 
+          className="cursor-pointer bg-destructive/20 text-destructive hover:bg-destructive/30 focus:bg-destructive/30 focus:text-destructive/80"
           onClick={handleDeleteUserData}
           disabled={isDeleting}
         >
-          <UserX className="mr-2 h-4 w-4 text-white" />
-          {isDeleting ? 'Deleting...' : 'Delete My Data'}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gray-200" />
-        <DropdownMenuItem className="cursor-pointer hover:bg-gray-100" onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4 text-gray-600" />
-          Sign Out
+          <UserX className="mr-2 h-4 w-4" />
+          {isDeleting ? 'Deleting Data...' : 'Delete My Data'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
