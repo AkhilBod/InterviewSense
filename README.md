@@ -54,7 +54,7 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Rate Limiting**: Custom implementation with Redis
 
 ### AI & Machine Learning
-- **Primary AI**: InterviewSense Custom AI
+- **Primary AI**: Gemini
 - **Speech Processing**: Browser MediaRecorder API
 - **Future Integration**: AssemblyAI for advanced speech-to-text
 
@@ -281,7 +281,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Interview Sense Agent for AI capabilities
+- Gemini 2.0 Flash for AI capabilities
 - Vercel for deployment platform
 - Neon for PostgreSQL hosting
 - OpenAI for inspiration and research
