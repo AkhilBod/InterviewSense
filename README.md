@@ -271,8 +271,7 @@ docker run -p 3000:3000 interview-sense
 
 ## 📞 Support
 
-- **Email**: support@interviewsense.org
-- **Documentation**: Check the `/docs` folder
+- **Email**: akhil@interviewsense.org
 - **Issues**: Open a GitHub issue
 
 ## 📄 License
