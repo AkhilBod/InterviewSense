@@ -41,8 +41,6 @@ model User {
   password            String?
   image               String?
   onboardingCompleted Boolean              @default(false)
-  credits             Int                  @default(10)
-  lastCreditReset     DateTime?
   accounts            Account[]
   passwordResetTokens PasswordResetToken[]
   sessions            Session[]

@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const CREDIT_COST_BEHAVIORAL = 2;
 
 // Generate behavioral interview questions
 export async function POST(req: Request) {
@@ -14,26 +13,6 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Deduct credits for generating behavioral questions
-    try {
-        const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ featureType: 'behavioral' }),
-        });
-
-        if (!creditResponse.ok) {
-            const errorData = await creditResponse.json();
-            if (creditResponse.status === 402) {
-                return NextResponse.json({ error: "Insufficient credits to generate behavioral interview questions." }, { status: 402 });
-            }
-            return NextResponse.json({ error: errorData.error || "Failed to deduct credits." }, { status: creditResponse.status });
-        }
-    } catch (creditError) {
-        console.error("Credit deduction error (POST behavioral-interview):", creditError);
-        return NextResponse.json({ error: "Failed to process credit deduction." }, { status: 500 });
     }
 
     const { company, role, numberOfQuestions = 5 } = await req.json();
@@ -88,26 +67,6 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // Deduct credits for analyzing behavioral interview answers
-    try {
-        const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ featureType: 'behavioral' }),
-        });
-
-        if (!creditResponse.ok) {
-            const errorData = await creditResponse.json();
-            if (creditResponse.status === 402) {
-                return NextResponse.json({ error: "Insufficient credits to analyze behavioral interview answers." }, { status: 402 });
-            }
-            return NextResponse.json({ error: errorData.error || "Failed to deduct credits for analysis." }, { status: creditResponse.status });
-        }
-    } catch (creditError) {
-        console.error("Credit deduction error (PUT behavioral-interview):", creditError);
-        return NextResponse.json({ error: "Failed to process credit deduction for analysis." }, { status: 500 });
-    }
-
     const { 
       company, 
       role, 

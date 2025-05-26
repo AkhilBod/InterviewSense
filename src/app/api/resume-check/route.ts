@@ -7,39 +7,12 @@ import { prisma } from "@/lib/prisma";
 
 // Ensure GOOGLE_AI_KEY is set in your environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const CREDIT_COST_RESUME = 1;
-
 export async function POST(req: Request) {
     console.log("=== Resume Check API Started (Direct File Upload Method) ===");
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Deduct credits
-        try {
-            const creditResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/user/credits`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    // Pass along the session cookie if your API route is protected
-                    // This might require handling cookies on the server-side if not already done
-                    // For simplicity, assuming the /api/user/credits route can re-verify session
-                },
-                body: JSON.stringify({ featureType: 'resume' }),
-            });
-
-            if (!creditResponse.ok) {
-                const errorData = await creditResponse.json();
-                if (creditResponse.status === 402) { // Insufficient credits
-                    return NextResponse.json({ error: "Insufficient credits to check resume." }, { status: 402 });
-                }
-                return NextResponse.json({ error: errorData.error || "Failed to deduct credits." }, { status: creditResponse.status });
-            }
-        } catch (creditError) {
-            console.error("Credit deduction error:", creditError);
-            return NextResponse.json({ error: "Failed to process credit deduction." }, { status: 500 });
         }
 
         console.log("Parsing form data...");

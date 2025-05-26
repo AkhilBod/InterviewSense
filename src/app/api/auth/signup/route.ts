@@ -85,7 +85,6 @@ export async function POST(req: NextRequest) {
         email: normalizedEmail,
         name,
         password: hashedPassword,
-        // credits and lastCreditReset will use default values from schema
       },
     });
 

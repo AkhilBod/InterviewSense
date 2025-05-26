@@ -2,7 +2,7 @@
 
 **AI-Powered Interview Preparation Platform**
 
-InterviewSense is an AI-powered interview preparation platform that helps job seekers ace their interviews through personalized mock interviews, resume optimization, and technical assessments, monetizing via subscription tiers and premium features. The platform leverages advanced AI technology to provide real-time feedback on behavioral responses, technical skills evaluation, and automated cover letter generation, targeting the growing market of professionals seeking competitive interview preparation tools.
+InterviewSense is an AI-powered interview preparation platform that helps job seekers ace their interviews through personalized mock interviews, resume optimization, and technical assessments. The platform leverages advanced AI technology to provide real-time feedback on behavioral responses, technical skills evaluation, and automated cover letter generation, targeting the growing market of professionals seeking competitive interview preparation tools.
 
 ## ✨ Features
 
@@ -12,7 +12,6 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Resume Optimization**: AI-driven resume analysis and improvement suggestions
 - **Cover Letter Generation**: Automated, tailored cover letters for job applications
 - **Speech Analysis**: Real-time audio processing with sentiment analysis and feedback
-- **Credit System**: Fair usage with monthly credit allocation (10 credits/month)
 
 ### 🔐 Security & Authentication
 - **Multi-Provider Authentication**: Google OAuth, email/password, and secure session management
@@ -54,7 +53,7 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Rate Limiting**: Custom implementation with Redis
 
 ### AI & Machine Learning
-- **Primary AI**: Google Gemini 2.0 Flash API
+- **Primary AI**: InterviewSense Custom AI
 - **Speech Processing**: Browser MediaRecorder API
 - **Future Integration**: AssemblyAI for advanced speech-to-text
 
@@ -69,7 +68,7 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 ### Prerequisites
 - Node.js 18+ 
 - PostgreSQL database (local or cloud)
-- Google Cloud Console account (for OAuth and Gemini API)
+- Google Cloud Console account (for OAuth)
 - Email service (SMTP credentials)
 
 ### 1. Clone the Repository
@@ -146,21 +145,12 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 - `POST /api/technical-assessment` - Technical coding assessment
 - `POST /api/resume-check` - Resume analysis and optimization
 - `POST /api/generate-cover-letter` - AI cover letter generation
-- `GET /api/user/credits` - User credit balance
 - `POST /api/contact` - Contact form submission
 
 ### User Management
 - `GET /api/user/profile` - User profile data
 - `PUT /api/user/profile` - Update user profile
 - `POST /api/welcome-email` - Send welcome email
-
-## 💳 Credit System
-
-- **Free Tier**: 10 credits per month (resets monthly)
-- **Technical Assessment**: 2 credits per session
-- **Behavioral Interview**: 2 credits per session
-- **Resume Check**: 1 credit per analysis
-- **Cover Letter Generation**: 1 credit per generation
 
 ## 🔧 Development
 
@@ -281,7 +271,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Google Gemini API for AI capabilities
+- Interview Sense Agent for AI capabilities
 - Vercel for deployment platform
 - Neon for PostgreSQL hosting
 - OpenAI for inspiration and research
@@ -289,5 +279,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for job seekers worldwide**
+
 
