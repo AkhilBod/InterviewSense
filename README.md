@@ -1,12 +1,12 @@
-# InterviewSense 🚀
+# InterviewSense 
 
 **AI-Powered Interview Preparation Platform**
 
-InterviewSense is an AI-powered interview preparation platform that helps job seekers ace their interviews through personalized mock interviews, resume optimization, and technical assessments, monetizing via subscription tiers and premium features. The platform leverages advanced AI technology to provide real-time feedback on behavioral responses, technical skills evaluation, and automated cover letter generation, targeting the growing market of professionals seeking competitive interview preparation tools.
+InterviewSense is an AI-powered interview preparation platform that helps job seekers ace their interviews through personalized mock interviews, resume optimization, and technical assessments. The platform leverages advanced AI technology to provide real-time feedback on behavioral responses, technical skills evaluation, and automated cover letter generation, targeting the growing market of professionals seeking competitive interview preparation tools.
 
-## ✨ Features
+## Features
 
-### 🎯 Core Features
+### Core Features
 - **AI-Powered Mock Interviews**: Personalized behavioral interview practice with STAR method feedback
 - **Technical Assessments**: LeetCode-style coding challenges with real-time evaluation
 - **Resume Optimization**: AI-driven resume analysis and improvement suggestions
@@ -14,21 +14,21 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Speech Analysis**: Real-time audio processing with sentiment analysis and feedback
 - **Credit System**: Fair usage with monthly credit allocation (10 credits/month)
 
-### 🔐 Security & Authentication
+### Security & Authentication
 - **Multi-Provider Authentication**: Google OAuth, email/password, and secure session management
 - **Email Verification**: Secure account verification system
 - **Rate Limiting**: Advanced protection (5 requests/hour for signup, 3/15min for password resets)
 - **Password Reset**: Secure token-based password recovery
 - **Protected Routes**: Role-based access control
 
-### 🎨 User Experience
+### User Experience
 - **Modern UI**: Built with Tailwind CSS and shadcn/ui components
 - **Responsive Design**: Mobile-first, cross-platform compatibility
 - **Real-time Feedback**: Instant AI analysis and suggestions
 - **Progress Tracking**: Comprehensive dashboard with analytics
 - **Microphone Integration**: Browser-based audio recording and analysis
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
 - **Framework**: Next.js 14 with App Router
@@ -54,7 +54,7 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Rate Limiting**: Custom implementation with Redis
 
 ### AI & Machine Learning
-- **Primary AI**: Gemini
+- **Primary AI**: InterviewSense Custom AI
 - **Speech Processing**: Browser MediaRecorder API
 - **Future Integration**: AssemblyAI for advanced speech-to-text
 
@@ -64,7 +64,7 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Build Tool**: Next.js built-in bundler
 - **Package Manager**: npm/bun compatible
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ 
@@ -132,7 +132,7 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
-## 📋 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/signup` - User registration
@@ -162,7 +162,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 - **Resume Check**: 1 credit per analysis
 - **Cover Letter Generation**: 1 credit per generation
 
-## 🔧 Development
+## Development
 
 ### Code Quality
 ```bash
@@ -194,7 +194,7 @@ npm run build
 npm run start
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── src/
@@ -212,7 +212,7 @@ npm run start
 └── ...config files
 ```
 
-## 🌟 Key Features Explained
+## Key Features Explained
 
 ### AI-Powered Behavioral Interviews
 - Real-time speech-to-text conversion
@@ -238,7 +238,7 @@ npm run start
 - Secure session management
 - Input validation and sanitization
 
-## 🚀 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
@@ -254,7 +254,7 @@ docker build -t interview-sense .
 docker run -p 3000:3000 interview-sense
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -269,25 +269,25 @@ docker run -p 3000:3000 interview-sense
 - Add tests for new features
 - Update documentation as needed
 
-## 📞 Support
+## Support
 
-- **Email**: akhil@interviewsense.org
+- **Email**: support@interviewsense.org
+- **Documentation**: Check the `/docs` folder
 - **Issues**: Open a GitHub issue
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- Gemini 2.0 Flash for AI capabilities
+- Interview Sense Agent for AI capabilities
 - Vercel for deployment platform
 - Neon for PostgreSQL hosting
 - OpenAI for inspiration and research
 - shadcn/ui for beautiful components
 
 ---
-
 
 
 
