@@ -12,8 +12,6 @@ InterviewSense is an AI-powered interview preparation platform that helps job se
 - **Resume Optimization**: AI-driven resume analysis and improvement suggestions
 - **Cover Letter Generation**: Automated, tailored cover letters for job applications
 - **Speech Analysis**: Real-time audio processing with sentiment analysis and feedback
-- **Credit System**: Fair usage with monthly credit allocation (10 credits/month)
-
 ### Security & Authentication
 - **Multi-Provider Authentication**: Google OAuth, email/password, and secure session management
 - **Email Verification**: Secure account verification system
@@ -146,7 +144,6 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 - `POST /api/technical-assessment` - Technical coding assessment
 - `POST /api/resume-check` - Resume analysis and optimization
 - `POST /api/generate-cover-letter` - AI cover letter generation
-- `GET /api/user/credits` - User credit balance
 - `POST /api/contact` - Contact form submission
 
 ### User Management
@@ -154,13 +151,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 - `PUT /api/user/profile` - Update user profile
 - `POST /api/welcome-email` - Send welcome email
 
-## 💳 Credit System
 
-- **Free Tier**: 10 credits per month (resets monthly)
-- **Technical Assessment**: 2 credits per session
-- **Behavioral Interview**: 2 credits per session
-- **Resume Check**: 1 credit per analysis
-- **Cover Letter Generation**: 1 credit per generation
 
 ## Development
 
