@@ -80,35 +80,29 @@ export async function POST(req: Request) {
             text: `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume (which is attached as a file) with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
 ${jobDescription ? `\nConsider the following job description for your role-specific analysis:\n---\n${jobDescription}\n---\n` : ""}
 
-Please provide a detailed, structured resume analysis focused on this specific role in the following format:
+Please provide a detailed, structured resume analysis focused on this specific role. Format your response as clean, readable text without any markdown symbols, hashtags, or special formatting. Use the following structure:
 
-# Resume Analysis Report for ${jobTitle} Position
+RESUME ANALYSIS REPORT FOR ${jobTitle.toUpperCase()} POSITION
 
-## Overall Assessment
-[Provide a role-specific evaluation of the resume's suitability, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume demonstrates strong technical skills for the ${jobTitle} position but needs more emphasis on domain expertise."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.]
+OVERALL ASSESSMENT
+Provide a role-specific evaluation of the resume's suitability, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume demonstrates strong technical skills for the ${jobTitle} position but needs more emphasis on domain expertise."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.
 
-## Role-Specific Strengths
-- [List achievements, skills, and experiences that align SPECIFICALLY with the ${jobTitle} position requirements]
-- [Focus on industry-relevant accomplishments and quantifiable results that matter for this role]
-- [Highlight technical skills, domain knowledge, or certifications particularly valuable for this position]
+ROLE-SPECIFIC STRENGTHS
+List achievements, skills, and experiences that align specifically with the ${jobTitle} position requirements. Focus on industry-relevant accomplishments and quantifiable results that matter for this role. Highlight technical skills, domain knowledge, or certifications particularly valuable for this position. Present each point as a complete sentence without bullet points or dashes.
 
-## Role-Specific Improvements Needed
-- [List aspects that need enhancement to better align with ${jobTitle} position expectations]
-- [Provide actionable advice tailored to this specific role and industry]
+AREAS FOR IMPROVEMENT
+List aspects that need enhancement to better align with ${jobTitle} position expectations. Provide actionable advice tailored to this specific role and industry. Present each point as a complete sentence without bullet points or dashes.
 
-## Industry-Specific Recommendations
-- [Suggest precise additions of keywords, experiences, or accomplishments typical for successful candidates in this exact role]
-- [Recommend role-specific wording changes or enhancements based on industry standards]
+INDUSTRY-SPECIFIC RECOMMENDATIONS
+Suggest precise additions of keywords, experiences, or accomplishments typical for successful candidates in this exact role. Recommend role-specific wording changes or enhancements based on industry standards. Present each point as a complete sentence without bullet points or dashes.
 
-## ATS Optimization for This Role
-- [List suggestions to improve Applicant Tracking System (ATS) compatibility specifically for ${jobTitle} positions]
-- [Include advice on industry-specific keywords and formatting practices for this role]
+ATS OPTIMIZATION SUGGESTIONS
+List suggestions to improve Applicant Tracking System (ATS) compatibility specifically for ${jobTitle} positions. Include advice on industry-specific keywords and formatting practices for this role. Present each point as a complete sentence without bullet points or dashes.
 
-## Format and Presentation Feedback
-- [Provide feedback on formatting with special attention to what hiring managers for ${jobTitle} positions typically expect]
-- [Suggest improvements aligned with industry standards for this specific role]
+FORMAT AND PRESENTATION FEEDBACK
+Provide feedback on formatting with special attention to what hiring managers for ${jobTitle} positions typically expect. Suggest improvements aligned with industry standards for this specific role. Present each point as a complete sentence without bullet points or dashes.
 
-Please ensure all sections are present and use clear, concise language. The sections "Overall Assessment", "Key Strengths", "Areas for Improvement", "Specific Suggestions", "ATS Optimization Tips", and "Format and Presentation Feedback" should always appear.`
+Important: Use only plain text without any markdown formatting, asterisks, hashtags, bullet points, or special characters. Write in complete sentences and paragraphs for better readability.`
         };
 
         const generationConfig = {
@@ -162,20 +156,31 @@ Please ensure all sections are present and use clear, concise language. The sect
         }
 
         console.log("Resume analysis generated successfully.");
-        // console.log("Analysis Text (first 500 chars):", analysisText.substring(0, 500));
+        
+        // Parse the analysis text into structured sections
+        const structuredAnalysis = parseAnalysisText(analysisText);
+        
+        // Create formatted analysis for PDF export
+        const formattedAnalysis = {
+            title: `Resume Analysis - ${jobTitle}${company ? ` at ${company}` : ""}`,
+            date: new Date().toLocaleDateString(),
+            content: analysisText,
+            fileName: file.name
+        };
 
-        // Attempt to parse the Overall Score
-        let overallScore = null;
-        const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
-        if (scoreMatch && scoreMatch[1]) {
-            overallScore = parseInt(scoreMatch[1], 10);
-            console.log(`Parsed Overall Score: ${overallScore}`);
-        } else {
-            console.log("Could not parse Overall Score from the analysis.");
-        }
+        // Generate resume stats
+        const stats = generateResumeStats(file, analysisText, jobDescription);
 
-        const successResponse = { analysis: analysisText, overallScore };
-        // console.log("Success Response:", successResponse);
+        const successResponse = { 
+            analysis: analysisText, 
+            score: structuredAnalysis.overallScore,
+            strengths: structuredAnalysis.strengths,
+            areasForImprovement: structuredAnalysis.improvements,
+            formattedAnalysis,
+            stats,
+            structuredData: structuredAnalysis
+        };
+        
         return NextResponse.json(successResponse);
 
     } catch (error) {
@@ -220,3 +225,188 @@ async function logRequestDetails(req: Request) {
 
 // Example of how you might call it at the beginning of your POST function:
 // await logRequestDetails(req.clone()); // Clone req if you need to read its body later
+
+// Helper function to parse analysis text into structured sections
+function parseAnalysisText(analysisText: string) {
+    const sections = {
+        overallScore: null as number | null,
+        strengths: [] as string[],
+        improvements: [] as string[],
+        atsOptimization: [] as string[],
+        industryRecommendations: [] as string[],
+        formatFeedback: [] as string[]
+    };
+
+    // Parse overall score
+    const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
+    if (scoreMatch && scoreMatch[1]) {
+        sections.overallScore = parseInt(scoreMatch[1], 10);
+    }
+
+    // Parse strengths (plain text format)
+    const strengthsRegex = /ROLE-SPECIFIC STRENGTHS\s*([\s\S]*?)(?=AREAS FOR IMPROVEMENT|$)/;
+    const strengthsMatch = analysisText.match(strengthsRegex);
+    if (strengthsMatch && strengthsMatch[1]) {
+        sections.strengths = strengthsMatch[1]
+            .split(/\.\s+/)
+            .map(item => item.trim())
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .map(item => item.endsWith('.') ? item : item + '.');
+    }
+
+    // Parse improvements (plain text format)
+    const improvementsRegex = /AREAS FOR IMPROVEMENT\s*([\s\S]*?)(?=INDUSTRY-SPECIFIC RECOMMENDATIONS|ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/;
+    const improvementsMatch = analysisText.match(improvementsRegex);
+    if (improvementsMatch && improvementsMatch[1]) {
+        sections.improvements = improvementsMatch[1]
+            .split(/\.\s+/)
+            .map(item => item.trim())
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .map(item => item.endsWith('.') ? item : item + '.');
+    }
+
+    // Parse ATS optimization (plain text format)
+    const atsRegex = /ATS OPTIMIZATION SUGGESTIONS\s*([\s\S]*?)(?=FORMAT AND PRESENTATION|INDUSTRY-SPECIFIC|$)/;
+    const atsMatch = analysisText.match(atsRegex);
+    if (atsMatch && atsMatch[1]) {
+        sections.atsOptimization = atsMatch[1]
+            .split(/\.\s+/)
+            .map(item => item.trim())
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .map(item => item.endsWith('.') ? item : item + '.');
+    }
+
+    // Parse industry recommendations (plain text format)
+    const industryRegex = /INDUSTRY-SPECIFIC RECOMMENDATIONS\s*([\s\S]*?)(?=ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/;
+    const industryMatch = analysisText.match(industryRegex);
+    if (industryMatch && industryMatch[1]) {
+        sections.industryRecommendations = industryMatch[1]
+            .split(/\.\s+/)
+            .map(item => item.trim())
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .map(item => item.endsWith('.') ? item : item + '.');
+    }
+
+    // Parse format feedback (plain text format)
+    const formatRegex = /FORMAT AND PRESENTATION FEEDBACK\s*([\s\S]*?)$/;
+    const formatMatch = analysisText.match(formatRegex);
+    if (formatMatch && formatMatch[1]) {
+        sections.formatFeedback = formatMatch[1]
+            .split(/\.\s+/)
+            .map(item => item.trim())
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .map(item => item.endsWith('.') ? item : item + '.');
+    }
+
+    return sections;
+}
+
+// Helper function to generate resume statistics
+function generateResumeStats(file: File, analysisText: string, jobDescription?: string | null) {
+    // Basic file stats
+    const stats = {
+        fileType: file.type.includes('pdf') ? 'PDF' : file.type.includes('word') ? 'Word Document' : 'Other',
+        fileSize: Math.round(file.size / 1024) + ' KB',
+        resumeLength: estimatePageCount(file.size, file.type),
+        skillsCount: countSkillMentions(analysisText),
+        atsCompatibility: assessATSCompatibility(file.type, analysisText),
+        keywordMatch: jobDescription ? calculateKeywordMatch(analysisText, jobDescription) : null,
+        highImpactKeywords: extractHighImpactKeywords(analysisText),
+        lastModified: new Date().toLocaleDateString(),
+        analysisDate: new Date().toISOString()
+    };
+
+    return stats;
+}
+
+// Helper function to estimate page count based on file size and type
+function estimatePageCount(fileSize: number, fileType: string): number {
+    // Rough estimates based on typical file sizes
+    if (fileType.includes('pdf')) {
+        // PDF: roughly 100-200KB per page
+        return Math.max(1, Math.round(fileSize / 150000));
+    } else if (fileType.includes('word')) {
+        // Word doc: roughly 20-50KB per page
+        return Math.max(1, Math.round(fileSize / 35000));
+    }
+    return 1;
+}
+
+// Helper function to count skill mentions in analysis
+function countSkillMentions(analysisText: string): number {
+    const skillKeywords = [
+        'skill', 'experience', 'proficiency', 'expertise', 'knowledge',
+        'certification', 'qualification', 'competency', 'ability', 'capability'
+    ];
+    
+    let count = 0;
+    skillKeywords.forEach(keyword => {
+        const matches = analysisText.toLowerCase().match(new RegExp(keyword, 'g'));
+        if (matches) count += matches.length;
+    });
+    
+    return Math.min(count, 20); // Cap at reasonable number
+}
+
+// Helper function to assess ATS compatibility
+function assessATSCompatibility(fileType: string, analysisText: string): string {
+    let score = 0;
+    
+    // File type scoring
+    if (fileType.includes('pdf')) score += 3;
+    else if (fileType.includes('word')) score += 2;
+    
+    // Content analysis scoring
+    if (analysisText.toLowerCase().includes('format')) score += 1;
+    if (analysisText.toLowerCase().includes('keyword')) score += 1;
+    if (analysisText.toLowerCase().includes('ats')) score += 2;
+    
+    if (score >= 6) return 'Excellent';
+    if (score >= 4) return 'Good';
+    if (score >= 2) return 'Fair';
+    return 'Needs Improvement';
+}
+
+// Helper function to calculate keyword match percentage
+function calculateKeywordMatch(analysisText: string, jobDescription: string): number {
+    const jobKeywords = extractKeywords(jobDescription);
+    const analysisKeywords = extractKeywords(analysisText);
+    
+    let matches = 0;
+    jobKeywords.forEach(keyword => {
+        if (analysisKeywords.includes(keyword)) matches++;
+    });
+    
+    return jobKeywords.length > 0 ? Math.round((matches / jobKeywords.length) * 100) : 0;
+}
+
+// Helper function to extract keywords from text
+function extractKeywords(text: string): string[] {
+    const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'];
+    
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 2 && !commonWords.includes(word))
+        .slice(0, 50); // Limit to top 50 keywords
+}
+
+// Helper function to extract high-impact keywords mentioned in analysis
+function extractHighImpactKeywords(analysisText: string): string[] {
+    const techKeywords = [
+        'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'AWS', 'Docker', 'Kubernetes',
+        'Machine Learning', 'AI', 'Data Science', 'SQL', 'MongoDB', 'Git', 'Agile', 'Scrum',
+        'TypeScript', 'Angular', 'Vue.js', 'GraphQL', 'REST', 'API', 'Microservices',
+        'DevOps', 'CI/CD', 'Cloud', 'Azure', 'GCP', 'Leadership', 'Management', 'Strategy'
+    ];
+    
+    const foundKeywords: string[] = [];
+    techKeywords.forEach(keyword => {
+        if (analysisText.toLowerCase().includes(keyword.toLowerCase())) {
+            foundKeywords.push(keyword);
+        }
+    });
+    
+    return foundKeywords.slice(0, 8); // Limit to top 8 keywords
+}
