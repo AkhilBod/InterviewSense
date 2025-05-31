@@ -36,25 +36,6 @@ async function generateOGImages() {
             console.log('✅ Standard OG image saved to public/og-image.png');
         }
         
-        // Generate square OG image (1200x1200)
-        console.log('Generating square OG image (1200x1200)...');
-        // Show square and hide standard
-        await page.evaluate(() => {
-            const standard = document.querySelector('#og-standard');
-            const square = document.querySelector('#og-square');
-            if (standard) standard.style.display = 'none';
-            if (square) square.style.display = 'flex';
-        });
-        
-        const squareElement = await page.$('#og-square');
-        if (squareElement) {
-            await squareElement.screenshot({
-                path: path.join(__dirname, 'public', 'og-image-square.png'),
-                omitBackground: false
-            });
-            console.log('✅ Square OG image saved to public/og-image-square.png');
-        }
-        
     } catch (error) {
         console.error('Error generating OG images:', error);
     } finally {

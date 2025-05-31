@@ -4,8 +4,7 @@ This project includes automated Open Graph (OG) image generation for better soci
 
 ## Generated Images
 
-- `public/og-image.png` - Standard OG image (1200x630px)
-- `public/og-image-square.png` - Square OG image (1200x1200px)
+- `public/og-image.png` - Standard OG image
 
 ## Files
 
@@ -14,7 +13,7 @@ This project includes automated Open Graph (OG) image generation for better soci
 
 ## Usage
 
-To regenerate the OG images (e.g., after updating branding or content):
+To regenerate the OG image (e.g., after updating branding or content):
 
 ```bash
 npm run generate-og
@@ -26,14 +25,12 @@ npm run generate-og
 - Gradient background with subtle patterns  
 - Modern typography (Inter font)
 - Key feature highlights
-- Responsive design for both standard and square formats
 - Professional color scheme matching the app
 
 ## Meta Tags
 
 The Open Graph and Twitter Card meta tags are configured in `src/app/layout.tsx` and reference:
-- `https://interviewsense.org/og-image.png` (1200x630)
-- `https://interviewsense.org/og-image-square.png` (1200x1200)
+- `https://interviewsense.org/og-image.png`
 
 ## Dependencies
 
@@ -42,9 +39,9 @@ The Open Graph and Twitter Card meta tags are configured in `src/app/layout.tsx`
 
 ## Customization
 
-To update the OG images:
+To update the OG image:
 1. Edit `og-image-template.html` with new design/content
-2. Run `npm run generate-og` to regenerate the PNG files
-3. Commit the updated images to your repository
+2. Run `npm run generate-og` to regenerate the PNG file
+3. Commit the updated image to your repository
 
-The images will automatically be served from the `public` folder when deployed.
+The image will automatically be served from the `public` folder when deployed.
