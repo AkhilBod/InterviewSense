@@ -680,9 +680,6 @@ function InterviewPage() {
                 <span className="font-bold text-xl">InterviewSense</span>
               </div>
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                  <Link href="/start">Exit Interview</Link>
-                </Button>
                 {session ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -700,6 +697,9 @@ function InterviewPage() {
                       <DropdownMenuSeparator className="bg-slate-800" />
                       <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <Link href="/dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                        <Link href="/start">Exit Interview</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"

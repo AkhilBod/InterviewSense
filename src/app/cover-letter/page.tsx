@@ -105,28 +105,60 @@ export default function CoverLetterPage() {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight(); // Get page height
-    const margin = 20; // mm
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
     const maxLineWidth = pageWidth - margin * 2;
-    let yPosition = margin; // Initial y position
-
-    // Set font (optional, default is helvetica)
-    doc.setFont("times"); // Using "times" for a more traditional cover letter feel
-    doc.setFontSize(12);
-
-    // Split text into lines that fit within the page width
-    const lines = doc.splitTextToSize(generatedCoverLetter, maxLineWidth);
-
-    lines.forEach((line: string) => {
-      if (yPosition + 10 > pageHeight - margin) { // Check if new line exceeds page height (10 is approx line height)
-        doc.addPage();
-        yPosition = margin; // Reset yPosition for new page
+    let yPosition = margin;
+    
+    // Split cover letter into sections for better formatting
+    const sections = generatedCoverLetter.split('\n\n');
+    
+    sections.forEach((section, index) => {
+      if (!section.trim()) return;
+      
+      // Check if this is a header section (contains contact info)
+      const isHeader = section.includes('@') || section.includes('(') || /^\d+/.test(section);
+      const isDate = /^\w+\s+\d+,\s+\d{4}/.test(section.trim());
+      const isSalutation = section.toLowerCase().startsWith('dear');
+      const isClosing = section.toLowerCase().includes('sincerely') || section.toLowerCase().includes('best regards');
+      
+      // Set appropriate font and size
+      if (isHeader) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+      } else if (isDate || isSalutation || isClosing) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
       }
-      doc.text(line, margin, yPosition);
-      yPosition += 7; // Increment y position (adjust for line spacing, 7 is a common value for 12pt font)
+      
+      // Split section into lines
+      const lines = doc.splitTextToSize(section, maxLineWidth);
+      
+      lines.forEach((line: string, lineIndex: number) => {
+        // Check if we need a new page
+        if (yPosition + 15 > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        
+        doc.text(line, margin, yPosition);
+        yPosition += 6; // Line spacing
+      });
+      
+      // Add extra spacing between sections
+      if (index < sections.length - 1) {
+        yPosition += 6;
+      }
     });
 
-    doc.save(`Cover_Letter_${company}_${jobTitle.replace(/\s+/g, '_')}.pdf`);
+    // Generate filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `Cover_Letter_${company.replace(/\s+/g, '_')}_${jobTitle.replace(/\s+/g, '_')}_${timestamp}.pdf`;
+    
+    doc.save(filename);
   };
 
   return (
@@ -373,23 +405,116 @@ export default function CoverLetterPage() {
 
               {generatedCoverLetter && (
                 <div className="mt-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-semibold flex items-center text-white">
+                      <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
                       Your Cover Letter
                     </h3>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="bg-zinc-800 hover:bg-zinc-700/70 border-zinc-700 text-zinc-300"
-                      onClick={handleDownload} // This now downloads a PDF
+                      className="bg-blue-600 hover:bg-blue-500 border-blue-600 text-white hover:text-white flex items-center gap-2 px-4 py-2"
+                      onClick={handleDownload}
                     >
-                      <Download className="h-4 w-4 mr-2" />
+                      <Download className="h-4 w-4" />
                       Download PDF
                     </Button>
                   </div>
-                  <div className="p-4 bg-zinc-900/70 border border-zinc-700 rounded-lg text-zinc-200 whitespace-pre-line leading-relaxed">
-                    {generatedCoverLetter}
+                  
+                  {/* Cover Letter Preview */}
+                  <div className="bg-white text-gray-900 p-8 rounded-lg shadow-lg border border-zinc-300 font-serif">
+                    <div 
+                      className="prose prose-lg max-w-none leading-relaxed"
+                      style={{ 
+                        fontFamily: 'Georgia, "Times New Roman", serif',
+                        lineHeight: '1.6',
+                        fontSize: '14px'
+                      }}
+                    >
+                      {generatedCoverLetter.split('\n').map((line, index) => {
+                        const trimmedLine = line.trim();
+                        
+                        // Empty lines for spacing
+                        if (!trimmedLine) {
+                          return <div key={index} className="h-4" />;
+                        }
+                        
+                        // Header sections (contact info)
+                        if (trimmedLine.includes('@') || /^\(\d{3}\)/.test(trimmedLine) || /^\d+/.test(trimmedLine)) {
+                          return (
+                            <div key={index} className="text-sm text-gray-700 mb-1">
+                              {trimmedLine}
+                            </div>
+                          );
+                        }
+                        
+                        // Date
+                        if (/^\w+\s+\d+,\s+\d{4}/.test(trimmedLine)) {
+                          return (
+                            <div key={index} className="text-sm text-gray-700 mb-6 mt-4">
+                              {trimmedLine}
+                            </div>
+                          );
+                        }
+                        
+                        // Salutation
+                        if (trimmedLine.toLowerCase().startsWith('dear')) {
+                          return (
+                            <div key={index} className="text-base font-medium text-gray-900 mb-4">
+                              {trimmedLine}
+                            </div>
+                          );
+                        }
+                        
+                        // Closing
+                        if (trimmedLine.toLowerCase().includes('sincerely') || 
+                            trimmedLine.toLowerCase().includes('best regards') ||
+                            trimmedLine.toLowerCase().includes('yours truly')) {
+                          return (
+                            <div key={index} className="text-base text-gray-900 mt-6 mb-2">
+                              {trimmedLine}
+                            </div>
+                          );
+                        }
+                        
+                        // Name at the end
+                        if (index > 0 && generatedCoverLetter.split('\n')[index - 1].toLowerCase().includes('sincerely')) {
+                          return (
+                            <div key={index} className="text-base font-medium text-gray-900 mt-8">
+                              {trimmedLine}
+                            </div>
+                          );
+                        }
+                        
+                        // Regular paragraphs
+                        return (
+                          <p key={index} className="text-base text-gray-800 mb-4 leading-relaxed">
+                            {trimmedLine}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="mt-6 flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
+                      onClick={() => navigator.clipboard.writeText(generatedCoverLetter)}
+                    >
+                      Copy to Clipboard
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        setGeneratedCoverLetter(null);
+                        setError(null);
+                      }}
+                    >
+                      Generate New Letter
+                    </Button>
                   </div>
                 </div>
               )}

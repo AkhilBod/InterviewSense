@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, Brain } from 'lucide-react';
+import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, Brain, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -12,12 +12,22 @@ import {
   AvatarFallback,
   AvatarImage
 } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
 import { toast } from "@/components/ui/use-toast";
 import { exportToPDF, printReport, shareReport, formatInterviewReportForSharing } from "@/lib/export";
+import { useSession, signOut } from 'next-auth/react';
 
 function ResultsPage() {
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [interviewSummary, setInterviewSummary] = useState<InterviewSummary>({
     jobRole: "Software Engineer",
@@ -99,6 +109,10 @@ function ResultsPage() {
     return "text-red-500";
   };
 
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   const getBarColor = (score: number) => {
     if (score >= 90) return "bg-green-600";
     if (score >= 75) return "bg-blue-600";
@@ -128,22 +142,51 @@ function ResultsPage() {
               <Brain className="h-6 w-6 text-blue-500" />
               <span className="font-bold text-xl">InterviewSense</span>
             </div>
-            <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
-              <Link href="/">Home</Link>
-            </Button>
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
+                  <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
+                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <Link href="/interview">
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Back to Interview
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <Link href="/">Home</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            )}
           </div>
         </header>
 
         <div className="flex-1 py-8 bg-slate-900">
           <div className="container mx-auto px-4">
-            <div className="mb-6">
-              <Button variant="ghost" size="sm" asChild className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
-                <Link href="/interview">
-                  <ChevronLeft className="h-4 w-4" />
-                  Back to Interview
-                </Link>
-              </Button>
-            </div>
 
             <div id="interview-results-content" className="max-w-5xl mx-auto">
               {/* Summary Card */}

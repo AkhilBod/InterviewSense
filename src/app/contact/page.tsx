@@ -4,16 +4,27 @@ import type React from "react"
 
 import Link from "next/link"
 import { useState } from "react"
+import { useSession, signOut } from 'next-auth/react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, ChevronLeft, Mail, Building2, Phone, CheckCircle2, ArrowRight, AlertCircle } from "lucide-react"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Brain, User, LogOut, MessageSquare, ChevronLeft, Mail, Building2, Phone, CheckCircle2, ArrowRight, AlertCircle } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/use-toast"
 
 export default function ContactPage() {
+  const { data: session } = useSession()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [company, setCompany] = useState("")
@@ -22,6 +33,10 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,34 +102,54 @@ export default function ContactPage() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-blue-500" />
-            <span className="font-bold text-xl">InterviewSense</span>
+            <Brain className="h-6 w-6 text-blue-500" />
+            <Link href="/" className="font-bold text-xl">
+              InterviewSense
+            </Link>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white hover:bg-zinc-800/70">
-              <Link href="/">Home</Link>
-            </Button>
-          </div>
+          <nav className="flex items-center gap-4">
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
+                  <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-zinc-800" />
+                  <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                    <Link href="/">
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Back to Home
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="text-zinc-300 border-zinc-700 hover:bg-zinc-800">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            )}
+          </nav>
         </div>
       </header>
 
       <div className="flex-1 py-12 relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="gap-2 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
-            >
-              <Link href="/">
-                <ChevronLeft className="h-4 w-4" />
-                Back to home
-              </Link>
-            </Button>
-          </div>
-
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
               <h1 className="text-3xl font-bold mb-4 text-white">Get in Touch</h1>

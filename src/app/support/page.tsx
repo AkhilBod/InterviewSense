@@ -3,17 +3,73 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronRight, HelpCircle, Book, MessageSquare, Mail, FileQuestion, Brain, ArrowLeft } from "lucide-react"
+import { ChevronRight, HelpCircle, Book, MessageSquare, Mail, FileQuestion, Brain, ArrowLeft, User } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function SupportPage() {
+  const { data: session } = useSession();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
-      {/* Back button */}
-      <div className="container mx-auto px-4 py-6">
-        <Link href="/" className="inline-flex items-center text-sm text-zinc-400 hover:text-blue-400 transition-colors">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
-        </Link>
-      </div>
+      {/* Header */}
+      <header className="border-b border-slate-800">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Brain className="h-6 w-6 text-blue-500" />
+            <span className="font-bold text-xl">InterviewSense</span>
+          </div>
+          {session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                    <AvatarFallback className="bg-blue-500">
+                      {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
+                <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                  <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                  <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
+                  onClick={handleSignOut}
+                >
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
+              <Link href="/login">Sign in</Link>
+            </Button>
+          )}
+        </div>
+      </header>
 
       {/* Header Section */}
       <section className="py-12 md:py-16">

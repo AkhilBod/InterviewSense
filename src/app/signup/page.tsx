@@ -298,6 +298,12 @@ function SignupPage() {
                       )}
                     </div>
                   </div>
+                  <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                    <Link href="/">
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Back to Home
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
                     onClick={() => signOut({ callbackUrl: '/' })}
@@ -319,11 +325,6 @@ function SignupPage() {
       <div className="flex-1 py-12 flex items-center justify-center relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container px-4 max-w-md relative z-10">
-          {/* Back button */}
-          <Button variant="ghost" size="sm" asChild className="gap-2 mb-8 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full">
-             <Link href="/"><ChevronLeft className="h-4 w-4" /> Back to home</Link>
-          </Button>
-
           <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
             <CardHeader className="space-y-2 pt-8">
               <CardTitle className="text-2xl text-center text-white">Create an account</CardTitle>

@@ -88,7 +88,7 @@ export default function Home() {
                   onClick={handleGetStartedClick} 
                   className="bg-blue-600 hover:bg-blue-500 text-white"
                 >
-                  Get Started Free
+                  Go to Dashbord
                 </Button>
               </>
             )}
@@ -236,30 +236,96 @@ export default function Home() {
       <section className="py-12 md:py-20 lg:min-h-screen flex items-center bg-gradient-to-b from-slate-900 to-slate-800">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_50%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tighter mb-4 md:mb-6">
-              Ace Your Next Interview with <span className="text-blue-500">AI-Powered</span> Practice
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto mb-6 sm:mb-10 px-2">
-              InterviewSense uses advanced AI to give you realistic mock interviews with personalized feedback, helping
-              you prepare for any job interview.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Button
-                onClick={handleGetStartedClick}
-                size="lg"
-                className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
-              >
-                Start Practicing Now <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full mt-3 sm:mt-0"
-              >
-                <Link href="/#how-it-works">Learn How It Works</Link>
-              </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
+            {/* Left side - Text content */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tighter mb-4 md:mb-6">
+                Ace Your Next Interview with <span className="text-blue-500">AI-Powered</span> Practice
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto lg:mx-0 mb-6 sm:mb-10 px-2">
+                InterviewSense uses advanced AI to give you realistic mock interviews with personalized feedback, helping
+                you prepare for any job interview.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+                <Button
+                  onClick={handleGetStartedClick}
+                  size="lg"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
+                >
+                  Start Practicing Now <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full mt-3 sm:mt-0"
+                >
+                  <Link href="/#how-it-works">Learn How It Works</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right side - Video */}
+            <div className="relative lg:order-last">
+              {/* Floating elements for visual appeal */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
+              
+              <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-3xl overflow-hidden shadow-2xl border border-zinc-700/50 backdrop-blur-sm">
+                {/* Enhanced browser-like header */}
+                <div className="bg-gradient-to-r from-zinc-800 to-zinc-700 px-4 py-4 flex items-center gap-3 border-b border-zinc-600/50">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full shadow-lg"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-lg"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg"></div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <div className="bg-zinc-600/50 backdrop-blur-sm rounded-lg px-4 py-2 text-xs text-zinc-300 inline-flex items-center gap-2 font-medium">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      interviewsense.org
+                    </div>
+                  </div>
+                  <div className="text-zinc-400 text-xs">
+                    Live Demo
+                  </div>
+                </div>
+                
+                {/* Video content with enhanced styling */}
+                <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden">
+                  <video
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  >
+                    <source src="/demo-video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  
+                  {/* Subtle overlay gradient for better text contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/20 to-transparent pointer-events-none"></div>
+                  
+                  {/* Interactive badge */}
+                  <div className="absolute top-4 right-4">
+                    <div className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      Recording
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bottom info bar */}
+                <div className="bg-gradient-to-r from-zinc-800 to-zinc-700 px-4 py-3 border-t border-zinc-600/50">
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span className="flex items-center gap-2">
+                      <Brain className="w-3 h-3 text-blue-400" />
+                      AI Analysis Active
+                    </span>
+                    <span>Real-time feedback enabled</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

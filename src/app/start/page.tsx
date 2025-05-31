@@ -130,7 +130,8 @@ function StartPage() {
                   <DropdownMenuSeparator className="bg-zinc-800" />
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                      Dashboard
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Back to Home
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -153,20 +154,6 @@ function StartPage() {
       <div className="flex-1 py-12 md:py-20 relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="gap-2 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
-            >
-              <Link href="/dashboard">
-                <ChevronLeft className="h-4 w-4" />
-                Back to home
-              </Link>
-            </Button>
-          </div>
-
           <div className="max-w-3xl mx-auto">
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm shadow-xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>

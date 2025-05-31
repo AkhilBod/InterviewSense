@@ -92,16 +92,80 @@ export async function POST(req: Request) {
 
         const currentDate = new Date().toLocaleDateString(); // Get current date for context
 
-        let promptText = `You are an expert cover letter writer. Create a concise and compelling cover letter.
-The letter should use structural placeholders (like \`[Your Name]\`, \`[Date]\`) ONLY for contact information, date, and salutation.
+        let promptText = `You are an expert cover letter writer. Create a professional, well-formatted cover letter.
 
-**KEY REQUIREMENTS:**
-1. COMPLETE NARRATIVE - Write the full body of the letter without any "[insert X]" placeholders.
-2. CONCISE FORMAT - Keep the letter concise (3-4 short paragraphs total) and focused on key qualifications.
-3. EMAIL FORMAT - Use proper spacing and professional email structure.
+**FORMATTING REQUIREMENTS:**
+1. Use proper business letter format with clear sections
+2. Include proper spacing between sections (use double line breaks \\n\\n)
+3. Start with candidate contact information at the top
+4. Include date line
+5. Include company/hiring manager address block
+6. Use professional salutation
+7. Write 3-4 concise, impactful paragraphs for the body
+8. End with professional closing and signature
+
+**STRUCTURE TEMPLATE:**
+Follow this structure:
+[Your Name]
+[Your Address] 
+[Your Phone Number]
+[Your Email]
+
+[Date]
+
+[Hiring Manager Name]
+[Hiring Manager Title]
+[Company Name]
+
+Dear [Hiring Manager Name],
+
+[Opening paragraph - express interest and mention how you learned about the position]
+
+[Body paragraph(s) - highlight relevant experience and skills that match the job requirements]
+
+[Closing paragraph - express enthusiasm, mention next steps, thank them for consideration]
+
+Sincerely,
+
+[Your Name]
+
+**CONTENT REQUIREMENTS:**
+1. COMPLETE NARRATIVE - Write the full body without any "[insert X]" placeholders
+2. SPECIFIC EXAMPLES - Use concrete details from resume or generate relevant examples  
+3. COMPANY RESEARCH - Include specific mention of company values or projects when possible
+4. QUANTIFIED ACHIEVEMENTS - Include numbers and metrics where applicable
+5. PROFESSIONAL TONE - Confident but not arrogant, enthusiastic but professional
 
 **CONTENT APPROACH:**
 * **Resume Data:** If provided, extract and integrate key skills, experiences, and accomplishments directly into natural-sounding sentences.
+* **Job Description:** Identify key requirements and demonstrate alignment with the candidate's qualifications.
+* **Keep it Brief:** Focus on the most relevant qualifications for the specific role.
+
+**GENERATING RELEVANT CONTENT:**
+Often, a cover letter is strengthened by details like how the candidate found the role, specific company initiatives they admire, or elaborating on skills/experiences relevant to the job title.
+
+**YOUR TASK:**
+Always try to use information explicitly provided by the user or directly extracted from the resume/job description first.
+HOWEVER, IF SPECIFIC DETAILS FOR THESE ENHANCING SECTIONS ARE NOT DIRECTLY PROVIDED OR FOUND, YOU MUST GENERATE PLAUSIBLE, PROFESSIONAL, AND CONTEXTUALLY RELEVANT CONTENT FOR THESE PARTS. The aim is to make the letter sound complete, informed, and personalized, even if some specifics had to be intelligently inferred or created by you.
+
+**EXAMPLES OF WHERE AND HOW TO GENERATE CONTENT:**
+* **Source of Job Discovery:** If the user doesn't specify where they saw the ad, you could generate a phrase like: "I was very interested to learn about the ${jobTitle} opportunity through my professional research into leading companies in the relevant industry sector, such as ${company}." or "Having followed ${company}'s innovative work in its field, I was delighted to see the opening for a ${jobTitle}."
+* **Alignment with Company Values/Projects:** If the user doesn't mention a specific company project or value, you could generate something like: "I am particularly drawn to ${company}'s commitment to [e.g., innovation, customer-centric solutions, sustainable practices – pick something plausible and relevant to the company's likely field/reputation], which resonates strongly with my own professional values." For a well-known company, you might infer a general positive attribute.
+* **Elaborating on Skills/Experience (especially if resume is sparse for the role):** If the resume is brief or doesn't explicitly detail experiences highly relevant to the ${jobTitle}, you should generate plausible examples of skills or experiences. For a "${jobTitle}" role, even if the resume is light, you could write: "My background has equipped me with a strong understanding of [mention 2-3 plausible key skills for the job title, e.g., 'full-stack development and cloud-based architectures' for a software engineer], and I am adept at [mention a plausible relevant soft skill, e.g., 'collaborating with cross-functional teams to deliver impactful results']."
+
+The goal is a polished, complete narrative. The user should not see any bracketed prompts in the body of the letter you generate and make sure it is in a proper business letter format.
+
+**STRUCTURAL PLACEHOLDERS (FOR SYSTEM USE - NOT FOR BODY NARRATIVE):**
+These are the ONLY placeholders you should output, and only in their standard locations (header, date, salutation, etc.).
+* [Your Name]
+* [Your Address]
+* [Your Phone Number]
+* [Your Email]
+* [Date]
+* [Hiring Manager Name]
+* [Hiring Manager Title]
+* [Company Name]
+The typed name after the closing (e.g., "Sincerely,") should also use [Your Name].
 * **Job Description:** Identify key requirements and demonstrate alignment with the candidate's qualifications.
 * **Keep it Brief:** Focus on the most relevant qualifications for the specific role.
 
