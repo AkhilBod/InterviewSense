@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>InterviewSense OG Image Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 20px;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #111;
+            background: #0a0a0a;
             color: white;
         }
         
@@ -17,119 +17,144 @@
         .og-container {
             width: 1200px;
             height: 630px;
-            background: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            justify-content: space-between;
+            align-items: flex-start;
             position: relative;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
             margin-bottom: 40px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
         
         /* Square OG Image (1200x1200) */
         .og-container-square {
             width: 1200px;
             height: 1200px;
-            background: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            justify-content: space-between;
+            align-items: flex-start;
             position: relative;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
         
+        /* Instant Notes style background pattern */
         .bg-pattern {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            opacity: 0.08;
+            opacity: 0.15;
             background-image: 
-                radial-gradient(circle at 25% 25%, #3b82f6 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, #8b5cf6 0%, transparent 50%);
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 60% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 30%);
         }
         
-        .content {
+        /* Top section with logo and main title */
+        .header {
             z-index: 2;
-            max-width: 900px;
-            padding: 60px;
+            width: 100%;
+            padding: 48px 48px 0 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
         
         .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 16px;
-            margin-bottom: 40px;
         }
         
         .brain-icon {
-            width: 64px;
-            height: 64px;
+            width: 48px;
+            height: 48px;
             fill: #3b82f6;
         }
         
         .logo-text {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 700;
             color: white;
             letter-spacing: -0.02em;
         }
         
-        .title {
-            font-size: 72px;
-            font-weight: 800;
+        .main-title {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 0.9;
             margin: 0;
             background: linear-gradient(135deg, #ffffff 0%, #e4e4e7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.1;
-            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
         }
         
-        .subtitle {
-            font-size: 32px;
-            font-weight: 600;
-            margin: 24px 0;
-            color: #3b82f6;
-        }
-        
-        .description {
+        .ai-powered {
             font-size: 24px;
-            color: #a1a1aa;
-            margin: 0;
-            line-height: 1.4;
-            margin-bottom: 40px;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
         
-        .features {
+        /* Bottom section with features */
+        .features-section {
+            z-index: 2;
+            width: 100%;
+            padding: 0 48px 48px 48px;
             display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 40px;
+            flex-direction: column;
+            gap: 32px;
         }
         
-        .feature {
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 24px 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
+            text-align: center;
             gap: 12px;
-            font-size: 18px;
-            color: #d4d4d8;
-            font-weight: 500;
+            backdrop-filter: blur(8px);
         }
         
         .feature-icon {
-            width: 24px;
-            height: 24px;
-            fill: #10b981;
+            width: 32px;
+            height: 32px;
+            fill: #3b82f6;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+        
+        .feature-subtitle {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
         }
         
         .website {
@@ -142,92 +167,108 @@
         }
         
         /* Square version adjustments */
-        .og-container-square .content {
-            padding: 80px;
-        }
-        
-        .og-container-square .logo {
-            margin-bottom: 60px;
+        .og-container-square .header {
+            padding: 80px 80px 0 80px;
+            gap: 32px;
         }
         
         .og-container-square .brain-icon {
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
         }
         
         .og-container-square .logo-text {
-            font-size: 56px;
+            font-size: 48px;
         }
         
-        .og-container-square .title {
+        .og-container-square .main-title {
             font-size: 84px;
-            margin-bottom: 32px;
         }
         
-        .og-container-square .subtitle {
-            font-size: 36px;
-            margin: 32px 0;
+        .og-container-square .ai-powered {
+            font-size: 32px;
+            margin-top: 16px;
         }
         
-        .og-container-square .description {
-            font-size: 28px;
-            margin-bottom: 60px;
+        .og-container-square .features-section {
+            padding: 0 80px 80px 80px;
+            gap: 48px;
         }
         
-        .og-container-square .features {
-            flex-direction: column;
+        .og-container-square .features-grid {
+            grid-template-columns: 1fr;
             gap: 32px;
-            margin-top: 60px;
         }
         
-        .og-container-square .feature {
-            font-size: 22px;
-            gap: 16px;
+        .og-container-square .feature-card {
+            padding: 36px 32px;
+            flex-direction: row;
+            justify-content: flex-start;
+            text-align: left;
+            gap: 20px;
         }
         
         .og-container-square .feature-icon {
-            width: 28px;
-            height: 28px;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        
+        .og-container-square .feature-title {
+            font-size: 24px;
+        }
+        
+        .og-container-square .feature-subtitle {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <h2>InterviewSense OG Images</h2>
+    <h2>InterviewSense OG Images - Instant Notes Style</h2>
     <p>Standard OG Image (1200x630)</p>
     
     <div class="og-container" id="og-standard">
         <div class="bg-pattern"></div>
-        <div class="content">
+        
+        <div class="header">
             <div class="logo">
                 <svg class="brain-icon" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
                 <span class="logo-text">InterviewSense</span>
             </div>
-            <h1 class="title">AI-Powered Interview Preparation</h1>
-            <p class="subtitle">Master Your Next Interview</p>
-            <p class="description">Get personalized feedback on behavioral questions and technical assessments</p>
-            <div class="features">
-                <div class="feature">
+            <div>
+                <h1 class="main-title">Mock<br>Interviews</h1>
+                <p class="ai-powered">AI Powered</p>
+            </div>
+        </div>
+        
+        <div class="features-section">
+            <div class="features-grid">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                     </svg>
-                    <span>AI Feedback</span>
+                    <h3 class="feature-title">Behavioral</h3>
+                    <p class="feature-subtitle">Interview Skills</p>
                 </div>
-                <div class="feature">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                     </svg>
-                    <span>Practice Sessions</span>
+                    <h3 class="feature-title">Technical</h3>
+                    <p class="feature-subtitle">Assessment</p>
                 </div>
-                <div class="feature">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <span>Skill Improvement</span>
+                    <h3 class="feature-title">Resume</h3>
+                    <p class="feature-subtitle">Review</p>
                 </div>
             </div>
         </div>
+        
         <div class="website">interviewsense.ai</div>
     </div>
 
@@ -235,37 +276,52 @@
     
     <div class="og-container-square" id="og-square">
         <div class="bg-pattern"></div>
-        <div class="content">
+        
+        <div class="header">
             <div class="logo">
                 <svg class="brain-icon" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
                 <span class="logo-text">InterviewSense</span>
             </div>
-            <h1 class="title">AI-Powered Interview Preparation</h1>
-            <p class="subtitle">Master Your Next Interview</p>
-            <p class="description">Get personalized feedback on behavioral questions and technical assessments</p>
-            <div class="features">
-                <div class="feature">
+            <div>
+                <h1 class="main-title">Mock<br>Interviews</h1>
+                <p class="ai-powered">AI Powered</p>
+            </div>
+        </div>
+        
+        <div class="features-section">
+            <div class="features-grid">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                     </svg>
-                    <span>AI Feedback</span>
+                    <div>
+                        <h3 class="feature-title">Behavioral</h3>
+                        <p class="feature-subtitle">Interview Skills</p>
+                    </div>
                 </div>
-                <div class="feature">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                     </svg>
-                    <span>Practice Sessions</span>
+                    <div>
+                        <h3 class="feature-title">Technical</h3>
+                        <p class="feature-subtitle">Assessment</p>
+                    </div>
                 </div>
-                <div class="feature">
+                <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <span>Skill Improvement</span>
+                    <div>
+                        <h3 class="feature-title">Resume</h3>
+                        <p class="feature-subtitle">Review</p>
+                    </div>
                 </div>
             </div>
         </div>
+        
         <div class="website">interviewsense.ai</div>
     </div>
 
@@ -276,9 +332,10 @@
         // 3. Take screenshots of each container
         // 4. Or use Puppeteer/Playwright to automate screenshot generation
         
-        console.log('OG Image Template loaded');
+        console.log('InterviewSense OG Image Template loaded - Instant Notes Style');
         console.log('Standard: 1200x630px');
         console.log('Square: 1200x1200px');
+        console.log('Features: Behavioral, Technical, Resume Review');
         
         // Auto-resize elements for perfect fit
         function adjustLayout() {
