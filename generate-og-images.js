@@ -19,6 +19,14 @@ async function generateOGImages() {
         
         // Generate standard OG image (1200x630)
         console.log('Generating standard OG image (1200x630)...');
+        // Ensure standard is visible and square is hidden
+        await page.evaluate(() => {
+            const standard = document.querySelector('#og-standard');
+            const square = document.querySelector('#og-square');
+            if (standard) standard.style.display = 'flex';
+            if (square) square.style.display = 'none';
+        });
+        
         const standardElement = await page.$('#og-standard');
         if (standardElement) {
             await standardElement.screenshot({
@@ -30,6 +38,14 @@ async function generateOGImages() {
         
         // Generate square OG image (1200x1200)
         console.log('Generating square OG image (1200x1200)...');
+        // Show square and hide standard
+        await page.evaluate(() => {
+            const standard = document.querySelector('#og-standard');
+            const square = document.querySelector('#og-square');
+            if (standard) standard.style.display = 'none';
+            if (square) square.style.display = 'flex';
+        });
+        
         const squareElement = await page.$('#og-square');
         if (squareElement) {
             await squareElement.screenshot({
