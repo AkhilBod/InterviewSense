@@ -293,13 +293,21 @@ export default function Home() {
                 {/* YouTube Video Embed */}
                 <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden rounded-lg">
                   <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/76XPOaHCy94?autoplay=1&mute=1&loop=1&playlist=76XPOaHCy94&controls=1&modestbranding=1&rel=0"
+                    className="w-full h-full pointer-events-none"
+                    src="https://www.youtube.com/embed/76XPOaHCy94?autoplay=1&mute=1&loop=1&playlist=76XPOaHCy94&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&playsinline=1&enablejsapi=1&origin=https://interviewsense.org"
                     title="InterviewSense Demo"
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    style={{ pointerEvents: 'none' }}
                   ></iframe>
+                  
+                  {/* Overlay to block any remaining YouTube UI */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Block top area where title/share buttons appear */}
+                    <div className="absolute top-0 left-0 right-0 h-12 bg-transparent z-10"></div>
+                    {/* Block bottom area where controls might appear */}
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-transparent z-10"></div>
+                  </div>
                   
                   {/* Interactive badge */}
                   <div className="absolute top-4 right-4 z-10">
