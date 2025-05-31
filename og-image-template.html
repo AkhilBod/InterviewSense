@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>InterviewSense OG Image Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #111;
+            color: white;
+        }
+        
+        /* Main OG Image (1200x630) */
+        .og-container {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+        
+        /* Square OG Image (1200x1200) */
+        .og-container-square {
+            width: 1200px;
+            height: 1200px;
+            background: linear-gradient(135deg, #09090b 0%, #18181b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.08;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #3b82f6 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #8b5cf6 0%, transparent 50%);
+        }
+        
+        .content {
+            z-index: 2;
+            max-width: 900px;
+            padding: 60px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .brain-icon {
+            width: 64px;
+            height: 64px;
+            fill: #3b82f6;
+        }
+        
+        .logo-text {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+        
+        .title {
+            font-size: 72px;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #e4e4e7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        
+        .subtitle {
+            font-size: 32px;
+            font-weight: 600;
+            margin: 24px 0;
+            color: #3b82f6;
+        }
+        
+        .description {
+            font-size: 24px;
+            color: #a1a1aa;
+            margin: 0;
+            line-height: 1.4;
+            margin-bottom: 40px;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            color: #d4d4d8;
+            font-weight: 500;
+        }
+        
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            fill: #10b981;
+        }
+        
+        .website {
+            position: absolute;
+            bottom: 24px;
+            right: 32px;
+            font-size: 16px;
+            color: #71717a;
+            font-weight: 500;
+        }
+        
+        /* Square version adjustments */
+        .og-container-square .content {
+            padding: 80px;
+        }
+        
+        .og-container-square .logo {
+            margin-bottom: 60px;
+        }
+        
+        .og-container-square .brain-icon {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .og-container-square .logo-text {
+            font-size: 56px;
+        }
+        
+        .og-container-square .title {
+            font-size: 84px;
+            margin-bottom: 32px;
+        }
+        
+        .og-container-square .subtitle {
+            font-size: 36px;
+            margin: 32px 0;
+        }
+        
+        .og-container-square .description {
+            font-size: 28px;
+            margin-bottom: 60px;
+        }
+        
+        .og-container-square .features {
+            flex-direction: column;
+            gap: 32px;
+            margin-top: 60px;
+        }
+        
+        .og-container-square .feature {
+            font-size: 22px;
+            gap: 16px;
+        }
+        
+        .og-container-square .feature-icon {
+            width: 28px;
+            height: 28px;
+        }
+    </style>
+</head>
+<body>
+    <h2>InterviewSense OG Images</h2>
+    <p>Standard OG Image (1200x630)</p>
+    
+    <div class="og-container" id="og-standard">
+        <div class="bg-pattern"></div>
+        <div class="content">
+            <div class="logo">
+                <svg class="brain-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="logo-text">InterviewSense</span>
+            </div>
+            <h1 class="title">AI-Powered Interview Preparation</h1>
+            <p class="subtitle">Master Your Next Interview</p>
+            <p class="description">Get personalized feedback on behavioral questions and technical assessments</p>
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>AI Feedback</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Practice Sessions</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Skill Improvement</span>
+                </div>
+            </div>
+        </div>
+        <div class="website">interviewsense.ai</div>
+    </div>
+
+    <p>Square OG Image (1200x1200)</p>
+    
+    <div class="og-container-square" id="og-square">
+        <div class="bg-pattern"></div>
+        <div class="content">
+            <div class="logo">
+                <svg class="brain-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span class="logo-text">InterviewSense</span>
+            </div>
+            <h1 class="title">AI-Powered Interview Preparation</h1>
+            <p class="subtitle">Master Your Next Interview</p>
+            <p class="description">Get personalized feedback on behavioral questions and technical assessments</p>
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>AI Feedback</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Practice Sessions</span>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Skill Improvement</span>
+                </div>
+            </div>
+        </div>
+        <div class="website">interviewsense.ai</div>
+    </div>
+
+    <script>
+        // Instructions for generating images:
+        // 1. Open this HTML file in a browser
+        // 2. Use browser dev tools to set viewport to exact dimensions
+        // 3. Take screenshots of each container
+        // 4. Or use Puppeteer/Playwright to automate screenshot generation
+        
+        console.log('OG Image Template loaded');
+        console.log('Standard: 1200x630px');
+        console.log('Square: 1200x1200px');
+        
+        // Auto-resize elements for perfect fit
+        function adjustLayout() {
+            const containers = document.querySelectorAll('.og-container, .og-container-square');
+            containers.forEach(container => {
+                container.style.transform = 'scale(1)';
+                container.style.transformOrigin = 'top left';
+            });
+        }
+        
+        window.addEventListener('load', adjustLayout);
+        window.addEventListener('resize', adjustLayout);
+    </script>
+</body>
+</html>

@@ -9,7 +9,8 @@
     "lint": "bunx biome lint --write && bunx tsc --noEmit",
     "format": "bunx biome format --write",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "generate-og": "node generate-og-images.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.17.0",
@@ -70,6 +71,7 @@
     "eslint-config-next": "15.1.7",
     "postcss": "^8.5.3",
     "prisma": "^6.8.2",
+    "puppeteer": "^24.9.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
   }
