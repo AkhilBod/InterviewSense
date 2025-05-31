@@ -290,27 +290,22 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* Video content with enhanced styling */}
-                <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden">
-                  <video
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                  >
-                    <source src="/demo-video.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  
-                  {/* Subtle overlay gradient for better text contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/20 to-transparent pointer-events-none"></div>
+                {/* YouTube Video Embed */}
+                <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden rounded-lg">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/76XPOaHCy94?autoplay=1&mute=1&loop=1&playlist=76XPOaHCy94&controls=1&modestbranding=1&rel=0"
+                    title="InterviewSense Demo"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
                   
                   {/* Interactive badge */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-10">
                     <div className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg">
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      Recording
+                      Live Demo
                     </div>
                   </div>
                 </div>
