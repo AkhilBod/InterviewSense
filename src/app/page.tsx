@@ -294,11 +294,12 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden rounded-lg">
                   <iframe
                     className="w-full h-full"
-                    src="https://vimeo.com/1090257351?share=copy"
+                    src="https://player.vimeo.com/video/1090257351?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=1&dnt=1"
                     title="InterviewSense Demo"
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowFullScreen
+                    loading="lazy"
                   ></iframe>
                   
                   {/* Interactive badge */}
