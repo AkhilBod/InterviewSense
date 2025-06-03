@@ -294,7 +294,7 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden rounded-lg">
                   <iframe
                     className="w-full h-full"
-                    src="https://player.vimeo.com/video/1090257351?background=1&autoplay=1&loop=1&byline=0&title=0&portrait=0&controls=0&muted=1&playsinline=1&autopause=0&quality=auto&transparent=0"
+                    src="https://player.vimeo.com/video/1090257351?background=1&playsinline=1&autopause=0&quality=auto&transparent=0"
                     title="InterviewSense Demo"
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture"
