@@ -15,65 +15,6 @@ export default function Home() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [showPlayButton, setShowPlayButton] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-
-  // Handle client-side mounting
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  // Detect if autoplay actually fails (not just mobile detection)
-  useEffect(() => {
-    if (!isMounted) return
-
-    const testAutoplay = async () => {
-      try {
-        // Test if autoplay is supported by creating a test video element
-        const testVideo = document.createElement('video')
-        testVideo.muted = true
-        testVideo.autoplay = true
-        testVideo.playsInline = true
-        testVideo.style.display = 'none'
-        
-        // Add a small test video data URL
-        testVideo.src = 'data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAGW1kYXQAAAMgBhQAAAAgBCEAAAAMbXZoZAAAAAAAAAAAAAAAAAAAA+'
-        
-        document.body.appendChild(testVideo)
-        
-        // Try to play the test video
-        const playPromise = testVideo.play()
-        
-        if (playPromise) {
-          await playPromise
-          // If we get here, autoplay works - remove test video
-          document.body.removeChild(testVideo)
-        }
-      } catch (error) {
-        // Autoplay failed, show the play button after a delay
-        setTimeout(() => {
-          setShowPlayButton(true)
-        }, 2000)
-      }
-    }
-
-    // Also check for power saving indicators
-    const checkPowerSaving = () => {
-      const isLowPowerMode = 'connection' in navigator && (navigator as any).connection?.saveData
-      const hasLimitedBandwidth = 'connection' in navigator && (navigator as any).connection?.effectiveType === 'slow-2g'
-      
-      if (isLowPowerMode || hasLimitedBandwidth) {
-        setTimeout(() => {
-          setShowPlayButton(true)
-        }, 2000)
-      } else {
-        // Test autoplay capability
-        testAutoplay()
-      }
-    }
-
-    checkPowerSaving()
-  }, [isMounted])
 
   // No longer automatically redirect authenticated users
   // This allows the homepage to be viewed by all users
@@ -359,39 +300,6 @@ export default function Home() {
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowFullScreen
                   ></iframe>
-                  
-                  {/* Fallback Play Button - shows when autoplay fails or on mobile */}
-                  {isMounted && showPlayButton && (
-                    <div 
-                      className="absolute inset-0 flex items-center justify-center bg-zinc-900/80 backdrop-blur-sm transition-opacity duration-300 cursor-pointer z-20"
-                      onClick={() => {
-                        // Create a new iframe with user interaction to enable autoplay
-                        const iframe = document.querySelector('iframe[title="InterviewSense Demo"]') as HTMLIFrameElement;
-                        if (iframe) {
-                          const newSrc = "https://player.vimeo.com/video/1090649164?h=28acac635f&autoplay=1&loop=1&muted=1&controls=1&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1";
-                          iframe.src = newSrc;
-                          setShowPlayButton(false);
-                        }
-                      }}
-                    >
-                      <div className="bg-blue-600/90 hover:bg-blue-500 text-white rounded-full p-6 shadow-2xl transition-all duration-200 hover:scale-110">
-                        <svg className="w-10 h-10 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Hover overlay for desktop */}
-                  <div className="absolute inset-0 bg-zinc-900/0 group-hover:bg-zinc-900/20 transition-all duration-300 hidden md:block cursor-pointer"
-                       onClick={() => {
-                         const iframe = document.querySelector('iframe[title="InterviewSense Demo"]') as HTMLIFrameElement;
-                         if (iframe) {
-                           const newSrc = "https://player.vimeo.com/video/1090649164?h=28acac635f&autoplay=1&loop=1&muted=1&controls=1&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1";
-                           iframe.src = newSrc;
-                         }
-                       }}>
-                  </div>
                   
                   {/* Interactive badge */}
                   <div className="absolute top-4 right-4 z-10">
