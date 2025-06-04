@@ -353,7 +353,7 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-zinc-950 to-zinc-900 relative overflow-hidden rounded-lg group">
                   <iframe
                     className="w-full h-full"
-                    src="https://player.vimeo.com/video/1090257351?autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
+                    src="https://player.vimeo.com/video/1090649164?h=28acac635f&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
                     title="InterviewSense Demo"
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture"
@@ -368,7 +368,7 @@ export default function Home() {
                         // Create a new iframe with user interaction to enable autoplay
                         const iframe = document.querySelector('iframe[title="InterviewSense Demo"]') as HTMLIFrameElement;
                         if (iframe) {
-                          const newSrc = "https://player.vimeo.com/video/1090257351?autoplay=1&loop=1&muted=1&controls=1&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1";
+                          const newSrc = "https://player.vimeo.com/video/1090649164?h=28acac635f&autoplay=1&loop=1&muted=1&controls=1&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1";
                           iframe.src = newSrc;
                           setShowPlayButton(false);
                         }
