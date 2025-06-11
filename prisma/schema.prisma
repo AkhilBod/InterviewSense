@@ -41,6 +41,8 @@ model User {
   password            String?
   image               String?
   onboardingCompleted Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  creatorCode         String?
   accounts            Account[]
   passwordResetTokens PasswordResetToken[]
   sessions            Session[]

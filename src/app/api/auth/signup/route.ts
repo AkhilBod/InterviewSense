@@ -12,7 +12,8 @@ import { applyRateLimit } from '@/lib/rate-limit';
 const userSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters long'),
-  name: z.string().min(2, 'Name must be at least 2 characters long')
+  name: z.string().min(2, 'Name must be at least 2 characters long'),
+  creatorCode: z.string().optional()
 });
 
 export async function POST(req: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message }, { status: 429 });
     }
     
-    const { email, password, name } = await req.json();
+    const { email, password, name, creatorCode } = await req.json();
 
     // Validate input
     if (!email || !password || !name) {
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
         email: normalizedEmail,
         name,
         password: hashedPassword,
+        creatorCode: creatorCode || null,
       },
     });
 

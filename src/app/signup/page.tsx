@@ -11,7 +11,7 @@ import { MessageSquare, ChevronLeft, Mail, CheckCircle2, ArrowRight, AlertCircle
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FcGoogle } from 'react-icons/fc'
 import { signIn, signOut, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,17 @@ function SignupPage() {
   const [success, setSuccess] = useState('')
   const [verificationSent, setVerificationSent] = useState(false)
   const [cooldown, setCooldown] = useState(0)
+  const [creatorCode, setCreatorCode] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Get creator code from URL parameters
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code')
+    if (codeFromUrl) {
+      setCreatorCode(codeFromUrl)
+    }
+  }, [searchParams])
 
   // Handle cooldown timer
   useEffect(() => {
@@ -79,7 +89,12 @@ function SignupPage() {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name: fullName }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          name: fullName,
+          creatorCode: creatorCode || undefined
+        }),
       })
       
       const data = await response.json()
@@ -346,6 +361,16 @@ function SignupPage() {
                 <div className="flex items-center gap-2 p-3 rounded-md bg-green-900/30 border border-green-800 text-green-200">
                   <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
                   <p className="text-sm">{success}</p>
+                </div>
+              )}
+
+              {/* Creator Code Indicator */}
+              {creatorCode && (
+                <div className="flex items-center gap-2 p-3 rounded-md bg-blue-900/30 border border-blue-800 text-blue-200">
+                  <Brain className="h-4 w-4 flex-shrink-0" />
+                  <p className="text-sm">
+                    Using creator code: <span className="font-semibold">{creatorCode}</span>
+                  </p>
                 </div>
               )}
             

@@ -24,7 +24,18 @@ export default function Home() {
     if (status === 'authenticated') {
       router.push('/dashboard')
     } else {
-      router.push('/signup')
+      // Check if there's a creator code in the URL (works for both client-side and server-side)
+      let creatorCode = null
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search)
+        creatorCode = searchParams.get('code')
+      }
+      
+      if (creatorCode) {
+        router.push(`/signup?code=${creatorCode}`)
+      } else {
+        router.push('/signup')
+      }
     }
   }
 
