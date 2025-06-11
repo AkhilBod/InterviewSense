@@ -164,19 +164,39 @@ function InterviewPage() {
     fetchQuestions();
   }, []);
 
+  // Load previously saved answers from localStorage when component mounts
+  useEffect(() => {
+    const savedAnswers = localStorage.getItem('interviewAnswers');
+    if (savedAnswers) {
+      try {
+        const parsedAnswers = JSON.parse(savedAnswers);
+        setAllAnswers(parsedAnswers);
+      } catch (error) {
+        console.error('Error parsing saved answers:', error);
+      }
+    }
+  }, []);
+
   // Function to load the next batch of 5 questions
   const loadMoreQuestions = () => {
     const currentCount = visibleQuestions.length;
     const nextBatch = questions.slice(currentCount, currentCount + 5);
     
     if (nextBatch.length > 0) {
+      // Save current answer before changing questions
+      if (answer.trim() !== '' && currentQuestion) {
+        const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
+        setAllAnswers(updatedAnswers);
+        localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+      }
+      
       // Add the next 5 questions to visible questions
       setVisibleQuestions([...visibleQuestions, ...nextBatch]);
       
       // Move to the next question (first of the new batch)
       setCurrentQuestionIndex(currentCount);
-      setAnswer('');
       setFeedbackVisible(false);
+      // Note: answer will be cleared by the useEffect since it's a new question
       
       toast({
         title: "New questions loaded",
@@ -202,6 +222,14 @@ function InterviewPage() {
 
   const currentQuestion = visibleQuestions[currentQuestionIndex] || mockQuestions[currentQuestionIndex];
   const totalQuestions = visibleQuestions.length || mockQuestions.length;
+
+  // Update answer field when question changes (restore previous answer or clear)
+  useEffect(() => {
+    if (currentQuestion) {
+      const savedAnswer = allAnswers[currentQuestion.id];
+      setAnswer(savedAnswer || '');
+    }
+  }, [currentQuestionIndex, currentQuestion, allAnswers]);
 
   useEffect(() => {
     // Calculate progress based on visible questions
@@ -620,8 +648,8 @@ function InterviewPage() {
 
       if (currentQuestionIndex < totalQuestions - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setAnswer('');
         setFeedbackVisible(false);
+        // Note: answer will be restored by the useEffect that watches currentQuestionIndex
       }
     }
   };
@@ -653,8 +681,16 @@ function InterviewPage() {
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
+      // Save current answer before navigating back
+      if (answer.trim() !== '' && currentQuestion) {
+        const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
+        setAllAnswers(updatedAnswers);
+        localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+      }
+      
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setFeedbackVisible(false);
+      // Note: answer will be restored by the useEffect that watches currentQuestionIndex
     }
   };
 
@@ -736,9 +772,16 @@ function InterviewPage() {
                 <div className="lg:col-span-2">
                   <Card className="mb-6 bg-slate-800 border-slate-700 text-slate-100">
                     <CardHeader>
-                      <Badge variant="outline" className="mb-2 text-blue-400 border-blue-500">
-                        {currentQuestion.type}
-                      </Badge>
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant="outline" className="text-blue-400 border-blue-500">
+                          {currentQuestion.type}
+                        </Badge>
+                        {allAnswers[currentQuestion.id] && (
+                          <Badge variant="secondary" className="text-green-400 bg-green-500/10 border-green-500/20">
+                            Previously Answered
+                          </Badge>
+                        )}
+                      </div>
                       <CardTitle className="text-xl text-white">{currentQuestion.question}</CardTitle>
                     </CardHeader>
                     <CardContent>
