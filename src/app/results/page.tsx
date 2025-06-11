@@ -77,6 +77,11 @@ function ResultsPage() {
         const summary = await generateInterviewSummary();
         setInterviewSummary(summary);
         
+        // Clean up interview data after generating summary to ensure fresh start for next interview
+        localStorage.removeItem('interviewAnswers');
+        localStorage.removeItem('visibleQuestions');
+        localStorage.removeItem('completedQuestionsCount');
+        
         // Check if resume was used
         const resumeText = localStorage.getItem('resume') || '';
         const hasResume = resumeText.trim() !== '';

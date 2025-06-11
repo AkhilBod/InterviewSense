@@ -326,8 +326,8 @@ export async function generateInterviewSummary(): Promise<InterviewSummary> {
       throw new Error('This function must be called in a browser environment');
     }
     
-    // Get all saved answers from localStorage
-    const answersJson = localStorage.getItem('interviewAnswers');
+    // Get all saved answers - check sessionStorage first (active interview), then localStorage (completed interview)
+    let answersJson = sessionStorage.getItem('interviewAnswers') || localStorage.getItem('interviewAnswers');
     if (!answersJson) {
       throw new Error('No interview answers found');
     }

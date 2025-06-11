@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User, Mic, MicOff } from "lucide-react";
+import { Loader2, User, Mic, MicOff, Play } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from "@/components/ui/use-toast";
@@ -26,6 +26,8 @@ import {
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
+import Editor from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
 
 interface TechnicalAssessmentProps {
   onComplete?: () => void;
@@ -164,6 +166,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [difficulty, setDifficulty] = useState('');
   const [question, setQuestion] = useState('');
   const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('javascript');
   const [thoughtProcess, setThoughtProcess] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -177,10 +180,82 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   
   // Add state for microphone permission guide
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
+  
+  // Monaco Editor ref
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   // Audio recording refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Language templates
+  const languageTemplates: Record<string, string> = {
+    javascript: `function solution() {
+    // Write your solution here
+    
+}`,
+    python: `def solution():
+    # Write your solution here
+    pass`,
+    java: `class Solution {
+    public int solution() {
+        // Write your solution here
+        
+    }
+}`,
+    cpp: `class Solution {
+public:
+    int solution() {
+        // Write your solution here
+        
+    }
+};`,
+    typescript: `function solution(): number {
+    // Write your solution here
+    
+}`,
+    go: `func solution() int {
+    // Write your solution here
+    
+}`,
+    rust: `impl Solution {
+    pub fn solution() -> i32 {
+        // Write your solution here
+        
+    }
+}`,
+    csharp: `public class Solution {
+    public int Solution() {
+        // Write your solution here
+        
+    }
+}`
+  };
+
+  // Update code when language changes
+  useEffect(() => {
+    if (!code || Object.values(languageTemplates).includes(code)) {
+      setCode(languageTemplates[language]);
+    }
+  }, [language]);
+
+  // Initialize with default template
+  useEffect(() => {
+    if (!code) {
+      setCode(languageTemplates[language]);
+    }
+  }, []);
+
+  const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
+
+  const runCode = () => {
+    toast({
+      title: "Code Runner",
+      description: "Code execution feature coming soon! For now, test your solution locally.",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -548,14 +623,74 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
                 </div>
               )}
             </div>
-            <div className="space-y-2">
-              <Label>Code Solution</Label>
-              <Textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="font-mono h-[300px]"
-                placeholder="Write your solution here..."
-              />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Code Solution</Label>
+                <div className="flex items-center gap-2">
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className="w-[150px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="javascript">JavaScript</SelectItem>
+                      <SelectItem value="python">Python</SelectItem>
+                      <SelectItem value="java">Java</SelectItem>
+                      <SelectItem value="cpp">C++</SelectItem>
+                      <SelectItem value="typescript">TypeScript</SelectItem>
+                      <SelectItem value="go">Go</SelectItem>
+                      <SelectItem value="rust">Rust</SelectItem>
+                      <SelectItem value="csharp">C#</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={runCode}
+                    className="h-8 px-3"
+                  >
+                    <Play className="h-3 w-3 mr-1" />
+                    Run
+                  </Button>
+                </div>
+              </div>
+              <div className="border rounded-lg overflow-hidden bg-[#1e1e1e]">
+                <Editor
+                  height="400px"
+                  language={language}
+                  value={code}
+                  onChange={(value) => setCode(value || '')}
+                  onMount={handleEditorDidMount}
+                  theme="vs-dark"
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    lineNumbers: 'on',
+                    roundedSelection: false,
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    tabSize: 2,
+                    wordWrap: 'on',
+                    suggest: {
+                      showKeywords: true,
+                      showSnippets: true,
+                    },
+                    quickSuggestions: {
+                      other: true,
+                      comments: true,
+                      strings: true,
+                    },
+                    parameterHints: {
+                      enabled: true,
+                    },
+                    bracketPairColorization: {
+                      enabled: true,
+                    },
+                    cursorBlinking: 'blink',
+                    cursorStyle: 'line',
+                    fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                  }}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Explain Your Solution</Label>
@@ -627,7 +762,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
                     leetCodeTitle: parsed?.title || "Technical Question",
                     prompt: question,
                     code,
-                    codeLanguage: code.includes("def ") ? "python" : "javascript", // Simple language detection
+                    codeLanguage: language,
                     explanation: thoughtProcess,
                     audioUrl: audioUrl
                   }]

@@ -39,6 +39,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
+import CodeEditor from '@/components/CodeEditor';
 
 const mockQuestions = [
   {
@@ -65,6 +66,16 @@ const mockQuestions = [
     id: 5,
     question: "Where do you see yourself in 5 years, and how does this role help you get there?",
     type: "career"
+  },
+  {
+    id: 6,
+    question: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
+    type: "coding"
+  },
+  {
+    id: 7,
+    question: "Implement a function to reverse a linked list. What is the time and space complexity of your solution?",
+    type: "technical"
   }
 ];
 
@@ -164,9 +175,9 @@ function InterviewPage() {
     fetchQuestions();
   }, []);
 
-  // Load previously saved answers from localStorage when component mounts
+  // Load previously saved answers from sessionStorage when component mounts
   useEffect(() => {
-    const savedAnswers = localStorage.getItem('interviewAnswers');
+    const savedAnswers = sessionStorage.getItem('interviewAnswers');
     if (savedAnswers) {
       try {
         const parsedAnswers = JSON.parse(savedAnswers);
@@ -175,6 +186,16 @@ function InterviewPage() {
         console.error('Error parsing saved answers:', error);
       }
     }
+  }, []);
+
+  // Clear session data when component unmounts (user navigates away without completing)
+  useEffect(() => {
+    return () => {
+      // Only clear if we're not going to the results page
+      if (!window.location.pathname.includes('/results')) {
+        sessionStorage.removeItem('interviewAnswers');
+      }
+    };
   }, []);
 
   // Function to load the next batch of 5 questions
@@ -187,7 +208,7 @@ function InterviewPage() {
       if (answer.trim() !== '' && currentQuestion) {
         const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
         setAllAnswers(updatedAnswers);
-        localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+        sessionStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
       }
       
       // Add the next 5 questions to visible questions
@@ -207,14 +228,20 @@ function InterviewPage() {
 
   // Function to complete the interview early
   const completeEarly = () => {
-    // Save the answers we have so far
-    localStorage.setItem('interviewAnswers', JSON.stringify(allAnswers));
+    // Transfer session answers to localStorage for results page
+    const sessionAnswers = sessionStorage.getItem('interviewAnswers');
+    if (sessionAnswers) {
+      localStorage.setItem('interviewAnswers', sessionAnswers);
+    }
     
     // Save the questions that were actually seen and answered
     localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
     
     // Save completed questions count for results page
     localStorage.setItem('completedQuestionsCount', String(completedQuestions.length));
+    
+    // Clear session storage as we're done with this interview
+    sessionStorage.removeItem('interviewAnswers');
     
     // Navigate to results page
     router.push('/results');
@@ -643,8 +670,8 @@ function InterviewPage() {
       const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
       setAllAnswers(updatedAnswers);
       
-      // Save to localStorage
-      localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+      // Save to sessionStorage
+      sessionStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
 
       if (currentQuestionIndex < totalQuestions - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -664,7 +691,7 @@ function InterviewPage() {
       const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
       setAllAnswers(updatedAnswers);
       
-      // Save all answers to localStorage
+      // Transfer final answers to localStorage for results page
       localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
 
       // Save the questions that were actually shown to localStorage for results page
@@ -672,6 +699,9 @@ function InterviewPage() {
       
       // Save completed questions count for results page
       localStorage.setItem('completedQuestionsCount', String(completedQuestions.length + 1));
+      
+      // Clear session storage as we're done with this interview
+      sessionStorage.removeItem('interviewAnswers');
       
       router.push('/results');
     }
@@ -685,7 +715,7 @@ function InterviewPage() {
       if (answer.trim() !== '' && currentQuestion) {
         const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
         setAllAnswers(updatedAnswers);
-        localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+        sessionStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
       }
       
       setCurrentQuestionIndex(currentQuestionIndex - 1);
@@ -768,8 +798,8 @@ function InterviewPage() {
                 <Progress value={progress} className="h-2 bg-slate-700" />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+              <div className={`grid gap-6 ${(currentQuestion.type === 'coding' || currentQuestion.type === 'technical') ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
+                <div className={`${(currentQuestion.type === 'coding' || currentQuestion.type === 'technical') ? '' : 'lg:col-span-2'}`}>
                   <Card className="mb-6 bg-slate-800 border-slate-700 text-slate-100">
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
@@ -785,47 +815,59 @@ function InterviewPage() {
                       <CardTitle className="text-xl text-white">{currentQuestion.question}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <Textarea
-                          placeholder="Type your answer here or use the microphone to record..."
-                          className="min-h-[200px] resize-none bg-slate-900 border-slate-700 text-white"
-                          value={answer}
-                          onChange={(e) => setAnswer(e.target.value)}
-                        />
-                        <div className="flex items-center justify-between">
-                          <Button
-                            variant={isRecording ? "destructive" : "outline"}
-                            size="sm"
-                            className={`gap-2 ${isRecording ? "bg-red-600 hover:bg-red-700 text-white border-red-700" : "border-slate-700 text-slate-300 hover:bg-slate-800"}`}
-                            onClick={toggleRecording}
-                            disabled={isTranscribing}
-                          >
-                            {isRecording ? (
-                              <>
-                                <MicOff className={`h-4 w-4 ${isRecording ? "animate-pulse" : ""}`} /> Stop Recording
-                              </>
-                            ) : isTranscribing ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" /> Transcribing...
-                              </>
-                            ) : (
-                              <>
-                                <Mic className="h-4 w-4" /> Record Answer
-                              </>
-                            )}
-                          </Button>
-                          <p className={`text-xs ${isRecording ? "text-red-400 font-medium" : "text-slate-400"}`}>
-                            {isRecording 
-                              ? "● Recording in progress... (Click Stop when finished)" 
-                              : isTranscribing 
-                                ? "Transcribing your answer..." 
-                                : audioUrl 
-                                  ? "Audio recorded and transcribed" 
-                                  : "Click to start recording your answer"}
-                          </p>
+                      {/* Conditional rendering based on question type */}
+                      {(currentQuestion.type === 'coding' || currentQuestion.type === 'technical') ? (
+                        <div className="space-y-4">
+                          <CodeEditor
+                            question={currentQuestion.question}
+                            value={answer}
+                            onChange={setAnswer}
+                            className="min-h-[600px]"
+                          />
                         </div>
-                        {/* Audio player removed as requested */}
-                      </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <Textarea
+                            placeholder="Type your answer here or use the microphone to record..."
+                            className="min-h-[200px] resize-none bg-slate-900 border-slate-700 text-white"
+                            value={answer}
+                            onChange={(e) => setAnswer(e.target.value)}
+                          />
+                          <div className="flex items-center justify-between">
+                            <Button
+                              variant={isRecording ? "destructive" : "outline"}
+                              size="sm"
+                              className={`gap-2 ${isRecording ? "bg-red-600 hover:bg-red-700 text-white border-red-700" : "border-slate-700 text-slate-300 hover:bg-slate-800"}`}
+                              onClick={toggleRecording}
+                              disabled={isTranscribing}
+                            >
+                              {isRecording ? (
+                                <>
+                                  <MicOff className={`h-4 w-4 ${isRecording ? "animate-pulse" : ""}`} /> Stop Recording
+                                </>
+                              ) : isTranscribing ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" /> Transcribing...
+                                </>
+                              ) : (
+                                <>
+                                  <Mic className="h-4 w-4" /> Record Answer
+                                </>
+                              )}
+                            </Button>
+                            <p className={`text-xs ${isRecording ? "text-red-400 font-medium" : "text-slate-400"}`}>
+                              {isRecording 
+                                ? "● Recording in progress... (Click Stop when finished)" 
+                                : isTranscribing 
+                                  ? "Transcribing your answer..." 
+                                  : audioUrl 
+                                    ? "Audio recorded and transcribed" 
+                                    : "Click to start recording your answer"}
+                            </p>
+                          </div>
+                          {/* Audio player removed as requested */}
+                        </div>
+                      )}
                     </CardContent>
                     <CardFooter className="flex justify-between">
                       <Button
@@ -900,34 +942,37 @@ function InterviewPage() {
                   </Card>
                 </div>
 
-                <div className="lg:col-span-1">
-                  {feedbackVisible ? (
-                    <InterviewFeedback answer={answer} question={questions[currentQuestionIndex]?.question} />
-                  ) : (
-                    <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Interview Tips</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 text-sm text-slate-300">
-                          {[
-                            'Use the STAR method (Situation, Task, Action, Result) for behavioral questions',
-                            'Be concise but detailed - aim for 1-2 minute responses',
-                            'Include specific metrics and achievements when possible',
-                            'Avoid filler words like "um", "like", and "you know"'
-                          ].map((tip, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <div className="h-5 w-5 flex-shrink-0 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-bold">
-                                {idx + 1}
-                              </div>
-                              <p>{tip}</p>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                {/* Sidebar - only show for non-coding questions */}
+                {!(currentQuestion.type === 'coding' || currentQuestion.type === 'technical') && (
+                  <div className="lg:col-span-1">
+                    {feedbackVisible ? (
+                      <InterviewFeedback answer={answer} question={questions[currentQuestionIndex]?.question} />
+                    ) : (
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Interview Tips</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm text-slate-300">
+                            {[
+                              'Use the STAR method (Situation, Task, Action, Result) for behavioral questions',
+                              'Be concise but detailed - aim for 1-2 minute responses',
+                              'Include specific metrics and achievements when possible',
+                              'Avoid filler words like "um", "like", and "you know"'
+                            ].map((tip, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <div className="h-5 w-5 flex-shrink-0 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-bold">
+                                  {idx + 1}
+                                </div>
+                                <p>{tip}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
