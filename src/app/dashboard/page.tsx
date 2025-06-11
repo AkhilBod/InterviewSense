@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from '@/components/ui/button';
-import { Briefcase, FileText, FileCheck2, MessageSquare } from 'lucide-react';
+import { Briefcase, FileText, FileCheck2, MessageSquare, Brain } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -90,7 +90,7 @@ function DashboardPage() {
           {/* Technical Interview */}
           <div className="bg-zinc-800 rounded-2xl shadow-xl p-8 flex flex-col items-start min-h-[260px] border border-zinc-700/40 group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-blue-500/60 hover:scale-[1.02]">
             <div className="bg-blue-500/10 rounded-xl p-3 mb-2 group-hover:bg-blue-500/20 transition-colors">
-              <Image src="/logo.webp" alt="InterviewSense" width={48} height={48} className="object-contain text-blue-400" />
+              <Brain className="h-10 w-10 text-blue-400" />
             </div>
             <h2 className="font-semibold text-2xl mb-2">Technical Drills</h2>
             <p className="text-zinc-400 text-base mb-4">Tackle LeetCode-style coding problems tailored to your target company and role.</p>

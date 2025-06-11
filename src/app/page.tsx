@@ -977,7 +977,7 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8 sm:mb-12">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <Image src="/logo.webp" alt="InterviewSense" width={20} height={20} className="object-contain" />
                 <span className="font-bold text-white">InterviewSense</span>
               </div>
               <p className="text-zinc-400 text-xs sm:text-sm">AI-powered interview practice to help you land your dream job.</p>

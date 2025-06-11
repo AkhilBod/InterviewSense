@@ -1,6 +1,7 @@
 'use client'
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { MessageSquare, ChevronLeft, ArrowRight, User } from "lucide-react"
@@ -107,7 +108,7 @@ function StartPage() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-blue-500" />
+            <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
             <Link href="/" className="font-bold text-xl">
               InterviewSense
             </Link>
@@ -192,7 +193,7 @@ function StartPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <MessageSquare className="h-5 w-5 text-blue-500" />
+              <Image src="/logo.webp" alt="InterviewSense" width={20} height={20} className="object-contain" />
               <span className="font-bold text-white">InterviewSense</span>
             </div>
             <p className="text-sm text-zinc-500">© {new Date().getFullYear()} InterviewSense. All rights reserved.</p>
