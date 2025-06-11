@@ -20,6 +20,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation'; // <--- CHANGE THIS LINE
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Analytics } from "@vercel/analytics/react";
 
 interface ResumeAnalysisData {
   jobTitle: string;
@@ -584,6 +585,7 @@ ${resumeData.analysis}
           </div>
         </footer>
       </div>
+      <Analytics />
     </ProtectedRoute>
   );
 }

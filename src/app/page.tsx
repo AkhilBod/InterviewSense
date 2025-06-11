@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 // Optional: if using next-auth or similar
 import { getSession } from "next-auth/react"
 import { useSession } from "next-auth/react"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function Home() {
   const router = useRouter()
@@ -1061,6 +1062,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   )
 }

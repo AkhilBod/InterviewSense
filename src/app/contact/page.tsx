@@ -23,6 +23,7 @@ import { User, LogOut, MessageSquare, ChevronLeft, Mail, Building2, Phone, Check
 import Image from 'next/image'
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/components/ui/use-toast"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function ContactPage() {
   const { data: session } = useSession()
@@ -351,6 +352,7 @@ export default function ContactPage() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   )
 }

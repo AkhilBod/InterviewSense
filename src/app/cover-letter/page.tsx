@@ -18,6 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { Analytics } from "@vercel/analytics/react";
 
 export default function CoverLetterPage() {
   const { data: session } = useSession();
@@ -523,6 +524,7 @@ export default function CoverLetterPage() {
           </Card>
         </div>
       </div>
+      <Analytics />
     </ProtectedRoute>
   );
 }

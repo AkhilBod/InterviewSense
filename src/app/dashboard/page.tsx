@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { UserAccountDropdown } from '@/components/UserAccountDropdown';
+import { Analytics } from "@vercel/analytics/react";
 
 function DashboardPage() {
   const { data: session, status } = useSession();
@@ -131,6 +132,7 @@ function DashboardPage() {
         <h2 className="text-xl font-semibold mb-4">All Notes</h2>
         <div className="text-zinc-500">(Coming soon: Your saved interviews, notes, and folders will appear here.)</div>
       </div>
+      <Analytics />
     </div>
   );
 }
