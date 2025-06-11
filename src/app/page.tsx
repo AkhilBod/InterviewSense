@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, MessageSquare, FileText } from "lucide-react"
+import { ArrowRight, MessageSquare, FileText, Brain } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, UserCog, RotateCcw, Quote, ChevronRight, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -93,14 +93,14 @@ export default function Home() {
               </Button>
             ) : (
               <>
-                <Button asChild variant="ghost" className="text-zinc-300 hover:text-white hover:bg-zinc-800/70">
-                  <Link href="/login">Log in</Link>
+                <Button asChild variant="outline" className="text-zinc-300 border-zinc-600 hover:text-white hover:bg-zinc-800/70">
+                  <Link href="/login">Sign In</Link>
                 </Button>
                 <Button 
                   onClick={handleGetStartedClick} 
-                  className="bg-blue-600 hover:bg-blue-500 text-white"
+                  className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/25"
                 >
-                  Go to Dashbord
+                  Get Started Free
                 </Button>
               </>
             )}
@@ -262,7 +262,7 @@ export default function Home() {
                 <Button
                   onClick={handleGetStartedClick}
                   size="lg"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25"
                 >
                   Start Practicing Now <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
                 </Button>
@@ -270,10 +270,26 @@ export default function Home() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full mt-3 sm:mt-0"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full"
                 >
-                  <Link href="/#how-it-works">Learn How It Works</Link>
+                  <Link href="/login">Already have an account?</Link>
                 </Button>
+              </div>
+              
+              {/* Trust indicators */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-6 text-sm text-zinc-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Free forever</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Join hundreds of developers</span>
+                </div>
               </div>
             </div>
 
@@ -339,8 +355,9 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 md:py-24 bg-zinc-900">
-        <div className="container mx-auto px-4">
+      <section id="features" className="py-16 md:py-24 bg-zinc-900 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Powerful Features</h2>
             <p className="text-base text-zinc-400 max-w-2xl mx-auto px-2">
@@ -368,7 +385,7 @@ export default function Home() {
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
-                  <Image src="/logo.webp" alt="InterviewSense" width={40} height={40} className="object-contain sm:w-10 sm:h-10" />
+                  <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                 </div>
                 <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">LeetCode-Style Coding Practice</h3>
                 <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Problems that Level You Up</h4>
@@ -389,113 +406,6 @@ export default function Home() {
                 <p className="text-sm md:text-base text-zinc-400">
                   Upload your resume and get instant, detailed feedback. Our AI analyzes your resume for strengths, areas for improvement, ATS compatibility, and keyword match for your target job. Download a full report and get actionable suggestions to boost your chances.
                 </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 md:py-24 bg-zinc-950 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.1),transparent_70%)]"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">How It Works</h2>
-            <p className="text-base text-zinc-400 max-w-2xl mx-auto">
-              Get started in minutes and transform your interview skills.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
-            {[1, 2, 3, 4].map((num, i) => {
-              const steps = [
-                { title: "Select Job Role", text: "Choose the specific position you're interviewing for." },
-                { title: "Answer Questions", text: "Respond to AI-generated questions by speaking or typing." },
-                { title: "Get Feedback", text: "Receive detailed analysis on your answers." },
-                { title: "Improve", text: "Use insights to strengthen your responses." },
-              ]
-              const step = steps[i]
-              return (
-                <div key={num} className="flex flex-col items-center text-center p-2 sm:p-4">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center text-lg sm:text-xl font-bold mb-4 sm:mb-6 border border-blue-500/30">
-                    {num}
-                  </div>
-                  <h3 className="text-base sm:text-xl font-semibold mb-2 sm:mb-3 text-white">{step.title}</h3>
-                  <p className="text-xs sm:text-sm text-zinc-400">{step.text}</p>
-                </div>
-              )
-            })}
-          </div>
-          <div className="text-center mt-10 md:mt-16">
-          <Button
-            onClick={handleGetStartedClick}
-            size="lg"
-            className="text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full"
-          >
-            Start Your First Mock Interview
-          </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 md:py-24 bg-zinc-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">What Our Users Say</h2>
-            <p className="text-base text-zinc-400 max-w-2xl mx-auto px-2">
-              Hear from professionals who have transformed their interview performance with InterviewSense.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {/* Testimonial 1 */}
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6 md:p-8">
-                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
-                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  InterviewSense helped me identify my verbal tics and filler words. After just a week of practice, I
-                  felt so much more confident in my technical interview and landed my dream job at Google.
-                </p>
-                <div className="flex items-center">
-                  <div>
-                    <p className="font-medium text-white">Larry P</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Senior Software Engineer at Google</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 2 */}
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6 md:p-8">
-                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
-                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  The real-time feedback was a game-changer. I could see exactly where I needed to improve, and the AI
-                  asked follow-up questions just like a real interviewer would. This helped me secure my internship.
-                </p>
-                <div className="flex items-center">
-                  <div>
-                    <p className="font-medium text-white">Bill G</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Software Engineer Intern at Microsoft</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Testimonial 3 */}
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300 sm:col-span-2 lg:col-span-1">
-              <CardContent className="p-6 md:p-8">
-                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
-                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  As someone who gets nervous in interviews, this tool was invaluable. I practiced with InterviewSense
-                  for two weeks before my interview series, and it helped me stay calm and articulate under pressure.
-                </p>
-                <div className="flex items-center"> 
-                  <div>
-                    <p className="font-medium text-white">Mark Z</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Full Stack Developer at Meta</p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -791,6 +701,149 @@ export default function Home() {
               >
                 Start Using InterviewSense Free <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-16 md:py-24 bg-zinc-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">What Our Users Say</h2>
+            <p className="text-base text-zinc-400 max-w-2xl mx-auto px-2">
+              Hear from professionals who have transformed their interview performance with InterviewSense.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {/* Testimonial 1 */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6 md:p-8">
+                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
+                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
+                  InterviewSense helped me identify my verbal tics and filler words. After just a week of practice, I
+                  felt so much more confident in my technical interview and landed my dream job at Google.
+                </p>
+                <div className="flex items-center">
+                  <div>
+                    <p className="font-medium text-white">Larry P</p>
+                    <p className="text-xs sm:text-sm text-zinc-400">Senior Software Engineer at Google</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 2 */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6 md:p-8">
+                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
+                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
+                  The real-time feedback was a game-changer. I could see exactly where I needed to improve, and the AI
+                  asked follow-up questions just like a real interviewer would. This helped me secure my internship.
+                </p>
+                <div className="flex items-center">
+                  <div>
+                    <p className="font-medium text-white">Bill G</p>
+                    <p className="text-xs sm:text-sm text-zinc-400">Software Engineer Intern at Microsoft</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 3 */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:shadow-blue-500/5 hover:shadow-lg transition-all duration-300 sm:col-span-2 lg:col-span-1">
+              <CardContent className="p-6 md:p-8">
+                <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
+                <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
+                  As someone who gets nervous in interviews, this tool was invaluable. I practiced with InterviewSense
+                  for two weeks before my interview series, and it helped me stay calm and articulate under pressure.
+                </p>
+                <div className="flex items-center"> 
+                  <div>
+                    <p className="font-medium text-white">Mark Z</p>
+                    <p className="text-xs sm:text-sm text-zinc-400">Full Stack Developer at Meta</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Login Conversion Section */}
+      <section className="py-16 md:py-24 bg-zinc-950 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-blue-300 font-medium">Join hundreds of developers already practicing</span>
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 md:mb-6">
+              Ready to Ace Your Next Interview?
+            </h2>
+            
+            <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto">
+              Join thousands of developers who've already landed their dream jobs. 
+              <span className="text-blue-400 font-semibold"> Start practicing in under 30 seconds.</span>
+            </p>
+
+            {/* Social proof stats */}
+            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-10 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1">100+</div>
+                <div className="text-sm text-zinc-400">Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1">89%</div>
+                <div className="text-sm text-zinc-400">Success Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1">4.9/5</div>
+                <div className="text-sm text-zinc-400">User Rating</div>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+              <Button
+                onClick={handleGetStartedClick}
+                size="lg"
+                className="w-full sm:w-auto text-base px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full shadow-lg shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
+              >
+                Start Free Practice <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto text-base px-8 py-4 border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-full"
+              >
+                <Link href="/login">Already have an account? Sign In</Link>
+              </Button>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-zinc-500">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Free forever</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Start in 30 seconds</span>
+              </div>
             </div>
           </div>
         </div>
