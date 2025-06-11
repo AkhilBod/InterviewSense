@@ -20,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Analytics } from "@vercel/analytics/react"
 
 function LoginPage() {
   const { data: session } = useSession()
@@ -422,7 +421,6 @@ function LoginPage() {
           </div>
         </div>
       </footer>
-      <Analytics />
     </div>
   )
 }

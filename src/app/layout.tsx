@@ -4,6 +4,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Providers from './providers' // Import the provider
 import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/react"
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -40,12 +42,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/logo.webp', sizes: '64x64' },
-      { url: '/logo.webp', sizes: '48x48' },
-      { url: '/logo.webp', sizes: '32x32' },
-      { url: '/logo.webp', sizes: '16x16' }
+      { url: '/app-icon.svg', sizes: 'any' },
+      { url: '/favicon.svg', sizes: 'any' }
     ],
-    apple: { url: '/logo.webp', sizes: '180x180' }
+    apple: { url: '/apple-icon.svg', sizes: '180x180' }
   },
   manifest: '/manifest.json',
   
@@ -107,7 +107,9 @@ export default function RootLayout({
         <Providers> {/* Wrap your content with the SessionProvider */}
           {children}
         </Providers>
+        <ServiceWorkerRegistration />
         <Toaster />
+        <Analytics />
       </body>
     </html>
   )

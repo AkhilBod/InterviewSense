@@ -119,12 +119,20 @@ const handler = NextAuth({
       allowDangerousEmailAccountLinking: true,
     }),
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   pages: {
-    signIn: '/login', // Redirect users to your custom login page
-    signOut: '/',      // Redirect users to homepage after sign out (using relative URL)
-    error: '/login',   // Redirect users to login page on error (e.g., OAuthAccountNotLinked if linking is off)
-    verifyRequest: '/verify-request', // Page shown after email for magic link has been sent
-    newUser: '/dashboard'  // Redirect new users to dashboard on their first sign-in (OAuth or Email)
+    signIn: '/login',
+    signOut: '/login',
+    error: '/login',
+    verifyRequest: '/verify-request',
+    newUser: '/signup'
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -140,13 +148,25 @@ const handler = NextAuth({
       return session
     }
   },
-  session: {
-    strategy: 'jwt', // Using JSON Web Tokens for session management
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+  events: {
+    // ...existing events...
   },
-  secret: process.env.AUTH_SECRET, // A random string used to hash tokens, sign cookies and generate cryptographic keys.
-  debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
-});
+  debug: process.env.NODE_ENV === 'development',
+  // Configure to reduce database calls
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60 // 30 days
+      }
+    }
+  }
+})
 
 // Export the handler directly for both GET and POST methods
 // This is the recommended way to use NextAuth with the App Router
