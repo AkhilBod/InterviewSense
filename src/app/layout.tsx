@@ -40,10 +40,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/logo.webp', sizes: '64x64' },
+      { url: '/logo.webp', sizes: '48x48' },
       { url: '/logo.webp', sizes: '32x32' },
       { url: '/logo.webp', sizes: '16x16' }
     ],
-    apple: { url: '/logo.webp' }
+    apple: { url: '/logo.webp', sizes: '180x180' }
   },
   manifest: '/manifest.json',
   

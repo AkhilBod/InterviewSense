@@ -59,7 +59,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Image src="/logo.webp" alt="InterviewSense" width={40} height={40} className="object-contain" />
+            <Image src="/logo.webp" alt="InterviewSense" width={48} height={48} className="object-contain" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
           
@@ -276,8 +276,8 @@ export default function Home() {
                 </Button>
               </div>
               
-              {/* Trust indicators */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-6 text-sm text-zinc-500">
+              {/* Trust indicators - Hidden on mobile to reduce clutter */}
+              <div className="hidden sm:flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-6 text-sm text-zinc-500">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <span>Free forever</span>
@@ -771,8 +771,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Login Conversion Section */}
-      <section className="py-16 md:py-24 bg-zinc-950 relative overflow-hidden">
+      {/* Login Conversion Section - Hidden on mobile to reduce clutter */}
+      <section className="hidden sm:block py-16 md:py-24 bg-zinc-950 relative overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
@@ -943,8 +943,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-zinc-900">
+      {/* CTA Section - Hidden on mobile to reduce clutter */}
+      <section className="hidden sm:block py-12 sm:py-16 md:py-20 bg-zinc-900">
         <div className="container mx-auto px-4">
           <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 max-w-5xl mx-auto backdrop-blur-sm">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
