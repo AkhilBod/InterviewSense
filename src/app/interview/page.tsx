@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Brain, Loader2 } from 'lucide-react';
+import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession, signOut } from 'next-auth/react';
@@ -676,7 +677,7 @@ function InterviewPage() {
           <header className="border-b border-slate-800">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Brain className="h-6 w-6 text-blue-500" />
+                <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
                 <span className="font-bold text-xl">InterviewSense</span>
               </div>
               <div className="flex items-center gap-4">

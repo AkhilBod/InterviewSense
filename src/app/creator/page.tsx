@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Brain, Users, UserCheck, Calendar, TrendingUp } from 'lucide-react'
+import { Users, UserCheck, Calendar, TrendingUp } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 interface CreatorStats {
@@ -83,7 +84,7 @@ export default function CreatorStatsPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <Brain className="h-6 w-6 text-blue-500" />
+              <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
               <span className="font-bold text-xl">InterviewSense</span>
             </Link>
             <nav>

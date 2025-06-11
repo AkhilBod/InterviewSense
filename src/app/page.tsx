@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, MessageSquare, Brain, FileText } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Mic, UserCog, RotateCcw, Quote, ChevronRight } from "lucide-react"
+import { ArrowRight, MessageSquare, FileText } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Mic, UserCog, RotateCcw, Quote, ChevronRight, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 // Optional: if using next-auth or similar
@@ -57,8 +58,8 @@ export default function Home() {
       {/* Header/Navigation */}
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Brain className="h-6 w-6 text-blue-500" />
+          <div className="flex items-center gap-3">
+            <Image src="/logo.webp" alt="InterviewSense" width={40} height={40} className="object-contain" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
           
@@ -136,8 +137,8 @@ export default function Home() {
               <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-black border-l border-zinc-800 shadow-xl">
                 <div className="flex flex-col h-full">
                   <div className="bg-black px-6 py-4 flex justify-between items-center border-b border-zinc-800">
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-blue-500" />
+                    <div className="flex items-center gap-3">
+                      <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
                       <span className="font-bold text-lg text-white">InterviewSense</span>
                     </div>
                     <button 
@@ -325,7 +326,7 @@ export default function Home() {
                 <div className="bg-gradient-to-r from-zinc-800 to-zinc-700 px-4 py-3 border-t border-zinc-600/50">
                   <div className="flex items-center justify-between text-xs text-zinc-400">
                     <span className="flex items-center gap-2">
-                      <Brain className="w-3 h-3 text-blue-400" />
+                      <Image src="/logo.webp" alt="InterviewSense" width={16} height={16} className="object-contain" />
                       AI Analysis Active
                     </span>
                     <span>Real-time feedback enabled</span>
@@ -367,7 +368,7 @@ export default function Home() {
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
-                  <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                  <Image src="/logo.webp" alt="InterviewSense" width={40} height={40} className="object-contain sm:w-10 sm:h-10" />
                 </div>
                 <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">LeetCode-Style Coding Practice</h3>
                 <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Problems that Level You Up</h4>
@@ -497,6 +498,300 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table Section */}
+      <section className="py-16 md:py-24 bg-zinc-950 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Why Choose InterviewSense?</h2>
+            <p className="text-base text-zinc-400 max-w-2xl mx-auto">
+              See how InterviewSense compares to traditional interview preparation methods.
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-zinc-800/30 border border-zinc-700/50 rounded-2xl overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-zinc-700/50">
+                    <th className="text-left p-6 text-white font-semibold">Feature</th>
+                    <th className="text-center p-6 text-white font-semibold bg-blue-900/20">
+                      <div className="flex items-center justify-center gap-2">
+                        <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                        <span>InterviewSense</span>
+                      </div>
+                    </th>
+                    <th className="text-center p-6 text-zinc-400 font-semibold">Traditional Methods</th>
+                    <th className="text-center p-6 text-zinc-400 font-semibold">Mock Interviews</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">Real-time Voice Analysis</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">24/7 Availability</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">Instant Detailed Feedback</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-yellow-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">LeetCode Integration</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">Resume Analysis</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-yellow-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-zinc-700/30">
+                    <td className="p-6 text-zinc-300">Cost</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <span className="text-green-500 font-semibold">Free</span>
+                    </td>
+                    <td className="p-6 text-center">
+                      <span className="text-green-500 font-semibold">Free</span>
+                    </td>
+                    <td className="p-6 text-center">
+                      <span className="text-red-500 font-semibold">$50-200+</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-zinc-300">Progress Tracking</td>
+                    <td className="p-6 text-center bg-blue-900/10">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </td>
+                    <td className="p-6 text-center">
+                      <svg className="h-5 w-5 text-yellow-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-6">
+              <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-blue-400">
+                    <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                    InterviewSense
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Real-time Voice Analysis</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">24/7 Availability</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Instant Detailed Feedback</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">LeetCode Integration</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Resume Analysis</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Cost</span>
+                      <span className="text-green-500 font-semibold">Free</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Progress Tracking</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-800/30 border-zinc-700/50 backdrop-blur-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-zinc-400">Traditional Methods</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Real-time Voice Analysis</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">24/7 Availability</span>
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Instant Detailed Feedback</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">LeetCode Integration</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Resume Analysis</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Cost</span>
+                      <span className="text-green-500 font-semibold">Free</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Progress Tracking</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-zinc-800/30 border-zinc-700/50 backdrop-blur-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-zinc-400">Mock Interviews</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Real-time Voice Analysis</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">24/7 Availability</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Instant Detailed Feedback</span>
+                      <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">LeetCode Integration</span>
+                      <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Resume Analysis</span>
+                      <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Cost</span>
+                      <span className="text-red-500 font-semibold">$50-200+</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-300">Progress Tracking</span>
+                      <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      </svg>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="text-center mt-12">
+              <Button
+                onClick={handleGetStartedClick}
+                size="lg"
+                className="text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full"
+              >
+                Start Using InterviewSense Free <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>

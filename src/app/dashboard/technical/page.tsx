@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { MessageSquare, User, Brain } from "lucide-react"
+import { MessageSquare, User } from "lucide-react"
+import Image from 'next/image'
 import { TechnicalAssessment } from "@/components/TechnicalAssessment"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
@@ -83,7 +84,7 @@ function TechnicalAssessmentPage() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Brain className="h-6 w-6 text-blue-500" />
+            <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
             <Link href="/" className="font-bold text-xl">
               InterviewSense
             </Link>
