@@ -142,7 +142,12 @@ export default function JobRoleSelect({ onJobDetailsChange, interviewType }: Job
 
   const handleInterviewTypeChange = (value: string) => {
     setInterviewTypeState(value);
-    updateJobDetails(jobTitle, company, industry, experience, jobAd, resume, value, interviewStage);
+    // Clear industry when switching to Behavioral interview type
+    const newIndustry = value === 'Behavioral' ? '' : industry;
+    if (value === 'Behavioral') {
+      setIndustry('');
+    }
+    updateJobDetails(jobTitle, company, newIndustry, experience, jobAd, resume, value, interviewStage);
   };
 
   const handleInterviewStageChange = (value: string) => {
@@ -216,21 +221,23 @@ export default function JobRoleSelect({ onJobDetailsChange, interviewType }: Job
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="industry">Industry</Label>
-            <Select value={industry} onValueChange={handleIndustryChange}>
-              <SelectTrigger id="industry">
-                <SelectValue placeholder="Select industry" />
-              </SelectTrigger>
-              <SelectContent>
-                {industries.map((ind) => (
-                  <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {interviewTypeState !== 'Behavioral' && (
+            <div>
+              <Label htmlFor="industry">Industry</Label>
+              <Select value={industry} onValueChange={handleIndustryChange}>
+                <SelectTrigger id="industry">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          <div>
+          <div className={interviewTypeState === 'Behavioral' ? 'md:col-span-2' : ''}>
             <Label htmlFor="experience">Experience Level</Label>
             <Select value={experience} onValueChange={handleExperienceChange}>
               <SelectTrigger id="experience">

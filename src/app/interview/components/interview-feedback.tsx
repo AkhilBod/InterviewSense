@@ -110,7 +110,7 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
         const jobDetails = typeof window !== 'undefined' ? {
           jobTitle: localStorage.getItem('jobTitle') || undefined,
           company: localStorage.getItem('company') || undefined,
-          industry: localStorage.getItem('industry') || undefined,
+          industry: localStorage.getItem('interviewType') === 'Behavioral' ? undefined : (localStorage.getItem('industry') || undefined),
           experienceLevel: localStorage.getItem('experienceLevel') || undefined,
           interviewType: localStorage.getItem('interviewType') || undefined,
           interviewStage: localStorage.getItem('interviewStage') || undefined,
@@ -241,7 +241,7 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
         const jobDetails = typeof window !== 'undefined' ? {
           jobTitle: localStorage.getItem('jobTitle') || undefined,
           company: localStorage.getItem('company') || undefined,
-          industry: localStorage.getItem('industry') || undefined,
+          industry: localStorage.getItem('interviewType') === 'Behavioral' ? undefined : (localStorage.getItem('industry') || undefined),
           experienceLevel: localStorage.getItem('experienceLevel') || undefined,
           interviewType: localStorage.getItem('interviewType') || undefined,
           interviewStage: localStorage.getItem('interviewStage') || undefined,

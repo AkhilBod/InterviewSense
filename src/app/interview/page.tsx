@@ -122,12 +122,13 @@ function InterviewPage() {
         }
 
         // Get job details from localStorage or state management
+        const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
         const jobDetails = {
           jobTitle: localStorage.getItem('jobTitle') || 'Software Engineer',
           company: localStorage.getItem('company') || '',
-          industry: localStorage.getItem('industry') || 'Technology',
+          industry: interviewType === 'Behavioral' ? '' : (localStorage.getItem('industry') || 'Technology'),
           experienceLevel: localStorage.getItem('experienceLevel') || 'Mid-level',
-          interviewType: localStorage.getItem('interviewType') || 'Behavioral',
+          interviewType: interviewType,
           interviewStage: localStorage.getItem('interviewStage') || 'Initial'
         };
 
