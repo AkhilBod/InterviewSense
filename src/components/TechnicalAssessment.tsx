@@ -497,7 +497,7 @@ public:
         <CardHeader>
           <CardTitle>Technical Assessment</CardTitle>
           <CardDescription>
-            Get a personalized LeetCode question based on your target company and role or specify a LeetCode question number
+            Get an optimally selected LeetCode problem from the complete database of 3000+ questions, targeted to your company and role, or specify any problem by number
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -507,12 +507,12 @@ public:
                 <div className={`w-2 h-10 rounded-full ${useCustomNumber ? 'bg-blue-500' : 'bg-zinc-600'}`}></div>
                 <div>
                   <Label htmlFor="useCustomNumber" className="font-medium cursor-pointer block mb-0.5">
-                    {useCustomNumber ? 'Specific LeetCode Question' : 'Random Question Generation'}
+                    {useCustomNumber ? 'Specific Problem Selection' : 'AI-Powered Problem Selection'}
                   </Label>
                   <p className="text-xs text-zinc-400">
                     {useCustomNumber 
-                      ? 'Enter a LeetCode question number to get that exact problem' 
-                      : 'Generate a question based on company, role and difficulty'}
+                      ? 'Get any specific problem from the 3000+ LeetCode database by number' 
+                      : 'AI selects optimal problem from 3000+ questions based on company, role, and difficulty'}
                   </p>
                 </div>
               </div>
@@ -538,7 +538,7 @@ public:
                   min="1"
                   max="3000"
                 />
-                <p className="text-xs text-zinc-500">Enter the problem number from LeetCode (1-3000)</p>
+                <p className="text-xs text-zinc-500">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -586,7 +586,7 @@ public:
             )}
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {useCustomNumber ? 'Get LeetCode Question' : 'Generate Random Question'}
+              {useCustomNumber ? 'Get Specific LeetCode Problem' : 'Get AI-Selected Problem'}
             </Button>
           </form>
         </CardContent>
