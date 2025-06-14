@@ -16,7 +16,7 @@ export default function Home() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentText, setCurrentText] = useState('resume')
+  const [currentText, setCurrentText] = useState('behavioral')
   const [isDeleting, setIsDeleting] = useState(false)
   const [charIndex, setCharIndex] = useState(0)
   const [wordIndex, setWordIndex] = useState(0)
@@ -59,7 +59,7 @@ export default function Home() {
 
   // Typewriter effect for rotating text
   useEffect(() => {
-    const words = ['resume', 'behavioral', 'technical']
+    const words = ['behavioral', 'technical', 'resume']
     const typingSpeed = 100
     const erasingSpeed = 30
     const delayBetweenWords = 1500
