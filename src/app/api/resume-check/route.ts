@@ -87,6 +87,11 @@ RESUME ANALYSIS REPORT FOR ${jobTitle.toUpperCase()} POSITION
 OVERALL ASSESSMENT
 Provide a role-specific evaluation of the resume's suitability, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume demonstrates strong technical skills for the ${jobTitle} position but needs more emphasis on domain expertise."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.
 
+Additionally, provide these specific category scores:
+Impact Score: XX/100 (measuring quantifiable achievements, results, and career progression)
+Style Score: XX/100 (measuring formatting, readability, and professional presentation)
+Skills Score: XX/100 (measuring technical competencies and relevant qualifications for this role)
+
 ROLE-SPECIFIC STRENGTHS
 List achievements, skills, and experiences that align specifically with the ${jobTitle} position requirements. Focus on industry-relevant accomplishments and quantifiable results that matter for this role. Highlight technical skills, domain knowledge, or certifications particularly valuable for this position. Present each point as a complete sentence without bullet points or dashes.
 
@@ -174,6 +179,9 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         const successResponse = { 
             analysis: analysisText, 
             score: structuredAnalysis.overallScore,
+            impactScore: structuredAnalysis.impactScore,
+            styleScore: structuredAnalysis.styleScore,
+            skillsScore: structuredAnalysis.skillsScore,
             strengths: structuredAnalysis.strengths,
             areasForImprovement: structuredAnalysis.improvements,
             formattedAnalysis,
@@ -230,6 +238,9 @@ async function logRequestDetails(req: Request) {
 function parseAnalysisText(analysisText: string) {
     const sections = {
         overallScore: null as number | null,
+        impactScore: null as number | null,
+        styleScore: null as number | null,
+        skillsScore: null as number | null,
         strengths: [] as string[],
         improvements: [] as string[],
         atsOptimization: [] as string[],
@@ -241,6 +252,24 @@ function parseAnalysisText(analysisText: string) {
     const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
     if (scoreMatch && scoreMatch[1]) {
         sections.overallScore = parseInt(scoreMatch[1], 10);
+    }
+
+    // Parse impact score
+    const impactMatch = analysisText.match(/Impact Score: (\d{1,3})\/100/);
+    if (impactMatch && impactMatch[1]) {
+        sections.impactScore = parseInt(impactMatch[1], 10);
+    }
+
+    // Parse style score
+    const styleMatch = analysisText.match(/Style Score: (\d{1,3})\/100/);
+    if (styleMatch && styleMatch[1]) {
+        sections.styleScore = parseInt(styleMatch[1], 10);
+    }
+
+    // Parse skills score
+    const skillsMatch = analysisText.match(/Skills Score: (\d{1,3})\/100/);
+    if (skillsMatch && skillsMatch[1]) {
+        sections.skillsScore = parseInt(skillsMatch[1], 10);
     }
 
     // Parse strengths (plain text format)

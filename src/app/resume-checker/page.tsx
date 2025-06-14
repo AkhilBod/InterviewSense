@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer } from "lucide-react";
+import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer, CheckCircle } from "lucide-react";
 import Image from 'next/image';
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -25,6 +25,9 @@ interface ResumeAnalysisData {
   jobTitle: string;
   company?: string;
   overallScore: number;
+  impactScore: number;
+  styleScore: number;
+  skillsScore: number;
   strengths: string[];
   improvementAreas: string[];
   analysis: string; // Full markdown analysis text
@@ -97,6 +100,9 @@ export default function ResumeCheckerPage() {
         jobTitle: jobTitle,
         company: company || undefined,
         overallScore: data.score,
+        impactScore: data.impactScore || 75,
+        styleScore: data.styleScore || 80,
+        skillsScore: data.skillsScore || 85,
         strengths: data.strengths || [],
         improvementAreas: data.areasForImprovement || [],
         analysis: data.analysis,
@@ -123,17 +129,15 @@ export default function ResumeCheckerPage() {
 
   // Helper functions for results display (copied from ResumeResultsPage)
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-500";
-    if (score >= 75) return "text-blue-500";
-    if (score >= 60) return "text-yellow-500";
-    return "text-red-500";
+    if (score >= 80) return "text-green-400";
+    if (score >= 60) return "text-yellow-400";
+    return "text-red-400";
   };
 
   const getBarColor = (score: number) => {
-    if (score >= 90) return "bg-green-600";
-    if (score >= 75) return "bg-blue-600";
-    if (score >= 60) return "bg-yellow-600";
-    return "bg-red-600";
+    if (score >= 80) return "bg-green-500";
+    if (score >= 60) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   const getAtsBadgeColor = (ats: string | undefined) => {
@@ -359,217 +363,339 @@ export default function ResumeCheckerPage() {
 
               {resumeData && (
                 <>
-                  {/* Summary Card */}
-                  <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
-                    <CardHeader className="pb-4 border-b border-slate-700">
-                      <div className="flex flex-col md:flex-row justify-between">
-                        <div>
-                          <CardTitle className="text-2xl">Resume Analysis Report</CardTitle>
-                          <CardDescription className="mt-1 text-slate-400">
-                            For a {resumeData.jobTitle} position{resumeData.company ? ` at ${resumeData.company}` : ""} • {new Date().toLocaleDateString()}
-                          </CardDescription>
-                        </div>
-                        <div className="mt-4 md:mt-0 flex flex-col items-center justify-center">
-                          <div className={`text-3xl font-bold mb-1 ${getScoreColor(resumeData.overallScore)}`}>
-                            {resumeData.overallScore}%
-                          </div>
-                          <div className="text-sm text-slate-400">Overall Score</div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="py-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <h3 className="font-medium text-sm mb-2 text-slate-300">Key Strengths</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {resumeData.strengths.length > 0 ? resumeData.strengths.map(strength => (
-                              <Badge key={strength} className="bg-green-700 text-green-100 hover:bg-green-600">
-                                {strength}
-                              </Badge>
-                            )) : <p className="text-zinc-400 text-sm">No specific strengths identified.</p>}
-                          </div>
-                        </div>
+                  {/* Main Layout - Everything stacked vertically */}
+                  <div className="max-w-6xl mx-auto space-y-8">
+                    {/* Header */}
+                    <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                      <CardHeader className="text-center">
+                        <CardTitle className="text-2xl">Resume Analysis Report</CardTitle>
+                        <CardDescription className="text-slate-400">
+                          For a {resumeData.jobTitle} position{resumeData.company ? ` at ${resumeData.company}` : ""} • {new Date().toLocaleDateString()}
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
 
-                        <div>
-                          <h3 className="font-medium text-sm mb-2 text-slate-300">Areas for Improvement</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {resumeData.improvementAreas.length > 0 ? resumeData.improvementAreas.map(area => (
-                              <Badge key={area} className="bg-yellow-700 text-yellow-100 hover:bg-yellow-600">
-                                {area}
-                              </Badge>
-                            )) : <p className="text-zinc-400 text-sm">No specific areas for improvement identified.</p>}
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="font-medium text-sm mb-2 text-slate-300">Resume Stats</h3>
-                          <div className="text-sm space-y-1 text-slate-300">
-                            <div className="flex justify-between">
-                              <span>File Type:</span>
-                              <span className="font-medium text-white">{resumeData.fileType.split('/')[1] || resumeData.fileType}</span>
+                    {/* Scores Section */}
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                      <CardContent className="p-8">
+                        <div className="flex items-center justify-between">
+                          {/* Overall Score with Circular Progress */}
+                          <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-6 min-w-[160px]">
+                            <div className="relative w-28 h-28 mb-3">
+                              <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
+                                {/* Background circle */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r="42"
+                                  stroke="currentColor"
+                                  strokeWidth="6"
+                                  fill="transparent"
+                                  className="text-slate-600/40"
+                                />
+                                {/* Progress circle */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r="42"
+                                  stroke="currentColor"
+                                  strokeWidth="6"
+                                  fill="transparent"
+                                  strokeDasharray={`${2 * Math.PI * 42}`}
+                                  strokeDashoffset={`${2 * Math.PI * 42 * (1 - resumeData.overallScore / 100)}`}
+                                  className={getScoreColor(resumeData.overallScore).replace('text-', 'text-')}
+                                  strokeLinecap="round"
+                                  style={{
+                                    filter: 'drop-shadow(0 0 8px currentColor)',
+                                    transition: 'all 0.3s ease'
+                                  }}
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className={`text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
+                                  {resumeData.overallScore}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium">/ 100</span>
+                              </div>
                             </div>
-                            {resumeData.resumeLength && (
-                              <div className="flex justify-between">
-                                <span>Estimated Pages:</span>
-                                <span className="font-medium text-white">{resumeData.resumeLength}</span>
+                            <div className="text-sm font-semibold text-slate-300 tracking-wider">OVERALL</div>
+                          </div>
+
+                          {/* Individual Scores */}
+                          <div className="flex-1 ml-12">
+                            <div className="grid grid-cols-3 gap-8">
+                              {/* Impact Score */}
+                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">IMPACT</div>
+                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-1`}>
+                                  {resumeData.impactScore}
+                                </div>
+                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
+                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
+                                    style={{ width: `${resumeData.impactScore}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                            )}
-                            {resumeData.keywordMatch !== undefined && (
-                              <div className="flex justify-between">
-                                <span>Keyword Match:</span>
-                                <span className="font-medium text-white">{resumeData.keywordMatch}%</span>
+
+                              {/* Style Score */}
+                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">STYLE</div>
+                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-1`}>
+                                  {resumeData.styleScore}
+                                </div>
+                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
+                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
+                                    style={{ width: `${resumeData.styleScore}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                            )}
-                            {resumeData.skillsCount !== undefined && (
-                              <div className="flex justify-between">
-                                <span>Skills Identified:</span>
-                                <span className="font-medium text-white">{resumeData.skillsCount}</span>
+
+                              {/* Skills Score */}
+                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">SKILLS</div>
+                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-1`}>
+                                  {resumeData.skillsScore}
+                                </div>
+                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
+                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
+                                    style={{ width: `${resumeData.skillsScore}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                            )}
-                            {resumeData.atsCompatibility && (
-                              <div className="flex justify-between">
-                                <span>ATS Compatibility:</span>
-                                <Badge className={`${getAtsBadgeColor(resumeData.atsCompatibility)} text-xs`}>
-                                  {resumeData.atsCompatibility}
-                                </Badge>
-                              </div>
-                            )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="pt-0">
-                      <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
-                          onClick={() => {
-                            if (resumeData) {
-                              // Create a text blob with the report data
-                              const reportContent = `
-# Resume Analysis Report for ${resumeData.jobTitle} position
-Date: ${new Date().toLocaleDateString()}
-Overall Score: ${resumeData.overallScore}%
+                      </CardContent>
+                    </Card>
 
-## Key Strengths
-${resumeData.strengths.map(s => `- ${s}`).join('\n')}
+                    {/* Resume Stats */}
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Resume Analytics</CardTitle>
+                        <CardDescription className="text-slate-400">
+                          Comprehensive analysis of your resume performance
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {/* Top Row - Key Metrics */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
+                              <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                            </div>
+                            <div className={`text-3xl font-black ${getScoreColor(resumeData.overallScore)} mb-1`}>
+                              {resumeData.overallScore >= 80 ? 'A' : resumeData.overallScore >= 70 ? 'B' : resumeData.overallScore >= 60 ? 'C' : 'D'}
+                            </div>
+                            <div className="text-slate-500 text-sm font-semibold">
+                              {resumeData.overallScore >= 80 ? 'Excellent' : resumeData.overallScore >= 70 ? 'Good' : resumeData.overallScore >= 60 ? 'Average' : 'Needs Work'}
+                            </div>
+                          </div>
 
-## Areas for Improvement
-${resumeData.improvementAreas.map(a => `- ${a}`).join('\n')}
+                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="text-xs font-bold text-slate-400 tracking-widest">ATS READY</div>
+                              <div className={`w-2 h-2 rounded-full ${resumeData.atsCompatibility === 'Excellent' ? 'bg-green-400' : resumeData.atsCompatibility === 'Good' ? 'bg-yellow-400' : 'bg-red-400'}`}></div>
+                            </div>
+                            <div className={`text-2xl font-black ${resumeData.atsCompatibility === 'Excellent' ? 'text-green-400' : resumeData.atsCompatibility === 'Good' ? 'text-yellow-400' : 'text-red-400'} mb-1`}>
+                              {resumeData.atsCompatibility === 'Excellent' ? '✓' : resumeData.atsCompatibility === 'Good' ? '!' : '✗'}
+                            </div>
+                            <div className="text-slate-500 text-sm font-semibold">{resumeData.atsCompatibility}</div>
+                          </div>
 
-## Full Analysis
-${resumeData.analysis}
-                              `.trim();
-                              
-                              const blob = new Blob([reportContent], { type: 'text/plain' });
-                              const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `ResumeAnalysis-${new Date().toISOString().slice(0, 10)}.txt`;
-                              document.body.appendChild(a);
-                              a.click();
-                              document.body.removeChild(a);
-                              URL.revokeObjectURL(url);
-                            }
-                          }}
-                        >
-                          <Download className="h-4 w-4" /> Download Report
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
-                          onClick={() => {
-                            window.print();
-                          }}
-                        >
-                          <Printer className="h-4 w-4" /> Print
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
-                          onClick={() => {
-                            if (navigator.share && resumeData) {
-                              navigator.share({
-                                title: `Resume Analysis for ${resumeData.jobTitle} position`,
-                                text: `Check out my resume analysis from InterviewSense: Score ${resumeData.overallScore}%`,
-                                url: window.location.href
-                              }).catch(err => {
-                                console.error('Error sharing:', err);
-                                alert('Sharing failed. You can manually copy the URL and share it.');
-                              });
-                            } else {
-                              navigator.clipboard.writeText(window.location.href)
-                                .then(() => alert('Report link copied to clipboard!'))
-                                .catch(err => console.error('Failed to copy:', err));
-                            }
-                          }}
-                        >
-                          <Share2 className="h-4 w-4" /> Share
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
+                          {resumeData.keywordMatch !== undefined && (
+                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="text-xs font-bold text-slate-400 tracking-widest">JOB MATCH</div>
+                                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                              </div>
+                              <div className={`text-3xl font-black ${getScoreColor(resumeData.keywordMatch)} mb-1`}>
+                                {resumeData.keywordMatch}%
+                              </div>
+                              <div className="text-slate-500 text-sm font-semibold">Keyword Alignment</div>
+                            </div>
+                          )}
 
-                  {/* AI Coach Feedback */}
-                  <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
-                    <CardHeader>
-                      <div className="flex items-center gap-4">
-                        <Avatar>
-                          <AvatarImage src="/avatar.png" />
-                          <AvatarFallback className="bg-blue-700 text-white">AI</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-lg">AI Reviewer Feedback</CardTitle>
-                          <CardDescription className="text-slate-400">
-                            Personalized advice to optimize your resume
-                          </CardDescription>
+                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="text-xs font-bold text-slate-400 tracking-widest">READABILITY</div>
+                              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                            </div>
+                            <div className={`text-3xl font-black ${getScoreColor(resumeData.styleScore)} mb-1`}>
+                              {resumeData.styleScore}
+                            </div>
+                            <div className="text-slate-500 text-sm font-semibold">Style Score</div>
+                          </div>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4 text-slate-300">
-                        {parseAnalysisContent(resumeData.analysis)}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
-                        onClick={handleBackToChecker}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        Re-analyze Resume
-                      </Button>
-                    </CardFooter>
-                  </Card>
 
-                  {/* Next Steps */}
-                  <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                    <CardHeader>
-                      <CardTitle className="text-lg">What's Next?</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-items-center">
-                        <Button variant="outline" className="h-auto py-6 px-8 w-full flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" onClick={handleBackToChecker}>
-                          <RefreshCw className="h-6 w-6 mb-2" />
-                          <span className="text-base font-medium">Refine Resume</span>
-                          <span className="text-xs text-slate-400 mt-1">Make edits and get new feedback</span>
-                        </Button>
+                        {/* Bottom Row - Technical Details */}
+                        <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-600/30">
+                          <h4 className="text-sm font-bold text-slate-300 mb-4 tracking-widest">TECHNICAL DETAILS</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <div className="text-center">
+                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">FORMAT</div>
+                              <div className="text-white font-bold text-sm uppercase bg-slate-700/50 rounded-lg py-2 px-3">
+                                {resumeData.fileType.split('/')[1] || resumeData.fileType}
+                              </div>
+                            </div>
 
-                        <Button variant="outline" className="h-auto py-6 px-8 w-full flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
-                          <Link href="/interview">
-                            <MessageSquare className="h-6 w-6 mb-2" />
-                            <span className="text-base font-medium">Practice Interview</span>
-                            <span className="text-xs text-slate-400 mt-1">Prepare for your next interview</span>
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                            {resumeData.resumeLength && (
+                              <div className="text-center">
+                                <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">PAGES</div>
+                                <div className="text-white font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
+                                  {resumeData.resumeLength}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="text-center">
+                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">SKILLS</div>
+                              <div className="text-white font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
+                                {resumeData.skillsCount}
+                              </div>
+                            </div>
+
+                            <div className="text-center">
+                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">STRENGTHS</div>
+                              <div className="text-green-400 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
+                                {resumeData.strengths.length}
+                              </div>
+                            </div>
+
+                            <div className="text-center">
+                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">TO IMPROVE</div>
+                              <div className="text-yellow-400 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
+                                {resumeData.improvementAreas.length}
+                              </div>
+                            </div>
+
+                            <div className="text-center">
+                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">ANALYZED</div>
+                              <div className="text-slate-300 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
+                                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Key Strengths */}
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-bold flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
+                            <CheckCircle className="h-6 w-6 text-green-400" />
+                          </div>
+                          <span className="text-white">Key Strengths</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {resumeData.strengths.length > 0 ? resumeData.strengths.map((strength, index) => (
+                            <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
+                              <div className="flex items-start gap-4">
+                                <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-green-500/30 transition-colors">
+                                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                </div>
+                                <span className="text-slate-200 leading-relaxed flex-1">{strength}</span>
+                              </div>
+                            </div>
+                          )) : (
+                            <div className="text-center py-8">
+                              <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="h-8 w-8 text-slate-500" />
+                              </div>
+                              <p className="text-slate-400 italic">No specific strengths identified in the analysis.</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Areas for Improvement */}
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-bold flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
+                            <AlertCircle className="h-6 w-6 text-yellow-400" />
+                          </div>
+                          <span className="text-white">Areas for Improvement</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {resumeData.improvementAreas.length > 0 ? resumeData.improvementAreas.map((area, index) => (
+                            <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
+                              <div className="flex items-start gap-4">
+                                <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-yellow-500/30 transition-colors">
+                                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                </div>
+                                <span className="text-slate-200 leading-relaxed flex-1">{area}</span>
+                              </div>
+                            </div>
+                          )) : (
+                            <div className="text-center py-8">
+                              <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <AlertCircle className="h-8 w-8 text-slate-500" />
+                              </div>
+                              <p className="text-slate-400 italic">No specific areas for improvement identified in the analysis.</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* What's Next */}
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-bold text-white">What's Next?</CardTitle>
+                        <CardDescription className="text-slate-400">
+                          Continue your career journey
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <h4 className="text-sm font-semibold text-slate-300 mb-4 tracking-wider">NEXT STEPS</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Button 
+                            variant="outline" 
+                            className="h-auto py-6 px-6 flex items-center gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
+                            onClick={handleBackToChecker}
+                          >
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-colors">
+                              <RefreshCw className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <div className="text-left">
+                              <div className="font-semibold text-base">Refine Resume</div>
+                              <div className="text-sm text-slate-400 group-hover:text-slate-300">Make edits and get new feedback</div>
+                            </div>
+                          </Button>
+
+                          <Button 
+                            variant="outline" 
+                            className="h-auto py-6 px-6 flex items-center gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
+                            asChild
+                          >
+                            <Link href="/behavioral-interview">
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-colors">
+                                <MessageSquare className="h-6 w-6 text-slate-400" />
+                              </div>
+                              <div className="text-left">
+                                <div className="font-semibold text-base">Practice Interview</div>
+                                <div className="text-sm text-slate-400 group-hover:text-slate-300">Prepare for your next interview</div>
+                              </div>
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </>
               )}
             </div>
