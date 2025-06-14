@@ -2,11 +2,9 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, AlertTriangle, Target, TrendingUp, Lightbulb, Brain } from "lucide-react";
-import { SpecificAnalysisData, SpecificImprovementSuggestion } from "@/types/resume";
-import { useToast } from "@/components/ui/use-toast";
+import { Copy, Check, Target } from "lucide-react";
+import { SpecificAnalysisData } from "@/types/resume";
 
 interface ResumeSpecificAnalysisProps {
   analysis: SpecificAnalysisData;
@@ -22,18 +20,11 @@ export default function ResumeSpecificAnalysis({
   company 
 }: ResumeSpecificAnalysisProps) {
   const [copiedItems, setCopiedItems] = useState<Set<number>>(new Set());
-  const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { toast } = useToast();
 
   const copyToClipboard = async (text: string, index: number) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedItems(prev => new Set(prev).add(index));
-      toast({
-        title: "Copied!",
-        description: "Improvement suggestion copied to clipboard",
-      });
       
       setTimeout(() => {
         setCopiedItems(prev => {
@@ -43,70 +34,9 @@ export default function ResumeSpecificAnalysis({
         });
       }, 2000);
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+      console.error('Failed to copy to clipboard');
     }
   };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'red': return 'bg-red-900/20 border-red-500/30 text-red-300';
-      case 'yellow': return 'bg-yellow-900/20 border-yellow-500/30 text-yellow-300';
-      case 'green': return 'bg-green-900/20 border-green-500/30 text-green-300';
-      default: return 'bg-slate-700/40 border-slate-600/50 text-slate-300';
-    }
-  };
-
-  const getSeverityIcon = (severity: string) => {
-    switch (severity) {
-      case 'red': return <AlertTriangle className="h-4 w-4" />;
-      case 'yellow': return <Target className="h-4 w-4" />;
-      case 'green': return <TrendingUp className="h-4 w-4" />;
-      default: return <Lightbulb className="h-4 w-4" />;
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'quantify_impact': return <TrendingUp className="h-4 w-4" />;
-      case 'communication': return <Brain className="h-4 w-4" />;
-      case 'length_depth': return <Target className="h-4 w-4" />;
-      case 'drive': return <Lightbulb className="h-4 w-4" />;
-      case 'analytical': return <Brain className="h-4 w-4" />;
-      default: return <Target className="h-4 w-4" />;
-    }
-  };
-
-  const formatCategoryName = (category: string) => {
-    return category.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-
-  const filteredImprovements = analysis.specificImprovements.filter(improvement => {
-    const severityMatch = selectedSeverity === "all" || improvement.severity === selectedSeverity;
-    const categoryMatch = selectedCategory === "all" || improvement.category === selectedCategory;
-    return severityMatch && categoryMatch;
-  });
-
-  const severityOptions = [
-    { value: "all", label: "All Priorities", count: analysis.specificImprovements.length },
-    { value: "red", label: "Critical", count: analysis.severityBreakdown.red },
-    { value: "yellow", label: "Important", count: analysis.severityBreakdown.yellow },
-    { value: "green", label: "Polish", count: analysis.severityBreakdown.green },
-  ];
-
-  const categoryOptions = [
-    { value: "all", label: "All Categories", count: analysis.specificImprovements.length },
-    { value: "quantify_impact", label: "Quantify Impact", count: analysis.categoryBreakdown.quantify_impact },
-    { value: "communication", label: "Communication", count: analysis.categoryBreakdown.communication },
-    { value: "length_depth", label: "Length & Depth", count: analysis.categoryBreakdown.length_depth },
-    { value: "drive", label: "Drive", count: analysis.categoryBreakdown.drive },
-    { value: "analytical", label: "Analytical", count: analysis.categoryBreakdown.analytical },
-  ];
 
   return (
     <div className="space-y-6">
@@ -122,135 +52,50 @@ export default function ResumeSpecificAnalysis({
         </CardHeader>
       </Card>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-slate-800 border-slate-700 text-slate-100">
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-purple-400 mb-2">{analysis.overallScore}</div>
-            <div className="text-slate-400">Overall Score</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-slate-800 border-slate-700 text-slate-100">
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-red-400 mb-2">{analysis.severityBreakdown.red}</div>
-            <div className="text-slate-400">Critical Issues</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-slate-800 border-slate-700 text-slate-100">
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-yellow-400 mb-2">{analysis.severityBreakdown.yellow}</div>
-            <div className="text-slate-400">Important Items</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Analysis Summary */}
+      {/* Summary */}
       <Card className="bg-slate-800 border-slate-700 text-slate-100">
         <CardHeader>
           <CardTitle className="text-xl font-bold">Analysis Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="text-center bg-slate-600/30 rounded-xl p-6 border border-slate-500/30">
+            <div className="text-4xl font-bold text-purple-400 mb-2">{analysis.overallScore}</div>
+            <div className="text-slate-400 text-lg">Overall Score</div>
+          </div>
+          
           <div>
-            <h4 className="font-semibold text-red-400 mb-2">Critical Issues</h4>
-            <p className="text-slate-300">{analysis.improvementSummary.criticalIssues}</p>
+            <h4 className="font-semibold text-green-400 mb-2">Strengths to Keep</h4>
+            <p className="text-slate-300">{analysis.improvementSummary.strengthsToKeep}</p>
           </div>
           <div>
             <h4 className="font-semibold text-yellow-400 mb-2">Key Opportunities</h4>
             <p className="text-slate-300">{analysis.improvementSummary.keyOpportunities}</p>
           </div>
           <div>
-            <h4 className="font-semibold text-green-400 mb-2">Strengths to Keep</h4>
-            <p className="text-slate-300">{analysis.improvementSummary.strengthsToKeep}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Filters */}
-      <Card className="bg-slate-800 border-slate-700 text-slate-100">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold">Filter Improvements</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Priority Level</label>
-              <div className="flex flex-wrap gap-2">
-                {severityOptions.map(option => (
-                  <Button
-                    key={option.value}
-                    variant={selectedSeverity === option.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSeverity(option.value)}
-                    className="gap-2"
-                  >
-                    {option.label} ({option.count})
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <div className="flex flex-wrap gap-2">
-                {categoryOptions.filter(opt => opt.count > 0).map(option => (
-                  <Button
-                    key={option.value}
-                    variant={selectedCategory === option.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(option.value)}
-                    className="gap-2"
-                  >
-                    {option.label} ({option.count})
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <h4 className="font-semibold text-red-400 mb-2">Areas to Improve</h4>
+            <p className="text-slate-300">{analysis.improvementSummary.criticalIssues}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Specific Improvements */}
       <div className="space-y-4">
-        <h3 className="text-2xl font-bold text-slate-100">
-          Specific Improvements ({filteredImprovements.length})
+        <h3 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
+          <Target className="h-6 w-6 text-purple-400" />
+          Specific Improvements ({analysis.specificImprovements.length})
         </h3>
         
-        {filteredImprovements.length === 0 ? (
+        {analysis.specificImprovements.length === 0 ? (
           <Card className="bg-slate-800 border-slate-700 text-slate-100">
             <CardContent className="p-8 text-center">
-              <div className="text-slate-400">No improvements found for the selected filters.</div>
+              <div className="text-slate-400">No specific improvements found.</div>
             </CardContent>
           </Card>
         ) : (
-          filteredImprovements.map((improvement, index) => (
-            <Card 
-              key={index} 
-              className={`${getSeverityColor(improvement.severity)} border transition-all duration-300 hover:shadow-lg`}
-            >
+          analysis.specificImprovements.map((improvement, index) => (
+            <Card key={index} className="bg-slate-800 border-slate-700 text-slate-100">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      {getSeverityIcon(improvement.severity)}
-                      <Badge 
-                        variant="secondary" 
-                        className={`${getSeverityColor(improvement.severity)} font-medium`}
-                      >
-                        {improvement.severity.toUpperCase()}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getCategoryIcon(improvement.category)}
-                      <Badge 
-                        variant="outline" 
-                        className="border-slate-500/50 text-slate-300"
-                      >
-                        {formatCategoryName(improvement.category)}
-                      </Badge>
-                    </div>
-                  </div>
                   <div className="text-xs text-slate-400">
                     {improvement.location}
                   </div>

@@ -21,8 +21,7 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
-import ResumeSpecificAnalysis from '@/components/ResumeSpecificAnalysis';
-import { WordImprovementSuggestion, WordAnalysisData, SpecificAnalysisData } from '@/types/resume';
+import { WordImprovementSuggestion, WordAnalysisData } from '@/types/resume';
 
 interface ResumeAnalysisData {
   jobTitle: string;
@@ -62,10 +61,7 @@ export default function ResumeCheckerPage() {
   const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
   const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
 
-  // Specific Analysis State
-  const [showSpecificAnalysis, setShowSpecificAnalysis] = useState(false);
-  const [specificAnalysisData, setSpecificAnalysisData] = useState<SpecificAnalysisData | null>(null);
-  const [isSpecificAnalysisLoading, setIsSpecificAnalysisLoading] = useState(false);
+  // Removed specific analysis - it was redundant with word analysis
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -139,8 +135,6 @@ export default function ResumeCheckerPage() {
     setError(null); // Clear any previous errors
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
-    setShowSpecificAnalysis(false);
-    setSpecificAnalysisData(null);
     // Keep resume file for preview - don't clear it
   };
 
@@ -183,48 +177,6 @@ export default function ResumeCheckerPage() {
       setError(err.message || "An unexpected error occurred during word analysis.");
     } finally {
       setIsWordAnalysisLoading(false);
-    }
-  };
-
-  const handleSpecificAnalysis = async () => {
-    if (!resume || !jobTitle) {
-      setError("Please upload a resume and provide a job title first.");
-      return;
-    }
-
-    setIsSpecificAnalysisLoading(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append("resume", resume);
-    formData.append("jobTitle", jobTitle);
-
-    if (company) {
-      formData.append("company", company);
-    }
-
-    if (jobDescription) {
-      formData.append("jobDescription", jobDescription);
-    }
-
-    try {
-      const response = await fetch("/api/resume-specific-analysis", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to perform specific analysis. Please try again.");
-      }
-
-      setSpecificAnalysisData(data.analysis);
-      setShowSpecificAnalysis(true);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during specific analysis.");
-    } finally {
-      setIsSpecificAnalysisLoading(false);
     }
   };
 
@@ -490,29 +442,6 @@ export default function ResumeCheckerPage() {
                       )}
                       {isWordAnalysisLoading ? "Analyzing..." : showWordAnalysis ? "Hide Word Analysis" : "Word Analysis"}
                     </Button>
-
-                    <Button 
-                      variant={showSpecificAnalysis ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => {
-                        if (showSpecificAnalysis) {
-                          setShowSpecificAnalysis(false);
-                        } else if (specificAnalysisData) {
-                          setShowSpecificAnalysis(true);
-                        } else {
-                          handleSpecificAnalysis();
-                        }
-                      }}
-                      disabled={isSpecificAnalysisLoading}
-                      className="gap-2 bg-purple-600 hover:bg-purple-500 text-white border-purple-600 hover:border-purple-500"
-                    >
-                      {isSpecificAnalysisLoading ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Target className="h-4 w-4" />
-                      )}
-                      {isSpecificAnalysisLoading ? "Analyzing..." : showSpecificAnalysis ? "Hide Specific Analysis" : "Specific Analysis"}
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -521,7 +450,7 @@ export default function ResumeCheckerPage() {
                 <>
                   {/* Optimized Layout - Balanced proportions */}
                   <div className="grid grid-cols-1 lg:grid-cols-9 gap-8 px-4 max-w-[1900px] mx-auto">
-                    {/* Left Column - Analysis Results (50% width) */}
+                    {/* Left Column - Analysis Results (Full width on mobile, 55% on desktop) */}
                     <div className="lg:col-span-5 space-y-6 order-2 lg:order-1">
                       {/* Header */}
                       <Card className="bg-slate-800 border-slate-700 text-slate-100">
@@ -535,12 +464,12 @@ export default function ResumeCheckerPage() {
 
                       {/* Scores Section */}
                       <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                        <CardContent className="p-8">
-                          <div className="flex items-center justify-between">
+                        <CardContent className="p-4 sm:p-8">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-0">
                             {/* Overall Score with Circular Progress */}
-                            <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-8 min-w-[160px]">
-                              <div className="relative w-28 h-28 mb-3">
-                                <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
+                            <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-6 sm:p-8 min-w-[160px] mx-auto md:mx-0">
+                              <div className="relative w-24 sm:w-28 h-24 sm:h-28 mb-3">
+                                <svg className="w-24 sm:w-28 h-24 sm:h-28 transform -rotate-90" viewBox="0 0 100 100">
                                   {/* Background circle */}
                                   <circle
                                     cx="50"
@@ -570,58 +499,58 @@ export default function ResumeCheckerPage() {
                                   />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                  <span className={`text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
+                                  <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
                                     {resumeData.overallScore}
                                   </span>
-                                  <span className="text-sm text-slate-400 font-medium">/ 100</span>
+                                  <span className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</span>
                                 </div>
                               </div>
-                              <div className="text-base font-semibold text-slate-300 tracking-wider">OVERALL</div>
+                              <div className="text-sm sm:text-base font-semibold text-slate-300 tracking-wider">OVERALL</div>
                             </div>
 
                             {/* Individual Scores */}
-                            <div className="flex-1 ml-10">
-                              <div className="grid grid-cols-3 gap-8">
+                            <div className="flex-1 md:ml-10">
+                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                                 {/* Impact Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">IMPACT</div>
-                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-2`}>
+                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">IMPACT</div>
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-1 sm:mb-2`}>
                                     {resumeData.impactScore}
                                   </div>
-                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
                                       style={{ width: `${resumeData.impactScore}%` }}
                                     ></div>
                                   </div>
                                 </div>
 
                                 {/* Style Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">STYLE</div>
-                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-2`}>
+                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">STYLE</div>
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-1 sm:mb-2`}>
                                     {resumeData.styleScore}
                                   </div>
-                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
                                       style={{ width: `${resumeData.styleScore}%` }}
                                     ></div>
                                   </div>
                                 </div>
 
                                 {/* Skills Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">SKILLS</div>
-                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-2`}>
+                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">SKILLS</div>
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-1 sm:mb-2`}>
                                     {resumeData.skillsScore}
                                   </div>
-                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
                                       style={{ width: `${resumeData.skillsScore}%` }}
                                     ></div>
                                   </div>
@@ -798,30 +727,30 @@ export default function ResumeCheckerPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Button 
                             variant="outline" 
-                            className="h-auto py-6 px-6 flex items-center gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
+                            className="h-auto py-4 md:py-6 px-4 md:px-6 flex items-center gap-3 md:gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
                             onClick={handleBackToChecker}
                           >
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-colors">
-                              <RefreshCw className="h-6 w-6 text-slate-400" />
+                            <div className="w-10 md:w-12 h-10 md:h-12 rounded-full flex items-center justify-center transition-colors">
+                              <RefreshCw className="h-5 md:h-6 w-5 md:w-6 text-slate-400" />
                             </div>
                             <div className="text-left">
-                              <div className="font-semibold text-base">Refine Resume</div>
-                              <div className="text-sm text-slate-400 group-hover:text-slate-300">Make edits and get new feedback</div>
+                              <div className="font-semibold text-sm md:text-base">Refine Resume</div>
+                              <div className="text-xs md:text-sm text-slate-400 group-hover:text-slate-300 hidden md:block">Make edits and get new feedback</div>
                             </div>
                           </Button>
 
                           <Button 
                             variant="outline" 
-                            className="h-auto py-6 px-6 flex items-center gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
+                            className="h-auto py-4 md:py-6 px-4 md:px-6 flex items-center gap-3 md:gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
                             asChild
                           >
                             <Link href="/behavioral-interview">
-                              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-colors">
-                                <MessageSquare className="h-6 w-6 text-slate-400" />
+                              <div className="w-10 md:w-12 h-10 md:h-12 rounded-full flex items-center justify-center transition-colors">
+                                <MessageSquare className="h-5 md:h-6 w-5 md:w-6 text-slate-400" />
                               </div>
                               <div className="text-left">
-                                <div className="font-semibold text-base">Practice Interview</div>
-                                <div className="text-sm text-slate-400 group-hover:text-slate-300">Prepare for your next interview</div>
+                                <div className="font-semibold text-sm md:text-base">Practice Interview</div>
+                                <div className="text-xs md:text-sm text-slate-400 group-hover:text-slate-300 hidden md:block">Prepare for your next interview</div>
                               </div>
                             </Link>
                           </Button>
@@ -830,8 +759,8 @@ export default function ResumeCheckerPage() {
                     </Card>
                     </div>
 
-                    {/* Right Column - Resume Viewer (44% width) */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-6 lg:h-fit order-1 lg:order-2">
+                    {/* Right Column - Resume Viewer (44% width) - Hidden on mobile */}
+                    <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-6 lg:h-fit order-1 lg:order-2">
                       <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full min-h-[85vh]">
                         <CardHeader className="pb-6">
                           <CardTitle className="text-2xl font-semibold flex items-center gap-3">
@@ -871,7 +800,7 @@ export default function ResumeCheckerPage() {
               )}
 
               {/* Error Display for Analysis */}
-              {error && (error.includes('word analysis') || error.includes('specific analysis')) && (
+              {error && error.includes('word analysis') && (
                 <div className="px-4 max-w-[1900px] mx-auto">
                   <Card className="border-red-500 bg-red-50">
                     <CardContent className="p-4">
@@ -889,18 +818,6 @@ export default function ResumeCheckerPage() {
                 <div className="px-4 max-w-[1900px] mx-auto mt-8">
                   <ResumeWordAnalysis 
                     analysis={wordAnalysisData}
-                    fileName={resume?.name || "Resume"}
-                    jobTitle={jobTitle}
-                    company={company}
-                  />
-                </div>
-              )}
-
-              {/* Specific Analysis Section */}
-              {showSpecificAnalysis && specificAnalysisData && (
-                <div className="px-4 max-w-[1900px] mx-auto mt-8">
-                  <ResumeSpecificAnalysis 
-                    analysis={specificAnalysisData}
                     fileName={resume?.name || "Resume"}
                     jobTitle={jobTitle}
                     company={company}
