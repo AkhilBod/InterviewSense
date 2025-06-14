@@ -37,11 +37,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Optimize static generation and caching
-  experimental: {
-    optimizeCss: true,
-    optimizeServerReact: true,
-  },
   // Add headers for better caching
   async headers() {
     return [
