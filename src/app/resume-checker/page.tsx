@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer, CheckCircle } from "lucide-react";
+import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer, CheckCircle, Brain, Target } from "lucide-react";
 import Image from 'next/image';
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -20,6 +20,9 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
+import ResumeSpecificAnalysis from '@/components/ResumeSpecificAnalysis';
+import { WordImprovementSuggestion, WordAnalysisData, SpecificAnalysisData } from '@/types/resume';
 
 interface ResumeAnalysisData {
   jobTitle: string;
@@ -53,6 +56,16 @@ export default function ResumeCheckerPage() {
   // Results State
   const [showResults, setShowResults] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeAnalysisData | null>(null);
+  
+  // Word Analysis State
+  const [showWordAnalysis, setShowWordAnalysis] = useState(false);
+  const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
+  const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
+
+  // Specific Analysis State
+  const [showSpecificAnalysis, setShowSpecificAnalysis] = useState(false);
+  const [specificAnalysisData, setSpecificAnalysisData] = useState<SpecificAnalysisData | null>(null);
+  const [isSpecificAnalysisLoading, setIsSpecificAnalysisLoading] = useState(false);
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -124,7 +137,95 @@ export default function ResumeCheckerPage() {
     setShowResults(false);
     setResumeData(null); // Clear previous results
     setError(null); // Clear any previous errors
+    setShowWordAnalysis(false);
+    setWordAnalysisData(null);
+    setShowSpecificAnalysis(false);
+    setSpecificAnalysisData(null);
     // Keep resume file for preview - don't clear it
+  };
+
+  const handleWordAnalysis = async () => {
+    if (!resume || !jobTitle) {
+      setError("Please upload a resume and provide a job title first.");
+      return;
+    }
+
+    setIsWordAnalysisLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("resume", resume);
+    formData.append("jobTitle", jobTitle);
+
+    if (company) {
+      formData.append("company", company);
+    }
+
+    if (jobDescription) {
+      formData.append("jobDescription", jobDescription);
+    }
+
+    try {
+      const response = await fetch("/api/resume-word-analysis", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to perform word analysis. Please try again.");
+      }
+
+      setWordAnalysisData(data.analysis);
+      setShowWordAnalysis(true);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred during word analysis.");
+    } finally {
+      setIsWordAnalysisLoading(false);
+    }
+  };
+
+  const handleSpecificAnalysis = async () => {
+    if (!resume || !jobTitle) {
+      setError("Please upload a resume and provide a job title first.");
+      return;
+    }
+
+    setIsSpecificAnalysisLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("resume", resume);
+    formData.append("jobTitle", jobTitle);
+
+    if (company) {
+      formData.append("company", company);
+    }
+
+    if (jobDescription) {
+      formData.append("jobDescription", jobDescription);
+    }
+
+    try {
+      const response = await fetch("/api/resume-specific-analysis", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to perform specific analysis. Please try again.");
+      }
+
+      setSpecificAnalysisData(data.analysis);
+      setShowSpecificAnalysis(true);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred during specific analysis.");
+    } finally {
+      setIsSpecificAnalysisLoading(false);
+    }
   };
 
   // Helper functions for results display (copied from ResumeResultsPage)
@@ -357,11 +458,63 @@ export default function ResumeCheckerPage() {
           ) : (
             // Resume Analysis Results - Full Width Layout
             <div className="w-full">
+              {/* Header with Back Button and Analysis Buttons */}
               <div className="mb-8 px-4">
-                <Button variant="ghost" size="sm" onClick={handleBackToChecker} className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
-                  <ChevronLeft className="h-4 w-4" />
-                  Back to Resume Checker
-                </Button>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <Button variant="ghost" size="sm" onClick={handleBackToChecker} className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <ChevronLeft className="h-4 w-4" />
+                    Back to Resume Checker
+                  </Button>
+                  
+                  {/* Analysis Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <Button 
+                      variant={showWordAnalysis ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => {
+                        if (showWordAnalysis) {
+                          setShowWordAnalysis(false);
+                        } else if (wordAnalysisData) {
+                          setShowWordAnalysis(true);
+                        } else {
+                          handleWordAnalysis();
+                        }
+                      }}
+                      disabled={isWordAnalysisLoading}
+                      className="gap-2 bg-blue-600 hover:bg-blue-500 text-white border-blue-600 hover:border-blue-500"
+                    >
+                      {isWordAnalysisLoading ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Brain className="h-4 w-4" />
+                      )}
+                      {isWordAnalysisLoading ? "Analyzing..." : showWordAnalysis ? "Hide Word Analysis" : "Word Analysis"}
+                    </Button>
+
+                    <Button 
+                      variant={showSpecificAnalysis ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => {
+                        if (showSpecificAnalysis) {
+                          setShowSpecificAnalysis(false);
+                        } else if (specificAnalysisData) {
+                          setShowSpecificAnalysis(true);
+                        } else {
+                          handleSpecificAnalysis();
+                        }
+                      }}
+                      disabled={isSpecificAnalysisLoading}
+                      className="gap-2 bg-purple-600 hover:bg-purple-500 text-white border-purple-600 hover:border-purple-500"
+                    >
+                      {isSpecificAnalysisLoading ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Target className="h-4 w-4" />
+                      )}
+                      {isSpecificAnalysisLoading ? "Analyzing..." : showSpecificAnalysis ? "Hide Specific Analysis" : "Specific Analysis"}
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {resumeData && (
@@ -715,6 +868,44 @@ export default function ResumeCheckerPage() {
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* Error Display for Analysis */}
+              {error && (error.includes('word analysis') || error.includes('specific analysis')) && (
+                <div className="px-4 max-w-[1900px] mx-auto">
+                  <Card className="border-red-500 bg-red-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                        <p className="text-red-800">{error}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Word Analysis Section */}
+              {showWordAnalysis && wordAnalysisData && (
+                <div className="px-4 max-w-[1900px] mx-auto mt-8">
+                  <ResumeWordAnalysis 
+                    analysis={wordAnalysisData}
+                    fileName={resume?.name || "Resume"}
+                    jobTitle={jobTitle}
+                    company={company}
+                  />
+                </div>
+              )}
+
+              {/* Specific Analysis Section */}
+              {showSpecificAnalysis && specificAnalysisData && (
+                <div className="px-4 max-w-[1900px] mx-auto mt-8">
+                  <ResumeSpecificAnalysis 
+                    analysis={specificAnalysisData}
+                    fileName={resume?.name || "Resume"}
+                    jobTitle={jobTitle}
+                    company={company}
+                  />
+                </div>
               )}
             </div>
           )}

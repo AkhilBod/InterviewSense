@@ -29,39 +29,20 @@ export async function POST(req: Request) {
         console.log("Parsing form data...");
         const formData = await req.formData();
 
-        const jobTitle = formData.get("jobTitle") as string | null;
-        const company = formData.get("company") as string | null;
         const jobDescription = formData.get("jobDescription") as string | null;
-        const candidateName = formData.get("candidateName") as string | null;
-        const candidateEmail = formData.get("candidateEmail") as string | null;
-        const candidatePhone = formData.get("candidatePhone") as string | null;
-        const candidateAddress = formData.get("candidateAddress") as string | null;
-        const hiringManagerName = formData.get("hiringManagerName") as string | null;
-        const hiringManagerTitle = formData.get("hiringManagerTitle") as string | null;
-        const resumeFile = formData.get("resume") as File | null; // Changed Blob to File
+        const resumeFile = formData.get("resume") as File | null;
 
         console.log("Received data:", {
-            jobTitle,
-            company,
             jobDescriptionLength: jobDescription?.length,
-            candidateName,
-            candidateEmail,
-            candidatePhone,
-            candidateAddress,
-            hiringManagerName,
-            hiringManagerTitle,
             resumeFileName: resumeFile?.name,
             resumeFileSize: resumeFile?.size,
             resumeFileType: resumeFile?.type,
         });
 
-        if (!jobTitle || !company || !candidateName || !candidateEmail || !candidatePhone) {
+        if (!jobDescription || !resumeFile) {
             const missingFields = [
-                !jobTitle && "Job Title",
-                !company && "Company Name",
-                !candidateName && "Candidate Name",
-                !candidateEmail && "Candidate Email",
-                !candidatePhone && "Candidate Phone",
+                !jobDescription && "Job Description",
+                !resumeFile && "Resume",
             ].filter(Boolean).join(", ");
 
             console.log(`Missing required fields: ${missingFields}`);
@@ -70,188 +51,97 @@ export async function POST(req: Request) {
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        let resumeBase64: string | null = null;
-        let resumeMimeType: string | null = null;
-
-        if (resumeFile) {
-            if (!resumeFile.type || !SUPPORTED_RESUME_MIME_TYPES.includes(resumeFile.type)) {
-                console.log(`Unsupported resume file type: ${resumeFile.type}`);
-                const errorResponse = {
-                    error: `Unsupported resume file type: '${resumeFile.type}'. Please upload PDF, DOCX, DOC, or TXT.`,
-                };
-                console.log("Error Response:", errorResponse);
-                return NextResponse.json(errorResponse, { status: 400 });
-            }
-            console.log("Converting resume file to base64...");
-            const bytes = await resumeFile.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-            resumeBase64 = buffer.toString('base64');
-            resumeMimeType = resumeFile.type;
-            console.log(`Resume file '${resumeFile.name}' processed.`);
+        if (!resumeFile.type || !SUPPORTED_RESUME_MIME_TYPES.includes(resumeFile.type)) {
+            console.log(`Unsupported resume file type: ${resumeFile.type}`);
+            const errorResponse = {
+                error: `Unsupported resume file type: '${resumeFile.type}'. Please upload PDF, DOCX, DOC, or TXT.`,
+            };
+            console.log("Error Response:", errorResponse);
+            return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        const currentDate = new Date().toLocaleDateString(); // Get current date for context
+        console.log("Converting resume file to base64...");
+        const bytes = await resumeFile.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const resumeBase64 = buffer.toString('base64');
+        const resumeMimeType = resumeFile.type;
+        console.log(`Resume file '${resumeFile.name}' processed.`);
 
-        let promptText = `You are an expert cover letter writer. Create a professional, well-formatted cover letter.
+        const currentDate = new Date().toLocaleDateString();
+
+        const promptText = `You are an expert cover letter writer. You will analyze the provided resume and job description to extract all necessary information and create a professional, personalized cover letter.
+
+**TASK:** Create a complete, professional cover letter by extracting information from the resume and job description.
+
+**STEP 1: EXTRACT INFORMATION**
+From the RESUME, extract:
+- Candidate's full name
+- Email address 
+- Phone number
+- Address (if available)
+- Key skills and experiences
+- Notable achievements and quantified results
+- Educational background
+- Professional background/industry
+
+From the JOB DESCRIPTION, extract:
+- Job title
+- Company name
+- Key requirements and qualifications
+- Specific skills mentioned
+- Company values or culture (if mentioned)
+- Hiring manager name (if mentioned)
+
+**STEP 2: CREATE COVER LETTER**
+Using the extracted information, create a professional cover letter that:
+
+1. **Uses proper business letter format:**
+   - Candidate contact information at top
+   - Date (use "${currentDate}")
+   - Professional salutation (use "Dear Hiring Manager" if specific name not found)
+   - 3-4 body paragraphs
+   - Professional closing and signature
+
+2. **Contains compelling content:**
+   - Opening: Express genuine interest in the specific role
+   - Body: Highlight 2-3 most relevant experiences/achievements from resume
+   - Include specific examples with quantified results when possible
+   - Show alignment between candidate's background and job requirements
+   - Demonstrate knowledge of the company (when available in job description)
+   - Closing: Express enthusiasm and suggest next steps
+
+3. **Writing style:**
+   - Professional yet personable tone
+   - Confident but not arrogant
+   - Specific rather than generic
+   - Action-oriented language
+   - Error-free grammar and spelling
 
 **FORMATTING REQUIREMENTS:**
-1. Use proper business letter format with clear sections
-2. Include proper spacing between sections (use double line breaks \\n\\n)
-3. Start with candidate contact information at the top
-4. Include date line
-5. Include company/hiring manager address block
-6. Use professional salutation
-7. Write 3-4 concise, impactful paragraphs for the body
-8. End with professional closing and signature
+- Use double line breaks (\\n\\n) between sections
+- Keep paragraphs concise (3-4 sentences each)
+- Total length: 300-400 words for body content
+- Use standard business letter spacing
 
-**STRUCTURE TEMPLATE:**
-Follow this structure:
-[Your Name]
-[Your Address] 
-[Your Phone Number]
-[Your Email]
+**IMPORTANT INSTRUCTIONS:** 
+- Extract ALL information from the provided documents - do not ask for additional input
+- Do NOT include company address or hiring manager address sections in the letter
+- Do NOT use placeholders like [Company Name], [Hiring Manager Name], [Company Address] anywhere in the letter
+- If company name is not clear from job description, refer to it as "your organization" or "your team"
+- Use "Dear Hiring Manager" as the salutation if no specific name is provided
+- If specific information is not available in the resume, use the candidate's information where available or omit sections gracefully
+- Create a complete, compelling narrative using the candidate's actual experiences
+- Make the letter specific to both the candidate's background AND the job requirements
+- Write the complete cover letter with all actual content - no placeholders anywhere
+- Use the actual extracted names, companies, and details throughout the letter
 
-[Date]
-
-[Hiring Manager Name]
-[Hiring Manager Title]
-[Company Name]
-
-Dear [Hiring Manager Name],
-
-[Opening paragraph - express interest and mention how you learned about the position]
-
-[Body paragraph(s) - highlight relevant experience and skills that match the job requirements]
-
-[Closing paragraph - express enthusiasm, mention next steps, thank them for consideration]
-
-Sincerely,
-
-[Your Name]
-
-**CONTENT REQUIREMENTS:**
-1. COMPLETE NARRATIVE - Write the full body without any "[insert X]" placeholders
-2. SPECIFIC EXAMPLES - Use concrete details from resume or generate relevant examples  
-3. COMPANY RESEARCH - Include specific mention of company values or projects when possible
-4. QUANTIFIED ACHIEVEMENTS - Include numbers and metrics where applicable
-5. PROFESSIONAL TONE - Confident but not arrogant, enthusiastic but professional
-
-**CONTENT APPROACH:**
-* **Resume Data:** If provided, extract and integrate key skills, experiences, and accomplishments directly into natural-sounding sentences.
-* **Job Description:** Identify key requirements and demonstrate alignment with the candidate's qualifications.
-* **Keep it Brief:** Focus on the most relevant qualifications for the specific role.
-
-**GENERATING RELEVANT CONTENT:**
-Often, a cover letter is strengthened by details like how the candidate found the role, specific company initiatives they admire, or elaborating on skills/experiences relevant to the job title.
-
-**YOUR TASK:**
-Always try to use information explicitly provided by the user or directly extracted from the resume/job description first.
-HOWEVER, IF SPECIFIC DETAILS FOR THESE ENHANCING SECTIONS ARE NOT DIRECTLY PROVIDED OR FOUND, YOU MUST GENERATE PLAUSIBLE, PROFESSIONAL, AND CONTEXTUALLY RELEVANT CONTENT FOR THESE PARTS. The aim is to make the letter sound complete, informed, and personalized, even if some specifics had to be intelligently inferred or created by you.
-
-**EXAMPLES OF WHERE AND HOW TO GENERATE CONTENT:**
-* **Source of Job Discovery:** If the user doesn't specify where they saw the ad, you could generate a phrase like: "I was very interested to learn about the ${jobTitle} opportunity through my professional research into leading companies in the relevant industry sector, such as ${company}." or "Having followed ${company}'s innovative work in its field, I was delighted to see the opening for a ${jobTitle}."
-* **Alignment with Company Values/Projects:** If the user doesn't mention a specific company project or value, you could generate something like: "I am particularly drawn to ${company}'s commitment to [e.g., innovation, customer-centric solutions, sustainable practices – pick something plausible and relevant to the company's likely field/reputation], which resonates strongly with my own professional values." For a well-known company, you might infer a general positive attribute.
-* **Elaborating on Skills/Experience (especially if resume is sparse for the role):** If the resume is brief or doesn't explicitly detail experiences highly relevant to the ${jobTitle}, you should generate plausible examples of skills or experiences. For a "${jobTitle}" role, even if the resume is light, you could write: "My background has equipped me with a strong understanding of [mention 2-3 plausible key skills for the job title, e.g., 'full-stack development and cloud-based architectures' for a software engineer], and I am adept at [mention a plausible relevant soft skill, e.g., 'collaborating with cross-functional teams to deliver impactful results']."
-
-The goal is a polished, complete narrative. The user should not see any bracketed prompts in the body of the letter you generate and make sure it is in a proper business letter format.
-
-**STRUCTURAL PLACEHOLDERS (FOR SYSTEM USE - NOT FOR BODY NARRATIVE):**
-These are the ONLY placeholders you should output, and only in their standard locations (header, date, salutation, etc.).
-* [Your Name]
-* [Your Address]
-* [Your Phone Number]
-* [Your Email]
-* [Date]
-* [Hiring Manager Name]
-* [Hiring Manager Title]
-* [Company Name]
-The typed name after the closing (e.g., "Sincerely,") should also use [Your Name].
-* **Job Description:** Identify key requirements and demonstrate alignment with the candidate's qualifications.
-* **Keep it Brief:** Focus on the most relevant qualifications for the specific role.
-
-**GENERATING RELEVANT CONTENT:**
-    * Often, a cover letter is strengthened by details like how the candidate found the role, specific company initiatives they admire, or elaborating on skills/experiences relevant to the job title.
-    * **YOUR TASK:**
-        * Always try to use information explicitly provided by the user or directly extracted from the resume/job description first.
-        * **HOWEVER, IF SPECIFIC DETAILS FOR THESE ENHANCING SECTIONS ARE NOT DIRECTLY PROVIDED OR FOUND, YOU MUST **GENERATE PLAUSIBLE, PROFESSIONAL, AND CONTEXTUALLY RELEVANT CONTENT** FOR THESE PARTS.** The aim is to make the letter sound complete, informed, and personalized, even if some specifics had to be intelligently inferred or created by you.
-    * **EXAMPLES OF WHERE AND HOW TO GENERATE CONTENT:**
-        * **Source of Job Discovery:** If the user doesn't specify where they saw the ad, you could generate a phrase like: "I was very interested to learn about the ${jobTitle} opportunity through my professional research into leading companies in the relevant industry sector, such as ${company}." or "Having followed ${company}'s innovative work in its field, I was delighted to see the opening for a ${jobTitle}."
-        * **Alignment with Company Values/Projects:** If the user doesn't mention a specific company project or value, you could generate something like: "I am particularly drawn to ${company}'s commitment to [e.g., innovation, customer-centric solutions, sustainable practices – pick something plausible and relevant to the company's likely field/reputation], which resonates strongly with my own professional values." For a well-known company, you might infer a general positive attribute.
-        * **Elaborating on Skills/Experience (especially if resume is sparse for the role):** If the resume is brief or doesn't explicitly detail experiences highly relevant to the \`${jobTitle}\`, you should generate plausible examples of skills or experiences. For a "${jobTitle}" role, even if the resume is light, you could write: "My background has equipped me with a strong understanding of [mention 2-3 plausible key skills for the job title, e.g., 'full-stack development and cloud-based architectures' for a software engineer], and I am adept at [mention a plausible relevant soft skill, e.g., 'collaborating with cross-functional teams to deliver impactful results']."
-    * **The goal is a polished, complete narrative. The user should not see any bracketed prompts in the body of the letter you generate and make sure it is in an email format.
-
-3.  **STRUCTURAL PLACEHOLDERS (FOR SYSTEM USE - NOT FOR BODY NARRATIVE):**
-    These are the ONLY placeholders you should output, and only in their standard locations (header, date, salutation, etc.).
-    * \`[Your Name]\`
-    * \`[Your Address]\`
-    * \`[Your Phone Number]\`
-    * \`[Your Email]\`
-    * \`[Date]\`
-    * \`[Hiring Manager Name]\`
-    * \`[Hiring Manager Title]\`
-    * \`[Company Name]\`
-    * The typed name after the closing (e.g., "Sincerely,") should also use \`[Your Name]\`.
-
-**INFORMATION PROVIDED TO YOU (Use this to write the letter body and for context for structural placeholders):**
-
-**Candidate Details:**
-Name: ${candidateName}
-Email: ${candidateEmail}
-Phone: ${candidatePhone}
-`;
-
-        if (candidateAddress) {
-            promptText += `Address: ${candidateAddress}\n`;
-        } else {
-            promptText += `Address: Not provided (The structural placeholder \`[Your Address]\` should be included in the template; our system will manage its omission if no data is supplied).\n`;
-        }
-
-        promptText += `
-**Target Role & Company:**
-Job Title: ${jobTitle}
-Company: ${company}
-`;
-        if (hiringManagerName) {
-            promptText += `Hiring Manager's Name: ${hiringManagerName}\n`;
-        } else {
-            promptText += `Hiring Manager's Name: Not provided (The structural placeholder \`[Hiring Manager Name]\` should be included; our system will use a default like "Hiring Team" or "Hiring Manager").\n`;
-        }
-        if (hiringManagerTitle) {
-            promptText += `Hiring Manager's Title: ${hiringManagerTitle}\n`;
-        } else {
-            promptText += `Hiring Manager's Title: Not provided (The structural placeholder \`[Hiring Manager Title]\` should be included; our system will manage its omission).\n`;
-        }
-
-        if (jobDescription) {
-            promptText += `
-**Job Description (Analyze carefully. Extract requirements and keywords. The letter BODY must show how the candidate's profile (from resume or your generated relevant content) meets these):**
----
+**JOB DESCRIPTION:**
 ${jobDescription}
----
-`;
-        } else {
-            promptText += `\n**Job Description:** Not provided. (Write the letter BODY focusing on general suitability for the \`${jobTitle}\` role at \`${company}\`. You will need to generate more plausible content about relevant skills and experiences).\n`;
-        }
 
-        if (resumeFile) {
-            promptText += `
-**Candidate's Resume Data (CRITICAL INPUT - ATTACHED AS A FILE FOR YOU TO READ AND USE):**
-* You MUST read the attached resume data thoroughly.
-* Extract specific skills, experiences, projects, and achievements. Weave these DIRECTLY into the letter body as complete, natural sentences.
-* **If the resume is brief or lacks specific details directly applicable to the \`${jobTitle}\` at \`${company}\`, you MUST creatively and professionally GENERATE plausible, relevant examples of skills, experiences, or motivations that a strong candidate for this role would possess.** This generated content must be seamlessly integrated into the narrative.
-* **DO NOT output placeholders like "[mention skills from resume]". Instead, if the resume says "Java, Spring Boot," your text should say something like, "I have strong experience with Java and the Spring Boot framework." If the resume is vague on projects, for a 'Project Manager' role, you might generate: "My background includes a proven ability to lead complex projects, manage stakeholder expectations, and ensure timely delivery of objectives."**
-`;
-        } else {
-            promptText += `
-**Candidate's Resume Data:** Not provided.
-* For the letter body, you MUST **generate plausible and relevant skills, experiences, motivations, and project examples** appropriate for a candidate applying for the \`${jobTitle}\` role at \`${company}\`. This content should be well-written and integrated seamlessly. Do not use placeholders.
-`;
-        }
+**RESUME ANALYSIS:**
+Please read the attached resume file carefully and extract all relevant information to create a personalized cover letter.
 
-        promptText += `
-**Overall Tone:** Enthusiastic, confident, and professional.
-**Final Output Requirement:** A complete cover letter. The body must be fully written by you, using a smart combination of provided information and your own generation of relevant, plausible content where specifics are missing. **The body MUST NOT contain any bracketed placeholders.** The only placeholders allowed are the structural ones (like \`[Your Name]\`) listed for system use. The current date for context is ${currentDate}; please use the \`[Date]\` placeholder in the letter structure where the date should appear.
-`;
+Now analyze the attached resume file and the job description above to create a professional cover letter using the extracted information.`;
 
         const modelParts: Part[] = [{ text: promptText }];
 
@@ -305,23 +195,10 @@ ${jobDescription}
         }
 
         console.log("Received raw text from Gemini, length:", generatedRawText.length);
-        // console.log("Raw Gemini Output:\n", generatedRawText); // Optional: Log raw output for debugging
 
-        // The generateCoverLetterWithParams function will now fill in the *structural* placeholders.
-        // The AI should have already handled the body content, including generating text for gaps.
-        const filledCoverLetter = generateCoverLetterWithParams(generatedRawText.trim(), {
-            candidateName: candidateName!,
-            candidateAddress: candidateAddress || undefined, // Pass undefined if null
-            candidatePhone: candidatePhone!,
-            candidateEmail: candidateEmail!,
-            date: currentDate, // Use the same date used in the prompt context
-            hiringManagerName: hiringManagerName || undefined,
-            hiringManagerTitle: hiringManagerTitle || undefined,
-            company: company!,
-        });
-
+        // Return the generated cover letter directly since it's already complete
         console.log("=== Cover Letter Generation API Completed Successfully ===");
-        return NextResponse.json({ coverLetter: filledCoverLetter });
+        return NextResponse.json({ coverLetter: generatedRawText.trim() });
 
     } catch (error: any) {
         console.error("=== Cover Letter Generation API Error ===");
@@ -347,59 +224,8 @@ ${jobDescription}
             errorMessage = "Failed to generate cover letter: Invalid API Key. Please check server configuration.";
         }
 
-
         const errorResponse = { error: errorMessage };
         console.log("Error Response:", errorResponse);
         return NextResponse.json(errorResponse, { status: 500 });
     }
-}
-
-function generateCoverLetterWithParams(template: string, params: {
-    candidateName: string;
-    candidateAddress?: string; // Optional
-    candidatePhone: string;
-    candidateEmail: string;
-    date: string;
-    hiringManagerName?: string; // Optional
-    hiringManagerTitle?: string; // Optional
-    company: string;
-}): string {
-    let filledLetter = template;
-
-    // Replace structural placeholders
-    filledLetter = filledLetter.replace(/\[Your Name\]/g, params.candidateName);
-    if (params.candidateAddress) {
-        filledLetter = filledLetter.replace(/\[Your Address\]/g, params.candidateAddress);
-    } else {
-        // If address is not provided, remove the placeholder and potentially the line it's on.
-        // This regex tries to remove the line if it solely contains the placeholder or is empty after replacement.
-        filledLetter = filledLetter.replace(/^\s*\[Your Address\]\s*[\r\n]/gm, '');
-        filledLetter = filledLetter.replace(/\[Your Address\]/g, ''); // Failsafe if it's not on its own line
-    }
-    filledLetter = filledLetter.replace(/\[Your Phone Number\]/g, params.candidatePhone);
-    filledLetter = filledLetter.replace(/\[Your Email\]/g, params.candidateEmail);
-    filledLetter = filledLetter.replace(/\[Date\]/g, params.date);
-    filledLetter = filledLetter.replace(/\[Company Name\]/g, params.company);
-
-    if (params.hiringManagerName) {
-        filledLetter = filledLetter.replace(/\[Hiring Manager Name\]/g, params.hiringManagerName);
-    } else {
-        // If no hiring manager name, replace with a generic term or ensure salutation is handled.
-        // For a salutation like "Dear [Hiring Manager Name]," this makes it "Dear Hiring Team,"
-        filledLetter = filledLetter.replace(/Dear \[Hiring Manager Name\]/g, "Dear Hiring Team");
-        filledLetter = filledLetter.replace(/\[Hiring Manager Name\]/g, "Hiring Manager"); // For address block
-    }
-
-    if (params.hiringManagerTitle) {
-        filledLetter = filledLetter.replace(/\[Hiring Manager Title\]/g, params.hiringManagerTitle);
-    } else {
-        // If title is not provided, remove the placeholder and potentially the line.
-        filledLetter = filledLetter.replace(/^\s*\[Hiring Manager Title\]\s*[\r\n]/gm, '');
-        filledLetter = filledLetter.replace(/\[Hiring Manager Title\]/g, '');
-    }
-
-    // Clean up any potentially remaining empty lines that might result from optional placeholders
-    filledLetter = filledLetter.replace(/^\s*[\r\n]/gm, '');
-
-    return filledLetter;
 }
