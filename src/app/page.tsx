@@ -16,6 +16,10 @@ export default function Home() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentText, setCurrentText] = useState('resume')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [charIndex, setCharIndex] = useState(0)
+  const [wordIndex, setWordIndex] = useState(0)
 
   // No longer automatically redirect authenticated users
   // This allows the homepage to be viewed by all users
@@ -53,13 +57,46 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [mobileMenuOpen])
 
+  // Typewriter effect for rotating text
+  useEffect(() => {
+    const words = ['resume', 'behavioral', 'technical']
+    const typingSpeed = 100
+    const erasingSpeed = 30
+    const delayBetweenWords = 1500
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        // Typing
+        if (charIndex < words[wordIndex].length) {
+          setCurrentText(words[wordIndex].substring(0, charIndex + 1))
+          setCharIndex(charIndex + 1)
+        } else {
+          // Finished typing, wait then start deleting
+          setTimeout(() => setIsDeleting(true), delayBetweenWords)
+        }
+      } else {
+        // Deleting
+        if (charIndex > 0) {
+          setCurrentText(words[wordIndex].substring(0, charIndex - 1))
+          setCharIndex(charIndex - 1)
+        } else {
+          // Finished deleting, move to next word
+          setIsDeleting(false)
+          setWordIndex((wordIndex + 1) % words.length)
+        }
+      }
+    }, isDeleting ? erasingSpeed : typingSpeed)
+
+    return () => clearTimeout(timer)
+  }, [charIndex, isDeleting, wordIndex])
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
       {/* Header/Navigation */}
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Image src="/logo.webp" alt="InterviewSense" width={48} height={48} className="object-contain" />
+            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={48} height={48} className="object-contain" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
           
@@ -138,7 +175,7 @@ export default function Home() {
                 <div className="flex flex-col h-full">
                   <div className="bg-black px-6 py-4 flex justify-between items-center border-b border-zinc-800">
                     <div className="flex items-center gap-3">
-                      <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+                      <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
                       <span className="font-bold text-lg text-white">InterviewSense</span>
                     </div>
                     <button 
@@ -252,27 +289,18 @@ export default function Home() {
             {/* Left side - Text content */}
             <div className="text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tighter mb-4 md:mb-6">
-                Ace Your Next Interview with <span className="text-blue-500">AI-Powered</span> Practice
+                Improve your <span className="text-blue-500">{currentText}</span><span className="animate-pulse">|</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto lg:mx-0 mb-6 sm:mb-10 px-2">
-                InterviewSense uses advanced AI to give you realistic mock interviews with personalized feedback, helping
-                you prepare for any job interview.
+                Practice interview → Instant AI feedback and personalized coaching.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row justify-center lg:justify-start">
                 <Button
                   onClick={handleGetStartedClick}
                   size="lg"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25"
+                  className="text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25"
                 >
-                  Start Practicing Now <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full"
-                >
-                  <Link href="/login">Already have an account?</Link>
+                  Start Practicing Now <ArrowRight className="ml-2 h-5 sm:h-6 w-5 sm:w-6" />
                 </Button>
               </div>
               
@@ -342,11 +370,185 @@ export default function Home() {
                 <div className="bg-gradient-to-r from-zinc-800 to-zinc-700 px-4 py-3 border-t border-zinc-600/50">
                   <div className="flex items-center justify-between text-xs text-zinc-400">
                     <span className="flex items-center gap-2">
-                      <Image src="/logo.webp" alt="InterviewSense" width={16} height={16} className="object-contain" />
+                      <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={16} height={16} className="object-contain" />
                       AI Analysis Active
                     </span>
                     <span>Real-time feedback enabled</span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Company Logos Section */}
+      <section className="py-12 bg-zinc-950 border-b border-zinc-800">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <p className="text-sm text-zinc-400 font-medium">Questions specified for 5000+ companies</p>
+          </div>
+          
+          {/* Sliding logos container */}
+          <div className="relative overflow-hidden">
+            <div className="flex animate-slide-left space-x-16">
+              {/* First set of logos */}
+              <div className="flex items-center space-x-16 flex-shrink-0">
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/2560px-Meta_Platforms_Inc._logo.svg.png" 
+                    alt="Meta" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png" 
+                    alt="Apple" 
+                    className="h-10 w-auto max-w-[120px] object-contain filter brightness-0 invert"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png" 
+                    alt="Amazon" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(60%) sepia(100%) saturate(1000%) hue-rotate(15deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png" 
+                    alt="Netflix" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7500%) hue-rotate(350deg) brightness(1) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png" 
+                    alt="Google" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/sco/thumb/2/21/Nvidia_logo.svg/2560px-Nvidia_logo.svg.png" 
+                    alt="NVIDIA" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(1000%) hue-rotate(80deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/2560px-Microsoft_logo.svg.png" 
+                    alt="Microsoft" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/2560px-SAP_2011_logo.svg.png" 
+                    alt="SAP" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/09/Oracle-Logo.png" 
+                    alt="Oracle" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7500%) hue-rotate(350deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png" 
+                    alt="IBM" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+              </div>
+              
+              {/* Duplicate set for seamless loop */}
+              <div className="flex items-center space-x-16 flex-shrink-0">
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/2560px-Meta_Platforms_Inc._logo.svg.png" 
+                    alt="Meta" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png" 
+                    alt="Apple" 
+                    className="h-10 w-auto max-w-[120px] object-contain filter brightness-0 invert"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png" 
+                    alt="Amazon" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(60%) sepia(100%) saturate(1000%) hue-rotate(15deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png" 
+                    alt="Netflix" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7500%) hue-rotate(350deg) brightness(1) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png" 
+                    alt="Google" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/sco/thumb/2/21/Nvidia_logo.svg/2560px-Nvidia_logo.svg.png" 
+                    alt="NVIDIA" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(1000%) hue-rotate(80deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/2560px-Microsoft_logo.svg.png" 
+                    alt="Microsoft" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/2560px-SAP_2011_logo.svg.png" 
+                    alt="SAP" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://logos-world.net/wp-content/uploads/2020/09/Oracle-Logo.png" 
+                    alt="Oracle" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7500%) hue-rotate(350deg) brightness(1.2) contrast(1)'}}
+                  />
+                </div>
+                <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png" 
+                    alt="IBM" 
+                    className="h-10 w-auto max-w-[120px] object-contain"
+                    style={{filter: 'brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) contrast(1)'}}
+                  />
                 </div>
               </div>
             </div>
@@ -432,7 +634,7 @@ export default function Home() {
                     <th className="text-left p-6 text-white font-semibold">Feature</th>
                     <th className="text-center p-6 text-white font-semibold bg-blue-900/20">
                       <div className="flex items-center justify-center gap-2">
-                        <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                        <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
                         <span>InterviewSense</span>
                       </div>
                     </th>
@@ -556,7 +758,7 @@ export default function Home() {
               <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-blue-400">
-                    <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                    <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
                     InterviewSense
                   </CardTitle>
                 </CardHeader>
@@ -722,13 +924,21 @@ export default function Home() {
               <CardContent className="p-6 md:p-8">
                 <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
                 <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  InterviewSense helped me identify my verbal tics and filler words. After just a week of practice, I
-                  felt so much more confident in my technical interview and landed my dream job at Google.
+                  "The voice analysis really helped me catch how many 'ums' I was using. After practicing for 2 weeks, I felt way more confident and landed 3 offers!"
                 </p>
                 <div className="flex items-center">
-                  <div>
-                    <p className="font-medium text-white">Larry P</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Senior Software Engineer at Google</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
+                      <img 
+                        src="https://sportslogohistory.com/wp-content/uploads/2021/08/penn_state_nittany_lions_1996-Pres.png" 
+                        alt="Penn State" 
+                        className="max-h-8 max-w-8 object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <p className="font-medium text-white">Rishabh U.</p>
+                      <p className="text-xs sm:text-sm text-zinc-400">CS Student at Penn State</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -739,13 +949,21 @@ export default function Home() {
               <CardContent className="p-6 md:p-8">
                 <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
                 <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  The real-time feedback was a game-changer. I could see exactly where I needed to improve, and the AI
-                  asked follow-up questions just like a real interviewer would. This helped me secure my internship.
+                  "Behavioral questions used to stress me out. This app taught me the STAR method and my answers became way more structured. Really helpful for practice!"
                 </p>
                 <div className="flex items-center">
-                  <div>
-                    <p className="font-medium text-white">Bill G</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Software Engineer Intern at Microsoft</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/sco/thumb/2/21/Nvidia_logo.svg/2560px-Nvidia_logo.svg.png" 
+                        alt="NVIDIA" 
+                        className="max-h-8 max-w-8 object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <p className="font-medium text-white">Rangesh K.</p>
+                      <p className="text-xs sm:text-sm text-zinc-400">Software Engineer at NVIDIA</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -756,13 +974,21 @@ export default function Home() {
               <CardContent className="p-6 md:p-8">
                 <Quote className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500/40 mb-4 md:mb-6" />
                 <p className="text-zinc-300 mb-6 md:mb-8 text-base sm:text-lg">
-                  As someone who gets nervous in interviews, this tool was invaluable. I practiced with InterviewSense
-                  for two weeks before my interview series, and it helped me stay calm and articulate under pressure.
+                  "As a career changer, I needed all the practice I could get. Being able to do mock interviews anytime was super convenient. The instant feedback helped a lot."
                 </p>
                 <div className="flex items-center"> 
-                  <div>
-                    <p className="font-medium text-white">Mark Z</p>
-                    <p className="text-xs sm:text-sm text-zinc-400">Full Stack Developer at Meta</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
+                      <img 
+                        src="https://brandlogos.net/wp-content/uploads/2021/10/oracle-logo-symbol-vector.png" 
+                        alt="Oracle" 
+                        className="max-h-8 max-w-8 object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <p className="font-medium text-white">Marcus L.</p>
+                      <p className="text-xs sm:text-sm text-zinc-400">Software Developer at Oracle</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -977,7 +1203,7 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8 sm:mb-12">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Image src="/logo.webp" alt="InterviewSense" width={20} height={20} className="object-contain" />
+                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={20} height={20} className="object-contain" />
                 <span className="font-bold text-white">InterviewSense</span>
               </div>
               <p className="text-zinc-400 text-xs sm:text-sm">AI-powered interview practice to help you land your dream job.</p>

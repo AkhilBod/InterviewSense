@@ -29,7 +29,7 @@ export default function SupportPage() {
       <header className="border-b border-slate-800">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
             <span className="font-bold text-xl">InterviewSense</span>
           </div>
           {session ? (
@@ -149,7 +149,7 @@ export default function SupportPage() {
             <Card className="bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/50 transition-all">
               <CardHeader className="pb-2">
                 <div className="mb-2 w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <Image src="/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                  <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={24} height={24} className="object-contain" />
                 </div>
                 <CardTitle>Technical Issues</CardTitle>
                 <CardDescription className="text-zinc-400">Facing problems?</CardDescription>

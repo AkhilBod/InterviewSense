@@ -91,3 +91,22 @@
     page-break-before: always !important;
   }
 }
+
+/* Sliding logo animation - seamless loop */
+@keyframes slide-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-slide-left {
+  animation: slide-left 25s linear infinite;
+}
+
+/* Pause animation on hover */
+.animate-slide-left:hover {
+  animation-play-state: paused;
+}

@@ -145,7 +145,7 @@ function ResultsPage() {
         <header className="border-b border-slate-800">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
               <span className="font-bold text-xl">InterviewSense</span>
             </div>
             {session ? (

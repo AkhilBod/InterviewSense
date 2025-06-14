@@ -59,7 +59,7 @@ function DashboardPage() {
         {/* Header with profile dropdown */}
         <header className="mb-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="InterviewSense" width={36} height={36} className="object-contain" />
+            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={36} height={36} className="object-contain" />
             <h1 className="text-3xl font-bold">InterviewSense</h1>
           </div>
           <nav className="flex items-center gap-4">

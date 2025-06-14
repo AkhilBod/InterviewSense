@@ -120,7 +120,7 @@ function ResetPasswordContent() {
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
             <Link href="/" className="font-bold text-xl">
               InterviewSense
             </Link>
