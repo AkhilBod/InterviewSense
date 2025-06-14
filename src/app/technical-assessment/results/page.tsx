@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, BarChart, MessageSquare, ChevronLeft, Download, Printer, Share2, User } from "lucide-react";
+import { RefreshCw, BarChart, MessageSquare, ChevronLeft, Download, Printer, Share2, User, CheckCircle, TrendingUp } from "lucide-react";
 import Image from 'next/image';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { toast } from "@/components/ui/use-toast";
@@ -21,6 +21,126 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+// Helper function to parse LeetCode problem from text
+function parseLeetCodeProblem(problemText: string) {
+  const lines = problemText.split('\n').filter(line => line.trim());
+  
+  let number = 0;
+  let title = '';
+  let difficulty = 'Medium';
+  let description = '';
+  let examples: { input: string; output: string; explanation: string }[] = [];
+  let constraints: string[] = [];
+  
+  let currentSection = '';
+  let currentExample: any = {};
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Extract problem number and title
+    if (line.match(/^\*\*Problem:\*\*\s*(\d+)\.\s*(.+)$/)) {
+      const match = line.match(/^\*\*Problem:\*\*\s*(\d+)\.\s*(.+)$/);
+      if (match) {
+        number = parseInt(match[1]);
+        title = match[2];
+      }
+      continue;
+    }
+    
+    // Extract difficulty
+    if (line.includes('medium-difficulty') || line.includes('Medium')) {
+      difficulty = 'Medium';
+    } else if (line.includes('easy') || line.includes('Easy')) {
+      difficulty = 'Easy';
+    } else if (line.includes('hard') || line.includes('Hard')) {
+      difficulty = 'Hard';
+    }
+    
+    // Handle different sections
+    if (line.startsWith('**Problem Statement:**')) {
+      currentSection = 'description';
+      continue;
+    }
+    if (line.startsWith('**Example') || line.startsWith('**Examples:**')) {
+      currentSection = 'examples';
+      if (Object.keys(currentExample).length > 0) {
+        examples.push(currentExample);
+        currentExample = {};
+      }
+      continue;
+    }
+    if (line.startsWith('**Constraints:**')) {
+      currentSection = 'constraints';
+      if (Object.keys(currentExample).length > 0) {
+        examples.push(currentExample);
+        currentExample = {};
+      }
+      continue;
+    }
+    
+    // Process content based on current section
+    if (currentSection === 'description') {
+      if (!line.startsWith('**') && line.length > 0) {
+        description += (description ? '\n' : '') + line;
+      }
+    } else if (currentSection === 'examples') {
+      if (line.startsWith('```') || line.includes('storeLog') || line.includes('retrieveLogs')) {
+        // Skip code blocks
+        continue;
+      }
+      // Try to extract input/output/explanation patterns
+      if (line.includes('Input:') || line.includes('Output:') || line.includes('Explanation:')) {
+        const inputMatch = line.match(/Input:\s*(.+)/);
+        const outputMatch = line.match(/Output:\s*(.+)/);
+        const explanationMatch = line.match(/Explanation:\s*(.+)/);
+        
+        if (inputMatch) currentExample.input = inputMatch[1];
+        if (outputMatch) currentExample.output = outputMatch[1];
+        if (explanationMatch) currentExample.explanation = explanationMatch[1];
+      }
+    } else if (currentSection === 'constraints') {
+      if (line.startsWith('* ') || line.startsWith('- ')) {
+        constraints.push(line.substring(2));
+      } else if (line.length > 0 && !line.startsWith('**')) {
+        constraints.push(line);
+      }
+    }
+  }
+  
+  // Add last example if exists
+  if (Object.keys(currentExample).length > 0) {
+    examples.push(currentExample);
+  }
+  
+  // Fallback parsing if structured parsing fails
+  if (!title && lines.length > 0) {
+    title = lines[0].replace(/^\*\*Problem:\*\*\s*\d+\.\s*/, '').replace(/\*\*/g, '');
+    number = 635; // Default for Design Log Storage System
+  }
+  
+  if (!description) {
+    // Find description between title and examples
+    const startIdx = lines.findIndex(line => line.includes('Problem Statement') || line.includes('You are given'));
+    const endIdx = lines.findIndex(line => line.includes('Example'));
+    if (startIdx !== -1 && endIdx !== -1) {
+      description = lines.slice(startIdx + 1, endIdx).join('\n');
+    } else {
+      description = problemText.substring(0, 500) + '...'; // Fallback
+    }
+  }
+  
+  return {
+    number,
+    title,
+    difficulty: difficulty as 'Easy' | 'Medium' | 'Hard',
+    description: description.trim(),
+    examples,
+    constraints,
+    followUp: "What if there are a lot of merges and the number of disjoint intervals is small compared to the data stream's size?"
+  };
+}
 
 export interface TechnicalAssessmentResult {
   company: string;
@@ -325,47 +445,256 @@ export default function TechnicalAssessmentResultsPage() {
           <div className="container mx-auto px-4">
 
             <div id="technical-results-content" className="max-w-5xl mx-auto">
-              {/* Summary Card */}
-              <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
-                <CardHeader className="pb-4 border-b border-slate-700">
-                  <div className="flex flex-col md:flex-row justify-between">
-                    <div>
-                      <CardTitle className="text-2xl">Technical Assessment Summary</CardTitle>
-                      <CardDescription className="mt-1 text-slate-400">
-                        {result.role} at {result.company} • {result.date} • {result.difficulty}
-                      </CardDescription>
-                    </div>
-                    <div className="mt-4 md:mt-0 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold mb-1 text-blue-500">{result.overallScore}%</div>
-                      <div className="text-sm text-slate-400">Overall Score</div>
-                    </div>
-                  </div>
+              {/* Header */}
+              <Card className="bg-slate-800 border-slate-700 text-slate-100 mb-4">
+                <CardHeader className="text-center py-6">
+                  <CardTitle className="text-2xl">Technical Assessment Report</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    {result.role} at {result.company} • {result.date} • {result.difficulty} Difficulty
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="py-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium text-sm mb-2 text-slate-300">Strengths</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {result.strengths.map((strength) => (
-                          <Badge key={strength} className="bg-green-700 text-green-100 hover:bg-green-600">
-                            {strength}
-                          </Badge>
-                        ))}
+              </Card>
+
+              {/* Scores Section */}
+              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
+                    {/* Overall Score with Circular Progress */}
+                    <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-6 sm:p-8 min-w-[160px] mx-auto md:mx-0">
+                      <div className="relative w-24 sm:w-28 h-24 sm:h-28 mb-3">
+                        <svg className="w-24 sm:w-28 h-24 sm:h-28 transform -rotate-90" viewBox="0 0 100 100">
+                          {/* Background circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="transparent"
+                            className="text-slate-600/40"
+                          />
+                          {/* Progress circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="transparent"
+                            strokeDasharray={`${2 * Math.PI * 42}`}
+                            strokeDashoffset={`${2 * Math.PI * 42 * (1 - result.overallScore / 100)}`}
+                            className={result.overallScore >= 80 ? 'text-green-400' : result.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}
+                            strokeLinecap="round"
+                            style={{
+                              filter: 'drop-shadow(0 0 8px currentColor)',
+                              transition: 'all 0.3s ease'
+                            }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className={`text-2xl sm:text-3xl font-bold ${result.overallScore >= 80 ? 'text-green-400' : result.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {result.overallScore}
+                          </span>
+                          <span className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</span>
+                        </div>
                       </div>
+                      <div className="text-sm sm:text-base font-semibold text-slate-300 tracking-wider">OVERALL</div>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-sm mb-2 text-slate-300">Areas for Improvement</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {result.improvementAreas.map((area) => (
-                          <Badge key={area} className="bg-yellow-700 text-yellow-100 hover:bg-yellow-600">
-                            {area}
-                          </Badge>
-                        ))}
+
+                    {/* Individual Scores */}
+                    <div className="flex-1 md:ml-10">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                        {/* Code Score */}
+                        <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                          <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">CODE QUALITY</div>
+                          <div className={`text-2xl sm:text-3xl font-bold ${(result.questions?.[0]?.codeScore || 0) >= 80 ? 'text-green-400' : (result.questions?.[0]?.codeScore || 0) >= 60 ? 'text-yellow-400' : 'text-red-400'} mb-1 sm:mb-2`}>
+                            {result.questions?.[0]?.codeScore || 0}
+                          </div>
+                          <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
+                          <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
+                            <div 
+                              className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${(result.questions?.[0]?.codeScore || 0) >= 80 ? 'bg-green-500' : (result.questions?.[0]?.codeScore || 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                              style={{ width: `${result.questions?.[0]?.codeScore || 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+
+                        {/* Explanation Score */}
+                        <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                          <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">EXPLANATION</div>
+                          <div className={`text-2xl sm:text-3xl font-bold ${(result.questions?.[0]?.explanationScore || 0) >= 80 ? 'text-green-400' : (result.questions?.[0]?.explanationScore || 0) >= 60 ? 'text-yellow-400' : 'text-red-400'} mb-1 sm:mb-2`}>
+                            {result.questions?.[0]?.explanationScore || 0}
+                          </div>
+                          <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
+                          <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
+                            <div 
+                              className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${(result.questions?.[0]?.explanationScore || 0) >= 80 ? 'bg-green-500' : (result.questions?.[0]?.explanationScore || 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                              style={{ width: `${result.questions?.[0]?.explanationScore || 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="pt-0">
+              </Card>
+
+              {/* Assessment Analytics */}
+              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-4">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Assessment Analytics</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Comprehensive analysis of your technical performance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  {/* Main Analytics Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* Overall Grade */}
+                    <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
+                      </div>
+                      <div className={`text-4xl font-black ${result.overallScore >= 80 ? 'text-green-400' : result.overallScore >= 70 ? 'text-yellow-400' : result.overallScore >= 60 ? 'text-orange-400' : 'text-red-400'} mb-2`}>
+                        {result.overallScore >= 90 ? 'A' : result.overallScore >= 80 ? 'B' : result.overallScore >= 70 ? 'C' : result.overallScore >= 60 ? 'D' : 'F'}
+                      </div>
+                      <div className="text-slate-400">
+                        {result.overallScore >= 80 ? 'Excellent' : result.overallScore >= 70 ? 'Good' : result.overallScore >= 60 ? 'Average' : 'Needs Work'}
+                      </div>
+                    </div>
+
+                    {/* Difficulty Level */}
+                    <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div className="text-xs font-bold text-slate-400 tracking-widest">DIFFICULTY</div>
+                      </div>
+                      <div className="text-4xl mb-2">
+                        {result.difficulty === 'Easy' ? '🟢' : result.difficulty === 'Medium' ? '🟡' : '🔴'}
+                      </div>
+                      <div className="text-slate-400">{result.difficulty}</div>
+                    </div>
+
+                    {/* Performance Level */}
+                    <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="text-xs font-bold text-slate-400 tracking-widest">PERFORMANCE</div>
+                      </div>
+                      <div className={`text-4xl font-black text-green-400 mb-2`}>
+                        {result.overallScore >= 85 ? '★★★' : result.overallScore >= 70 ? '★★☆' : '★☆☆'}
+                      </div>
+                      <div className="text-slate-400">
+                        {result.overallScore >= 85 ? 'Strong' : result.overallScore >= 70 ? 'Good' : 'Developing'}
+                      </div>
+                    </div>
+
+                    {/* Assessment Stats */}
+                    <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="text-xs font-bold text-slate-400 tracking-widest">ASSESSMENT STATS</div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center">
+                          <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                            {result.questions?.length || 1}
+                          </div>
+                          <div className="text-slate-400 text-xs uppercase tracking-wide">Problems</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                            {result.strengths.length}
+                          </div>
+                          <div className="text-slate-400 text-xs uppercase tracking-wide">Strengths</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                            {result.improvementAreas.length}
+                          </div>
+                          <div className="text-slate-400 text-xs uppercase tracking-wide">To Improve</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                            ✓
+                          </div>
+                          <div className="text-slate-400 text-xs uppercase tracking-wide">Complete</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Key Strengths */}
+              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-green-400" />
+                    </div>
+                    <span className="text-white">Key Strengths</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {result.strengths.length > 0 ? result.strengths.map((strength, index) => (
+                      <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
+                        <div className="flex items-start gap-4">
+                          <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-green-500/30 transition-colors">
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          </div>
+                          <span className="text-slate-200 leading-relaxed flex-1">{strength}</span>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle className="h-8 w-8 text-slate-500" />
+                        </div>
+                        <p className="text-slate-400 italic">No specific strengths identified in the analysis.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Areas for Improvement */}
+              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-6">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-yellow-400" />
+                    </div>
+                    <span className="text-white">Areas for Improvement</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {result.improvementAreas.length > 0 ? result.improvementAreas.map((area, index) => (
+                      <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
+                        <div className="flex items-start gap-4">
+                          <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-yellow-500/30 transition-colors">
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                          </div>
+                          <span className="text-slate-200 leading-relaxed flex-1">{area}</span>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <TrendingUp className="h-8 w-8 text-slate-500" />
+                        </div>
+                        <p className="text-slate-400 italic">No specific areas for improvement identified in the analysis.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <Card className="bg-slate-800 border-slate-700 text-slate-100 mb-6">
+                <CardContent className="p-6">
                   <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
                     <Button 
                       variant="outline" 
@@ -395,59 +724,139 @@ export default function TechnicalAssessmentResultsPage() {
                       <Share2 className="h-4 w-4" /> Share
                     </Button>
                   </div>
-                </CardFooter>
+                </CardContent>
               </Card>
 
               {/* Questions, Code, Audio & Explanation */}
               <div className="space-y-8 mb-8">
-                {Array.isArray(result?.questions) && result.questions.map((q) => (
-                  <Card key={q.id} className="bg-slate-800 border-slate-700 text-slate-100">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{q.leetCodeTitle}</CardTitle>
-                      <CardDescription className="text-slate-400">{q.prompt}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="mb-2">
-                        <span className="text-xs text-slate-400">Your Code:</span>
-                        <pre className="bg-slate-900 rounded p-3 mt-1 overflow-x-auto text-sm border border-slate-700">
-                          <code>{q.code}</code>
-                        </pre>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-slate-400">Code Score:</span>
-                          <span className={`font-bold ${getScoreColor(q.codeScore)}`}>{q.codeScore}%</span>
-                        </div>
-                      </div>
-                      <div className="mb-2">
-                        <span className="text-xs text-slate-400">Your Explanation:</span>
-                        <div className="bg-slate-900 rounded p-3 mt-1 text-sm border border-slate-700">
-                          {q.explanation}
-                        </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-slate-400">Explanation Score:</span>
-                          <span className={`font-bold ${getScoreColor(q.explanationScore)}`}>{q.explanationScore}%</span>
-                        </div>
-                      </div>
-                      {q.audioUrl && (
-                        <div className="mb-4">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-green-400">Recorded Explanation:</span>
-                            <Badge className="bg-green-700 text-green-100">Transcribed</Badge>
+                {Array.isArray(result?.questions) && result.questions.map((q) => {
+                  const leetcodeProblem = parseLeetCodeProblem(q.prompt);
+                  
+                  return (
+                    <div key={q.id} className="space-y-6">
+                      {/* LeetCode Problem Display */}
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                        <CardHeader>
+                          <div className="flex items-center gap-4 mb-4">
+                            <CardTitle className="text-2xl font-bold text-emerald-400">
+                              {leetcodeProblem.number}. {leetcodeProblem.title}
+                            </CardTitle>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              leetcodeProblem.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
+                              leetcodeProblem.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' :
+                              'bg-red-500/20 text-red-400 border border-red-500/40'
+                            }`}>
+                              {leetcodeProblem.difficulty}
+                            </span>
                           </div>
-                          <div className="bg-slate-900 rounded p-3 border border-slate-700 mb-2">
-                            <audio controls src={q.audioUrl} className="w-full" />
-                            <p className="text-xs text-slate-400 mt-2">The audio above has been transcribed into your explanation.</p>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          {/* Problem Description */}
+                          <div>
+                            <p className="text-slate-300 leading-relaxed whitespace-pre-line">
+                              {leetcodeProblem.description}
+                            </p>
                           </div>
-                        </div>
-                      )}
-                      {q.feedback && (
-                        <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-800">
-                          <h4 className="text-sm font-medium text-blue-400 mb-1">Quick Feedback</h4>
-                          <p className="text-blue-100 text-sm">{q.feedback}</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+
+                          {/* Examples */}
+                          {leetcodeProblem.examples && leetcodeProblem.examples.length > 0 && (
+                            <div className="space-y-4">
+                              {leetcodeProblem.examples.map((example, index) => (
+                                <div key={index} className="space-y-3">
+                                  <h4 className="text-lg font-semibold text-slate-200">Example {index + 1}:</h4>
+                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-600">
+                                    <pre className="text-sm text-slate-300 font-mono overflow-x-auto">
+                                      <div className="space-y-2">
+                                        <div><span className="text-blue-400">Input:</span> {example.input}</div>
+                                        <div><span className="text-green-400">Output:</span> {example.output}</div>
+                                      </div>
+                                    </pre>
+                                  </div>
+                                  {example.explanation && (
+                                    <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50">
+                                      <p className="text-slate-300 text-sm">
+                                        <span className="font-semibold text-slate-200">Explanation:</span> {example.explanation}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Constraints */}
+                          {leetcodeProblem.constraints && leetcodeProblem.constraints.length > 0 && (
+                            <div>
+                              <h4 className="text-lg font-semibold text-slate-200 mb-3">Constraints:</h4>
+                              <ul className="list-disc list-inside space-y-1 text-slate-300 ml-4">
+                                {leetcodeProblem.constraints.map((constraint, index) => (
+                                  <li key={index} className="font-mono text-sm">{constraint}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Follow Up */}
+                          {leetcodeProblem.followUp && (
+                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                              <h4 className="text-lg font-semibold text-blue-300 mb-2">Follow up:</h4>
+                              <p className="text-slate-300">{leetcodeProblem.followUp}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Your Solution */}
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Your Solution</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="mb-2">
+                            <span className="text-xs text-slate-400">Your Code:</span>
+                            <pre className="bg-slate-900 rounded p-3 mt-1 overflow-x-auto text-sm border border-slate-700">
+                              <code>{q.code}</code>
+                            </pre>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-slate-400">Code Score:</span>
+                              <span className={`font-bold ${getScoreColor(q.codeScore)}`}>{q.codeScore}%</span>
+                            </div>
+                          </div>
+                          
+                          {q.audioUrl && (
+                            <div className="mb-4">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs text-green-400">Recorded Explanation:</span>
+                                <Badge className="bg-green-700 text-green-100">Transcribed</Badge>
+                              </div>
+                              <div className="bg-slate-900 rounded p-3 border border-slate-700 mb-2">
+                                <audio controls src={q.audioUrl} className="w-full" />
+                                <p className="text-xs text-slate-400 mt-2">The audio above has been transcribed into your explanation below.</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="mb-2">
+                            <span className="text-xs text-slate-400">Your Explanation:</span>
+                            <div className="bg-slate-900 rounded p-3 mt-1 text-sm border border-slate-700">
+                              {q.explanation}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-slate-400">Explanation Score:</span>
+                              <span className={`font-bold ${getScoreColor(q.explanationScore)}`}>{q.explanationScore}%</span>
+                            </div>
+                          </div>
+                          {q.feedback && (
+                            <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-800">
+                              <h4 className="text-sm font-medium text-blue-400 mb-1">Quick Feedback</h4>
+                              <p className="text-blue-100 text-sm">{q.feedback}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* AI Coach */}
@@ -490,24 +899,6 @@ export default function TechnicalAssessmentResultsPage() {
                 </CardFooter>
               </Card>
 
-              {/* Next Steps */}
-              <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                <CardHeader>
-                  <CardTitle className="text-lg">What's Next?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-auto max-w-2xl">
-                    <Button className="h-auto py-6 flex flex-col bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                      <Link href="/dashboard/technical">
-                        <RefreshCw className="h-6 w-6 mb-2" />
-                        <span className="text-base font-medium">Try Another Problem</span>
-                        <span className="text-xs mt-1">Practice a new LeetCode question</span>
-                      </Link>
-                    </Button>
-
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>

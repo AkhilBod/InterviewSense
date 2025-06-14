@@ -17,8 +17,15 @@ export async function POST(req: Request) {
 
     const { company, role, difficulty, useCustomNumber, leetcodeNumber } = await req.json();
 
-    // Use Gemini 2.0 Flash
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use Gemini 2.0 Flash with low temperature to reduce hallucination
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.2,
+        topP: 0.8,
+        topK: 40,
+      }
+    });
 
     let prompt;
 
@@ -32,18 +39,36 @@ export async function POST(req: Request) {
 - If problem #${leetcodeNumber} doesn't exist in the 1-3000 range, respond with "Problem number ${leetcodeNumber} not found in LeetCode database"
 
 **Output Format** (for valid problems only):
-- Exact problem number and title (e.g., "${leetcodeNumber}. [Actual Title]")
-- Complete original problem statement
-- All original constraints and specifications  
-- All original examples with input/output and explanations
-- For database problems: Include exact table schemas in ASCII format
-- For design problems: Include all required methods and specifications
+Format the problem EXACTLY like this LeetCode structure:
+
+# Problem Number. Problem Title
+
+**Difficulty:** Easy/Medium/Hard
+
+Complete problem description in clear paragraph form
+
+**Example 1:**
+Input: example input
+Output: example output  
+Explanation: detailed explanation
+
+**Example 2:**
+Input: example input
+Output: example output
+
+**Constraints:**
+• First constraint
+• Second constraint
+• Third constraint
+• Only one valid answer exists.
+
+**Follow-up:** optimization question if applicable
 
 **Quality Assurance:**
 - Verify the problem number matches exactly
 - Ensure all examples and constraints are from the original problem
 - Maintain the exact difficulty level of the original problem
-- Include all edge cases mentioned in the original
+- Include all edge cases mentioned in the original problem
 
 Retrieve LeetCode problem #${leetcodeNumber}:`;
     } else {
@@ -87,14 +112,30 @@ Retrieve LeetCode problem #${leetcodeNumber}:`;
    - **Design Problems**: Data structure design, system component design
 
 **Output Requirements:**
-From the 3000+ LeetCode problems, select ONE that best matches ALL criteria above. Present it as:
+From the 3000+ LeetCode problems, select ONE that best matches ALL criteria above. Present it EXACTLY in this format:
 
-- Problem number and title (e.g., "146. LRU Cache")
-- Complete problem statement exactly as it appears on LeetCode
-- All constraints and specifications
-- 2-3 comprehensive examples with input/output and explanations
-- If database problem: Include all table schemas formatted as ASCII tables
-- If design problem: Include all required methods and specifications
+# Problem Number. Problem Title
+
+**Difficulty:** Easy/Medium/Hard
+
+Complete problem description exactly as it appears on LeetCode
+
+**Example 1:**
+Input: example input
+Output: example output
+Explanation: detailed explanation
+
+**Example 2:**
+Input: example input
+Output: example output
+
+**Constraints:**
+• First constraint
+• Second constraint
+• Third constraint
+• Only one valid answer exists.
+
+**Follow-up:** optimization question if applicable
 
 **Critical Instructions:**
 - DO NOT create synthetic problems - use actual LeetCode problems only
@@ -138,8 +179,15 @@ export async function PUT(req: Request) {
       explanation 
     } = await req.json();
 
-    // Use Gemini 2.0 Flash for faster analysis
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use Gemini 2.0 Flash with very low temperature for consistent analysis
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.1,
+        topP: 0.7,
+        topK: 30,
+      }
+    });
 
     // Enhanced prompt for comprehensive code analysis
     const analysisPrompt = `

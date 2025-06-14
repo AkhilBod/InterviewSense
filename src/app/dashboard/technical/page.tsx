@@ -79,9 +79,9 @@ function TechnicalAssessmentPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+    <div className="flex flex-col min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+      <header className="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/80 border-b border-slate-800/50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
@@ -102,16 +102,16 @@ function TechnicalAssessmentPage() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-zinc-900 border-zinc-800" align="end">
-                  <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-zinc-800" />
+                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
+                  <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-800" />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
+                    <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-slate-800">
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
+                    className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
                     onClick={handleSignOut}
                   >
                     Sign out
@@ -119,7 +119,7 @@ function TechnicalAssessmentPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="outline" size="sm" asChild className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+              <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
                 <Link href="/login">Sign in</Link>
               </Button>
             )}
@@ -127,7 +127,7 @@ function TechnicalAssessmentPage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 flex-1">
         <TechnicalAssessment />
       </div>
     </div>
@@ -140,7 +140,7 @@ export default function TechnicalAssessmentPageWithSuspense() {
       <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <p className="mt-4 text-slate-400">Loading...</p>
         </div>
       </div>
     }>
