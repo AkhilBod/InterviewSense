@@ -98,12 +98,12 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
 .animate-slide-left {
-  animation: slide-left 25s linear infinite;
+  animation: slide-left 15s linear infinite;
 }
 
 /* Pause animation on hover */
