@@ -17,7 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useRouter } from 'next/navigation'; // <--- CHANGE THIS LINE
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -124,7 +124,7 @@ export default function ResumeCheckerPage() {
     setShowResults(false);
     setResumeData(null); // Clear previous results
     setError(null); // Clear any previous errors
-    // Optionally reset form fields here if desired, e.g., setResume(null); setJobTitle(""); etc.
+    // Keep resume file for preview - don't clear it
   };
 
   // Helper functions for results display (copied from ResumeResultsPage)
@@ -193,10 +193,9 @@ export default function ResumeCheckerPage() {
     );
   }
 
-
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-zinc-900 text-white px-4 py-10 flex flex-col items-center">
+      <div className="h-screen bg-zinc-900 text-white overflow-hidden">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -253,108 +252,112 @@ export default function ResumeCheckerPage() {
           </div>
         </header>
 
-        <div className="w-full max-w-2xl mx-auto mt-16">
+        <div className="pt-16 px-4 h-full overflow-y-auto">
           {!showResults ? (
-            // Resume Checker Form
-            <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
-              <CardHeader className="text-center pt-8">
-                <CardTitle className="text-2xl font-bold">Resume Checker</CardTitle>
-                <p className="text-zinc-400 mt-2 text-base">
-                  Upload your resume and get instant AI-powered feedback and suggestions.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6 px-8 pb-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Upload Resume (PDF, DOC, DOCX)
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
-                        onClick={() =>
-                          document.getElementById("resume-upload")?.click()
-                        }
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {resume ? "Change File" : "Upload Resume"}
-                      </Button>
-                      <input
-                        id="resume-upload"
-                        name="resume"
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleResumeChange}
-                      />
-                      {resume && (
-                        <span className="text-sm text-zinc-400 flex items-center">
-                          <FileText className="h-3 w-3 mr-1" />
-                          {resume.name.length > 20
-                            ? `${resume.name.substring(0, 20)}...`
-                            : resume.name}
-                        </span>
+            // Resume Checker Form - Centered
+            <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+              <div className="w-full max-w-2xl">
+                <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
+                  <CardHeader className="text-center pt-8">
+                    <CardTitle className="text-2xl font-bold">Resume Checker</CardTitle>
+                    <p className="text-zinc-400 mt-2 text-base">
+                      Upload your resume and get instant AI-powered feedback and suggestions.
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6 px-8 pb-8">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Upload Resume (PDF, DOC, DOCX)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+                            onClick={() =>
+                              document.getElementById("resume-upload")?.click()
+                            }
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {resume ? "Change File" : "Upload Resume"}
+                          </Button>
+                          <input
+                            id="resume-upload"
+                            name="resume"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleResumeChange}
+                          />
+                          {resume && (
+                            <span className="text-sm text-zinc-400 flex items-center">
+                              <FileText className="h-3 w-3 mr-1" />
+                              {resume.name.length > 20
+                                ? `${resume.name.substring(0, 20)}...`
+                                : resume.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Target Job Title <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          placeholder="e.g. Software Engineer"
+                          value={jobTitle}
+                          onChange={(e) => setJobTitle(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Target Company (Optional)
+                        </label>
+                        <Input
+                          placeholder="e.g. Google, Amazon"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Job Description (Optional)
+                        </label>
+                        <Textarea
+                          placeholder="Paste the job description here for more personalized feedback..."
+                          value={jobDescription}
+                          onChange={(e) => setJobDescription(e.target.value)}
+                          className="min-h-[100px]"
+                        />
+                      </div>
+
+                      {error && (
+                        <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                          <div className="text-sm">{error}</div>
+                        </div>
                       )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Target Job Title <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      placeholder="e.g. Software Engineer"
-                      value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Target Company (Optional)
-                    </label>
-                    <Input
-                      placeholder="e.g. Google, Amazon"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Job Description (Optional)
-                    </label>
-                    <Textarea
-                      placeholder="Paste the job description here for more personalized feedback..."
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                  </div>
 
-                  {error && (
-                    <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                      <div className="text-sm">{error}</div>
-                    </div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6"
-                    size="lg"
-                    disabled={isLoading || !resume || !jobTitle}
-                  >
-                    {isLoading ? "Analyzing..." : "Check Resume"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                      <Button
+                        type="submit"
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6"
+                        size="lg"
+                        disabled={isLoading || !resume || !jobTitle}
+                      >
+                        {isLoading ? "Analyzing..." : "Check Resume"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           ) : (
-            // Resume Analysis Results
-            <div className="max-w-5xl mx-auto">
-              <div className="mb-6">
+            // Resume Analysis Results - Full Width Layout
+            <div className="w-full">
+              <div className="mb-8 px-4">
                 <Button variant="ghost" size="sm" onClick={handleBackToChecker} className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
                   <ChevronLeft className="h-4 w-4" />
                   Back to Resume Checker
@@ -363,226 +366,203 @@ export default function ResumeCheckerPage() {
 
               {resumeData && (
                 <>
-                  {/* Main Layout - Everything stacked vertically */}
-                  <div className="max-w-6xl mx-auto space-y-8">
-                    {/* Header */}
-                    <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                      <CardHeader className="text-center">
-                        <CardTitle className="text-2xl">Resume Analysis Report</CardTitle>
-                        <CardDescription className="text-slate-400">
-                          For a {resumeData.jobTitle} position{resumeData.company ? ` at ${resumeData.company}` : ""} • {new Date().toLocaleDateString()}
-                        </CardDescription>
-                      </CardHeader>
-                    </Card>
+                  {/* Optimized Layout - Balanced proportions */}
+                  <div className="grid grid-cols-1 lg:grid-cols-9 gap-8 px-4 max-w-[1900px] mx-auto">
+                    {/* Left Column - Analysis Results (50% width) */}
+                    <div className="lg:col-span-5 space-y-6 order-2 lg:order-1">
+                      {/* Header */}
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                        <CardHeader className="text-center py-8">
+                          <CardTitle className="text-3xl">Resume Analysis Report</CardTitle>
+                          <CardDescription className="text-slate-400 text-lg">
+                            For a {resumeData.jobTitle} position{resumeData.company ? ` at ${resumeData.company}` : ""} • {new Date().toLocaleDateString()}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
 
-                    {/* Scores Section */}
-                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                      <CardContent className="p-8">
-                        <div className="flex items-center justify-between">
-                          {/* Overall Score with Circular Progress */}
-                          <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-6 min-w-[160px]">
-                            <div className="relative w-28 h-28 mb-3">
-                              <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
-                                {/* Background circle */}
-                                <circle
-                                  cx="50"
-                                  cy="50"
-                                  r="42"
-                                  stroke="currentColor"
-                                  strokeWidth="6"
-                                  fill="transparent"
-                                  className="text-slate-600/40"
-                                />
-                                {/* Progress circle */}
-                                <circle
-                                  cx="50"
-                                  cy="50"
-                                  r="42"
-                                  stroke="currentColor"
-                                  strokeWidth="6"
-                                  fill="transparent"
-                                  strokeDasharray={`${2 * Math.PI * 42}`}
-                                  strokeDashoffset={`${2 * Math.PI * 42 * (1 - resumeData.overallScore / 100)}`}
-                                  className={getScoreColor(resumeData.overallScore).replace('text-', 'text-')}
-                                  strokeLinecap="round"
-                                  style={{
-                                    filter: 'drop-shadow(0 0 8px currentColor)',
-                                    transition: 'all 0.3s ease'
-                                  }}
-                                />
-                              </svg>
-                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className={`text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
-                                  {resumeData.overallScore}
-                                </span>
-                                <span className="text-xs text-slate-400 font-medium">/ 100</span>
-                              </div>
-                            </div>
-                            <div className="text-sm font-semibold text-slate-300 tracking-wider">OVERALL</div>
-                          </div>
-
-                          {/* Individual Scores */}
-                          <div className="flex-1 ml-12">
-                            <div className="grid grid-cols-3 gap-8">
-                              {/* Impact Score */}
-                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">IMPACT</div>
-                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-1`}>
-                                  {resumeData.impactScore}
-                                </div>
-                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
-                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
-                                    style={{ width: `${resumeData.impactScore}%` }}
-                                  ></div>
+                      {/* Scores Section */}
+                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                        <CardContent className="p-8">
+                          <div className="flex items-center justify-between">
+                            {/* Overall Score with Circular Progress */}
+                            <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-8 min-w-[160px]">
+                              <div className="relative w-28 h-28 mb-3">
+                                <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
+                                  {/* Background circle */}
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="42"
+                                    stroke="currentColor"
+                                    strokeWidth="6"
+                                    fill="transparent"
+                                    className="text-slate-600/40"
+                                  />
+                                  {/* Progress circle */}
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="42"
+                                    stroke="currentColor"
+                                    strokeWidth="6"
+                                    fill="transparent"
+                                    strokeDasharray={`${2 * Math.PI * 42}`}
+                                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - resumeData.overallScore / 100)}`}
+                                    className={getScoreColor(resumeData.overallScore).replace('text-', 'text-')}
+                                    strokeLinecap="round"
+                                    style={{
+                                      filter: 'drop-shadow(0 0 8px currentColor)',
+                                      transition: 'all 0.3s ease'
+                                    }}
+                                  />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                  <span className={`text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
+                                    {resumeData.overallScore}
+                                  </span>
+                                  <span className="text-sm text-slate-400 font-medium">/ 100</span>
                                 </div>
                               </div>
+                              <div className="text-base font-semibold text-slate-300 tracking-wider">OVERALL</div>
+                            </div>
 
-                              {/* Style Score */}
-                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">STYLE</div>
-                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-1`}>
-                                  {resumeData.styleScore}
+                            {/* Individual Scores */}
+                            <div className="flex-1 ml-10">
+                              <div className="grid grid-cols-3 gap-8">
+                                {/* Impact Score */}
+                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">IMPACT</div>
+                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-2`}>
+                                    {resumeData.impactScore}
+                                  </div>
+                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                    <div 
+                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
+                                      style={{ width: `${resumeData.impactScore}%` }}
+                                    ></div>
+                                  </div>
                                 </div>
-                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
-                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
-                                    style={{ width: `${resumeData.styleScore}%` }}
-                                  ></div>
+
+                                {/* Style Score */}
+                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">STYLE</div>
+                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-2`}>
+                                    {resumeData.styleScore}
+                                  </div>
+                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                    <div 
+                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
+                                      style={{ width: `${resumeData.styleScore}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+
+                                {/* Skills Score */}
+                                <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
+                                  <div className="text-base font-bold text-slate-300 mb-3 tracking-wider">SKILLS</div>
+                                  <div className={`text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-2`}>
+                                    {resumeData.skillsScore}
+                                  </div>
+                                  <div className="text-sm text-slate-400 font-medium">/ 100</div>
+                                  <div className="mt-4 w-full bg-slate-600/30 rounded-full h-3">
+                                    <div 
+                                      className={`h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
+                                      style={{ width: `${resumeData.skillsScore}%` }}
+                                    ></div>
+                                  </div>
                                 </div>
                               </div>
-
-                              {/* Skills Score */}
-                              <div className="text-center bg-slate-700/20 rounded-xl p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                <div className="text-sm font-bold text-slate-300 mb-3 tracking-wider">SKILLS</div>
-                                <div className={`text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-1`}>
-                                  {resumeData.skillsScore}
-                                </div>
-                                <div className="text-xs text-slate-400 font-medium">/ 100</div>
-                                <div className="mt-3 w-full bg-slate-600/30 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
-                                    style={{ width: `${resumeData.skillsScore}%` }}
-                                  ></div>
-                                </div>
-                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
 
-                    {/* Resume Stats */}
-                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                      <CardHeader>
-                        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Resume Analytics</CardTitle>
-                        <CardDescription className="text-slate-400">
-                          Comprehensive analysis of your resume performance
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {/* Top Row - Key Metrics */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
-                              <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                            </div>
-                            <div className={`text-3xl font-black ${getScoreColor(resumeData.overallScore)} mb-1`}>
-                              {resumeData.overallScore >= 80 ? 'A' : resumeData.overallScore >= 70 ? 'B' : resumeData.overallScore >= 60 ? 'C' : 'D'}
-                            </div>
-                            <div className="text-slate-500 text-sm font-semibold">
-                              {resumeData.overallScore >= 80 ? 'Excellent' : resumeData.overallScore >= 70 ? 'Good' : resumeData.overallScore >= 60 ? 'Average' : 'Needs Work'}
-                            </div>
-                          </div>
-
-                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="text-xs font-bold text-slate-400 tracking-widest">ATS READY</div>
-                              <div className={`w-2 h-2 rounded-full ${resumeData.atsCompatibility === 'Excellent' ? 'bg-green-400' : resumeData.atsCompatibility === 'Good' ? 'bg-yellow-400' : 'bg-red-400'}`}></div>
-                            </div>
-                            <div className={`text-2xl font-black ${resumeData.atsCompatibility === 'Excellent' ? 'text-green-400' : resumeData.atsCompatibility === 'Good' ? 'text-yellow-400' : 'text-red-400'} mb-1`}>
-                              {resumeData.atsCompatibility === 'Excellent' ? '✓' : resumeData.atsCompatibility === 'Good' ? '!' : '✗'}
-                            </div>
-                            <div className="text-slate-500 text-sm font-semibold">{resumeData.atsCompatibility}</div>
-                          </div>
-
-                          {resumeData.keywordMatch !== undefined && (
+                      {/* Resume Stats */}
+                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
+                        <CardHeader className="p-8">
+                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Resume Analytics</CardTitle>
+                          <CardDescription className="text-slate-400 text-lg">
+                            Comprehensive analysis of your resume performance
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8">
+                          {/* Main Analytics Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            {/* Overall Grade */}
                             <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="text-xs font-bold text-slate-400 tracking-widest">JOB MATCH</div>
-                                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
                               </div>
-                              <div className={`text-3xl font-black ${getScoreColor(resumeData.keywordMatch)} mb-1`}>
-                                {resumeData.keywordMatch}%
+                              <div className={`text-4xl font-black ${getScoreColor(resumeData.overallScore)} mb-2`}>
+                                {resumeData.overallScore >= 80 ? 'B' : resumeData.overallScore >= 70 ? 'B' : resumeData.overallScore >= 60 ? 'C' : 'D'}
                               </div>
-                              <div className="text-slate-500 text-sm font-semibold">Keyword Alignment</div>
-                            </div>
-                          )}
-
-                          <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="text-xs font-bold text-slate-400 tracking-widest">READABILITY</div>
-                              <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                            </div>
-                            <div className={`text-3xl font-black ${getScoreColor(resumeData.styleScore)} mb-1`}>
-                              {resumeData.styleScore}
-                            </div>
-                            <div className="text-slate-500 text-sm font-semibold">Style Score</div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Row - Technical Details */}
-                        <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-600/30">
-                          <h4 className="text-sm font-bold text-slate-300 mb-4 tracking-widest">TECHNICAL DETAILS</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <div className="text-center">
-                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">FORMAT</div>
-                              <div className="text-white font-bold text-sm uppercase bg-slate-700/50 rounded-lg py-2 px-3">
-                                {resumeData.fileType.split('/')[1] || resumeData.fileType}
+                              <div className="text-slate-400">
+                                {resumeData.overallScore >= 70 ? 'Good' : resumeData.overallScore >= 60 ? 'Average' : 'Needs Work'}
                               </div>
                             </div>
 
-                            {resumeData.resumeLength && (
-                              <div className="text-center">
-                                <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">PAGES</div>
-                                <div className="text-white font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
-                                  {resumeData.resumeLength}
+                            {/* ATS Ready */}
+                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <div className="text-xs font-bold text-slate-400 tracking-widest">ATS READY</div>
+                              </div>
+                              <div className="text-4xl mb-2">
+                                {resumeData.atsCompatibility === 'Excellent' ? '✓' : resumeData.atsCompatibility === 'Good' ? '✓' : '✗'}
+                              </div>
+                              <div className="text-slate-400">
+                                {resumeData.atsCompatibility === 'Excellent' ? 'Excellent' : resumeData.atsCompatibility === 'Good' ? 'Excellent' : 'Needs Work'}
+                              </div>
+                            </div>
+
+                            {/* Readability */}
+                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <div className="text-xs font-bold text-slate-400 tracking-widest">READABILITY</div>
+                              </div>
+                              <div className={`text-4xl font-black text-green-400 mb-2`}>
+                                85
+                              </div>
+                              <div className="text-slate-400">Style Score</div>
+                            </div>
+
+                            {/* Technical Details */}
+                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="text-xs font-bold text-slate-400 tracking-widest">TECHNICAL DETAILS</div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="text-center">
+                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                                    {resumeData.resumeLength || 1}
+                                  </div>
+                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Pages</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                                    {resumeData.skillsCount || 0}
+                                  </div>
+                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Skills</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                                    {resumeData.strengths.length}
+                                  </div>
+                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Strengths</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
+                                    {resumeData.improvementAreas.length}
+                                  </div>
+                                  <div className="text-slate-400 text-xs uppercase tracking-wide">To Improve</div>
                                 </div>
                               </div>
-                            )}
-
-                            <div className="text-center">
-                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">SKILLS</div>
-                              <div className="text-white font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
-                                {resumeData.skillsCount}
-                              </div>
-                            </div>
-
-                            <div className="text-center">
-                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">STRENGTHS</div>
-                              <div className="text-green-400 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
-                                {resumeData.strengths.length}
-                              </div>
-                            </div>
-
-                            <div className="text-center">
-                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">TO IMPROVE</div>
-                              <div className="text-yellow-400 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
-                                {resumeData.improvementAreas.length}
-                              </div>
-                            </div>
-
-                            <div className="text-center">
-                              <div className="text-xs text-slate-500 mb-1 font-semibold tracking-wider">ANALYZED</div>
-                              <div className="text-slate-300 font-bold text-sm bg-slate-700/50 rounded-lg py-2 px-3">
-                                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              </div>
                             </div>
                           </div>
-                        </div>
                       </CardContent>
                     </Card>
 
@@ -695,20 +675,50 @@ export default function ResumeCheckerPage() {
                         </div>
                       </CardContent>
                     </Card>
+                    </div>
+
+                    {/* Right Column - Resume Viewer (44% width) */}
+                    <div className="lg:col-span-4 lg:sticky lg:top-6 lg:h-fit order-1 lg:order-2">
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full min-h-[85vh]">
+                        <CardHeader className="pb-6">
+                          <CardTitle className="text-2xl font-semibold flex items-center gap-3">
+                            <FileText className="h-7 w-7 text-blue-400" />
+                            Resume Preview
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                          {resume && (
+                            <div className="relative bg-white rounded-xl overflow-hidden shadow-2xl border-2 border-slate-600">
+                              {resume.type === 'application/pdf' ? (
+                                <iframe
+                                  src={`${URL.createObjectURL(resume)}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&scrollbar=0`}
+                                  className="w-[101%] h-[66vh] lg:h-[65vh] xl:h-[70vh] border-0"
+                                  title="Resume Preview"
+                                />
+                              ) : (
+                                <div className="p-8 bg-white text-gray-800 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto">
+                                  <div className="flex items-center justify-center h-full">
+                                    <div className="text-center">
+                                      <FileText className="h-24 w-24 text-gray-400 mx-auto mb-8" />
+                                      <p className="text-gray-600 font-medium mb-4 text-xl">{resume.name}</p>
+                                      <p className="text-gray-500 text-lg">File type: {resume.type}</p>
+                                      <p className="text-gray-500 text-lg">Size: {Math.round(resume.size / 1024)} KB</p>
+                                      <p className="text-gray-500 text-base mt-6">Preview not available for this file type</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </>
               )}
             </div>
           )}
         </div>
-
-        <footer className="py-6 border-t border-zinc-800 bg-zinc-900 mt-auto w-full">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-center items-center">
-              <p className="text-sm text-zinc-500">© {new Date().getFullYear()} InterviewSense. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
       </div>
     </ProtectedRoute>
   );
