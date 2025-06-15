@@ -771,16 +771,16 @@ public:
           </Card>
 
           {/* Solution Panel - Right Side */}
-          <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full overflow-hidden">
-            <CardHeader className="pb-4 border-b border-slate-700">
+          <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full flex flex-col">
+            <CardHeader className="pb-4 border-b border-slate-700 flex-shrink-0">
               <CardTitle className="text-xl font-semibold text-white flex items-center gap-2">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                 Your Solution
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 h-full overflow-hidden flex flex-col">
+            <CardContent className="flex-1 flex flex-col overflow-hidden p-6">
               {/* Code Editor Section */}
-              <div className="space-y-4 flex-1 overflow-hidden">
+              <div className="space-y-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-semibold text-slate-200 flex items-center gap-2">
                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -813,9 +813,9 @@ public:
                     </Button>
                   </div>
                 </div>
-                <div className="border rounded-lg overflow-hidden bg-[#1e1e1e] border-slate-600 shadow-lg flex-1">
+                <div className="border rounded-lg overflow-hidden bg-[#1e1e1e] border-slate-600 shadow-lg">
                   <Editor
-                    height="320px"
+                    height="280px"
                     language={language}
                     value={code}
                     onChange={(value) => setCode(value || '')}
@@ -855,7 +855,7 @@ public:
               </div>
 
               {/* Divider */}
-              <div className="relative my-6">
+              <div className="relative my-4 flex-shrink-0">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-600"></div>
                 </div>
@@ -864,9 +864,9 @@ public:
                 </div>
               </div>
 
-              {/* Explanation Section */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              {/* Explanation Section - Flexible with constrained height */}
+              <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex items-center justify-between mb-4 flex-shrink-0">
                   <Label className="text-base font-semibold text-slate-200 flex items-center gap-2">
                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                     Explain Your Solution
@@ -876,8 +876,8 @@ public:
                   </div>
                 </div>
                 
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/50">
-                  <div className="flex gap-3 items-center mb-4">
+                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/50 flex-1 flex flex-col">
+                  <div className="flex gap-3 items-center mb-4 flex-shrink-0">
                     <Button
                       variant={isRecording ? "destructive" : "default"}
                       onClick={isRecording ? stopRecording : startRecording}
@@ -914,7 +914,7 @@ public:
                   <Textarea
                     value={thoughtProcess}
                     onChange={(e) => setThoughtProcess(e.target.value)}
-                    className="h-[160px] resize-none bg-slate-900 border-slate-600 focus:border-blue-500 transition-colors"
+                    className="flex-1 min-h-[120px] max-h-[200px] resize-none bg-slate-900 border-slate-600 focus:border-blue-500 transition-colors"
                     placeholder="Explain your solution approach here. Consider including:
 • Your algorithm strategy and why you chose it
 • Time and space complexity analysis
@@ -924,8 +924,8 @@ public:
                 </div>
               </div>
               
-              {/* Submit Section */}
-              <div className="pt-6 border-t border-slate-600/50">
+              {/* Submit Section - Always visible at bottom */}
+              <div className="pt-4 border-t border-slate-600/50 flex-shrink-0">
                 <Button 
                   onClick={() => {
                     if (!code) {

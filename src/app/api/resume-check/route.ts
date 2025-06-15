@@ -1,9 +1,9 @@
-// pages/api/resume-check.ts
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProgressService } from "@/lib/progress";
 
 // Ensure GOOGLE_AI_KEY is set in your environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -174,9 +174,7 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         };
 
         // Generate resume stats
-        const stats = generateResumeStats(file, analysisText, jobDescription);
-
-        const successResponse = { 
+        const stats = generateResumeStats(file, analysisText, jobDescription);        const successResponse = {
             analysis: analysisText, 
             score: structuredAnalysis.overallScore,
             impactScore: structuredAnalysis.impactScore,
@@ -188,6 +186,47 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
             stats,
             structuredData: structuredAnalysis
         };
+        
+        // Track progress for resume analysis completion
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: session.user.email! },
+            select: { id: true }
+          });
+          
+          if (user) {
+            // Check for recent duplicate analyses (within 30 seconds) to prevent duplicates
+            const recentAnalysis = await prisma.resumeAnalysis.findFirst({
+              where: {
+                userId: user.id,
+                createdAt: {
+                  gte: new Date(Date.now() - 30000) // 30 seconds ago
+                }
+              },
+              orderBy: { createdAt: 'desc' }
+            });
+            
+            if (!recentAnalysis) {
+              await ProgressService.updateResumeProgress(user.id, {
+                score: structuredAnalysis.overallScore || 0,
+                improvementCount: structuredAnalysis.improvements?.length || 0,
+                wordCount: 1000, // Could extract actual word count if needed
+                analysis: structuredAnalysis,
+                categories: {
+                  impact: structuredAnalysis.impactScore || 0,
+                  style: structuredAnalysis.styleScore || 0,
+                  skills: structuredAnalysis.skillsScore || 0
+                }
+              });
+              console.log('🎯 Progress tracked for resume analysis');
+            } else {
+              console.log('⚠️ Duplicate resume analysis prevented');
+            }
+          }
+        } catch (progressError) {
+          console.error('Error tracking progress:', progressError);
+          // Don't fail the main request if progress tracking fails
+        }
         
         return NextResponse.json(successResponse);
 

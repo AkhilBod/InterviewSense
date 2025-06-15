@@ -47,6 +47,13 @@ model User {
   passwordResetTokens PasswordResetToken[]
   sessions            Session[]
   verificationTokens  VerificationToken[]
+  
+  // User retention & progress tracking
+  progress            UserProgress?
+  achievements        UserAchievement[]
+  interviewSessions   InterviewSession[]
+  resumeAnalyses      ResumeAnalysis[]
+  dailyActivities     DailyActivity[]
 }
 
 model VerificationToken {
@@ -68,4 +75,138 @@ model PasswordResetToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
+}
+
+// User retention & progress tracking models
+model UserProgress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Core metrics for retention
+  totalInterviews          Int @default(0)
+  behavioralInterviews     Int @default(0)
+  technicalInterviews      Int @default(0)
+  resumeChecks            Int @default(0)
+  
+  // Scores & improvement tracking
+  averageScore            Float @default(0)
+  bestScore               Float @default(0)
+  recentScores            Json @default("[]") // Array of recent scores with timestamps
+  lastScore               Float @default(0)
+  scoreImprovement        Float @default(0) // Change from previous score
+  
+  // Retention-focused metrics
+  currentStreak           Int @default(0) // Days in a row with activity
+  longestStreak           Int @default(0)
+  lastActivityDate        DateTime?
+  totalActiveDays         Int @default(0)
+  
+  // Speech improvement (key differentiator)
+  totalFillerWords        Int @default(0)
+  averageFillerWords      Float @default(0)
+  bestFillerWordCount     Int @default(999) // Lowest count (best performance)
+  speechImprovementScore  Float @default(0)
+  
+  // Gamification
+  totalXP                 Int @default(0)
+  level                   Int @default(1)
+  
+  // Engagement tracking
+  weeklyGoal              Int @default(3) // Target interviews per week
+  monthlyGoal             Int @default(12) // Target interviews per month
+  weeklyProgress          Int @default(0)
+  monthlyProgress         Int @default(0)
+  lastWeekReset           DateTime @default(now())
+  lastMonthReset          DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  icon        String
+  category    String // "interview", "resume", "streak", "score", "speech", "milestone"
+  requirement Json   // Flexible requirement structure
+  xpReward    Int    @default(0)
+  rarity      String @default("common") // "common", "rare", "epic", "legendary"
+  isActive    Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String @id @default(cuid())
+  userId        String
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  
+  unlockedAt DateTime @default(now())
+  isNew      Boolean @default(true) // For showing "NEW!" badge
+  
+  @@unique([userId, achievementId])
+}
+
+model InterviewSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   // "behavioral", "technical"
+  score     Float?
+  duration  Int?     // in seconds
+  fillerWords Int   @default(0)
+  
+  // Detailed metrics for retention insights
+  metrics   Json?    // Confidence, clarity, technical accuracy, etc.
+  feedback  Json?    // AI feedback and suggestions
+  
+  // Improvement tracking
+  scoreImprovement Float @default(0) // Compared to previous session
+  
+  completedAt DateTime @default(now())
+  
+  @@index([userId, completedAt])
+}
+
+model ResumeAnalysis {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  overallScore      Float
+  improvementCount  Int @default(0)
+  wordCount         Int @default(0)
+  
+  // Detailed analysis for progress tracking
+  analysis  Json     // Store detailed analysis results
+  categories Json?   // Score breakdown by category
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId, createdAt])
+}
+
+// Daily engagement tracking for retention analysis
+model DailyActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  
+  interviewCount    Int @default(0)
+  resumeChecks      Int @default(0)
+  timeSpentMinutes  Int @default(0)
+  xpEarned         Int @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, date])
+  @@index([date])
 }

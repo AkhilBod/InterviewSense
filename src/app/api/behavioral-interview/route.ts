@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProgressService } from "@/lib/progress";
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -130,6 +131,47 @@ Format your response as valid JSON with the following structure:
         detailedFeedback: Array.isArray(analysis.detailedFeedback) ? analysis.detailedFeedback : questions.map(() => "No specific feedback available."),
         generalAdvice: analysis.generalAdvice || "Practice using the STAR method (Situation, Task, Action, Result) to structure your responses."
       };
+      
+      // Track progress for behavioral interview completion
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email! },
+          select: { id: true }
+        });
+        
+        if (user) {
+          // Check for recent duplicate sessions (within 30 seconds) to prevent duplicates
+          const recentSession = await prisma.interviewSession.findFirst({
+            where: {
+              userId: user.id,
+              type: 'behavioral',
+              completedAt: {
+                gte: new Date(Date.now() - 30000) // 30 seconds ago
+              }
+            },
+            orderBy: { completedAt: 'desc' }
+          });
+          
+          if (!recentSession) {
+            await ProgressService.updateInterviewProgress(user.id, {
+              type: 'behavioral',
+              score: validatedAnalysis.overallScore,
+              fillerWords: 0, // Not tracked in behavioral interviews
+              duration: 0, // Could be tracked if needed
+              metrics: {
+                questionsAnswered: questions.length,
+                averageAnswerScore: validatedAnalysis.answerScores.reduce((a: number, b: number) => a + b, 0) / validatedAnalysis.answerScores.length
+              }
+            });
+            console.log('🎯 Progress tracked for behavioral interview');
+          } else {
+            console.log('⚠️ Duplicate behavioral interview session prevented');
+          }
+        }
+      } catch (progressError) {
+        console.error('Error tracking progress:', progressError);
+        // Don't fail the main request if progress tracking fails
+      }
       
       return NextResponse.json(validatedAnalysis);
     } catch (parseError) {

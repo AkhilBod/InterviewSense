@@ -227,25 +227,64 @@ function InterviewPage() {
     }
   };
 
+  // Add state to prevent duplicate submissions
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Function to complete the interview early
-  const completeEarly = () => {
-    // Transfer session answers to localStorage for results page
-    const sessionAnswers = sessionStorage.getItem('interviewAnswers');
-    if (sessionAnswers) {
-      localStorage.setItem('interviewAnswers', sessionAnswers);
+  const completeEarly = async () => {
+    if (isSubmitting) return; // Prevent double submissions
+    setIsSubmitting(true);
+    
+    try {
+      // Transfer session answers to localStorage for results page
+      const sessionAnswers = sessionStorage.getItem('interviewAnswers');
+      if (sessionAnswers) {
+        localStorage.setItem('interviewAnswers', sessionAnswers);
+      }
+      
+      // Save the questions that were actually seen and answered
+      localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
+      
+      // Save completed questions count for results page
+      localStorage.setItem('completedQuestionsCount', String(completedQuestions.length));
+      
+      // Track progress in database before going to results
+      try {
+        const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
+        const answersData = sessionAnswers ? JSON.parse(sessionAnswers) : {};
+        
+        // Prepare questions and answers for API
+        const questionsForAPI = visibleQuestions.map(q => ({
+          question: q.question,
+          answer: answersData[q.id] || ''
+        }));
+        
+        // Call the behavioral interview API to track progress
+        await fetch('/api/behavioral-interview', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            questions: questionsForAPI,
+            interviewType: interviewType.toLowerCase()
+          }),
+        });
+        
+        console.log('✅ Early completion progress tracked successfully');
+      } catch (error) {
+        console.error('Error tracking early completion progress:', error);
+        // Don't block the user from seeing results if tracking fails
+      }
+      
+      // Clear session storage as we're done with this interview
+      sessionStorage.removeItem('interviewAnswers');
+      
+      // Navigate to results page
+      router.push('/results');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    // Save the questions that were actually seen and answered
-    localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
-    
-    // Save completed questions count for results page
-    localStorage.setItem('completedQuestionsCount', String(completedQuestions.length));
-    
-    // Clear session storage as we're done with this interview
-    sessionStorage.removeItem('interviewAnswers');
-    
-    // Navigate to results page
-    router.push('/results');
   };
 
   const currentQuestion = visibleQuestions[currentQuestionIndex] || mockQuestions[currentQuestionIndex];
@@ -682,29 +721,64 @@ function InterviewPage() {
     }
   };
 
-  const handleComplete = () => {
-    if (answer.trim() !== '') {
-      if (!completedQuestions.includes(currentQuestion.id)) {
-        setCompletedQuestions([...completedQuestions, currentQuestion.id]);
-      }
-      
-      // Store the final answer
-      const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
-      setAllAnswers(updatedAnswers);
-      
-      // Transfer final answers to localStorage for results page
-      localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
+  const handleComplete = async () => {
+    if (isSubmitting) return; // Prevent double submissions
+    setIsSubmitting(true);
+    
+    try {
+      if (answer.trim() !== '') {
+        if (!completedQuestions.includes(currentQuestion.id)) {
+          setCompletedQuestions([...completedQuestions, currentQuestion.id]);
+        }
+        
+        // Store the final answer
+        const updatedAnswers = {...allAnswers, [currentQuestion.id]: answer};
+        setAllAnswers(updatedAnswers);
+        
+        // Transfer final answers to localStorage for results page
+        localStorage.setItem('interviewAnswers', JSON.stringify(updatedAnswers));
 
-      // Save the questions that were actually shown to localStorage for results page
-      localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
-      
-      // Save completed questions count for results page
-      localStorage.setItem('completedQuestionsCount', String(completedQuestions.length + 1));
-      
-      // Clear session storage as we're done with this interview
-      sessionStorage.removeItem('interviewAnswers');
-      
-      router.push('/results');
+        // Save the questions that were actually shown to localStorage for results page
+        localStorage.setItem('visibleQuestions', JSON.stringify(visibleQuestions));
+        
+        // Save completed questions count for results page
+        localStorage.setItem('completedQuestionsCount', String(completedQuestions.length + 1));
+        
+        // Track progress in database before going to results
+        try {
+          const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
+          
+          // Prepare questions and answers for API
+          const questionsForAPI = visibleQuestions.map(q => ({
+            question: q.question,
+            answer: updatedAnswers[q.id] || ''
+          }));
+          
+          // Call the behavioral interview API to track progress
+          await fetch('/api/behavioral-interview', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              questions: questionsForAPI,
+              interviewType: interviewType.toLowerCase()
+            }),
+          });
+          
+          console.log('✅ Interview progress tracked successfully');
+        } catch (error) {
+          console.error('Error tracking interview progress:', error);
+          // Don't block the user from seeing results if tracking fails
+        }
+        
+        // Clear session storage as we're done with this interview
+        sessionStorage.removeItem('interviewAnswers');
+        
+        router.push('/results');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -908,10 +982,17 @@ function InterviewPage() {
                           <>
                             <Button
                               onClick={completeEarly}
-                              disabled={answer.trim() === ''}
-                              className="gap-2 bg-slate-700 hover:bg-slate-800 text-white"
+                              disabled={answer.trim() === '' || isSubmitting}
+                              className="gap-2 bg-slate-700 hover:bg-slate-800 text-white disabled:opacity-50"
                             >
-                              <>Complete <Save className="h-4 w-4" /></>
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Saving...
+                                </>
+                              ) : (
+                                <>Complete <Save className="h-4 w-4" /></>
+                              )}
                             </Button>
                             
                             {/* Show "More Questions" button if there are more available */}
@@ -928,10 +1009,15 @@ function InterviewPage() {
                         ) : (
                           <Button
                             onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
-                            disabled={answer.trim() === ''}
-                            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                            disabled={answer.trim() === '' || isSubmitting}
+                            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                           >
-                            {currentQuestionIndex < visibleQuestions.length - 1 ? (
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Saving...
+                              </>
+                            ) : currentQuestionIndex < visibleQuestions.length - 1 ? (
                               <>Next <ChevronRight className="h-4 w-4" /></>
                             ) : (
                               <>Complete <Save className="h-4 w-4" /></>

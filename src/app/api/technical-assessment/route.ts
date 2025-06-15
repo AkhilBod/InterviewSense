@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProgressService } from "@/lib/progress";
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -285,6 +286,49 @@ Format your response as valid JSON with the following structure:
         codeFeedback: analysis.codeFeedback || "No specific code feedback available.",
         explanationFeedback: analysis.explanationFeedback || "No specific explanation feedback available."
       };
+      
+      // Track progress for technical interview completion
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email! },
+          select: { id: true }
+        });
+        
+        if (user) {
+          // Check for recent duplicate sessions (within 30 seconds) to prevent duplicates
+          const recentSession = await prisma.interviewSession.findFirst({
+            where: {
+              userId: user.id,
+              type: 'technical',
+              completedAt: {
+                gte: new Date(Date.now() - 30000) // 30 seconds ago
+              }
+            },
+            orderBy: { completedAt: 'desc' }
+          });
+          
+          if (!recentSession) {
+            await ProgressService.updateInterviewProgress(user.id, {
+              type: 'technical',
+              score: validatedAnalysis.overallScore,
+              duration: 0, // Could be tracked if needed
+              metrics: {
+                codeScore: validatedAnalysis.codeScore,
+                explanationScore: validatedAnalysis.explanationScore,
+                difficulty: difficulty,
+                company: company,
+                role: role
+              }
+            });
+            console.log('🎯 Progress tracked for technical interview');
+          } else {
+            console.log('⚠️ Duplicate technical interview session prevented');
+          }
+        }
+      } catch (progressError) {
+        console.error('Error tracking progress:', progressError);
+        // Don't fail the main request if progress tracking fails
+      }
       
       console.log("Analysis response validated:", validatedAnalysis);
       return NextResponse.json(validatedAnalysis);
