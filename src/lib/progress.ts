@@ -134,6 +134,30 @@ export class ProgressService {
       categories?: any;
     }
   ) {
+    // Validate score to prevent undefined entries
+    const validScore = typeof analysisData.score === 'number' && !isNaN(analysisData.score) 
+      ? analysisData.score 
+      : 0;
+    
+    // Double-check for recent duplicates before creating new analysis
+    const recentAnalysis = await prisma.resumeAnalysis.findFirst({
+      where: {
+        userId,
+        createdAt: {
+          gte: new Date(Date.now() - 60000) // 1 minute ago - longer window
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    if (recentAnalysis) {
+      console.log('⚠️ Duplicate resume analysis prevented in ProgressService');
+      return {
+        xpGained: 0,
+        achievements: await this.getNewAchievements(userId)
+      };
+    }
+    
     const progress = await this.getOrCreateProgress(userId);
     
     const xpGained = 50 + (analysisData.improvementCount * 10); // Bonus XP for improvements
@@ -147,13 +171,13 @@ export class ProgressService {
       },
     });
     
-    // Create resume analysis record
+    // Create resume analysis record with validated score
     await prisma.resumeAnalysis.create({
       data: {
         userId,
-        overallScore: analysisData.score,
-        improvementCount: analysisData.improvementCount,
-        wordCount: analysisData.wordCount,
+        overallScore: validScore,
+        improvementCount: analysisData.improvementCount || 0,
+        wordCount: analysisData.wordCount || 0,
         analysis: analysisData.analysis,
         categories: analysisData.categories,
       },
