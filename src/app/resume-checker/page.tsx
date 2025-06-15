@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
+import HighlightablePDFViewer from '@/components/HighlightablePDFViewer';
 import { WordImprovementSuggestion, WordAnalysisData } from '@/types/resume';
 
 interface ResumeAnalysisData {
@@ -60,6 +61,9 @@ export default function ResumeCheckerPage() {
   const [showWordAnalysis, setShowWordAnalysis] = useState(false);
   const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
   const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
+  
+  // PDF Highlighting State
+  const [showPDFHighlights, setShowPDFHighlights] = useState(false);
 
   // Removed specific analysis - it was redundant with word analysis
 
@@ -135,6 +139,7 @@ export default function ResumeCheckerPage() {
     setError(null); // Clear any previous errors
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
+    setShowPDFHighlights(false);
     // Keep resume file for preview - don't clear it
   };
 
@@ -173,6 +178,7 @@ export default function ResumeCheckerPage() {
 
       setWordAnalysisData(data.analysis);
       setShowWordAnalysis(true);
+      setShowPDFHighlights(true);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred during word analysis.");
     } finally {
@@ -426,8 +432,10 @@ export default function ResumeCheckerPage() {
                       onClick={() => {
                         if (showWordAnalysis) {
                           setShowWordAnalysis(false);
+                          setShowPDFHighlights(false);
                         } else if (wordAnalysisData) {
                           setShowWordAnalysis(true);
+                          setShowPDFHighlights(true);
                         } else {
                           handleWordAnalysis();
                         }
@@ -440,7 +448,7 @@ export default function ResumeCheckerPage() {
                       ) : (
                         <Brain className="h-4 w-4" />
                       )}
-                      {isWordAnalysisLoading ? "Analyzing..." : showWordAnalysis ? "Hide Word Analysis" : "Word Analysis"}
+                      {isWordAnalysisLoading ? "Analyzing..." : showWordAnalysis ? "Hide Word Analysis" : "Highlight Words on PDF"}
                     </Button>
                   </div>
                 </div>
@@ -768,14 +776,18 @@ export default function ResumeCheckerPage() {
                             Resume Preview
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6">
+                        <CardContent className="p-0">
                           {resume && (
-                            <div className="relative bg-white rounded-xl overflow-hidden shadow-2xl border-2 border-slate-600">
+                            <>
                               {resume.type === 'application/pdf' ? (
-                                <iframe
-                                  src={`${URL.createObjectURL(resume)}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&scrollbar=0`}
-                                  className="w-[101%] h-[66vh] lg:h-[65vh] xl:h-[70vh] border-0"
-                                  title="Resume Preview"
+                                <HighlightablePDFViewer
+                                  file={resume}
+                                  wordImprovements={wordAnalysisData?.wordImprovements || []}
+                                  showHighlights={showPDFHighlights}
+                                  onHighlightClick={(improvement) => {
+                                    // You could add a toast or modal here to show improvement details
+                                    console.log('Clicked improvement:', improvement);
+                                  }}
                                 />
                               ) : (
                                 <div className="p-8 bg-white text-gray-800 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto">
@@ -790,7 +802,7 @@ export default function ResumeCheckerPage() {
                                   </div>
                                 </div>
                               )}
-                            </div>
+                            </>
                           )}
                         </CardContent>
                       </Card>

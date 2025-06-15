@@ -37,6 +37,25 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  webpack: (config, { isServer }) => {
+    // Fix for react-pdf canvas issue
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvas: false,
+        fs: false,
+        "pdfjs-dist": false,
+      };
+    }
+    
+    // Handle PDF.js worker
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      canvas: false,
+    };
+
+    return config;
+  },
   // Add headers for better caching
   async headers() {
     return [
