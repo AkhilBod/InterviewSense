@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, User } from 'lucide-react';
+import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, User, TrendingUp, CheckCircle, Target, Brain } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -140,126 +140,181 @@ function ResultsPage() {
   
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen bg-slate-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
         {/* Header */}
-        <header className="border-b border-slate-800">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
               <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-              <span className="font-bold text-xl">InterviewSense</span>
-            </div>
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
-                  <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/interview">
-                      <ChevronLeft className="mr-2 h-4 w-4" />
-                      Back to Interview
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/">Home</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
-                    onClick={handleSignOut}
-                  >
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
-                <Link href="/login">Sign in</Link>
-              </Button>
-            )}
+              <span className="font-semibold text-white">InterviewSense</span>
+            </Link>
+            <nav className="flex items-center gap-4">
+              {session ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                        <AvatarFallback className="bg-blue-500">
+                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
+                    <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                      <Link href="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                      <Link href="/interview">
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Back to Interview
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                      <Link href="/">Home</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
+                      onClick={handleSignOut}
+                    >
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
+                  <Link href="/login">Sign in</Link>
+                </Button>
+              )}
+            </nav>
           </div>
         </header>
 
-        <div className="flex-1 py-8 bg-slate-900">
-          <div className="container mx-auto px-4">
+        <div className="pt-16 px-4 h-full overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
 
             <div id="interview-results-content" className="max-w-5xl mx-auto">
-              {/* Summary Card */}
-              <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
-                <CardHeader className="pb-4 border-b border-slate-700">
-                  <div className="flex flex-col md:flex-row justify-between">
-                    <div>
-                      <CardTitle className="text-2xl">Interview Performance Summary</CardTitle>
-                      <CardDescription className="mt-1 text-slate-400">
-                        {interviewSummary.jobRole} at {interviewSummary.company} • {interviewSummary.date}
-                      </CardDescription>
-                    </div>
-                    <div className="mt-4 md:mt-0 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold mb-1 text-blue-500">{interviewSummary.overallScore}%</div>
-                      <div className="text-sm text-slate-400">Overall Score</div>
-                    </div>
-                  </div>
+              {/* Header Card */}
+              <Card className="bg-slate-800 border-slate-700 text-slate-100 mb-6">
+                <CardHeader className="text-center py-6">
+                  <CardTitle className="text-2xl">Interview Performance Report</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    {interviewSummary.jobRole} at {interviewSummary.company} • {interviewSummary.date}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="py-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <h3 className="font-medium text-sm mb-2 text-slate-300">Strengths</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {interviewSummary.strengthAreas.map(strength => (
-                          <Badge key={strength} className="bg-green-700 text-green-100 hover:bg-green-600">
-                            {strength}
-                          </Badge>
-                        ))}
+              </Card>
+
+              {/* Score Card with Modern Design */}
+              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-6">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                    {/* Overall Score with Circular Progress */}
+                    <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-8 min-w-[200px] mx-auto md:mx-0">
+                      <div className="relative w-32 h-32 mb-4">
+                        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                          {/* Background circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="transparent"
+                            className="text-slate-600/40"
+                          />
+                          {/* Progress circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="42"
+                            stroke="currentColor"
+                            strokeWidth="6"
+                            fill="transparent"
+                            strokeDasharray={`${2 * Math.PI * 42}`}
+                            strokeDashoffset={`${2 * Math.PI * 42 * (1 - interviewSummary.overallScore / 100)}`}
+                            className={interviewSummary.overallScore >= 80 ? 'text-green-400' : interviewSummary.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}
+                            strokeLinecap="round"
+                            style={{
+                              filter: 'drop-shadow(0 0 8px currentColor)',
+                              transition: 'all 0.3s ease'
+                            }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className={`text-3xl font-bold ${interviewSummary.overallScore >= 80 ? 'text-green-400' : interviewSummary.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {interviewSummary.overallScore}
+                          </span>
+                          <span className="text-sm text-slate-400 font-medium">/ 100</span>
+                        </div>
                       </div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Overall Score</h3>
+                      <p className="text-sm text-slate-400 text-center">
+                        {interviewSummary.overallScore >= 80 ? 'Excellent Performance' : 
+                         interviewSummary.overallScore >= 60 ? 'Good Performance' : 'Needs Improvement'}
+                      </p>
                     </div>
 
-                    <div>
-                      <h3 className="font-medium text-sm mb-2 text-slate-300">Areas for Improvement</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {interviewSummary.improvementAreas.map(area => (
-                          <Badge key={area} className="bg-yellow-700 text-yellow-100 hover:bg-yellow-600">
-                            {area}
-                          </Badge>
-                        ))}
+                    {/* Stats Grid */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Interview Stats */}
+                      <div className="bg-slate-700/20 rounded-xl p-4">
+                        <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                          <BarChart className="h-5 w-5 text-blue-400" />
+                          Interview Stats
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Duration:</span>
+                            <span className="font-medium text-white">{interviewSummary.duration}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Questions:</span>
+                            <span className="font-medium text-white">{interviewSummary.completedQuestions}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Filler Words:</span>
+                            <span className="font-medium text-white">{interviewSummary.fillerWordStats.total}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <h3 className="font-medium text-sm mb-2 text-slate-300">Interview Stats</h3>
-                      <div className="text-sm space-y-1 text-slate-300">
-                        <div className="flex justify-between">
-                          <span>Duration:</span>
-                          <span className="font-medium text-white">{interviewSummary.duration}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Questions:</span>
-                          <span className="font-medium text-white">{interviewSummary.completedQuestions}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Filler Words:</span>
-                          <span className="font-medium text-white">{interviewSummary.fillerWordStats.total} (mostly "{interviewSummary.fillerWordStats.mostCommon}")</span>
+                      {/* Performance Summary */}
+                      <div className="bg-slate-700/20 rounded-xl p-4">
+                        <h3 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-green-400" />
+                          Performance
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Best Answer:</span>
+                            <span className="font-medium text-green-400">
+                              {Math.max(...interviewSummary.questionScores.map(q => q.score))}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Avg Score:</span>
+                            <span className="font-medium text-white">
+                              {Math.round(interviewSummary.questionScores.reduce((sum, q) => sum + q.score, 0) / interviewSummary.questionScores.length)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Areas Strong:</span>
+                            <span className="font-medium text-white">{interviewSummary.strengthAreas.length}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="pt-0">
+                <CardFooter className="bg-slate-700/10 border-t border-slate-700/50 rounded-b-lg">
                   <div className="flex flex-wrap gap-2 w-full justify-center md:justify-end">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      className="gap-2 border-slate-600 text-slate-300 hover:bg-slate-700"
                       onClick={() => exportToPDF('interview-results-content', `Interview_${interviewSummary.jobRole.replace(/\s+/g, '_')}_${interviewSummary.company.replace(/\s+/g, '_')}`)}
                     >
                       <Download className="h-4 w-4" /> Download Report
@@ -267,7 +322,7 @@ function ResultsPage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      className="gap-2 border-slate-600 text-slate-300 hover:bg-slate-700"
                       onClick={printReport}
                     >
                       <Printer className="h-4 w-4" /> Print
@@ -275,7 +330,7 @@ function ResultsPage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800"
+                      className="gap-2 border-slate-600 text-slate-300 hover:bg-slate-700"
                       onClick={() => shareReport(
                         `Interview Feedback for ${interviewSummary.jobRole} at ${interviewSummary.company}`,
                         formatInterviewReportForSharing(interviewSummary)
@@ -287,25 +342,74 @@ function ResultsPage() {
                 </CardFooter>
               </Card>
 
-              {/* Questions & Keywords */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="md:col-span-2">
+              {/* Strengths and Improvement Areas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Strengths */}
+                <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                      Key Strengths
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {interviewSummary.strengthAreas.map((strength, index) => (
+                        <div key={strength} className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                          <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                          <span className="text-green-100 font-medium">{strength}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Improvement Areas */}
+                <Card className="bg-slate-800 border-slate-700 text-slate-100">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Target className="h-5 w-5 text-yellow-400" />
+                      Areas for Growth
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {interviewSummary.improvementAreas.map((area, index) => (
+                        <div key={area} className="flex items-center gap-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
+                          <span className="text-yellow-100 font-medium">{area}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Questions Performance */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div className="lg:col-span-2">
                   <Card className="bg-slate-800 border-slate-700 text-slate-100">
                     <CardHeader>
-                      <CardTitle className="text-lg">Question Performance</CardTitle>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-blue-400" />
+                        Question Performance
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-4">
                         {interviewSummary.questionScores.map((item) => (
                           <li key={item.id} className="pb-2">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm text-slate-300">{item.question}</span>
-                              <span className={`text-sm font-bold ${getScoreColor(item.score)}`}>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-slate-300 flex-1 pr-4">{item.question}</span>
+                              <span className={`text-sm font-bold ${getScoreColor(item.score)} min-w-[50px] text-right`}>
                                 {item.score}%
                               </span>
                             </div>
                             <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
-                              <div className={`h-full ${getBarColor(item.score)} rounded-full`} style={{ width: `${item.score}%` }} />
+                              <div 
+                                className={`h-full ${getBarColor(item.score)} rounded-full transition-all duration-300`} 
+                                style={{ width: `${item.score}%` }} 
+                              />
                             </div>
                           </li>
                         ))}
@@ -314,28 +418,35 @@ function ResultsPage() {
                   </Card>
                 </div>
 
+                {/* Keyword Analysis */}
                 <div>
                   <Card className="bg-slate-800 border-slate-700 text-slate-100">
                     <CardHeader>
-                      <CardTitle className="text-lg">Keyword Analysis</CardTitle>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart className="h-5 w-5 text-purple-400" />
+                        Keyword Analysis
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm font-medium text-slate-300">Keyword Match Rate</span>
-                            <span className="text-sm font-bold text-blue-500">
+                            <span className="text-sm font-bold text-blue-400">
                               {Math.round((interviewSummary.keywordStats.matched / (interviewSummary.keywordStats.matched + interviewSummary.keywordStats.missed)) * 100)}%
                             </span>
                           </div>
-                          <Progress value={(interviewSummary.keywordStats.matched / (interviewSummary.keywordStats.matched + interviewSummary.keywordStats.missed)) * 100} className="h-2 bg-slate-700" />
+                          <Progress 
+                            value={(interviewSummary.keywordStats.matched / (interviewSummary.keywordStats.matched + interviewSummary.keywordStats.missed)) * 100} 
+                            className="h-3 bg-slate-700" 
+                          />
                         </div>
 
                         <div>
-                          <h3 className="text-sm font-medium mb-2 text-slate-300">High-Impact Keywords Used</h3>
+                          <h3 className="text-sm font-medium mb-3 text-slate-300">High-Impact Keywords Used</h3>
                           <div className="flex flex-wrap gap-2">
                             {interviewSummary.keywordStats.mostImpactful.map((keyword) => (
-                              <Badge key={keyword} className="bg-blue-700 text-blue-100 hover:bg-blue-600">
+                              <Badge key={keyword} className="bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:bg-blue-600/30">
                                 {keyword}
                               </Badge>
                             ))}
@@ -347,18 +458,17 @@ function ResultsPage() {
                 </div>
               </div>
 
-              {/* AI Coach */}
-              <Card className="mb-8 bg-slate-800 border-slate-700 text-slate-100">
+              {/* AI Coach Feedback */}
+              <Card className="mb-6 bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-lg">
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <Avatar>
-                      <AvatarImage src="/avatar.png" />
-                      <AvatarFallback className="bg-blue-700 text-white">AI</AvatarFallback>
-                    </Avatar>
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <Brain className="h-6 w-6 text-white" />
+                    </div>
                     <div>
                       <CardTitle className="text-lg">AI Coach Feedback</CardTitle>
                       <CardDescription className="text-slate-400">
-                        Personalized advice to improve your interview performance
+                        Personalized insights to improve your interview performance
                       </CardDescription>
                     </div>
                   </div>
@@ -393,8 +503,8 @@ function ResultsPage() {
                     </p>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
+                <CardFooter className="bg-slate-700/10 border-t border-slate-700/50">
+                  <Button variant="outline" size="sm" className="gap-2 border-slate-600 text-slate-300 hover:bg-slate-700">
                     <RefreshCw className="h-4 w-4" />
                     Get More Feedback
                   </Button>
@@ -403,34 +513,41 @@ function ResultsPage() {
 
               {/* Next Steps */}
               <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                <CardHeader>
-                  <CardTitle className="text-lg">What's Next?</CardTitle>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl">What's Next?</CardTitle>
+                  <CardDescription className="text-slate-400">Continue improving your interview skills</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                    <Button variant="outline" className="h-auto py-6 flex flex-col border-slate-700 text-slate-300 hover:bg-slate-800" asChild>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 flex flex-col gap-2 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-blue-500 group transition-all duration-200" 
+                      asChild
+                    >
                       <Link href="/start">
-                        <RefreshCw className="h-6 w-6 mb-2" />
-                        <span className="text-base font-medium">Try Another Role</span>
-                        <span className="text-xs text-slate-400 mt-1">Practice for a different position</span>
+                        <RefreshCw className="h-5 w-5 group-hover:text-blue-400 transition-colors" />
+                        <span className="font-medium">Try Another Role</span>
+                        <span className="text-xs text-slate-400">Practice for different position</span>
                       </Link>
                     </Button>
-
-
+                    
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 flex flex-col gap-2 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-green-500 group transition-all duration-200" 
+                      asChild
+                    >
+                      <Link href="/dashboard">
+                        <BarChart className="h-5 w-5 group-hover:text-green-400 transition-colors" />
+                        <span className="font-medium">View Dashboard</span>
+                        <span className="text-xs text-slate-400">Track your progress</span>
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
-
-        <footer className="py-6 border-t border-slate-800 bg-slate-900 mt-auto">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-center items-center">
-              <p className="text-sm text-slate-500">© {new Date().getFullYear()} InterviewSense. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
       </div>
     </ProtectedRoute>
   );
