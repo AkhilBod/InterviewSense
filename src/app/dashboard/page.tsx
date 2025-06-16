@@ -8,49 +8,17 @@ import {
   FileCheck2, 
   MessageSquare, 
   Brain,
-  ChevronRight
+  ChevronRight,
+  Flame,
+  Target,
+  Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { UserAccountDropdown } from '@/components/UserAccountDropdown';
-import ProgressNotesSection from '@/components/ProgressNotesSection';
 import Image from 'next/image';
-
-interface UserProgress {
-  totalInterviews: number;
-  currentStreak: number;
-  longestStreak: number;
-  totalXP: number;
-  level: number;
-  xpProgress: number;
-  bestScore: number;
-  averageScore: number;
-  weeklyProgress: number;
-  monthlyProgress: number;
-  weeklyGoal: number;
-  monthlyGoal: number;
-  percentile: number;
-  retentionMetrics: {
-    streakMotivation: string;
-    goalProgress: {
-      weekly: number;
-      monthly: number;
-    };
-  };
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  rarity: string;
-  xpReward: number;
-  progress: number;
-  progressText: string;
-}
 
 interface RecentSession {
   id: string;
@@ -68,8 +36,6 @@ interface RecentAnalysis {
 function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [progress, setProgress] = useState<UserProgress | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -87,20 +53,6 @@ function DashboardPage() {
       try {
         setDashboardLoading(true);
         
-        // Fetch user progress
-        const progressRes = await fetch(`/api/progress/${session.user.id}`);
-        if (progressRes.ok) {
-          const progressData = await progressRes.json();
-          setProgress(progressData);
-        }
-
-        // Fetch achievements
-        const achievementsRes = await fetch(`/api/achievements/${session.user.id}/recommended`);
-        if (achievementsRes.ok) {
-          const achievementsData = await achievementsRes.json();
-          setAchievements(achievementsData);
-        }
-
         // Fetch recent activity
         const recentActivityRes = await fetch(`/api/recent-activity/${session.user.id}`);
         if (recentActivityRes.ok) {
@@ -185,7 +137,7 @@ function DashboardPage() {
                 <ChevronRight className="h-6 w-6 text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-2">Behavioral Interview</h3>
-              <p className="text-blue-200 text-sm mb-4">Practice common behavioral questions and improve your storytelling</p>
+              <p className="text-blue-200 text-sm mb-4">Practice behavioral questions and storytelling skills</p>
               <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg">
                 <Link href="/start?type=behavioral">
                   Start Practice
@@ -250,6 +202,75 @@ function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Daily Streak/Weekly Goal/Best Score Stats */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-6">Your Progress</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Daily Streak */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-zinc-400 text-sm">Daily Streak</p>
+                    <p className="text-3xl font-bold text-white">
+                      {recentSessions.length > 0 ? Math.min(recentSessions.length, 7) : 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-orange-500/20 rounded-xl">
+                    <Flame className="h-8 w-8 text-orange-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 mt-2">
+                  Days of practice
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Goal */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-zinc-400 text-sm">Weekly Goal</p>
+                    <p className="text-3xl font-bold text-white">
+                      {recentSessions.length}/3
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-500/20 rounded-xl">
+                    <Target className="h-8 w-8 text-blue-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 mt-2">
+                  Sessions this week
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Best Score */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-zinc-400 text-sm">Best Score</p>
+                    <p className="text-3xl font-bold text-white">
+                      {recentSessions.length > 0 
+                        ? Math.max(...recentSessions.map(s => s.score || 0)).toFixed(0)
+                        : '0'
+                      }
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-500/20 rounded-xl">
+                    <Trophy className="h-8 w-8 text-green-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 mt-2">
+                  Your highest score
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Recent Activity */}
@@ -338,28 +359,26 @@ function DashboardPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-zinc-400">Total Sessions</span>
-                    <span className="text-white font-semibold">{progress?.totalInterviews || 0}</span>
+                    <span className="text-white font-semibold">{recentSessions.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Resume Analyses</span>
+                    <span className="text-white font-semibold">{recentAnalyses.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-400">Best Score</span>
-                    <span className="text-white font-semibold">{progress?.bestScore?.toFixed(0) || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-400">Current Level</span>
-                    <span className="text-white font-semibold">{progress?.level || 1}</span>
+                    <span className="text-white font-semibold">
+                      {recentSessions.length > 0 
+                        ? Math.max(...recentSessions.map(s => s.score || 0)).toFixed(0)
+                        : 'N/A'
+                      }
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* Progress Notes Section */}
-        <ProgressNotesSection 
-          progress={progress} 
-          achievements={achievements} 
-          isLoading={dashboardLoading} 
-        />
         </main>
       </div>
     </div>
