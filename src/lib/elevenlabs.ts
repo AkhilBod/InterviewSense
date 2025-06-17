@@ -39,8 +39,8 @@ class ElevenLabsService {
   // Always use turbo model for efficiency
   private readonly MODEL_ID = 'eleven_turbo_v2_5'; // Latest turbo model
   
-  // Use Rachel - elegant female voice for interviews
-  private readonly VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel - elegant, professional female
+  // Use Akhil - professional male voice for interviews
+  private readonly VOICE_ID = 'nPczCjzI2devNBz1zQrb'; // Akhil - professional male voice
   
   // Interview-optimized voice settings
   private readonly INTERVIEW_VOICE_SETTINGS = {
@@ -62,7 +62,7 @@ class ElevenLabsService {
    */
   async synthesizeSpeech(text: string, options?: SpeechOptions): Promise<{ audioUrl: string; creditsUsed: number }> {
     try {
-      console.log('🎵 Using ElevenLabs Turbo with Rachel (elegant female voice)');
+      console.log('🎵 Using ElevenLabs Turbo with Ethan (professional male voice)');
       
       const requestBody: TTSRequest = {
         text: text.trim(),
@@ -104,7 +104,7 @@ class ElevenLabsService {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       
-      console.log('✅ ElevenLabs TTS successful with Rachel voice');
+      console.log('✅ ElevenLabs TTS successful with Ethan voice');
       
       return {
         audioUrl,

@@ -126,9 +126,9 @@ export default function Home() {
                   <Button 
                     onClick={handleGetStartedClick}
                     size="lg"
-                    className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-md shadow-lg shadow-blue-500/25 transition-colors"
+                    className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105 border border-blue-400/20"
                   >
-                    Get Started Free
+                    Start Today - It's Free
                   </Button>
                 </>
               )}
@@ -189,7 +189,7 @@ export default function Home() {
                         <Button 
                           asChild 
                           size="lg"
-                          className="bg-blue-600 hover:bg-blue-500 text-white w-full font-bold py-7 text-lg rounded-lg shadow-lg"
+                          className="bg-blue-600 hover:bg-blue-500 text-white w-full font-bold py-8 text-lg rounded-lg shadow-lg"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <Link href="/dashboard">Go to Dashboard</Link>
@@ -211,9 +211,9 @@ export default function Home() {
                               handleGetStartedClick();
                             }}
                             size="lg"
-                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-md shadow-lg shadow-blue-500/25 transition-colors w-full"
+                            className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white w-full font-bold py-4 text-lg rounded-full shadow-lg shadow-blue-500/30 border border-blue-400/20"
                           >
-                            Get Started Free
+                            Start Today - It's Free
                           </Button>
                         </div>
                       )}
@@ -268,8 +268,8 @@ export default function Home() {
             {/* Right side - Video */}
             <div className="relative lg:order-last">
               {/* Floating elements for visual appeal */}
-              <div className="absolute top-8 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"></div>
-              <div className="absolute bottom-4 -left-8 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
               
               <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-3xl overflow-hidden shadow-2xl border border-zinc-700/50 backdrop-blur-sm">
                 {/* Enhanced browser-like header */}
@@ -328,7 +328,7 @@ export default function Home() {
       </section>
 
       {/* Company Logos Section */}
-      <section className="py-12 bg-gradient-to-b from-slate-800 to-zinc-950">
+      <section className="py-12 bg-zinc-950 border-b border-zinc-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <p className="text-sm text-zinc-400 font-medium">Questions specified for 5000+ companies</p>
