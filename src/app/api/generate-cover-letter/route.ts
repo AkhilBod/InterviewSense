@@ -30,18 +30,21 @@ export async function POST(req: Request) {
         const formData = await req.formData();
 
         const jobDescription = formData.get("jobDescription") as string | null;
+        const companyName = formData.get("companyName") as string | null;
         const resumeFile = formData.get("resume") as File | null;
 
         console.log("Received data:", {
             jobDescriptionLength: jobDescription?.length,
+            companyName: companyName,
             resumeFileName: resumeFile?.name,
             resumeFileSize: resumeFile?.size,
             resumeFileType: resumeFile?.type,
         });
 
-        if (!jobDescription || !resumeFile) {
+        if (!jobDescription || !companyName || !resumeFile) {
             const missingFields = [
                 !jobDescription && "Job Description",
+                !companyName && "Company Name",
                 !resumeFile && "Resume",
             ].filter(Boolean).join(", ");
 
@@ -69,7 +72,37 @@ export async function POST(req: Request) {
 
         const currentDate = new Date().toLocaleDateString();
 
-        const promptText = `You are an expert cover letter writer. You will analyze the provided resume and job description to extract all necessary information and create a professional, personalized cover letter.
+        const promptText = `You are an expert cover letter writer with extensive experience in helping candidates land interviews at top companies. You understand what hiring managers want to see and how to make candidates stand out in competitive job markets.
+
+**ANALYSIS APPROACH:**
+1. **Deep Resume Analysis** - Extract specific achievements, skills, metrics, and unique value propositions
+2. **Job Requirements Mapping** - Identify key requirements and map candidate's experience to each one
+3. **Strategic Alignment** - Create compelling connections between candidate background and role needs
+4. **Industry Contextualization** - Use appropriate terminology and demonstrate industry knowledge
+
+**PERSONALIZATION REQUIREMENTS:**
+- Use specific metrics, numbers, and quantifiable achievements from the resume
+- Reference particular technologies, tools, and methodologies mentioned
+- Incorporate industry-specific terminology that shows expertise
+- Address 3-4 specific job requirements with concrete examples from candidate's background
+- Demonstrate understanding of company challenges and how candidate can solve them
+- Show cultural fit through soft skills and work style alignment
+
+**CONTENT STRUCTURE:**
+1. **Opening Hook** - Immediate value proposition specific to the role
+2. **Value Proposition** (2-3 specific examples with metrics/results)
+3. **Technical/Skills Alignment** - Direct mapping to job requirements
+4. **Cultural/Soft Skills Fit** - Leadership, collaboration, problem-solving examples
+5. **Forward-Looking Close** - Vision for contribution and growth
+
+**HIRING MANAGER FOCUS:**
+Write for busy hiring managers who need to see:
+- Immediate evidence of relevant experience and results
+- Problem-solving ability with concrete demonstrations
+- Understanding of role challenges and how to address them
+- Cultural fit indicators and team collaboration skills
+- Results-driven mindset with quantifiable achievements
+- Growth potential and learning agility
 
 **TASK:** Create a complete, professional cover letter by extracting information from the resume and job description.
 
@@ -79,18 +112,22 @@ From the RESUME, extract:
 - Email address 
 - Phone number
 - Address (if available)
-- Key skills and experiences
-- Notable achievements and quantified results
-- Educational background
-- Professional background/industry
+- Key skills and experiences with specific technologies/tools
+- Notable achievements with quantified results and metrics
+- Educational background and certifications
+- Professional background/industry expertise
+- Leadership and collaboration examples
+- Problem-solving and innovation instances
 
 From the JOB DESCRIPTION, extract:
 - Job title
 - Company name
-- Key requirements and qualifications
-- Specific skills mentioned
-- Company values or culture (if mentioned)
+- Key requirements and qualifications (prioritize top 3-4)
+- Specific skills, technologies, and tools mentioned
+- Company values, culture, and mission (if mentioned)
 - Hiring manager name (if mentioned)
+- Company challenges or goals (if mentioned)
+- Growth opportunities and career progression
 
 **STEP 2: CREATE COVER LETTER**
 Using the extracted information, create a professional cover letter that:
@@ -127,13 +164,16 @@ Using the extracted information, create a professional cover letter that:
 - Extract ALL information from the provided documents - do not ask for additional input
 - Do NOT include company address or hiring manager address sections in the letter
 - Do NOT use placeholders like [Company Name], [Hiring Manager Name], [Company Address] anywhere in the letter
-- If company name is not clear from job description, refer to it as "your organization" or "your team"
+- Use the provided company name "${companyName}" throughout the letter to personalize it
 - Use "Dear Hiring Manager" as the salutation if no specific name is provided
 - If specific information is not available in the resume, use the candidate's information where available or omit sections gracefully
 - Create a complete, compelling narrative using the candidate's actual experiences
 - Make the letter specific to both the candidate's background AND the job requirements
 - Write the complete cover letter with all actual content - no placeholders anywhere
 - Use the actual extracted names, companies, and details throughout the letter
+- Show specific knowledge and enthusiasm about ${companyName} based on the job description
+
+**COMPANY NAME:** ${companyName}
 
 **JOB DESCRIPTION:**
 ${jobDescription}
@@ -141,7 +181,7 @@ ${jobDescription}
 **RESUME ANALYSIS:**
 Please read the attached resume file carefully and extract all relevant information to create a personalized cover letter.
 
-Now analyze the attached resume file and the job description above to create a professional cover letter using the extracted information.`;
+Now analyze the attached resume file and the job description above to create a professional cover letter for ${companyName} using the extracted information.`;
 
         const modelParts: Part[] = [{ text: promptText }];
 

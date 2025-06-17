@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Copy, Check } from "lucide-react";
 import Image from 'next/image';
 import jsPDF from 'jspdf'; // Import jsPDF
 import { useSession, signOut } from "next-auth/react";
@@ -18,15 +18,26 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute'
+import CoverLetterLoadingModal from '@/components/CoverLetterLoadingModal';
+
+interface CoverLetter {
+  id: string;
+  content: string;
+  timestamp: Date;
+}
 
 export default function CoverLetterPage() {
   const { data: session } = useSession();
   const [jobDescription, setJobDescription] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [resume, setResume] = useState<File | null>(null);
   const [resumeName, setResumeName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previousLetters, setPreviousLetters] = useState<CoverLetter[]>([]);
+  const [currentLetterId, setCurrentLetterId] = useState<string | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -42,17 +53,17 @@ export default function CoverLetterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setGeneratedCoverLetter(null);
     setError(null);
 
-    if (!resume || !jobDescription) {
-      setError("Please upload a resume and provide a job description.");
+    if (!resume || !jobDescription || !companyName) {
+      setError("Please upload a resume, provide a job description, and enter the company name.");
       setIsLoading(false);
       return;
     }
 
     const formData = new FormData();
     formData.append("jobDescription", jobDescription);
+    formData.append("companyName", companyName);
     formData.append("resume", resume);
 
     try {
@@ -67,7 +78,98 @@ export default function CoverLetterPage() {
         throw new Error(data.error || "Failed to generate cover letter. Please try again.");
       }
 
-      setGeneratedCoverLetter(data.coverLetter);
+      // Clean up newlines and formatting issues
+      const cleanedLetter = data.coverLetter
+        .replace(/\\n/g, '\n')
+        .replace(/\n\n\n+/g, '\n\n')
+        .trim();
+
+      // Create new letter version
+      const newLetter: CoverLetter = {
+        id: `letter_${Date.now()}`,
+        content: cleanedLetter,
+        timestamp: new Date()
+      };
+
+      // Add to previous letters and set as current
+      setPreviousLetters(prev => [newLetter, ...prev]);
+      setCurrentLetterId(newLetter.id);
+      setGeneratedCoverLetter(cleanedLetter);
+
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Enhanced copy functionality
+  const handleCopyToClipboard = async () => {
+    if (!generatedCoverLetter) return;
+    
+    try {
+      await navigator.clipboard.writeText(generatedCoverLetter);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  // Version management
+  const switchToLetter = (letterId: string) => {
+    const letter = previousLetters.find(l => l.id === letterId);
+    if (letter) {
+      setCurrentLetterId(letterId);
+      setGeneratedCoverLetter(letter.content);
+    }
+  };
+
+  // Generate new letter with existing data
+  const generateNewLetter = async () => {
+    if (!resume || !jobDescription || !companyName) {
+      setError("Please ensure you have uploaded a resume, provided a job description, and entered the company name.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("jobDescription", jobDescription);
+    formData.append("companyName", companyName);
+    formData.append("resume", resume);
+
+    try {
+      const response = await fetch("/api/generate-cover-letter", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate cover letter. Please try again.");
+      }
+
+      // Clean up newlines and formatting issues
+      const cleanedLetter = data.coverLetter
+        .replace(/\\n/g, '\n')
+        .replace(/\n\n\n+/g, '\n\n')
+        .trim();
+
+      // Create new letter version
+      const newLetter: CoverLetter = {
+        id: `letter_${Date.now()}`,
+        content: cleanedLetter,
+        timestamp: new Date()
+      };
+
+      // Add to previous letters and set as current
+      setPreviousLetters(prev => [newLetter, ...prev]);
+      setCurrentLetterId(newLetter.id);
+      setGeneratedCoverLetter(cleanedLetter);
+
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -205,8 +307,25 @@ export default function CoverLetterPage() {
             </CardHeader>
             <CardContent className="space-y-6 px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                <p className="text-sm text-zinc-400 mb-4">Upload your resume and provide a job description to generate a personalized cover letter.</p>
+                <p className="text-sm text-zinc-400 mb-4">Upload your resume, enter the company name, and provide a job description to generate a personalized cover letter.</p>
                 
+                {/* Company Name Section */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Company Name <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-zinc-500 mb-3">
+                    Enter the name of the company you're applying to. This will be used to personalize your cover letter.
+                  </p>
+                  <Input
+                    placeholder="e.g., Google, Microsoft, Apple..."
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
                 {/* Resume Upload Section */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -272,19 +391,45 @@ export default function CoverLetterPage() {
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-3 text-base font-semibold"
                   size="lg"
-                  disabled={isLoading || !resume || !jobDescription}
+                  disabled={isLoading || !resume || !jobDescription || !companyName}
                 >
-                  {isLoading ? "Generating..." : "Generate Cover Letter"}
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Generating...
+                    </div>
+                  ) : (
+                    "Generate Cover Letter"
+                  )}
                 </Button>
               </form>
 
               {generatedCoverLetter && (
                 <div className="mt-8">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold flex items-center text-white">
-                      <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-                      Your Cover Letter
-                    </h3>
+                    <div className="flex items-center gap-4">
+                      <h3 className="text-xl font-semibold flex items-center text-white">
+                        <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+                        Your Cover Letter
+                      </h3>
+                      {previousLetters.length > 1 && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-zinc-400">Version:</span>
+                          <select 
+                            value={currentLetterId || ''}
+                            onChange={(e) => switchToLetter(e.target.value)}
+                            className="bg-zinc-700 border border-zinc-600 text-white text-sm rounded px-2 py-1"
+                          >
+                            {previousLetters.map((letter, index) => (
+                              <option key={letter.id} value={letter.id}>
+                                {index === 0 ? 'Latest' : `Version ${previousLetters.length - index}`}
+                                ({letter.timestamp.toLocaleTimeString()})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
                     <Button
                       size="sm"
                       variant="outline"
@@ -375,20 +520,35 @@ export default function CoverLetterPage() {
                   <div className="mt-6 flex gap-3">
                     <Button
                       variant="outline"
-                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
-                      onClick={() => navigator.clipboard.writeText(generatedCoverLetter)}
+                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white flex items-center gap-2"
+                      onClick={handleCopyToClipboard}
                     >
-                      Copy to Clipboard
+                      {copySuccess ? (
+                        <>
+                          <Check className="h-4 w-4 text-green-400" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Copy to Clipboard
+                        </>
+                      )}
                     </Button>
                     <Button
                       variant="outline"
                       className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
-                      onClick={() => {
-                        setGeneratedCoverLetter(null);
-                        setError(null);
-                      }}
+                      onClick={generateNewLetter}
+                      disabled={isLoading || !resume || !jobDescription || !companyName}
                     >
-                      Generate New Letter
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full animate-spin"></div>
+                          Generating...
+                        </div>
+                      ) : (
+                        "Generate New Letter"
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -396,6 +556,12 @@ export default function CoverLetterPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Loading Modal */}
+        <CoverLetterLoadingModal 
+          isOpen={isLoading}
+          onClose={() => {}} // Prevent closing during generation
+        />
       </div>
     </ProtectedRoute>
   );
