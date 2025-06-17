@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Download, FileText, CheckCircle, AlertCircle, Target, TrendingUp, Award, Users, Star, ChevronDown, ChevronUp, Share2, Printer, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import ResumeAnalysisLoadingModal from './ResumeAnalysisLoadingModal';
 import jsPDF from 'jspdf';
 
 interface FormattedAnalysis {
@@ -661,6 +662,12 @@ export default function ResumeChecker() {
           )}
         </CardContent>
       </Card>
+      
+      {/* Resume Analysis Loading Modal */}
+      <ResumeAnalysisLoadingModal 
+        isOpen={loading}
+        onClose={() => setLoading(false)}
+      />
     </div>
   );
 } 

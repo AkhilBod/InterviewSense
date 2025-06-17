@@ -130,6 +130,12 @@ function InterviewPage() {
   // ElevenLabs audio status for visual feedback
   const [elevenLabsStatus, setElevenLabsStatus] = useState<'idle' | 'generating' | 'loading' | 'playing'>('idle');
   
+  // Word-by-word animation states
+  const [fullQuestionText, setFullQuestionText] = useState('');
+  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const wordAnimationRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Ref to prevent race conditions in TTS initialization
   const ttsStartingRef = useRef(false);
   
@@ -432,8 +438,9 @@ function InterviewPage() {
         audio.currentTime = 0;
       });
       
-      // Show transcript preparation and set ElevenLabs status
-      setCurrentTranscript('');
+      // Prepare for word-by-word animation and set ElevenLabs status
+      resetWordAnimation();
+      setCurrentTranscript(''); // Clear transcript initially
       setIsSpeaking(true);
       setInterviewPhase('speaking');
       setElevenLabsStatus('generating'); // Show "Generating AI Voice..."
@@ -456,47 +463,7 @@ function InterviewPage() {
       const audio = new Audio(result.audioUrl);
       audio.volume = 1.0;
       
-      // Prepare word-by-word transcript display
-      const words = questionText.split(' ');
-      let currentWordIndex = 0;
-      let transcriptTimer: NodeJS.Timeout | null = null;
-      
-      // Calculate timing based on audio duration and word count
-      const estimateWordTiming = (audioDuration: number, wordCount: number) => {
-        // Average speaking rate: 150-160 words per minute for clear speech
-        const wordsPerSecond = 2.5; // Conservative estimate for clear AI speech
-        const calculatedDuration = wordCount / wordsPerSecond;
-        
-        // Use the actual audio duration or calculated duration, whichever is longer
-        const finalDuration = Math.max(audioDuration, calculatedDuration);
-        return (finalDuration * 1000) / wordCount; // Convert to milliseconds per word
-      };
-      
-      const updateTranscriptByTime = (currentTime: number, duration: number) => {
-        if (!isSpeaking || duration === 0) return;
-        
-        // Calculate progress as percentage of audio completion
-        const progress = Math.min(1, currentTime / duration);
-        
-        // Calculate which word we should be showing based on audio progress
-        const targetWordIndex = Math.floor(progress * words.length);
-        
-        // Update transcript up to the current word
-        if (targetWordIndex > currentWordIndex) {
-          currentWordIndex = targetWordIndex;
-          setCurrentTranscript(words.slice(0, currentWordIndex + 1).join(' '));
-        }
-      };
-      
-      const updateTranscriptFallback = (wordDelay: number) => {
-        if (currentWordIndex < words.length && isSpeaking) {
-          setCurrentTranscript(words.slice(0, currentWordIndex + 1).join(' '));
-          currentWordIndex++;
-          transcriptTimer = setTimeout(() => updateTranscriptFallback(wordDelay), wordDelay);
-        }
-      };
-      
-      // Set up audio event handlers
+      // Set up simplified audio event handlers
       audio.oncanplaythrough = () => {
         console.log('🎵 ElevenLabs audio ready to play');
       };
@@ -505,31 +472,28 @@ function InterviewPage() {
         console.log('🎵 Audio metadata loaded, duration:', audio.duration);
       };
       
-      audio.ontimeupdate = () => {
-        updateTranscriptByTime(audio.currentTime, audio.duration);
-      };
-      
       audio.onplay = () => {
         console.log('🔊 ElevenLabs audio playback started');
         setElevenLabsStatus('playing'); // Show "🔊 ElevenLabs Speaking"
-        setCurrentTranscript(''); // Start fresh
-        currentWordIndex = 0;
         
-        // Start fallback timing in case timeupdate events are insufficient
-        const wordDelay = estimateWordTiming(audio.duration || 5, words.length);
-        updateTranscriptFallback(wordDelay);
+        // Start word-by-word animation based on audio duration
+        if (audio.duration && audio.duration > 0) {
+          const durationMs = audio.duration * 1000;
+          startWordByWordAnimation(questionText, durationMs);
+        } else {
+          // Fallback if duration is not available - estimate based on text length
+          const estimatedDurationMs = questionText.split(' ').length * 600; // ~600ms per word
+          startWordByWordAnimation(questionText, estimatedDurationMs);
+        }
       };
       
       audio.onended = () => {
         console.log('✅ ElevenLabs audio playback completed');
-        if (transcriptTimer) {
-          clearTimeout(transcriptTimer);
-          transcriptTimer = null;
-        }
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        setCurrentTranscript(questionText);
+        stopWordByWordAnimation(); // Stop word animation
+        setCurrentTranscript(questionText); // Ensure full text is shown
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
         
@@ -539,14 +503,11 @@ function InterviewPage() {
       
       audio.onerror = (error) => {
         console.error('❌ ElevenLabs audio playback error:', error);
-        if (transcriptTimer) {
-          clearTimeout(transcriptTimer);
-          transcriptTimer = null;
-        }
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        setCurrentTranscript(questionText);
+        stopWordByWordAnimation(); // Stop word animation
+        setCurrentTranscript(questionText); // Show full text on error
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
         
@@ -569,7 +530,8 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        setCurrentTranscript(questionText);
+        stopWordByWordAnimation(); // Stop word animation
+        setCurrentTranscript(questionText); // Show full text on playback failure
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
         
@@ -610,18 +572,11 @@ function InterviewPage() {
           
           utterance.onstart = () => {
             console.log('🔊 Browser TTS fallback started');
-            setCurrentTranscript('');
-            // Simple word-by-word display for fallback
-            const words = questionText.split(' ');
-            let index = 0;
-            const displayWords = () => {
-              if (index < words.length && isSpeaking) {
-                setCurrentTranscript(words.slice(0, index + 1).join(' '));
-                index++;
-                setTimeout(displayWords, 800 / utterance.rate);
-              }
-            };
-            setTimeout(displayWords, 300);
+            setElevenLabsStatus('playing'); // Show speaking status
+            
+            // Start word animation for browser TTS (estimate duration)
+            const estimatedDurationMs = questionText.split(' ').length * 700; // ~700ms per word for browser TTS
+            startWordByWordAnimation(questionText, estimatedDurationMs);
           };
           
           utterance.onend = () => {
@@ -629,7 +584,8 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
-            setCurrentTranscript(questionText);
+            stopWordByWordAnimation(); // Stop word animation
+            setCurrentTranscript(questionText); // Ensure full text is shown
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
           };
@@ -639,7 +595,8 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
-            setCurrentTranscript(questionText);
+            stopWordByWordAnimation(); // Stop word animation
+            setCurrentTranscript(questionText); // Show full text on error
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
           };
@@ -657,7 +614,8 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        setCurrentTranscript(questionText);
+        stopWordByWordAnimation(); // Stop word animation
+        setCurrentTranscript(questionText); // Show full text immediately
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
         
@@ -1640,6 +1598,58 @@ function InterviewPage() {
     } finally {
       setIsTranscribing(false);
     }
+  };
+
+  // Word-by-word animation functions
+  const startWordByWordAnimation = (text: string, durationMs: number) => {
+    // Clear any existing animation
+    stopWordByWordAnimation();
+    
+    const words = text.split(' ').filter(word => word.trim().length > 0);
+    setFullQuestionText(text);
+    setDisplayedWords([]);
+    setCurrentWordIndex(0);
+    
+    if (words.length === 0) return;
+    
+    // Calculate timing for each word
+    const wordsPerMs = words.length / durationMs;
+    const msPerWord = Math.max(150, durationMs / words.length); // Minimum 150ms per word
+    
+    console.log(`🎬 Starting word animation: ${words.length} words over ${durationMs}ms (${msPerWord.toFixed(0)}ms per word)`);
+    
+    let currentIndex = 0;
+    
+    const animateNextWord = () => {
+      if (currentIndex < words.length) {
+        setDisplayedWords(prev => [...prev, words[currentIndex]]);
+        setCurrentWordIndex(currentIndex + 1);
+        currentIndex++;
+        
+        wordAnimationRef.current = setTimeout(animateNextWord, msPerWord);
+      } else {
+        // Animation complete - show full text
+        setCurrentTranscript(text);
+        console.log('✅ Word animation completed');
+      }
+    };
+    
+    // Start the animation
+    animateNextWord();
+  };
+  
+  const stopWordByWordAnimation = () => {
+    if (wordAnimationRef.current) {
+      clearTimeout(wordAnimationRef.current);
+      wordAnimationRef.current = null;
+    }
+  };
+  
+  const resetWordAnimation = () => {
+    stopWordByWordAnimation();
+    setDisplayedWords([]);
+    setCurrentWordIndex(0);
+    setFullQuestionText('');
   };
 
   const handleNextQuestion = () => {

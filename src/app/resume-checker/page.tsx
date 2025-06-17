@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
 import HighlightablePDFViewer from '@/components/HighlightablePDFViewer';
+import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
 import { WordImprovementSuggestion, WordAnalysisData } from '@/types/resume';
 
 interface ResumeAnalysisData {
@@ -783,6 +784,12 @@ export default function ResumeCheckerPage() {
           )}
         </div>
       </div>
+      
+      {/* Resume Analysis Loading Modal */}
+      <ResumeAnalysisLoadingModal 
+        isOpen={isLoading}
+        onClose={() => setIsLoading(false)}
+      />
     </ProtectedRoute>
   );
 }
