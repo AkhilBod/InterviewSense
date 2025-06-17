@@ -35,6 +35,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import InterviewFeedback from './components/interview-feedback';
 import { generateBehavioralQuestions, transcribeAndAnalyzeAudio } from '@/lib/gemini';
+import elevenLabsTTS from '@/lib/elevenlabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
@@ -126,6 +127,12 @@ function InterviewPage() {
   // Voice loading state
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   
+  // ElevenLabs audio status for visual feedback
+  const [elevenLabsStatus, setElevenLabsStatus] = useState<'idle' | 'generating' | 'loading' | 'playing'>('idle');
+  
+  // Ref to prevent race conditions in TTS initialization
+  const ttsStartingRef = useRef(false);
+  
   // AssemblyAI will be initialized in the transcription function
 
   // Initialize voices on component mount
@@ -178,7 +185,8 @@ function InterviewPage() {
           industry: interviewType === 'Behavioral' ? '' : (localStorage.getItem('industry') || 'Technology'),
           experienceLevel: localStorage.getItem('experienceLevel') || 'Mid-level',
           interviewType: interviewType,
-          interviewStage: localStorage.getItem('interviewStage') || 'Initial'
+          interviewStage: localStorage.getItem('interviewStage') || 'Initial',
+          numberOfQuestions: parseInt(localStorage.getItem('numberOfQuestions') || '5')
         };
 
         setLoadingMessage('Creating questions specific to your role...');
@@ -186,9 +194,10 @@ function InterviewPage() {
         
         setLoadingMessage('Finalizing your interview...');
         
-        // Validate that we have exactly 20 questions from Gemini
-        if (!Array.isArray(behavioralQuestions) || behavioralQuestions.length !== 20) {
-          throw new Error('Invalid number of questions received from API');
+        const expectedQuestions = jobDetails.numberOfQuestions;
+        // Validate that we have the expected number of questions from Gemini
+        if (!Array.isArray(behavioralQuestions) || behavioralQuestions.length !== expectedQuestions) {
+          throw new Error(`Invalid number of questions received from API. Expected ${expectedQuestions}, got ${behavioralQuestions.length}`);
         }
 
         // Create array with behavioral questions
@@ -199,13 +208,13 @@ function InterviewPage() {
         }));
 
         // Validate final question count
-        if (allQuestions.length !== 20) {
-          throw new Error('Invalid total number of questions');
+        if (allQuestions.length !== expectedQuestions) {
+          throw new Error(`Invalid total number of questions. Expected ${expectedQuestions}, got ${allQuestions.length}`);
         }
 
         setQuestions(allQuestions);
-        // Show only the first 5 questions initially
-        setVisibleQuestions(allQuestions.slice(0, 5));
+        // Show all questions (user-specified number)
+        setVisibleQuestions(allQuestions);
         
         // Save all questions to localStorage for later use
         localStorage.setItem('allQuestions', JSON.stringify(allQuestions));
@@ -214,11 +223,12 @@ function InterviewPage() {
         setInterviewPhase('speaking');
       } catch (error) {
         console.error('Error fetching questions:', error);
-        // Fallback to mock questions if API fails
-        setQuestions(mockQuestions);
-        // Show only the first 5 mock questions initially
-        setVisibleQuestions(mockQuestions.slice(0, 5));
-        localStorage.setItem('allQuestions', JSON.stringify(mockQuestions));
+        // Fallback to mock questions if API fails - limit to user-specified number
+        const requestedQuestions = parseInt(localStorage.getItem('numberOfQuestions') || '5');
+        const limitedMockQuestions = mockQuestions.slice(0, requestedQuestions);
+        setQuestions(limitedMockQuestions);
+        setVisibleQuestions(limitedMockQuestions);
+        localStorage.setItem('allQuestions', JSON.stringify(limitedMockQuestions));
         setIsLoading(false);
         setInterviewPhase('speaking');
       }
@@ -400,284 +410,263 @@ function InterviewPage() {
   };
 
   const speakQuestion = async (questionText: string) => {
-    if (!('speechSynthesis' in window)) {
-      console.warn('⚠️ Speech synthesis not supported');
-      // Fallback if TTS not supported
-      setCurrentTranscript(questionText);
-      setIsSpeaking(false);
-      setInterviewPhase('ready'); // Ready for user to start recording
-      return;
-    }
-
     try {
-      // Cancel any ongoing speech
-      window.speechSynthesis.cancel();
-      
-      // Wait for voices to be loaded - extra robust for first question
-      console.log('🔄 Loading voices...');
-      const voices = await ensureVoicesLoaded();
-      console.log('Total voices available:', voices.length);
-      console.log('All voices:', voices.map(v => `${v.name} (${v.lang})`));
-      
-      // Extra wait for first question to ensure voices are truly ready
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      
-      // Find Google UK English Male voice
-      const selectedVoice = voices.find(v => 
-        v.lang.startsWith('en') && 
-        v.name.includes('Google') && 
-        v.name.includes('UK') && 
-        v.name.includes('Male')
-      ) || voices.find(v => 
-        v.lang.startsWith('en') && 
-        v.name.includes('Google') && 
-        v.name.includes('Male')
-      ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
-      
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        console.log('✅ Selected voice:', selectedVoice.name, '(', selectedVoice.lang, ')');
-      } else {
-        console.warn('⚠️ No voice selected - using default');
+      // Prevent multiple TTS calls from running simultaneously
+      if (ttsStartingRef.current) {
+        console.log('⚠️ TTS already in progress, skipping...');
+        return;
       }
       
-      // Enhanced settings for more natural speech
-      utterance.rate = 0.85; // Slightly slower for clarity
-      utterance.pitch = 0.95; // Slightly lower pitch for warmth
-      utterance.volume = 1.0; // Maximum volume to ensure audibility
+      ttsStartingRef.current = true;
+      console.log('🎙️ Starting ElevenLabs TTS for question:', questionText.substring(0, 50) + '...');
       
-      // Add natural pauses by preprocessing the text
-      const processedText = questionText
-        .replace(/\./g, '. ') // Ensure periods have space after
-        .replace(/,/g, ', ') // Add slight pause after commas
-        .replace(/\?/g, '? ') // Questions get natural inflection
-        .replace(/:/g, ': ') // Colons get pause
-        .replace(/;/g, '; ') // Semicolons get pause
-        .replace(/\s+/g, ' ') // Clean up multiple spaces
-        .trim();
+      // Stop any existing speech synthesis or audio
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
       
-      utterance.text = processedText;
+      // Stop any existing audio elements
+      const existingAudio = document.querySelectorAll('audio');
+      existingAudio.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
       
-      console.log('🎤 Starting TTS for:', processedText.substring(0, 50) + '...');
-      
-      // Show transcript as it speaks - but don't start text until audio starts
+      // Show transcript preparation and set ElevenLabs status
       setCurrentTranscript('');
       setIsSpeaking(true);
+      setInterviewPhase('speaking');
+      setElevenLabsStatus('generating'); // Show "Generating AI Voice..."
       
       // Start speaking animation
       startSpeakingAnimation();
       
-      // Prepare transcript timing but don't start until audio begins
-      let currentIndex = 0;
-      const words = processedText.split(' ');
+      // Generate speech using ElevenLabs with interview-optimized settings
+      const result = await elevenLabsTTS.synthesizeSpeech(questionText, {
+        stability: 0.65,       // Higher stability for clear, consistent speech
+        similarityBoost: 0.85, // High similarity for professional tone
+        style: 0.25,          // Low style variation for formal context
+        useSpeakerBoost: true  // Enhanced clarity for interviews
+      });
+      
+      console.log('✅ ElevenLabs audio generated, credits used:', result.creditsUsed);
+      setElevenLabsStatus('loading'); // Show "Loading Audio..."
+      
+      // Create audio element for playback
+      const audio = new Audio(result.audioUrl);
+      audio.volume = 1.0;
+      
+      // Prepare word-by-word transcript display
+      const words = questionText.split(' ');
+      let currentWordIndex = 0;
       let transcriptTimer: NodeJS.Timeout | null = null;
       
-      // Calculate timing based on speech rate and word complexity
-      const baseWordDuration = 1000 / (utterance.rate * 2.5); // Base duration per word
+      // Calculate timing based on audio duration and word count
+      const estimateWordTiming = (audioDuration: number, wordCount: number) => {
+        // Average speaking rate: 150-160 words per minute for clear speech
+        const wordsPerSecond = 2.5; // Conservative estimate for clear AI speech
+        const calculatedDuration = wordCount / wordsPerSecond;
+        
+        // Use the actual audio duration or calculated duration, whichever is longer
+        const finalDuration = Math.max(audioDuration, calculatedDuration);
+        return (finalDuration * 1000) / wordCount; // Convert to milliseconds per word
+      };
       
-      const scheduleNextWord = () => {
-        if (currentIndex < words.length && isSpeaking) {
-          setCurrentTranscript(words.slice(0, currentIndex + 1).join(' '));
-          currentIndex++;
-          
-          // Dynamic timing based on word length and punctuation
-          let wordDuration = baseWordDuration;
-          const currentWord = words[currentIndex - 1];
-          
-          if (currentWord) {
-            // Longer pause for punctuation
-            if (currentWord.includes('.') || currentWord.includes('?') || currentWord.includes('!')) {
-              wordDuration *= 2.5; // Longer pause for sentence endings
-            } else if (currentWord.includes(',') || currentWord.includes(':') || currentWord.includes(';')) {
-              wordDuration *= 1.8; // Medium pause for commas/colons
-            } else if (currentWord.length > 6) {
-              wordDuration *= 1.3; // Slightly longer for longer words
-            }
-          }
-          
-          transcriptTimer = setTimeout(scheduleNextWord, wordDuration);
+      const updateTranscriptByTime = (currentTime: number, duration: number) => {
+        if (!isSpeaking || duration === 0) return;
+        
+        // Calculate progress as percentage of audio completion
+        const progress = Math.min(1, currentTime / duration);
+        
+        // Calculate which word we should be showing based on audio progress
+        const targetWordIndex = Math.floor(progress * words.length);
+        
+        // Update transcript up to the current word
+        if (targetWordIndex > currentWordIndex) {
+          currentWordIndex = targetWordIndex;
+          setCurrentTranscript(words.slice(0, currentWordIndex + 1).join(' '));
         }
       };
-
-      utterance.onstart = () => {
-        console.log('🔊 TTS started successfully - Audio should be playing now!');
-        console.log('📊 TTS Settings - Rate:', utterance.rate, 'Pitch:', utterance.pitch, 'Volume:', utterance.volume);
-        
-        // Start the word-by-word display ONLY when audio actually starts
-        setTimeout(scheduleNextWord, 300); // Small delay to sync with actual audio
+      
+      const updateTranscriptFallback = (wordDelay: number) => {
+        if (currentWordIndex < words.length && isSpeaking) {
+          setCurrentTranscript(words.slice(0, currentWordIndex + 1).join(' '));
+          currentWordIndex++;
+          transcriptTimer = setTimeout(() => updateTranscriptFallback(wordDelay), wordDelay);
+        }
       };
-
-      utterance.onend = () => {
-        console.log('✅ TTS completed');
+      
+      // Set up audio event handlers
+      audio.oncanplaythrough = () => {
+        console.log('🎵 ElevenLabs audio ready to play');
+      };
+      
+      audio.onloadedmetadata = () => {
+        console.log('🎵 Audio metadata loaded, duration:', audio.duration);
+      };
+      
+      audio.ontimeupdate = () => {
+        updateTranscriptByTime(audio.currentTime, audio.duration);
+      };
+      
+      audio.onplay = () => {
+        console.log('🔊 ElevenLabs audio playback started');
+        setElevenLabsStatus('playing'); // Show "🔊 ElevenLabs Speaking"
+        setCurrentTranscript(''); // Start fresh
+        currentWordIndex = 0;
+        
+        // Start fallback timing in case timeupdate events are insufficient
+        const wordDelay = estimateWordTiming(audio.duration || 5, words.length);
+        updateTranscriptFallback(wordDelay);
+      };
+      
+      audio.onended = () => {
+        console.log('✅ ElevenLabs audio playback completed');
         if (transcriptTimer) {
           clearTimeout(transcriptTimer);
+          transcriptTimer = null;
         }
         setIsSpeaking(false);
+        setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
         setCurrentTranscript(questionText);
-        setInterviewPhase('ready'); // Ready for user to start recording
-      };
-
-      utterance.onerror = (event) => {
-        console.error('❌ TTS error:', event.error, event);
-        console.log('❌ Error on question index:', currentQuestionIndex);
-        if (transcriptTimer) {
-          clearTimeout(transcriptTimer);
-        }
-        setIsSpeaking(false);
-        stopSpeakingAnimation();
-        
-        // Special handling for first question - retry once
-        if (currentQuestionIndex === 0 && event.error) {
-          console.log('🔄 Retrying first question TTS...');
-          setTimeout(() => {
-            // Try a simple retry for the first question
-            const retryUtterance = new SpeechSynthesisUtterance(questionText);
-            retryUtterance.rate = 0.85;
-            retryUtterance.pitch = 0.95;
-            retryUtterance.volume = 1.0;
-            
-            retryUtterance.onstart = () => {
-              console.log('🔊 Retry TTS started for first question');
-              setIsSpeaking(true);
-              setCurrentTranscript('');
-              startSpeakingAnimation();
-              setTimeout(() => setCurrentTranscript(questionText), 300);
-            };
-            
-            retryUtterance.onend = () => {
-              console.log('✅ Retry TTS completed for first question');
-              setIsSpeaking(false);
-              stopSpeakingAnimation();
-              setCurrentTranscript(questionText);
-              setInterviewPhase('ready');
-            };
-            
-            retryUtterance.onerror = () => {
-              console.log('❌ Retry failed, falling back to text');
-              setCurrentTranscript(questionText);
-              setInterviewPhase('ready');
-            };
-            
-            try {
-              window.speechSynthesis.speak(retryUtterance);
-            } catch (retryError) {
-              console.error('❌ Retry attempt failed:', retryError);
-              setCurrentTranscript(questionText);
-              setInterviewPhase('ready');
-            }
-          }, 1000);
-        } else {
-          setCurrentTranscript(questionText);
-          setInterviewPhase('ready'); // Ready for user to start recording
-        }
-      };
-
-      speechSynthRef.current = utterance;
-      
-      // Add timeout detection for TTS that doesn't start
-      let speechTimeout: NodeJS.Timeout | null = null;
-      let speechStarted = false;
-      
-      utterance.onstart = () => {
-        console.log('🔊 TTS started successfully - Audio should be playing now!');
-        console.log('📊 TTS Settings - Rate:', utterance.rate, 'Pitch:', utterance.pitch, 'Volume:', utterance.volume);
-        speechStarted = true;
-        if (speechTimeout) {
-          clearTimeout(speechTimeout);
-          speechTimeout = null;
-        }
-        
-        // Start the word-by-word display ONLY when audio actually starts
-        setTimeout(scheduleNextWord, 300); // Small delay to sync with actual audio
-      };
-
-      utterance.onend = () => {
-        console.log('✅ TTS completed');
-        speechStarted = true;
-        if (speechTimeout) {
-          clearTimeout(speechTimeout);
-          speechTimeout = null;
-        }
-        if (transcriptTimer) {
-          clearTimeout(transcriptTimer);
-        }
-        setIsSpeaking(false);
-        stopSpeakingAnimation();
-        setCurrentTranscript(questionText);
-        setInterviewPhase('ready'); // Ready for user to start recording
-      };
-      
-      // Set a timeout to detect if speech never starts
-      speechTimeout = setTimeout(() => {
-        if (!speechStarted) {
-          console.warn('⚠️ TTS timeout - speech never started, falling back to text display');
-          console.log('🔄 Attempting to restart TTS for question:', currentQuestionIndex);
-          
-          // Cancel the current attempt
-          window.speechSynthesis.cancel();
-          setIsSpeaking(false);
-          stopSpeakingAnimation();
-          
-          // Show the text immediately as fallback
-          setCurrentTranscript(questionText);
-          setInterviewPhase('ready');
-          
-          // For first question, try one more time with user interaction
-          if (currentQuestionIndex === 0) {
-            console.log('🤚 First question TTS failed, requesting user interaction');
-            setCurrentTranscript(questionText + ' (Click anywhere if you don\'t hear audio, then we\'ll continue)');
-          }
-        }
-      }, 3000); // 3 second timeout
-      
-      // Try to enable audio with user interaction (if needed)
-      try {
-        // Check if browser requires user interaction
-        if (document.visibilityState === 'visible') {
-          console.log('🎵 Speaking with voice:', selectedVoice?.name || 'default');
-          console.log('🎵 Question index:', currentQuestionIndex, 'Voices loaded:', voicesLoaded);
-          
-          // For first question, try to ensure user interaction first
-          if (currentQuestionIndex === 0) {
-            console.log('🤚 First question - ensuring user interaction for audio');
-            // Try a silent utterance first to prime the audio system
-            const primerUtterance = new SpeechSynthesisUtterance('');
-            primerUtterance.volume = 0;
-            primerUtterance.onend = () => {
-              console.log('🔧 Audio system primed, speaking question');
-              window.speechSynthesis.speak(utterance);
-            };
-            primerUtterance.onerror = () => {
-              console.log('🔧 Primer failed, speaking directly');
-              window.speechSynthesis.speak(utterance);
-            };
-            window.speechSynthesis.speak(primerUtterance);
-          } else {
-            window.speechSynthesis.speak(utterance);
-          }
-          
-          console.log('🎵 Speech synthesis speak() called successfully');
-        } else {
-          throw new Error('Page not visible - user interaction required');
-        }
-      } catch (error) {
-        console.error('❌ Error calling speak():', error);
-        // Try to get user interaction first
-        console.log('🤚 Trying to enable audio with user interaction...');
-        setCurrentTranscript(questionText + ' (Click anywhere to enable audio)');
-        setIsSpeaking(false);
         setInterviewPhase('ready');
+        ttsStartingRef.current = false; // Allow new TTS calls
+        
+        // Clean up audio URL
+        URL.revokeObjectURL(result.audioUrl);
+      };
+      
+      audio.onerror = (error) => {
+        console.error('❌ ElevenLabs audio playback error:', error);
+        if (transcriptTimer) {
+          clearTimeout(transcriptTimer);
+          transcriptTimer = null;
+        }
+        setIsSpeaking(false);
+        setElevenLabsStatus('idle'); // Reset status
+        stopSpeakingAnimation();
+        setCurrentTranscript(questionText);
+        setInterviewPhase('ready');
+        ttsStartingRef.current = false; // Allow new TTS calls
+        
+        // Clean up audio URL
+        URL.revokeObjectURL(result.audioUrl);
+        
+        toast({
+          title: "Audio playback failed",
+          description: "The question text is displayed below. You can proceed with your answer.",
+          variant: "destructive"
+        });
+      };
+      
+      // Start audio playback
+      try {
+        await audio.play();
+      } catch (playError) {
+        console.error('❌ Failed to start audio playback:', playError);
+        // Fallback to showing text immediately
+        setIsSpeaking(false);
+        setElevenLabsStatus('idle'); // Reset status
+        stopSpeakingAnimation();
+        setCurrentTranscript(questionText);
+        setInterviewPhase('ready');
+        ttsStartingRef.current = false; // Allow new TTS calls
+        
+        toast({
+          title: "Audio playback not available",
+          description: "The question is displayed as text. You can proceed with your answer.",
+          variant: "default"
+        });
       }
+      
     } catch (error) {
-      console.error('❌ TTS setup error:', error);
-      console.log('❌ Question index when error occurred:', currentQuestionIndex);
-      // Fallback to text display
-      setCurrentTranscript(questionText);
-      setIsSpeaking(false);
-      setInterviewPhase('ready');
+      console.error('❌ ElevenLabs TTS error:', error);
+      
+      // Comprehensive fallback with browser TTS
+      console.log('🔄 Falling back to browser speech synthesis...');
+      
+      try {
+        if ('speechSynthesis' in window) {
+          // Cancel any ongoing speech
+          window.speechSynthesis.cancel();
+          
+          const voices = await ensureVoicesLoaded();
+          const utterance = new SpeechSynthesisUtterance(questionText);
+          
+          // Find best available voice
+          const selectedVoice = voices.find(v => 
+            v.lang.startsWith('en') && 
+            (v.name.includes('Google') || v.name.includes('Microsoft'))
+          ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+          
+          if (selectedVoice) {
+            utterance.voice = selectedVoice;
+          }
+          
+          utterance.rate = 0.85;
+          utterance.pitch = 0.95;
+          utterance.volume = 1.0;
+          
+          utterance.onstart = () => {
+            console.log('🔊 Browser TTS fallback started');
+            setCurrentTranscript('');
+            // Simple word-by-word display for fallback
+            const words = questionText.split(' ');
+            let index = 0;
+            const displayWords = () => {
+              if (index < words.length && isSpeaking) {
+                setCurrentTranscript(words.slice(0, index + 1).join(' '));
+                index++;
+                setTimeout(displayWords, 800 / utterance.rate);
+              }
+            };
+            setTimeout(displayWords, 300);
+          };
+          
+          utterance.onend = () => {
+            console.log('✅ Browser TTS fallback completed');
+            setIsSpeaking(false);
+            setElevenLabsStatus('idle'); // Reset status
+            stopSpeakingAnimation();
+            setCurrentTranscript(questionText);
+            setInterviewPhase('ready');
+            ttsStartingRef.current = false; // Allow new TTS calls
+          };
+          
+          utterance.onerror = () => {
+            console.warn('⚠️ Browser TTS also failed, showing text only');
+            setIsSpeaking(false);
+            setElevenLabsStatus('idle'); // Reset status
+            stopSpeakingAnimation();
+            setCurrentTranscript(questionText);
+            setInterviewPhase('ready');
+            ttsStartingRef.current = false; // Allow new TTS calls
+          };
+          
+          window.speechSynthesis.speak(utterance);
+          speechSynthRef.current = utterance;
+          
+        } else {
+          throw new Error('Speech synthesis not supported');
+        }
+      } catch (fallbackError) {
+        console.error('❌ Browser TTS fallback also failed:', fallbackError);
+        
+        // Final fallback - just show text
+        setIsSpeaking(false);
+        setElevenLabsStatus('idle'); // Reset status
+        stopSpeakingAnimation();
+        setCurrentTranscript(questionText);
+        setInterviewPhase('ready');
+        ttsStartingRef.current = false; // Allow new TTS calls
+        
+        toast({
+          title: "Text-to-speech unavailable",
+          description: "Please read the question below and provide your answer.",
+          variant: "default"
+        });
+      }
     }
   };
 
@@ -1903,7 +1892,29 @@ function InterviewPage() {
 
                 {/* Phase Status */}
                 <div className="text-slate-400 text-lg text-center">
-                  {interviewPhase === 'speaking' && "Speaking Question"}
+                  {interviewPhase === 'speaking' && (
+                    <div className="flex items-center justify-center gap-2">
+                      {elevenLabsStatus === 'generating' && (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                          <span>Generating AI Voice...</span>
+                        </>
+                      )}
+                      {elevenLabsStatus === 'loading' && (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-green-400" />
+                          <span>Loading Audio...</span>
+                        </>
+                      )}
+                      {elevenLabsStatus === 'playing' && (
+                        <>
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span>🔊 ElevenLabs Speaking</span>
+                        </>
+                      )}
+                      {elevenLabsStatus === 'idle' && "Speaking Question"}
+                    </div>
+                  )}
                   {interviewPhase === 'ready' && "Ready to Record"}
                   {interviewPhase === 'recording' && "Recording Your Answer"}
                   {interviewPhase === 'processing' && "Processing Response"}
@@ -1922,7 +1933,11 @@ function InterviewPage() {
               {/* Question Display */}
               <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-6">
                 <p className="text-white text-base sm:text-lg leading-relaxed text-center">
-                  {currentTranscript || (currentQuestion ? currentQuestion.question : '')}
+                  {/* Show transcript when ElevenLabs is playing, or full question when ready/feedback */}
+                  {elevenLabsStatus === 'playing' ? currentTranscript : 
+                   (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
+                   (currentQuestion ? currentQuestion.question : '') : 
+                   currentTranscript}
                 </p>
                 
                 {/* Replay Question Button */}
@@ -1964,7 +1979,7 @@ function InterviewPage() {
                               ? `linear-gradient(to top, rgb(59 130 246), rgb(147 197 253), rgb(191 219 254))`
                               : `linear-gradient(to top, rgb(59 130 246 / 0.6), rgb(147 197 253 / 0.4))`,
                             boxShadow: level > 30 
-                              ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level / 100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
+                              ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level /100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
                               : level > 15 
                                 ? `0 0 4px rgba(59, 130, 246, ${Math.min(0.6, level / 120)})` 
                                 : 'none',

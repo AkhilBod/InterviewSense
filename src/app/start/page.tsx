@@ -194,6 +194,7 @@ export default function StartPage() {
     localStorage.setItem('interviewType', formData.interviewType);
     localStorage.setItem('interviewStage', formData.interviewStage);
     localStorage.setItem('jobDescription', formData.jobDescription);
+    localStorage.setItem('numberOfQuestions', formData.numberOfQuestions.toString());
     
     // Store additional settings
     const interviewData = {
@@ -458,7 +459,7 @@ export default function StartPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-600">
-                      {[3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
                         <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
                       ))}
                     </SelectContent>
