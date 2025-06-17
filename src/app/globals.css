@@ -114,3 +114,97 @@
 .animate-slide-left:hover {
   animation-play-state: paused;
 }
+
+/* Enhanced Talking Animations for TTS */
+@keyframes animate-talking {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+  }
+  25% {
+    transform: scale(1.05) rotate(1deg);
+    filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
+  }
+  50% {
+    transform: scale(1.08) rotate(-0.5deg);
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.7));
+  }
+  75% {
+    transform: scale(1.03) rotate(0.8deg);
+    filter: drop-shadow(0 0 18px rgba(59, 130, 246, 0.6));
+  }
+}
+
+@keyframes animate-talking-flow {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  50% {
+    stroke-dashoffset: -15;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -30;
+    opacity: 0.8;
+  }
+}
+
+@keyframes animate-talking-flow-reverse {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+  50% {
+    stroke-dashoffset: 12;
+    opacity: 0.8;
+  }
+  100% {
+    stroke-dashoffset: 24;
+    opacity: 0.5;
+  }
+}
+
+@keyframes animate-talking-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    stroke-width: 0.5;
+  }
+  50% {
+    opacity: 0.4;
+    stroke-width: 0.8;
+  }
+}
+
+@keyframes animate-talking-glow {
+  0%, 100% {
+    opacity: 0.1;
+    stroke-width: 1;
+  }
+  50% {
+    opacity: 0.4;
+    stroke-width: 3;
+  }
+}
+
+.animate-talking {
+  animation: animate-talking 0.8s ease-in-out infinite;
+}
+
+.animate-talking-flow {
+  animation: animate-talking-flow 1.2s linear infinite;
+}
+
+.animate-talking-flow-reverse {
+  animation: animate-talking-flow-reverse 1.5s linear infinite reverse;
+}
+
+.animate-talking-pulse {
+  animation: animate-talking-pulse 0.6s ease-in-out infinite;
+}
+
+.animate-talking-glow {
+  animation: animate-talking-glow 1s ease-in-out infinite;
+}
+
+/* Existing animations for non-talking state */

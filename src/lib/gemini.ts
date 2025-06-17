@@ -16,6 +16,7 @@ interface JobDetails {
   jobAd?: string;
   interviewType: string;
   interviewStage: string;
+  numberOfQuestions?: number;
 }
 
 export async function generateBehavioralQuestions(jobDetails: JobDetails) {
@@ -88,7 +89,9 @@ export async function generateBehavioralQuestions(jobDetails: JobDetails) {
 - Cultural fit and values`;
     }
 
-    const prompt = `Generate EXACTLY 20 highly specific and targeted interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? ` in the ${jobDetails.industry} industry` : ''}.
+    const numQuestions = jobDetails.numberOfQuestions || 20;
+    
+    const prompt = `Generate EXACTLY ${numQuestions} highly specific and targeted interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? ` in the ${jobDetails.industry} industry` : ''}.
 
 This is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.
 
@@ -107,7 +110,7 @@ ${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `- Include 
 
 Make sure the questions are appropriate for a ${jobDetails.experienceLevel} level position${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? ` and reflect the specific requirements of the ${jobDetails.industry} industry` : ''}.
 
-Return ONLY a JSON array of EXACTLY 20 objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
+Return ONLY a JSON array of EXACTLY ${numQuestions} objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
 
     console.log('Sending prompt to Gemini:', prompt);
     const result = await model.generateContent(prompt);
@@ -122,10 +125,10 @@ Return ONLY a JSON array of EXACTLY 20 objects with 'id' and 'question' fields. 
     // Parse the JSON response
     const questions = JSON.parse(cleanText);
     
-    // Validate that we have exactly 20 questions
-    if (!Array.isArray(questions) || questions.length !== 20) {
-      console.error('Invalid number of questions received:', questions.length);
-      throw new Error('Invalid number of questions received from API');
+    // Validate that we have the expected number of questions
+    if (!Array.isArray(questions) || questions.length !== numQuestions) {
+      console.error('Invalid number of questions received:', questions.length, 'expected:', numQuestions);
+      throw new Error(`Invalid number of questions received from API. Expected ${numQuestions}, got ${questions.length}`);
     }
     
     console.log('Parsed questions:', questions);
