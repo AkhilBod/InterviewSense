@@ -174,7 +174,19 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         };
 
         // Generate resume stats
-        const stats = generateResumeStats(file, analysisText, jobDescription);        const successResponse = {
+        const stats = generateResumeStats(file, analysisText, jobDescription);
+        
+        // Generate word analysis automatically
+        console.log("Starting automatic word analysis...");
+        let wordAnalysisData = null;
+        try {
+            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, model, base64File);
+            wordAnalysisData = wordAnalysisResult;
+            console.log("Word analysis completed successfully");
+        } catch (wordError) {
+            console.error("Word analysis failed, but continuing with main analysis:", wordError);
+            // Don't fail the main request if word analysis fails
+        }        const successResponse = {
             analysis: analysisText, 
             score: structuredAnalysis.overallScore,
             impactScore: structuredAnalysis.impactScore,
@@ -184,7 +196,8 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
             areasForImprovement: structuredAnalysis.improvements,
             formattedAnalysis,
             stats,
-            structuredData: structuredAnalysis
+            structuredData: structuredAnalysis,
+            wordAnalysis: wordAnalysisData // Include word analysis in response
         };
         
         // Track progress for resume analysis completion
@@ -195,33 +208,18 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
           });
           
           if (user) {
-            // Check for recent duplicate analyses (within 30 seconds) to prevent duplicates
-            const recentAnalysis = await prisma.resumeAnalysis.findFirst({
-              where: {
-                userId: user.id,
-                createdAt: {
-                  gte: new Date(Date.now() - 30000) // 30 seconds ago
-                }
-              },
-              orderBy: { createdAt: 'desc' }
+            await ProgressService.updateResumeProgress(user.id, {
+              score: structuredAnalysis.overallScore || 0,
+              improvementCount: structuredAnalysis.improvements?.length || 0,
+              wordCount: 1000, // Could extract actual word count if needed
+              analysis: structuredAnalysis,
+              categories: {
+                impact: structuredAnalysis.impactScore || 0,
+                style: structuredAnalysis.styleScore || 0,
+                skills: structuredAnalysis.skillsScore || 0
+              }
             });
-            
-            if (!recentAnalysis) {
-              await ProgressService.updateResumeProgress(user.id, {
-                score: structuredAnalysis.overallScore || 0,
-                improvementCount: structuredAnalysis.improvements?.length || 0,
-                wordCount: 1000, // Could extract actual word count if needed
-                analysis: structuredAnalysis,
-                categories: {
-                  impact: structuredAnalysis.impactScore || 0,
-                  style: structuredAnalysis.styleScore || 0,
-                  skills: structuredAnalysis.skillsScore || 0
-                }
-              });
-              console.log('🎯 Progress tracked for resume analysis');
-            } else {
-              console.log('⚠️ Duplicate resume analysis prevented');
-            }
+            console.log('🎯 Progress tracked for resume analysis');
           }
         } catch (progressError) {
           console.error('Error tracking progress:', progressError);
@@ -446,6 +444,160 @@ function calculateKeywordMatch(analysisText: string, jobDescription: string): nu
     });
     
     return jobKeywords.length > 0 ? Math.round((matches / jobKeywords.length) * 100) : 0;
+}
+
+// Helper function to generate word analysis automatically
+async function generateWordAnalysis(file: File, jobTitle: string, company: string | null, jobDescription: string | null, model: any, base64File: string) {
+    console.log("Generating word analysis...");
+    
+    const wordAnalysisPrompt = {
+        text: `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+
+Your task is to analyze the resume and identify EXACT words, phrases, or sentences that should be improved, categorizing them by severity and improvement type.
+
+Focus on these key areas:
+1. QUANTIFY IMPACT: Identify vague statements that need specific numbers, percentages, or metrics
+2. COMMUNICATION: Find weak action verbs, passive language, or unclear descriptions
+3. LENGTH & DEPTH: Spot overly brief descriptions that need more detail or overly verbose sections
+4. DRIVE: Identify language that doesn't show initiative, leadership, or proactive behavior
+5. ANALYTICAL: Find missing analytical thinking, problem-solving, or data-driven decision making
+
+${jobDescription ? `\nJob Description Context:\n${jobDescription}\n` : ""}
+
+Return your analysis in this EXACT JSON format - no additional text, markdown, or formatting:
+
+{
+  "wordImprovements": [
+    {
+      "original": "Worked on software projects",
+      "improved": "Led development of 3 software projects that increased user engagement by 40%",
+      "severity": "red",
+      "category": "quantify_impact",
+      "explanation": "Vague statement lacks specific metrics and leadership indicators"
+    },
+    {
+      "original": "good communication skills",
+      "improved": "proven ability to present technical concepts to C-level executives and lead cross-functional teams of 8+ members",
+      "severity": "yellow", 
+      "category": "communication",
+      "explanation": "Generic phrase should be replaced with specific examples"
+    }
+  ],
+  "overallScore": 75,
+  "severityBreakdown": {
+    "red": 5,
+    "yellow": 8,
+    "green": 2
+  },
+  "categoryBreakdown": {
+    "quantify_impact": 6,
+    "communication": 4,
+    "length_depth": 3,
+    "drive": 1,
+    "analytical": 1
+  }
+}
+
+SEVERITY LEVELS:
+- RED (Urgent): Critical issues that significantly hurt candidacy (vague achievements, weak verbs, no metrics)
+- YELLOW (Next Priority): Important improvements that would strengthen the resume (generic phrases, missed opportunities)
+- GREEN (Good with minor tweaks): Already good content that could be slightly enhanced
+
+CATEGORIES:
+- quantify_impact: Add numbers, percentages, dollar amounts, timeframes
+- communication: Stronger action verbs, clearer language, specific communication examples
+- length_depth: Right-size descriptions (more detail for achievements, concise for routine tasks)
+- drive: Show initiative, leadership, proactive behavior, ownership
+- analytical: Demonstrate problem-solving, data analysis, strategic thinking
+
+Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`
+    };
+
+    const generationConfig = {
+        temperature: 0.3,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4096,
+    };
+
+    const safetySettings = [
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+    ];
+
+    const parts = [
+        wordAnalysisPrompt,
+        {
+            inlineData: {
+                mimeType: file.type,
+                data: base64File,
+            },
+        },
+    ];
+
+    const result = await model.generateContent({
+        contents: [{ role: "user", parts }],
+        generationConfig,
+        safetySettings,
+    });
+
+    const response = result.response;
+    if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error("Failed to generate word analysis");
+    }
+
+    const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+    
+    if (!analysisText) {
+        throw new Error("Empty word analysis text");
+    }
+
+    try {
+        // Clean the response to extract JSON
+        let cleanedText = analysisText.trim();
+        
+        // Remove any markdown code blocks
+        cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        
+        // Find the JSON object
+        const jsonStart = cleanedText.indexOf('{');
+        const jsonEnd = cleanedText.lastIndexOf('}') + 1;
+        
+        if (jsonStart === -1 || jsonEnd === 0) {
+            throw new Error("No JSON found in word analysis response");
+        }
+        
+        const jsonString = cleanedText.substring(jsonStart, jsonEnd);
+        const parsedAnalysis = JSON.parse(jsonString);
+
+        // Validate the structure
+        if (!parsedAnalysis.wordImprovements || !Array.isArray(parsedAnalysis.wordImprovements)) {
+            throw new Error("Invalid word analysis response structure");
+        }
+
+        return parsedAnalysis;
+
+    } catch (parseError) {
+        console.error("Failed to parse word analysis JSON response:", parseError);
+        
+        // Return fallback analysis
+        return {
+            wordImprovements: [
+                {
+                    original: "Generic resume content detected",
+                    improved: "Add specific metrics and achievements",
+                    severity: "red",
+                    category: "quantify_impact",
+                    explanation: "Resume needs more specific details and quantifiable achievements"
+                }
+            ],
+            overallScore: 70,
+            severityBreakdown: { red: 1, yellow: 0, green: 0 },
+            categoryBreakdown: { quantify_impact: 1, communication: 0, length_depth: 0, drive: 0, analytical: 0 }
+        };
+    }
 }
 
 // Helper function to extract keywords from text

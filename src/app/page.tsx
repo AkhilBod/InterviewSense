@@ -92,200 +92,144 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
-      {/* Header/Navigation */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={48} height={48} className="object-contain" />
-            <span className="font-bold text-xl">InterviewSense</span>
-          </div>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium text-zinc-300 hover:text-blue-400 transition-colors">
-              Home
-            </Link>
-            <Link href="/#features" className="text-sm font-medium text-zinc-300 hover:text-blue-400 transition-colors">
-              Features
-            </Link>
-            <Link
-              href="/#how-it-works"
-              className="text-sm font-medium text-zinc-300 hover:text-blue-400 transition-colors"
-            >
-              How It Works
-            </Link>
-            <Link
-              href="/#testimonials"
-              className="text-sm font-medium text-zinc-300 hover:text-blue-400 transition-colors"
-            >
-              Testimonials
-            </Link>
-          </nav>
-          
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            {status === 'authenticated' ? (
-              <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white">
-                <Link href="/dashboard">Go to Dashboard</Link>
-              </Button>
-            ) : (
-              <>
-                <Button asChild variant="outline" className="text-zinc-300 border-zinc-600 hover:text-white hover:bg-zinc-800/70">
-                  <Link href="/login">Sign In</Link>
-                </Button>
+      {/* Hero Section with Integrated Navigation */}
+      <section className="py-4 md:py-8 lg:min-h-screen flex flex-col bg-gradient-to-b from-slate-900 to-slate-800 relative">
+        {/* Navigation Bar */}
+        <nav className="w-full z-50 relative">
+          <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+            {/* Logo Section - Made larger and more prominent */}
+            <div className="flex items-center gap-4">
+              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={56} height={56} className="object-contain" />
+              <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
+            </div>
+
+            {/* Desktop Auth Buttons - Made bigger and more prominent */}
+            <div className="hidden md:flex items-center gap-6">
+              {status === 'authenticated' ? (
                 <Button 
-                  onClick={handleGetStartedClick} 
-                  className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/25"
+                  asChild 
+                  size="lg"
+                  className="px-5 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
-                  Get Started Free
+                  <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button 
+                    asChild 
+                    variant="ghost" 
+                    size="lg"
+                    className="px-6 py-3 text-lg font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full transition-all duration-300"
+                  >
+                    <Link href="/login">Sign In</Link>
+                  </Button>
+                  <Button 
+                    onClick={handleGetStartedClick}
+                    size="lg"
+                    className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-md shadow-lg shadow-blue-500/25 transition-colors"
+                  >
+                    Get Started Free
+                  </Button>
+                </>
+              )}
+            </div>
+            
+            {/* Mobile Menu Button - Made larger */}
+            <div className="flex md:hidden items-center">
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="mobile-menu-button text-zinc-300 hover:text-white p-3 hover:bg-zinc-800/50 rounded-full focus:outline-none transition-all duration-300"
+                aria-label="Toggle menu"
+              >
+                {!mobileMenuOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
           
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center">
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="mobile-menu-button text-zinc-300 p-2 focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {!mobileMenuOpen ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile Menu Drawer */}
-        {mobileMenuOpen && (
-          <div className="mobile-menu md:hidden">
-            <div className="fixed inset-0 z-50"> 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black opacity-80" onClick={() => setMobileMenuOpen(false)}></div>
-              
-              {/* Menu Container */}
-              <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-black border-l border-zinc-800 shadow-xl">
-                <div className="flex flex-col h-full">
-                  <div className="bg-black px-6 py-4 flex justify-between items-center border-b border-zinc-800">
-                    <div className="flex items-center gap-3">
-                      <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-                      <span className="font-bold text-lg text-white">InterviewSense</span>
+          {/* Mobile Menu Drawer */}
+          {mobileMenuOpen && (
+            <div className="mobile-menu md:hidden">
+              <div className="fixed inset-0 z-50"> 
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black opacity-80" onClick={() => setMobileMenuOpen(false)}></div>
+                
+                {/* Menu Container */}
+                <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-zinc-950 border-l border-zinc-800 shadow-xl">
+                  <div className="flex flex-col h-full">
+                    <div className="bg-zinc-950 px-6 py-4 flex justify-between items-center border-b border-zinc-800">
+                      <div className="flex items-center gap-3">
+                        <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+                        <span className="font-bold text-lg text-white hidden sm:block">InterviewSense</span>
+                      </div>
+                      <button 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-zinc-300 p-2 hover:bg-zinc-800 rounded-full"
+                        aria-label="Close menu"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-zinc-300 p-2 hover:bg-zinc-800 rounded-full"
-                      aria-label="Close menu"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto bg-black">
-                    <nav className="flex flex-col py-6 px-6">
-                      <Link 
-                        href="/" 
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        Home
-                      </Link>
-                      <Link 
-                        href="/#features" 
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        Features
-                      </Link>
-                      <Link
-                        href="/#how-it-works"
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        How It Works
-                      </Link>
-                      <Link
-                        href="/#testimonials"
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        Testimonials
-                      </Link>
-                      <Link
-                        href="/#faq"
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        FAQ
-                      </Link>
-                      <Link
-                        href="/contact"
-                        className="text-lg font-medium text-white py-3 px-4 hover:bg-zinc-800 rounded-lg flex items-center"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2 text-blue-500">•</span>
-                        Contact
-                      </Link>
-                    </nav>
-                  </div>
-                  
-                  <div className="p-6 border-t border-zinc-800 bg-black">
-                    <h3 className="text-sm uppercase text-zinc-500 font-medium mb-3">Account</h3>
-                    {status === 'authenticated' ? (
-                      <Button 
-                        asChild 
-                        className="bg-blue-600 hover:bg-blue-500 text-white w-full font-medium"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Link href="/dashboard">Go to Dashboard</Link>
-                      </Button>
-                    ) : (
-                      <div className="space-y-3">
+                    
+                    <div className="flex-1 overflow-y-auto bg-zinc-950">
+                    </div>
+                    
+                    <div className="p-6 border-t border-zinc-800 bg-black">
+                      <h3 className="text-sm uppercase text-zinc-500 font-medium mb-4">Account</h3>
+                      {status === 'authenticated' ? (
                         <Button 
                           asChild 
-                          variant="outline" 
-                          className="text-white border-zinc-600 hover:text-white hover:bg-zinc-800 w-full font-medium"
+                          size="lg"
+                          className="bg-blue-600 hover:bg-blue-500 text-white w-full font-bold py-7 text-lg rounded-lg shadow-lg"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <Link href="/login">Log in</Link>
+                          <Link href="/dashboard">Go to Dashboard</Link>
                         </Button>
-                        <Button 
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            handleGetStartedClick();
-                          }}
-                          className="bg-blue-600 hover:bg-blue-500 text-white w-full font-medium shadow-lg shadow-blue-500/20"
-                        >
-                          Get Started Free
-                        </Button>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="space-y-4">
+                          <Button 
+                            asChild 
+                            variant="ghost" 
+                            size="lg"
+                            className="text-white hover:text-white hover:bg-zinc-800 w-full font-medium py-4 text-lg rounded-full border border-zinc-700"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <Link href="/login">Sign In</Link>
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              handleGetStartedClick();
+                            }}
+                            size="lg"
+                            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-md shadow-lg shadow-blue-500/25 transition-colors w-full"
+                          >
+                            Get Started Free
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </header>
+          )}
+        </nav>
 
-      {/* Hero Section */}
-      <section className="py-12 md:py-20 lg:min-h-screen flex items-center bg-gradient-to-b from-slate-900 to-slate-800">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_50%)]"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
+        {/* Hero Content */}
+        <div className="flex-1 flex items-center">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_50%)]"></div>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
             {/* Left side - Text content */}
             <div className="text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tighter mb-4 md:mb-6">
@@ -324,8 +268,8 @@ export default function Home() {
             {/* Right side - Video */}
             <div className="relative lg:order-last">
               {/* Floating elements for visual appeal */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"></div>
-              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
+              <div className="absolute top-8 -right-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl"></div>
+              <div className="absolute bottom-4 -left-8 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
               
               <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-3xl overflow-hidden shadow-2xl border border-zinc-700/50 backdrop-blur-sm">
                 {/* Enhanced browser-like header */}
@@ -380,10 +324,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* Company Logos Section */}
-      <section className="py-12 bg-zinc-950 border-b border-zinc-800">
+      <section className="py-12 bg-gradient-to-b from-slate-800 to-zinc-950">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <p className="text-sm text-zinc-400 font-medium">Questions specified for 5000+ companies</p>

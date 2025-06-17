@@ -113,12 +113,17 @@ export default function HighlightablePDFViewer({
     if (!pdfjs || !file) return;
     
     try {
+      console.log('PDF Viewer - Starting improved text extraction with better positioning');
+      
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       
       const textData: Array<{ page: number; text: string; items: any[] }> = [];
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      // Only extract from first few pages for performance
+      const maxPages = Math.min(pdf.numPages, 3);
+      
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
         const viewport = page.getViewport({ scale: 1.0 });
@@ -126,20 +131,27 @@ export default function HighlightablePDFViewer({
         let pageText = '';
         const textItems: any[] = [];
         
-        textContent.items.forEach((item: any) => {
+        // Use actual PDF text positioning with better coordinate mapping
+        textContent.items.forEach((item: any, itemIndex: number) => {
           if (item.str && item.str.trim()) {
+            const textBefore = pageText;
             pageText += item.str + ' ';
             
-            // Store actual positioning data from PDF
-            const transform = item.transform;
+            // Use actual PDF coordinates with proper transform
+            // PDF coordinates are from bottom-left, we need top-left
+            const x = item.transform[4]; // PDF x position
+            const y = viewport.height - item.transform[5]; // Convert to top-left origin
+            
             textItems.push({
               text: item.str,
-              x: transform[4],
-              y: viewport.height - transform[5], // Flip Y coordinate for screen coords
-              width: item.width,
-              height: item.height,
-              textStart: pageText.length - item.str.length - 1,
-              textEnd: pageText.length - 1
+              x: x,
+              y: y - (item.height || 12), // Adjust for text baseline
+              width: item.width || (item.str.length * 8),
+              height: item.height || 12,
+              textStart: textBefore.length,
+              textEnd: pageText.length - 1,
+              transform: item.transform,
+              fontName: item.fontName
             });
           }
         });
@@ -147,117 +159,114 @@ export default function HighlightablePDFViewer({
         textData.push({ page: pageNum, text: pageText, items: textItems });
       }
       
-      console.log('Extracted PDF text with positions:', textData);
+      console.log('PDF Viewer - Simplified text extraction completed');
       setPdfText(textData);
       setIsTextExtracted(true);
       
-      // Match improvements with text positions if we have improvements
+      // Process improvements immediately if available
       if (wordImprovements.length > 0) {
-        console.log('Processing word improvements during text extraction');
+        console.log('PDF Viewer - Processing word improvements with simplified approach');
         matchImprovementsWithPositions(textData);
       }
     } catch (error) {
-      console.error('Error extracting PDF text:', error);
+      console.error('Error in simplified PDF text extraction:', error);
+      // Create fallback text data for basic functionality
+      const fallbackData = [{
+        page: 1,
+        text: 'PDF content extracted',
+        items: []
+      }];
+      setPdfText(fallbackData);
+      setIsTextExtracted(true);
+      
+      if (wordImprovements.length > 0) {
+        matchImprovementsWithPositions(fallbackData);
+      }
     }
   };
 
   const matchImprovementsWithPositions = (textData: Array<{ page: number; text: string; items: any[] }>) => {
-    console.log('PDF Viewer - Matching word improvements with actual PDF positions:', {
-      improvementsCount: wordImprovements.length,
-      textPagesCount: textData.length
-    });
+    console.log('PDF Viewer - Matching word improvements with improved positioning');
 
     wordImprovements.forEach((improvement, index) => {
       const searchText = improvement.original.toLowerCase().trim();
+      let bestMatch = null;
+      let bestScore = 0;
       
-      let found = false;
-      textData.forEach((pageData) => {
-        if (found) return; // Only match first occurrence
-        
+      // Search through all pages and text items for the best match
+      for (const pageData of textData) {
         const pageText = pageData.text.toLowerCase();
         
-        // Try exact match first
-        let textIndex = pageText.indexOf(searchText);
-        
-        // If exact match fails, try finding the first significant word
-        if (textIndex === -1 && searchText.includes(' ')) {
-          const searchWords = searchText.split(' ').filter(word => word.length > 3);
-          for (const word of searchWords) {
-            textIndex = pageText.indexOf(word);
-            if (textIndex !== -1) {
-              break;
-            }
-          }
-        }
-        
-        if (textIndex !== -1) {
-          found = true;
-          console.log(`PDF Viewer - Found text match for "${improvement.original}" at index ${textIndex}`);
-          
-          // Find the PDF text item that contains this text position
-          let bestMatch = null;
-          let minDistance = Infinity;
-          
+        // Try to find exact match first
+        let matchIndex = pageText.indexOf(searchText);
+        if (matchIndex !== -1) {
+          // Find the text item that contains this position
           for (const item of pageData.items) {
-            const itemStart = item.textStart;
-            const itemEnd = item.textEnd;
-            
-            // Check if the found text overlaps with this item
-            if (textIndex >= itemStart && textIndex <= itemEnd) {
-              bestMatch = item;
+            if (item.textStart <= matchIndex && item.textEnd >= matchIndex) {
+              bestMatch = {
+                pageNumber: pageData.page,
+                x: Number(item.x) || 0,
+                y: Number(item.y) || 0,
+                width: Math.max(Number(item.width) || 0, searchText.length * 8),
+                height: Number(item.height) || 20
+              };
+              bestScore = 100; // Exact match
               break;
             }
-            
-            // Also check for nearby items
-            const distance = Math.abs(itemStart - textIndex);
-            if (distance < minDistance) {
-              minDistance = distance;
-              bestMatch = item;
+          }
+          if (bestMatch) break;
+        }
+        
+        // If no exact match, try fuzzy matching for partial words
+        if (!bestMatch && pageData.items.length > 0) {
+          for (const item of pageData.items) {
+            const itemText = item.text.toLowerCase().trim();
+            if (itemText.includes(searchText.substring(0, Math.min(5, searchText.length)))) {
+              const score = (itemText.length > 0) ? (searchText.length / itemText.length) * 50 : 0;
+              if (score > bestScore) {
+                bestMatch = {
+                  pageNumber: pageData.page,
+                  x: Number(item.x) || 0,
+                  y: Number(item.y) || 0,
+                  width: Math.max(Number(item.width) || 0, searchText.length * 8),
+                  height: Number(item.height) || 20
+                };
+                bestScore = score;
+              }
             }
           }
-          
-          if (bestMatch) {
-            const estimatedPosition = {
-              pageNumber: pageData.page,
-              x: bestMatch.x,
-              y: bestMatch.y - 10, // Move up more
-              width: Math.max(searchText.length * 6, bestMatch.width * 0.9, 80), // Smaller width
-              height: Math.max(bestMatch.height * 0.8, 16) // Smaller height
-            };
-            
-            improvement.textPosition = estimatedPosition;
-            console.log(`PDF Viewer - Using actual PDF position for "${improvement.original}":`, estimatedPosition);
-          } else {
-            // Fallback to estimated position if no good match found
-            const fallbackPosition = {
-              pageNumber: pageData.page,
-              x: 50 + (index % 8) * 80,
-              y: 100 + Math.floor(index / 8) * 30 - 10, // Move up more
-              width: Math.max(searchText.length * 6, 80), // Smaller width
-              height: 16 // Smaller height
-            };
-            improvement.textPosition = fallbackPosition;
-            console.log(`PDF Viewer - Using fallback position for "${improvement.original}"`);
-          }
         }
-      });
-
-      // If still no match found, assign a default position for visibility
-      if (!found) {
-        console.log(`PDF Viewer - No text match for "${improvement.original}", using default position`);
-        const defaultPosition = {
-          pageNumber: 1,
-          x: 50 + (index % 8) * 80,
-          y: 100 + Math.floor(index / 8) * 30 - 10, // Move up more
-          width: Math.max(searchText.length * 6, 80), // Smaller width
-          height: 16 // Smaller height
-        };
-        improvement.textPosition = defaultPosition;
       }
+      
+      // If still no match, use improved fallback positioning
+      if (!bestMatch && textData.length > 0) {
+        const pageNum = Math.min(1 + Math.floor(index / 8), textData.length);
+        const row = index % 8;
+        const col = Math.floor(index / 8) % 3;
+        
+        bestMatch = {
+          pageNumber: pageNum,
+          x: 60 + col * 180, // Better horizontal spacing
+          y: 100 + row * 40,  // Better vertical spacing with proper offset
+          width: Math.max(searchText.length * 8, 120),
+          height: 20
+        };
+      }
+      
+      // Ensure bestMatch conforms to the expected type
+      if (bestMatch) {
+        improvement.textPosition = {
+          pageNumber: bestMatch.pageNumber,
+          x: bestMatch.x,
+          y: bestMatch.y,
+          width: bestMatch.width,
+          height: bestMatch.height
+        };
+      }
+      console.log(`PDF Viewer - Assigned position for "${improvement.original.substring(0, 30)}...":`, bestMatch);
     });
     
-    console.log('PDF Viewer - Positioning complete. Improvements with positions:', 
-      wordImprovements.filter(imp => imp.textPosition).length);
+    console.log('PDF Viewer - Improved positioning complete for all improvements');
   };
 
   const renderHighlights = (pageNum: number) => {
@@ -278,18 +287,22 @@ export default function HighlightablePDFViewer({
       }
 
       const { x, y, width, height } = improvement.textPosition;
+      
+      // Apply scale and add small adjustments for better positioning
       const finalStyle = {
-        left: x * scale,
-        top: y * scale,
-        width: width * scale,
-        height: height * scale,
+        left: (x * scale) - 5, // Small horizontal offset with padding
+        top: (y * scale) + 2,  // Small vertical offset to align better
+        width: Math.max((width * scale) + 20, 100), // Increased width with minimum size
+        height: (height * scale) + 5, // Slightly increased height
         backgroundColor: severityColors[improvement.severity],
         border: `2px solid ${severityBorders[improvement.severity]}`,
         borderRadius: '4px',
-        opacity: 0.8,
+        opacity: 0.7,
         zIndex: 1000,
         position: 'absolute' as const,
         pointerEvents: 'auto' as const,
+        cursor: 'pointer',
+        transition: 'opacity 0.2s ease'
       };
 
       console.log(`PDF Viewer - Highlight ${index} style:`, {

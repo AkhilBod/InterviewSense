@@ -125,6 +125,15 @@ export default function ResumeCheckerPage() {
         skillsCount: data.stats.skillsCount || undefined,
         atsCompatibility: data.stats.atsCompatibility || undefined,
       });
+      
+      // Automatically process word analysis if available
+      if (data.wordAnalysis) {
+        console.log("Word analysis received automatically:", data.wordAnalysis);
+        setWordAnalysisData(data.wordAnalysis);
+        setShowWordAnalysis(true);
+        setShowPDFHighlights(true);
+      }
+      
       setShowResults(true); // Show results after successful analysis
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -141,49 +150,6 @@ export default function ResumeCheckerPage() {
     setWordAnalysisData(null);
     setShowPDFHighlights(false);
     // Keep resume file for preview - don't clear it
-  };
-
-  const handleWordAnalysis = async () => {
-    if (!resume || !jobTitle) {
-      setError("Please upload a resume and provide a job title first.");
-      return;
-    }
-
-    setIsWordAnalysisLoading(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append("resume", resume);
-    formData.append("jobTitle", jobTitle);
-
-    if (company) {
-      formData.append("company", company);
-    }
-
-    if (jobDescription) {
-      formData.append("jobDescription", jobDescription);
-    }
-
-    try {
-      const response = await fetch("/api/resume-word-analysis", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to perform word analysis. Please try again.");
-      }
-
-      setWordAnalysisData(data.analysis);
-      setShowWordAnalysis(true);
-      setShowPDFHighlights(true);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during word analysis.");
-    } finally {
-      setIsWordAnalysisLoading(false);
-    }
   };
 
   // Helper functions for results display (copied from ResumeResultsPage)
@@ -426,30 +392,7 @@ export default function ResumeCheckerPage() {
                   
                   {/* Analysis Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <Button 
-                      variant={showWordAnalysis ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => {
-                        if (showWordAnalysis) {
-                          setShowWordAnalysis(false);
-                          setShowPDFHighlights(false);
-                        } else if (wordAnalysisData) {
-                          setShowWordAnalysis(true);
-                          setShowPDFHighlights(true);
-                        } else {
-                          handleWordAnalysis();
-                        }
-                      }}
-                      disabled={isWordAnalysisLoading}
-                      className="gap-2 bg-blue-600 hover:bg-blue-500 text-white border-blue-600 hover:border-blue-500"
-                    >
-                      {isWordAnalysisLoading ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Brain className="h-4 w-4" />
-                      )}
-                      {isWordAnalysisLoading ? "Analyzing..." : showWordAnalysis ? "Hide Word Analysis" : "Highlight Words on PDF"}
-                    </Button>
+                    {/* Remove the separate word analysis button - it's now automatic */}
                   </div>
                 </div>
               </div>
