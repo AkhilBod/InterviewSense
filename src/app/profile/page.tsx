@@ -86,58 +86,9 @@ export default function ProfilePage() {
   };
 
   const handleUpload = async () => {
-    if (!resumeFile) {
-      setError('Please select a file first');
-      return;
-    }
-
-    setIsUploading(true);
-    setError(null);
-    setUploadProgress(0);
-
-    try {
-      const formData = new FormData();
-      formData.append('resume', resumeFile);
-
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return prev;
-          }
-          return prev + 10;
-        });
-      }, 200);
-
-      const response = await fetch('/api/profile/upload-resume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
-      }
-
-      const data = await response.json();
-      setSuccess('Resume uploaded successfully!');
-      
-      // Redirect to dashboard after successful upload
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
-
-    } catch (error) {
-      console.error('Upload error:', error);
-      setError(error instanceof Error ? error.message : 'Upload failed');
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
+    // Upload functionality disabled
+    setError('Resume upload feature is currently disabled');
+    return;
   };
 
   const handleSkipForNow = async () => {
