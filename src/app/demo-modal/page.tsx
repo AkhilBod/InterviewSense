@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ResumeAnalysisLoadingModal } from '@/components/ResumeAnalysisLoadingModal';
+import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
 import { Button } from '@/components/ui/button';
 
 export default function DemoModalPage() {
