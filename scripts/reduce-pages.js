@@ -49,8 +49,8 @@ function reducePages() {
       return b.lastModified - a.lastModified;
     });
     
-    // Keep top 1000 articles
-    const keepCount = 1000;
+    // Keep top 500 articles
+    const keepCount = 500;
     const articlesToKeep = sortedArticles.slice(0, keepCount);
     const articlesToDelete = sortedArticles.slice(keepCount);
     
