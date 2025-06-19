@@ -18,7 +18,8 @@
     "generate-content:dev": "npx tsx src/scripts/generate-content.ts --output-dir ./generated-content --base-url http://localhost:3000 --sitemap --index",
     "generate-content:prod": "npx tsx src/scripts/generate-content.ts --output-dir ./generated-content --base-url https://interviewsense.com --sitemap --index --batch-size 25",
     "generate-article-pages": "node scripts/generate-article-pages.js",
-    "update-sitemap": "node scripts/update-sitemap.js"
+    "update-sitemap": "node scripts/update-sitemap.js",
+    "reduce-pages": "node scripts/reduce-pages.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.17.0",
