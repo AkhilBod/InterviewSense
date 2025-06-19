@@ -40,7 +40,80 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
+import React from 'react';
 import CodeEditor from '@/components/CodeEditor';
+
+// Simple Wave Visualization Component
+const WaveformVisualization = ({ audioLevels }: { audioLevels: number[] }) => {
+  const averageLevel = audioLevels.length > 0 
+    ? audioLevels.reduce((sum, level) => sum + level, 0) / audioLevels.length 
+    : 0;
+  
+  // Convert audio level to wave amplitude (0-30px range)
+  const amplitude = Math.max(2, Math.min(30, averageLevel * 0.5));
+  
+  // Create wave path - simple sine wave
+  const createWavePath = (width: number, height: number, amp: number, offset: number = 0) => {
+    const centerY = height / 2;
+    const frequency = 0.02; // Wave frequency
+    const points = [];
+    
+    for (let x = 0; x <= width; x += 2) {
+      const y = centerY + Math.sin((x + offset) * frequency) * amp;
+      points.push(`${x},${y}`);
+    }
+    
+    return `M ${points.join(' L ')}`;
+  };
+  
+  const [animationOffset, setAnimationOffset] = React.useState(0);
+  
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimationOffset(prev => (prev + 5) % 314); // Animate wave movement
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <svg 
+      width="100%" 
+      height="40" 
+      className="absolute inset-0" 
+      viewBox="0 0 300 40"
+      preserveAspectRatio="none"
+    >
+      {/* Primary wave */}
+      <path
+        d={createWavePath(300, 40, amplitude, animationOffset)}
+        stroke="rgb(59 130 246)"
+        strokeWidth="2"
+        fill="none"
+        opacity={0.8}
+        filter="drop-shadow(0 0 4px rgba(59, 130, 246, 0.3))"
+      />
+      
+      {/* Secondary wave (slightly offset for depth) */}
+      <path
+        d={createWavePath(300, 40, amplitude * 0.6, animationOffset + 50)}
+        stroke="rgb(147 197 253)"
+        strokeWidth="1.5"
+        fill="none"
+        opacity={0.5}
+      />
+      
+      {/* Tertiary wave (more subtle) */}
+      <path
+        d={createWavePath(300, 40, amplitude * 0.3, animationOffset - 30)}
+        stroke="rgb(191 219 254)"
+        strokeWidth="1"
+        fill="none"
+        opacity={0.3}
+      />
+    </svg>
+  );
+};
 
 const mockQuestions = [
   {
@@ -1820,13 +1893,15 @@ function InterviewPage() {
 
         {/* Main Interview Area */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
-          <div className="w-full max-w-4xl">
-            {/* Speaking Circle - Centered at Top */}
-            <div className="flex items-center justify-center mb-8">
-              <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="w-full max-w-6xl">
+            {/* Two-column layout for md+ screens, stacked for smaller screens */}
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+              
+              {/* Left Column: Speaking Circle */}
+              <div className="flex flex-col items-center justify-center space-y-6 md:flex-shrink-0">
                 <div className="relative">
                   {/* Breathing Dotted Circle Pattern with Enhanced TTS Animation */}
-                  <div className={`w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 rounded-full relative ${isSpeaking ? 'animate-talking' : 'animate-breathing'}`} 
+                  <div className={`w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem] rounded-full relative ${isSpeaking ? 'animate-talking' : 'animate-breathing'}`} 
                        style={isSpeaking ? {
                          transform: `scale(${1 + speakingIntensity * 0.2}) rotate(${speakingIntensity * 3}deg)`,
                          transition: 'transform 0.08s ease-out'
@@ -1901,7 +1976,7 @@ function InterviewPage() {
                 </div>
 
                 {/* Phase Status */}
-                <div className="text-slate-400 text-lg text-center">
+                <div className="text-slate-400 text-sm md:text-base text-center">
                   {interviewPhase === 'speaking' && (
                     <div className="flex items-center justify-center gap-2">
                       {elevenLabsStatus === 'generating' && (
@@ -1931,221 +2006,238 @@ function InterviewPage() {
                   {interviewPhase === 'feedback' && "Ready for Feedback"}
                 </div>
               </div>
-            </div>
 
-            {/* Question Content - Below Speaking Circle */}
-            <div className="max-w-2xl mx-auto">
-              {/* Question Counter */}
-              <div className="text-sm text-slate-500 mb-4 text-center">
-                Question {currentQuestionIndex + 1} of {visibleQuestions.length}
-              </div>
-
-              {/* Question Display */}
-              <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-6">
-                <p className="text-white text-base sm:text-lg leading-relaxed text-center">
-                  {/* Show transcript when ElevenLabs is playing, or full question when ready/feedback */}
-                  {elevenLabsStatus === 'playing' ? currentTranscript : 
-                   (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
-                   (currentQuestion ? currentQuestion.question : '') : 
-                   currentTranscript}
-                </p>
-                
-                {/* Replay Question Button */}
-                {interviewPhase === 'ready' && currentQuestion && (
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setInterviewPhase('speaking');
-                        speakQuestion(currentQuestion.question);
-                      }}
-                      className="text-slate-400 hover:text-white hover:bg-slate-800"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Replay Question
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Enhanced waveform visualization when recording */}
-              {interviewPhase === 'recording' && (
-                <div className="mb-6">
-                  <div className="bg-slate-900/40 border border-slate-700/50 backdrop-blur-sm rounded-2xl p-6">
-                    <div className="flex items-end justify-center space-x-1 h-24 bg-gradient-to-b from-slate-950/30 to-slate-950/70 rounded-xl p-4 relative overflow-hidden">
-                      {/* Background grid effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent"></div>
-                      
-                      {/* Waveform bars */}
-                      {audioLevels.map((level, i) => (
-                        <div
-                          key={i}
-                          className="relative transition-all duration-100 ease-out rounded-sm"
-                          style={{
-                            width: '3px',
-                            height: `${Math.max(3, level * 0.9)}px`,
-                            background: level > 25 
-                              ? `linear-gradient(to top, rgb(59 130 246), rgb(147 197 253), rgb(191 219 254))`
-                              : `linear-gradient(to top, rgb(59 130 246 / 0.6), rgb(147 197 253 / 0.4))`,
-                            boxShadow: level > 30 
-                              ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level /100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
-                              : level > 15 
-                                ? `0 0 4px rgba(59, 130, 246, ${Math.min(0.6, level / 120)})` 
-                                : 'none',
-                            transform: level > 40 ? `scaleY(${1 + (level - 40) / 200})` : 'scaleY(1)',
-                            opacity: Math.max(0.4, Math.min(1, level / 60))
-                          }}
-                        >
-                          {/* Peak indicator */}
-                          {level > 50 && (
-                            <div 
-                              className="absolute top-0 left-0 w-full h-1 bg-blue-300 rounded-full animate-pulse"
-                              style={{
-                                boxShadow: '0 0 6px rgba(147, 197, 253, 0.8)'
-                              }}
-                            ></div>
-                          )}
-                        </div>
-                      ))}
-                      
-                      {/* Center line indicator */}
-                      <div className="absolute inset-x-0 bottom-4 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent opacity-30"></div>
-                    </div>
-                    
-                    <div className="flex items-center justify-center mt-4 space-x-3">
-                      <div className="relative">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                        <div className="absolute top-0 left-0 w-3 h-3 bg-red-400 rounded-full animate-ping"></div>
-                      </div>
-                      <p className="text-slate-300 text-sm font-medium">Recording your response...</p>
-                      <div className="flex space-x-1">
-                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
-                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
-                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '400ms'}}></div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Right Column: Question Content and Controls */}
+              <div className="flex-1 w-full max-w-2xl md:max-w-none">
+                {/* Question Counter */}
+                <div className="text-xs text-slate-500 mb-3 text-center md:text-left">
+                  Question {currentQuestionIndex + 1} of {visibleQuestions.length}
                 </div>
-              )}
 
-              {/* Answer Display (when available) */}
-              {answer && interviewPhase === 'feedback' && (
-                <div className="mb-6">
-                  <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-2xl p-6">
-                    <div className="text-sm text-slate-400 mb-3">Your Response:</div>
-                    <p className="text-slate-300 text-sm leading-relaxed">{answer}</p>
-                  </div>
+                {/* Question Display */}
+                <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3">
+                  <p className="text-white text-xs sm:text-sm leading-relaxed text-center md:text-left">
+                    {/* Show transcript when ElevenLabs is playing, or full question when ready/feedback */}
+                    {elevenLabsStatus === 'playing' ? currentTranscript : 
+                     (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
+                     (currentQuestion ? currentQuestion.question : '') : 
+                     currentTranscript}
+                  </p>
+                  
+                  {/* Replay Question Button */}
+                  {interviewPhase === 'ready' && currentQuestion && (
+                    <div className="mt-2 flex justify-center md:justify-start">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setInterviewPhase('speaking');
+                          speakQuestion(currentQuestion.question);
+                        }}
+                        className="text-slate-400 hover:text-white hover:bg-slate-800 text-xs px-2 py-1"
+                      >
+                        <RefreshCw className="h-2.5 w-2.5 mr-1" />
+                        Replay Question
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="space-y-4">
-                {interviewPhase === 'feedback' && answer.trim() !== '' && (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={showFeedback}
-                      disabled={isAnalyzingFeedback}
-                      className="w-full border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white rounded-2xl py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isAnalyzingFeedback ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <BarChart className="h-4 w-4 mr-2" /> Get Feedback
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button
-                      onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
-                      disabled={isSubmitting}
-                      className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-2xl py-3"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Saving...
-                        </>
-                      ) : currentQuestionIndex < visibleQuestions.length - 1 ? (
-                        <>Next Question <ChevronRight className="h-4 w-4 ml-2" /></>
-                      ) : (
-                        <>Complete Interview <Save className="h-4 w-4 ml-2" /></>
-                      )}
-                    </Button>
-                  </>
-                )}
-
-                {interviewPhase === 'ready' && (
-                  <Button
-                    onClick={startRecording}
-                    disabled={isSettingUpRecording}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3"
-                  >
-                    {isSettingUpRecording ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Setting up...
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="h-4 w-4 mr-2" />
-                        Start Recording
-                      </>
-                    )}
-                  </Button>
-                )}
-
+                {/* Simple waveform visualization when recording */}
                 {interviewPhase === 'recording' && (
-                  <Button
-                    variant="destructive"
-                    onClick={toggleRecording}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white rounded-2xl py-3"
-                  >
-                    <MicOff className="h-4 w-4 animate-pulse mr-2" /> Stop Recording
-                  </Button>
+                  <div className="mb-3">
+                    <div className="bg-slate-900/40 border border-slate-700/50 backdrop-blur-sm rounded-lg p-3">
+                      <div className="h-16 bg-gradient-to-b from-slate-950/30 to-slate-950/70 rounded-lg p-3 relative overflow-hidden flex items-center justify-center">
+                        {/* Background grid effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent"></div>
+                        
+                        {/* Simple wave visualization */}
+                        <WaveformVisualization audioLevels={audioLevels} />
+                        
+                        {/* Center line indicator */}
+                        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent opacity-30"></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-center mt-2 space-x-2">
+                        <div className="relative">
+                          <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                          <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping"></div>
+                        </div>
+                        <p className="text-slate-300 text-xs font-medium">Recording your response...</p>
+                        <div className="flex space-x-1">
+                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
+                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
+                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '400ms'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
-                {/* Emergency/Fallback buttons - show if TTS is stuck or failed */}
-                {(interviewPhase === 'speaking' || interviewPhase === 'loading') && (
-                  <Button
-                    onClick={() => {
-                      console.log('🚨 Emergency override: Skipping to ready state');
-                      window.speechSynthesis.cancel();
-                      setIsSpeaking(false);
-                      stopSpeakingAnimation();
-                      setCurrentTranscript(visibleQuestions[currentQuestionIndex]?.question || '');
-                      setInterviewPhase('ready');
-                    }}
-                    className="w-full bg-slate-700 hover:bg-slate-600 text-white rounded-2xl py-3"
-                  >
-                    <Mic className="h-4 w-4 mr-2" />
-                    Skip to Recording
-                  </Button>
+                {/* Answer Display (when available) */}
+                {answer && interviewPhase === 'feedback' && (
+                  <div className="mb-3">
+                    <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-lg p-3">
+                      <div className="text-xs text-slate-400 mb-1">Your Response:</div>
+                      <p className="text-slate-300 text-xs leading-relaxed">{answer}</p>
+                    </div>
+                  </div>
                 )}
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  {interviewPhase === 'feedback' && answer.trim() !== '' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={showFeedback}
+                        disabled={isAnalyzingFeedback}
+                        className="w-full border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg py-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isAnalyzingFeedback ? (
+                          <>
+                            <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <BarChart className="h-2.5 w-2.5 mr-1" /> Get Feedback
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
+                        disabled={isSubmitting}
+                        className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-lg py-1.5 text-xs"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                            Saving...
+                          </>
+                        ) : currentQuestionIndex < visibleQuestions.length - 1 ? (
+                          <>Next Question <ChevronRight className="h-2.5 w-2.5 ml-1" /></>
+                        ) : (
+                          <>Complete Interview <Save className="h-2.5 w-2.5 ml-1" /></>
+                        )}
+                      </Button>
+                    </>
+                  )}
+
+                  {interviewPhase === 'ready' && (
+                    <Button
+                      onClick={startRecording}
+                      disabled={isSettingUpRecording}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-1.5 text-xs"
+                    >
+                      {isSettingUpRecording ? (
+                        <>
+                          <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                          Setting up...
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="h-2.5 w-2.5 mr-1" />
+                          Start Recording
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {interviewPhase === 'recording' && (
+                    <Button
+                      variant="destructive"
+                      onClick={toggleRecording}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white rounded-lg py-1.5 text-xs"
+                    >
+                      <MicOff className="h-2.5 w-2.5 animate-pulse mr-1" /> Stop Recording
+                    </Button>
+                  )}
+
+                  {/* Emergency/Fallback buttons - show if TTS is stuck or failed */}
+                  {(interviewPhase === 'speaking' || interviewPhase === 'loading') && (
+                    <Button
+                      onClick={() => {
+                        console.log('🚨 Emergency override: Skipping to ready state');
+                        window.speechSynthesis.cancel();
+                        setIsSpeaking(false);
+                        stopSpeakingAnimation();
+                        setCurrentTranscript(visibleQuestions[currentQuestionIndex]?.question || '');
+                        setInterviewPhase('ready');
+                      }}
+                      className="w-full bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-1.5 text-xs"
+                    >
+                      <Mic className="h-2.5 w-2.5 mr-1" />
+                      Skip to Recording
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Feedback Panel - Full Width */}
+        {/* Feedback Panel - Popup on larger screens, full width on mobile */}
         {feedbackVisible && answer.trim() !== '' && (
-          <div className="border-t border-slate-800 p-8">
-            <div className="max-w-4xl mx-auto">
-              <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm text-white rounded-2xl">
-                <CardContent className="p-8">
+          <>
+            {/* Desktop Popup (md and up) */}
+            <div className="hidden md:block fixed inset-y-0 right-0 w-1/2 lg:w-2/5 xl:w-1/3 z-50">
+              <div className="h-full flex flex-col bg-slate-950/95 backdrop-blur-md border-l border-slate-800">
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                  <h3 className="text-lg font-semibold text-white">Interview Feedback</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFeedbackVisible(false)}
+                    className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full p-1"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </Button>
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4">
                   <InterviewFeedback 
                     answer={answer} 
                     question={currentQuestion?.question || ''} 
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile Full Width (sm and below) */}
+            <div className="md:hidden border-t border-slate-800 p-4">
+              <div className="max-w-4xl mx-auto">
+                <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm text-white rounded-lg">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">Interview Feedback</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setFeedbackVisible(false)}
+                        className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full p-1"
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <InterviewFeedback 
+                      answer={answer} 
+                      question={currentQuestion?.question || ''} 
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Permission guide dialog */}
