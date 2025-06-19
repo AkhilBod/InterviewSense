@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'InterviewSense - AI-Powered Interview Preparation',
-  description: 'Master your interviews with AI-powered practice sessions. Get personalized feedback on behavioral questions, technical assessments, and improve your interview skills.',
+  description: 'Master interviews with AI-powered practice. Get instant feedback on behavioral questions, coding challenges & improve your interview skills. Free forever.',
   keywords: [
     'interview preparation',
     'AI interview practice',
@@ -24,7 +24,11 @@ export const metadata: Metadata = {
     'job interview',
     'career development',
     'interview coaching',
-    'mock interview'
+    'mock interview',
+    'coding interview',
+    'STAR method',
+    'interview feedback',
+    'job search'
   ],
   authors: [{ name: 'InterviewSense Team' }],
   creator: 'InterviewSense',
@@ -56,17 +60,17 @@ export const metadata: Metadata = {
     url: 'https://interviewsense.org',
     siteName: 'InterviewSense',
     title: 'InterviewSense - AI-Powered Interview Preparation',
-    description: 'Master your interviews with AI-powered practice sessions. Get personalized feedback on behavioral questions, technical assessments, and improve your interview skills.',
+    description: 'Master interviews with AI-powered practice. Get instant feedback on behavioral questions, coding challenges & improve your interview skills. Free forever.',
     images: [
       {
-        url: 'https://interviewsense.org/og-image.png', // You'll need to create this
+        url: 'https://interviewsense.org/og-image.png',
         width: 1200,
         height: 630,
         alt: 'InterviewSense - AI-Powered Interview Preparation Platform',
         type: 'image/png',
       },
       {
-        url: 'https://interviewsense.org/og-image-square.png', // Square version for some platforms
+        url: 'https://interviewsense.org/og-image-square.png',
         width: 1200,
         height: 1200,
         alt: 'InterviewSense Logo',
@@ -78,11 +82,11 @@ export const metadata: Metadata = {
   // Twitter Card tags
   twitter: {
     card: 'summary_large_image',
-    site: '@interviewsense', // Add your Twitter handle
-    creator: '@interviewsense', // Add your Twitter handle
+    site: '@interviewsense',
+    creator: '@interviewsense',
     title: 'InterviewSense - AI-Powered Interview Preparation',
-    description: 'Master your interviews with AI-powered practice sessions. Get personalized feedback on behavioral questions, technical assessments, and improve your interview skills.',
-    images: ['https://interviewsense.org/og-image.png'], // Same as OG image
+    description: 'Master interviews with AI-powered practice. Get instant feedback on behavioral questions, coding challenges & improve your interview skills. Free forever.',
+    images: ['https://interviewsense.org/og-image.png'],
   },
   
   // Additional meta tags

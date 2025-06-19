@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and internal pages
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://interviewsense.org/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

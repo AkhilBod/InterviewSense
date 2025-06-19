@@ -12,6 +12,96 @@ import { useEffect, useState } from "react"
 import { getSession } from "next-auth/react"
 import { useSession } from "next-auth/react"
 
+// Structured Data for SEO
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "InterviewSense",
+  "description": "AI-powered interview preparation platform that provides instant feedback on behavioral questions, technical assessments, and coding challenges.",
+  "url": "https://interviewsense.org",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web Browser",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "InterviewSense"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "InterviewSense",
+    "url": "https://interviewsense.org"
+  },
+  "featureList": [
+    "Real-time voice analysis",
+    "AI-powered feedback",
+    "Behavioral interview practice",
+    "Technical coding assessments",
+    "Resume analysis",
+    "LeetCode integration",
+    "Progress tracking"
+  ],
+  "screenshot": "https://interviewsense.org/og-image.png"
+}
+
+const organizationStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "InterviewSense",
+  "url": "https://interviewsense.org",
+  "logo": "https://interviewsense.org/logo.webp",
+  "sameAs": [
+    "https://twitter.com/interviewsense"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "support@interviewsense.org"
+  }
+}
+
+const faqStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does InterviewSense work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "InterviewSense uses AI to analyze your interview responses in real-time. Simply practice answering behavioral questions, coding challenges, or upload your resume for review. Our AI provides instant feedback on your speech patterns, content quality, and areas for improvement."
+      }
+    },
+    {
+      "@type": "Question", 
+      "name": "Are AI suggestions always accurate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our AI provides valuable feedback based on best practices, but it's designed to supplement, not replace, human judgment. We recommend using our suggestions as a starting point and adapting them to your specific situation and interview context."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my data secure with InterviewSense?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, we take data security seriously. All your practice sessions and personal information are encrypted and stored securely. We never share your data with third parties, and you can delete your account and all associated data at any time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel my subscription at any time?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "InterviewSense is completely free to use! There are no subscriptions, no hidden fees, and no premium tiers. All features including AI feedback, voice analysis, and progress tracking are available at no cost."
+      }
+    }
+  ]
+}
+
 export default function Home() {
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -91,7 +181,23 @@ export default function Home() {
   }, [charIndex, isDeleting, wordIndex])
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+    <>
+      {/* Structured Data for SEO */}
+      <script 
+        type="application/ld+json" 
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} 
+      />
+      <script 
+        type="application/ld+json" 
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }} 
+      />
+      <script 
+        type="application/ld+json" 
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }} 
+      />
+      
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+
       {/* Hero Section with Integrated Navigation */}
       <section className="py-4 md:py-8 lg:min-h-screen flex flex-col bg-gradient-to-b from-slate-900 to-slate-800 relative">
         {/* Navigation Bar */}
@@ -236,7 +342,7 @@ export default function Home() {
                 Improve your <span className="text-blue-500">{currentText}</span><span className="animate-pulse">|</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto lg:mx-0 mb-6 sm:mb-10 px-2">
-                Practice interview → Instant AI feedback and personalized coaching.
+                Master behavioral interviews, coding challenges, and technical assessments with AI-powered practice. Get instant feedback on your interview performance and land your dream job.
               </p>
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start">
                 <Button
@@ -1227,6 +1333,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }
