@@ -10,7 +10,14 @@
     "format": "bunx biome format --write",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && next build",
-    "generate-og": "node generate-og-images.js"
+    "generate-og": "node generate-og-images.js",
+    "generate-seo": "npx tsx scripts/generate-seo-pages.ts",
+    "generate-demo": "node scripts/generate-demo-pages.js",
+    "scrape-internships": "npx tsx scripts/scrape-internships.ts",
+    "generate-content": "npx tsx src/scripts/generate-content.ts",
+    "generate-content:dev": "npx tsx src/scripts/generate-content.ts --output-dir ./generated-content --base-url http://localhost:3000 --sitemap --index",
+    "generate-content:prod": "npx tsx src/scripts/generate-content.ts --output-dir ./generated-content --base-url https://interviewsense.com --sitemap --index --batch-size 25",
+    "generate-article-pages": "node scripts/generate-article-pages.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.17.0",
@@ -61,7 +68,8 @@
     "request-ip": "^3.3.0",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.0.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

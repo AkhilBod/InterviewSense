@@ -1,0 +1,178 @@
+{
+  "totalListings": 2328,
+  "activeListings": 2328,
+  "categories": {
+    "software": 1567,
+    "data-science": 632,
+    "quant": 64,
+    "hardware": 65
+  },
+  "lastUpdated": "2025-06-19T22:10:25.566Z",
+  "seo": {
+    "title": "Summer 2025 Tech Internships - 2328 Open Positions",
+    "description": "Browse 2328 tech internships for Summer 2025. Find software engineering, data science, and more internship opportunities.",
+    "url": "http://localhost:3000/internships"
+  },
+  "featured": [
+    {
+      "slug": "internship",
+      "company": "-------",
+      "role": "----",
+      "location": "--------",
+      "category": "software",
+      "daysAgo": "--"
+    },
+    {
+      "slug": "bits-software-engineer-summer-internship-internship-nyc",
+      "company": "Bits",
+      "role": "Software Engineer – Summer Internship",
+      "location": "NYC",
+      "category": "software",
+      "daysAgo": "0d"
+    },
+    {
+      "slug": "n1-software-engineer-intern-backend-rust-internship-new-york",
+      "company": "N1",
+      "role": "Software Engineer Intern [Backend, Rust]",
+      "location": "New York",
+      "category": "software",
+      "daysAgo": "1d"
+    },
+    {
+      "slug": "motorola-localization-software-developer-coop-internship-vancouver",
+      "company": "Motorola",
+      "role": "Localization Software Developer – Co-Op",
+      "location": "Vancouver, BC, Canada",
+      "category": "software",
+      "daysAgo": "1d"
+    },
+    {
+      "slug": "ciena-12month-product-verification-security-automation-intern-internship-ottawa",
+      "company": "Ciena",
+      "role": "12-month Product Verification Security Automation Intern",
+      "location": "Ottawa, ON, Canada",
+      "category": "software",
+      "daysAgo": "2d"
+    },
+    {
+      "slug": "applied-materials-install-automation-engineer-intern-internship-santa-clara",
+      "company": "Applied Materials",
+      "role": "Install Automation Engineer Intern",
+      "location": "Santa Clara, CA",
+      "category": "software",
+      "daysAgo": "3d"
+    },
+    {
+      "slug": "global-relay-java-developer-coop-internship-kelowna",
+      "company": "Global Relay",
+      "role": "Java Developer Co-op",
+      "location": "Kelowna, BC, Canada",
+      "category": "software",
+      "daysAgo": "5d"
+    },
+    {
+      "slug": "atpco-platform-capability-engineering-intern-internship-reston",
+      "company": "ATPCO",
+      "role": "Platform Capability Engineering Intern",
+      "location": "Reston, VA",
+      "category": "software",
+      "daysAgo": "8d"
+    },
+    {
+      "slug": "8451-degrees-agile-delivery-coop-program-internship-cincinnati",
+      "company": "84.51 Degrees",
+      "role": "Agile Delivery – Co-op Program",
+      "location": "Cincinnati, OH",
+      "category": "software",
+      "daysAgo": "9d"
+    },
+    {
+      "slug": "united-parcel-service-ups-ism-coop-internship-parsippanytroy-hills",
+      "company": "United Parcel Service (UPS)",
+      "role": "ISM Co-Op",
+      "location": "Parsippany-Troy Hills, NJ",
+      "category": "software",
+      "daysAgo": "12d"
+    },
+    {
+      "slug": "kabam-backend-software-engineer-coop-internship-vancouver",
+      "company": "Kabam",
+      "role": "Backend Software Engineer Co-op",
+      "location": "Vancouver, BC, Canada",
+      "category": "software",
+      "daysAgo": "15d"
+    },
+    {
+      "slug": "atpco-software-engineer-internship-internship-reston",
+      "company": "ATPCO",
+      "role": "Software Engineer Internship",
+      "location": "Reston, VA",
+      "category": "software",
+      "daysAgo": "16d"
+    },
+    {
+      "slug": "evgo-intern-hardware-compliance-internship-labrel-segundo",
+      "company": "EVgo",
+      "role": "Intern – Hardware Compliance",
+      "location": "LA</br>El Segundo, CA",
+      "category": "software",
+      "daysAgo": "16d"
+    },
+    {
+      "slug": "liveramp-coop-software-engineering-internship-sf",
+      "company": "LiveRamp",
+      "role": "Co-Op – Software Engineering",
+      "location": "SF",
+      "category": "software",
+      "daysAgo": "17d"
+    },
+    {
+      "slug": "liveramp-software-engineer-coop-clean-rooms-internship-sfbrlittle-rock",
+      "company": "LiveRamp",
+      "role": "Software Engineer – Co-op - Clean Rooms",
+      "location": "SF</br>Little Rock, AR",
+      "category": "software",
+      "daysAgo": "21d"
+    },
+    {
+      "slug": "nextracker-ai-software-engineering-intern-internship-fremont",
+      "company": "Nextracker",
+      "role": "AI Software Engineering Intern",
+      "location": "Fremont, CA",
+      "category": "software",
+      "daysAgo": "21d"
+    },
+    {
+      "slug": "cluely-software-engineer-intern-internship-san-francisco",
+      "company": "Cluely",
+      "role": "Software Engineer Intern",
+      "location": "San Francisco, CA</br>In-person",
+      "category": "software",
+      "daysAgo": "22d"
+    },
+    {
+      "slug": "plusgrade-intgrateur-web-intern-stagiaireweb-integrator-internship-montreal",
+      "company": "Plusgrade",
+      "role": "Intégrateur Web – Intern - Stagiaire/Web Integrator",
+      "location": "Montreal, QC, Canada",
+      "category": "software",
+      "daysAgo": "23d"
+    },
+    {
+      "slug": "bytedance-software-development-engineer-intern-in-test-internship-san-jose",
+      "company": "ByteDance",
+      "role": "Software Development Engineer Intern in Test",
+      "location": "San Jose, CA",
+      "category": "software",
+      "daysAgo": "24d"
+    },
+    {
+      "slug": "bytedance-backend-software-engineer-intern-product-rd-and-infrastructureglobal-e",
+      "company": "ByteDance",
+      "role": "Backend Software Engineer Intern - Product RD and Infrastructure-Global E-Commerce Customer Business - 2025 Fall - BS/MS",
+      "location": "San Jose, CA",
+      "category": "software",
+      "daysAgo": "27d"
+    }
+  ]
+}

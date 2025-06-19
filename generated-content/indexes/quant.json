@@ -1,0 +1,526 @@
+{
+  "category": "quant",
+  "displayName": "Quantitative Finance",
+  "totalListings": 64,
+  "activeListings": 64,
+  "lastUpdated": "2025-06-19T22:10:26.062Z",
+  "seo": {
+    "title": "Quantitative Finance Internships Summer 2025 - 64 Open Positions",
+    "description": "Find quantitative finance internships for Summer 2025. 64 active positions from top tech companies.",
+    "url": "http://localhost:3000/internships/quant"
+  },
+  "listings": [
+    {
+      "slug": "internship",
+      "company": "-------",
+      "role": "----",
+      "location": "--------",
+      "isActive": true,
+      "daysAgo": "--"
+    },
+    {
+      "slug": "blockhouse-quantitative-developer-internship-internship-nyc",
+      "company": "Blockhouse",
+      "role": "Quantitative Developer Internship",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "6d"
+    },
+    {
+      "slug": "transmarket-group-quantitative-trader-intern-internship-chicago",
+      "company": "TransMarket Group",
+      "role": "Quantitative Trader Intern",
+      "location": "Chicago, IL",
+      "isActive": true,
+      "daysAgo": "15d"
+    },
+    {
+      "slug": "point72-quantitative-research-intern-nlp-internship-nyc",
+      "company": "Point72",
+      "role": "Quantitative Research Intern - NLP",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "19d"
+    },
+    {
+      "slug": "point72-quantitative-research-intern-internship-nyc",
+      "company": "Point72",
+      "role": "Quantitative Research Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "internship",
+      "company": "-------",
+      "role": "----",
+      "location": "--------",
+      "isActive": true,
+      "daysAgo": "--"
+    },
+    {
+      "slug": "td-bank-global-markets-interncoop-asset-securitization-internship-toronto",
+      "company": "TD Bank",
+      "role": "Global Markets Intern/Co-op - Asset Securitization",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "8d"
+    },
+    {
+      "slug": "tpicap-equities-sales-trading-intern-internship-nyc",
+      "company": "TP-ICAP",
+      "role": "Equities Sales & Trading Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "keyrock-trading-operations-specialist-internship-london",
+      "company": "Keyrock",
+      "role": "Trading Operations Specialist",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "blue-yonder-network-trading-partner-growth-intern-sales-intern-internship-dallas",
+      "company": "Blue Yonder",
+      "role": "Network Trading Partner Growth Intern – Sales Intern",
+      "location": "Dallas, TX",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "mr-cooper-quantitative-analyst-intern-internship-dallas",
+      "company": "Mr. Cooper",
+      "role": "Quantitative Analyst Intern",
+      "location": "Dallas, TX",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "optionmetrics-quant-analyst-internship-internship-nyc",
+      "company": "OptionMetrics",
+      "role": "Quant Analyst Internship",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "cboe-quantitative-analytics-intern-internship-london",
+      "company": "Cboe",
+      "role": "Quantitative Analytics Intern",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "artisan-partners-software-developer-intern-trading-trade-operations-applications",
+      "company": "Artisan Partners",
+      "role": "Software Developer Intern - Trading & Trade Operations Applications",
+      "location": "Milwaukee, WI",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "capstone-investment-advisors-2025-summer-internship-quantitative-analyst-interns",
+      "company": "Capstone Investment Advisors",
+      "role": "2025 Summer Internship - Quantitative Analyst",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "bank-of-montreal-quantitative-analyst-coopinternship-data-science-internship-tor",
+      "company": "Bank of Montreal",
+      "role": "Quantitative Analyst – Co-op/Internship - Data Science",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "point72-data-science-internship-investment-services-ai-innovation-internship-nyc",
+      "company": "Point72",
+      "role": "Data Science Internship - Investment Services AI & Innovation",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "lennox-international-finance-sourcing-analytics-intern-internship-richardson",
+      "company": "Lennox International",
+      "role": "Finance & Sourcing Analytics Intern",
+      "location": "Richardson, TX",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "franklin-templeton-ftt-investment-operations-undergrad-intern-internship-rancho-",
+      "company": "Franklin Templeton",
+      "role": "FTT Investment Operations – Undergrad Intern",
+      "location": "Rancho Cordova, CA</br>San Ramon, CA</br>Fort Lauderdale, FL",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "imc-trading-quantitative-research-intern-internship-sydney-nsw",
+      "company": "IMC Trading",
+      "role": "Quantitative Research Intern",
+      "location": "Sydney NSW, Australia",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "ripplematch-investment-analyst-intern-internship-detroit",
+      "company": "RippleMatch",
+      "role": "Investment Analyst Intern",
+      "location": "Detroit, MI",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "gemini-otc-trading-intern-internship-nyc",
+      "company": "Gemini",
+      "role": "OTC Trading Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "banco-bilbao-vizcaya-argentaria-trading-summer-internship-internship-london",
+      "company": "Banco Bilbao Vizcaya Argentaria",
+      "role": "Trading Summer Internship",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "healthfirst-provider-risk-analytics-intern-finance-internship-nyc",
+      "company": "Healthfirst",
+      "role": "Provider Risk Analytics Intern - Finance",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "yahoo-data-editorial-intern-yahoo-finance-internship-united-states",
+      "company": "Yahoo",
+      "role": "Data Editorial Intern - Yahoo Finance",
+      "location": "United States",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "northwestern-mutual-public-investments-quantitative-analyst-intern-internship-mi",
+      "company": "Northwestern Mutual",
+      "role": "Public Investments Quantitative Analyst Intern",
+      "location": "Milwaukee, WI",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "dv-trading-2025-summer-internship-trading-dv-equities-internship-toronto",
+      "company": "DV Trading",
+      "role": "2025 Summer Internship - Trading - DV Equities",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "keybank-2025-summer-analytics-and-quantitative-modeling-internship-internship-cl",
+      "company": "KeyBank",
+      "role": "2025 Summer Analytics and Quantitative Modeling Internship",
+      "location": "Cleveland, OH",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "citigroup-markets-summer-analyst-sales-and-trading-internship-nyc",
+      "company": "Citigroup",
+      "role": "Markets – Summer Analyst - Sales and Trading",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "lazard-quant-researcher-summer-internship-internship-boston",
+      "company": "Lazard",
+      "role": "Quant Researcher Summer Internship",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "fifth-third-bank-quantitative-model-audit-coop-internship-cincinnati",
+      "company": "Fifth Third Bank",
+      "role": "Quantitative Model Audit Co-op",
+      "location": "Cincinnati, OH",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "symbotic-coopfinance-internship-burlington",
+      "company": "Symbotic",
+      "role": "Co-op-Finance",
+      "location": "Burlington, MA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "blockhouse-quantitative-research-intern-internship-nyc",
+      "company": "Blockhouse",
+      "role": "Quantitative Research Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "cvs-health-innotech-summer-undergraduate-internship-2025-enterprise-delivery-fin",
+      "company": "CVS Health",
+      "role": "Innotech Summer Undergraduate Internship 2025 - Enterprise Delivery - Finance Technology & Corporate Systems",
+      "location": "Scottsdale, AZ",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "td-bank-global-markets-interncoop-quantitative-engineering-development-internshi",
+      "company": "TD Bank",
+      "role": "Global Markets Intern/Co-op - Quantitative Engineering Development",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "ameriprise-financial-investments-intern-quantitative-research-internship-boston",
+      "company": "Ameriprise Financial",
+      "role": "Investments Intern - Quantitative Research",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "ripple-markets-trading-intern-internship-london",
+      "company": "Ripple",
+      "role": "Markets & Trading Intern",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "jabil-finance-data-engineer-intern-internship-st-petersburg",
+      "company": "Jabil",
+      "role": "Finance Data Engineer Intern",
+      "location": "St. Petersburg, FL",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "td-bank-ai2-finance-analytics-and-data-science-interncoop-internship-toronto",
+      "company": "TD Bank",
+      "role": "AI2 Finance Analytics and Data Science Intern/Co-op",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "tifin-summer-interns-machine-learning-engineering-quant-internship-charlotte",
+      "company": "TIFIN",
+      "role": "Summer Interns - Machine Learning - Engineering - Quant",
+      "location": "Charlotte, NC</br>NYC</br>Boulder, CO",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "prologis-intern-investment-analyst-program-iap-internship-sf",
+      "company": "Prologis",
+      "role": "Intern – Investment Analyst Program - Iap",
+      "location": "SF",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "artisan-partners-trading-summer-intern-undergraduate-internship-boston",
+      "company": "Artisan Partners",
+      "role": "Trading Summer Intern - Undergraduate",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "western-southern-financial-group-investment-technology-intern-full-year-internsh",
+      "company": "Western & Southern Financial Group",
+      "role": "Investment Technology Intern - Full Year",
+      "location": "Cincinnati, OH",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "intercontinental-exchange-trading-web-applications-intern-software-engineer-inte",
+      "company": "Intercontinental Exchange",
+      "role": "Trading Web Applications Intern - Software Engineer",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "comcast-comcast-ai-strategy-investments-coop-transformation-internship-philadelp",
+      "company": "Comcast",
+      "role": "Comcast AI Strategy – & Investments Co-op - Transformation",
+      "location": "Philadelphia, PA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "bank-of-montreal-junior-engineer-coopinternship-electronic-trading-infrastructur",
+      "company": "Bank of Montreal",
+      "role": "Junior Engineer – Co-op/Internship - Electronic Trading Infrastructure",
+      "location": "Remote in Canada",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "virtu-financial-internship-quantitative-trading-internship-austin",
+      "company": "Virtu Financial",
+      "role": "Internship - Quantitative Trading",
+      "location": "Austin, TX</br>Chicago, IL</br>NYC",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "blockhouse-quantitative-backtesting-intern-internship-nyc",
+      "company": "Blockhouse",
+      "role": "Quantitative Backtesting Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "crowdstrike-finance-data-engineer-intern-internship-remote-in-usa",
+      "company": "Crowdstrike",
+      "role": "Finance Data Engineer Intern",
+      "location": "Remote in USA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "manulife-financial-investment-analyst-intern-internship-boston",
+      "company": "Manulife Financial",
+      "role": "Investment Analyst Intern",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "gelber-group-algorithmic-trading-internship-internship-chicago",
+      "company": "Gelber Group",
+      "role": "Algorithmic Trading Internship",
+      "location": "Chicago, IL",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "manulife-financial-financial-investment-analyst-coopintern-internship-toronto",
+      "company": "Manulife Financial",
+      "role": "Financial Investment Analyst Co-op/Intern",
+      "location": "Toronto, ON, Canada",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "chatham-financial-business-quantitative-analyst-internship-internship-centennial",
+      "company": "Chatham Financial",
+      "role": "Business Quantitative Analyst Internship",
+      "location": "Centennial, CO",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "fifth-third-bank-2025-capital-markets-fixed-income-currencies-and-commodities-sa",
+      "company": "Fifth Third Bank",
+      "role": "2025 Capital Markets Fixed Income – Currencies and Commodities Sales & Trading internship",
+      "location": "Cincinnati, OH",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "mfs-quant-research-associate-intern-internship-boston",
+      "company": "MFS",
+      "role": "Quant Research Associate Intern",
+      "location": "Boston, MA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "state-street-investment-quantitative-research-internship-internship-london",
+      "company": "State Street",
+      "role": "Investment Quantitative Research Internship",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "truist-analyst-credit-st-sales-trading-research-internship-nyc",
+      "company": "Truist",
+      "role": "Analyst - Credit S&T - Sales - Trading & Research",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "aqr-capital-management-quantitative-sports-research-intern-internship-greenwich",
+      "company": "AQR Capital Management",
+      "role": "Quantitative Sports Research Intern",
+      "location": "Greenwich, CT",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "hugging-face-machine-learning-engineer-internship-quantization-internship-remote",
+      "company": "Hugging Face",
+      "role": "Machine Learning Engineer Internship - Quantization",
+      "location": "Remote in USA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "truist-2025-truist-securities-summer-analyst-program-public-finance-st-sales-tra",
+      "company": "Truist",
+      "role": "2025 Truist Securities – Summer Analyst Program - Public Finance S&T - Sales - Trading & Research",
+      "location": "Charlotte, NC",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "american-century-investments-quantitative-investment-analyst-intern-internship-k",
+      "company": "American Century Investments",
+      "role": "Quantitative Investment Analyst Intern",
+      "location": "Kansas City, MO",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "tpicap-liquidnet-sales-and-trading-summer-internship-programme-2025-london-inter",
+      "company": "TP-ICAP",
+      "role": "Liquidnet Sales and Trading Summer Internship Programme 2025 - London",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "schonfeld-2025-emerging-markets-and-delta-one-quantitative-research-summer-inter",
+      "company": "Schonfeld",
+      "role": "2025 Emerging Markets and Delta One Quantitative Research Summer Intern",
+      "location": "London, UK",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "five-rings-capital-summer-intern-2025-quantitative-research-analyst-internship-n",
+      "company": "Five Rings Capital",
+      "role": "Summer Intern 2025 - Quantitative Research Analyst",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "7mo"
+    }
+  ]
+}

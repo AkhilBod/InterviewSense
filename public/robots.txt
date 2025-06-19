@@ -7,6 +7,17 @@ Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
 
+# Allow all internship SEO pages for crawling
+Allow: /internships/
+Allow: /internships/*/
+Allow: /internships/topics/
+Allow: /internships/topics/*/
+
+# Important user-facing pages
+Allow: /signup
+Allow: /login
+Allow: /dashboard
+
 # Sitemap location
 Sitemap: https://interviewsense.org/sitemap.xml
 

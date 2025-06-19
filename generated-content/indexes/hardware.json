@@ -1,0 +1,534 @@
+{
+  "category": "hardware",
+  "displayName": "Hardware Engineering",
+  "totalListings": 65,
+  "activeListings": 65,
+  "lastUpdated": "2025-06-19T22:10:26.062Z",
+  "seo": {
+    "title": "Hardware Engineering Internships Summer 2025 - 65 Open Positions",
+    "description": "Find hardware engineering internships for Summer 2025. 65 active positions from top tech companies.",
+    "url": "http://localhost:3000/internships/hardware"
+  },
+  "listings": [
+    {
+      "slug": "internship",
+      "company": "-------",
+      "role": "----",
+      "location": "--------",
+      "isActive": true,
+      "daysAgo": "--"
+    },
+    {
+      "slug": "nvidia-compiler-engineering-intern-gpu-compute-and-cuda-internship-austin",
+      "company": "NVIDIA",
+      "role": "Compiler Engineering Intern - GPU Compute and CUDA",
+      "location": "Austin, TX</br>Redmond, WA</br>Santa Clara, CA",
+      "isActive": true,
+      "daysAgo": "0d"
+    },
+    {
+      "slug": "ciena-photonics-software-engineer-coop-internship-ottawa",
+      "company": "Ciena",
+      "role": "Photonics Software Engineer – Co-op",
+      "location": "Ottawa, ON, Canada",
+      "isActive": true,
+      "daysAgo": "1d"
+    },
+    {
+      "slug": "baxter-international-associate-software-engineer-coop-internship-auburn",
+      "company": "Baxter International",
+      "role": "Associate Software Engineer – Co-Op",
+      "location": "Auburn, NY",
+      "isActive": true,
+      "daysAgo": "3d"
+    },
+    {
+      "slug": "marvell-ams-cad-intern-internship-santa-clara",
+      "company": "Marvell",
+      "role": "Ams CAD Intern",
+      "location": "Santa Clara, CA",
+      "isActive": true,
+      "daysAgo": "13d"
+    },
+    {
+      "slug": "ciena-wavelogic-software-intern-internship-atlanta",
+      "company": "Ciena",
+      "role": "Wavelogic Software Intern",
+      "location": "Atlanta, GA",
+      "isActive": true,
+      "daysAgo": "14d"
+    },
+    {
+      "slug": "formlabs-hardware-systems-engineering-intern-internship-cambridge",
+      "company": "Formlabs",
+      "role": "Hardware Systems Engineering Intern",
+      "location": "Cambridge, MA",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "astranis-fpga-intern-internship-sf",
+      "company": "Astranis",
+      "role": "FPGA – Intern",
+      "location": "SF",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "internship",
+      "company": "-------",
+      "role": "----",
+      "location": "--------",
+      "isActive": true,
+      "daysAgo": "--"
+    },
+    {
+      "slug": "microchip-technology-intern-internship-san-jose",
+      "company": "Microchip Technology",
+      "role": "Intern",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "14d"
+    },
+    {
+      "slug": "motorola-software-developer-embedded-appliances-coop-internship-vancouver",
+      "company": "Motorola",
+      "role": "Software Developer – Embedded Appliances Co-Op",
+      "location": "Vancouver, BC, Canada",
+      "isActive": true,
+      "daysAgo": "16d"
+    },
+    {
+      "slug": "motive-embedded-engineer-intern-internship-buffalo",
+      "company": "Motive",
+      "role": "Embedded Engineer Intern",
+      "location": "Buffalo, NY",
+      "isActive": true,
+      "daysAgo": "22d"
+    },
+    {
+      "slug": "qrypt-embedded-engineering-intern-internship-nyc",
+      "company": "Qrypt",
+      "role": "Embedded Engineering Intern",
+      "location": "NYC",
+      "isActive": true,
+      "daysAgo": "22d"
+    },
+    {
+      "slug": "borgwarner-application-engineering-intern-internship-auburn-hills",
+      "company": "BorgWarner",
+      "role": "Application Engineering Intern",
+      "location": "Auburn Hills, MI",
+      "isActive": true,
+      "daysAgo": "23d"
+    },
+    {
+      "slug": "nextracker-software-engineer-intern-internship-fremont",
+      "company": "Nextracker",
+      "role": "Software Engineer Intern",
+      "location": "Fremont, CA",
+      "isActive": true,
+      "daysAgo": "30d"
+    },
+    {
+      "slug": "moog-inc-intern-product-engineering-internship-boston",
+      "company": "Moog Inc",
+      "role": "Intern – Product Engineering",
+      "location": "Boston, NY</br>Buffalo, NY",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "ciena-npi-product-engineer-coop-internship-montreal",
+      "company": "Ciena",
+      "role": "NPI Product Engineer Coop",
+      "location": "Montreal, QC, Canada",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "western-digital-servo-firmware-intern-internship-san-jose",
+      "company": "Western Digital",
+      "role": "Servo Firmware Intern",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "tesla-internship-hardware-design-engineer-silicon-development-internship-palo-al",
+      "company": "Tesla",
+      "role": "Internship - Hardware Design Engineer - Silicon Development",
+      "location": "Palo Alto, CA",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "nokia-session-border-controller-rd-intern-internship-naperville",
+      "company": "Nokia",
+      "role": "Session Border Controller R&D Intern",
+      "location": "Naperville, IL",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "tesla-internship-embedded-software-engineer-firmware-platforms-internship-palo-a",
+      "company": "Tesla",
+      "role": "Internship - Embedded Software Engineer - Firmware Platforms",
+      "location": "Palo Alto, CA",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "teledyne-hardware-engineer-intern-internship-mahwah",
+      "company": "Teledyne",
+      "role": "Hardware Engineer Intern",
+      "location": "Mahwah, NJ",
+      "isActive": true,
+      "daysAgo": "1mo"
+    },
+    {
+      "slug": "altera-corporation-fpga-engineering-intern-internship-san-jose",
+      "company": "Altera Corporation",
+      "role": "FPGA Engineering Intern",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "intel-platform-hardware-and-systems-engineering-intern-bachelors-internship-deta",
+      "company": "Intel",
+      "role": "Platform Hardware and Systems Engineering – Intern - Bachelor's",
+      "location": "<details><summary>**4 locations**</summary>Santa Clara, CA</br>Hillsboro, OR</br>Folsom, CA</br>Phoenix, AZ</details>",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "applied-materials-embedded-system-software-intern-internship-san-jose",
+      "company": "Applied Materials",
+      "role": "Embedded System Software Intern",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "2mo"
+    },
+    {
+      "slug": "fresenius-medical-care-embedded-software-engineer-coop-pd-internship-andover",
+      "company": "Fresenius Medical Care",
+      "role": "Embedded Software Engineer Co-Op - Pd",
+      "location": "Andover, MA",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "ripplematch-rockwell-automation-intern-embedded-software-engineering-internship-",
+      "company": "RippleMatch",
+      "role": "Rockwell Automation – Intern - Embedded Software Engineering",
+      "location": "Eden Prairie, MN",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "rivian-intern-embedded-systems-software-engineer-internship-urbana",
+      "company": "Rivian",
+      "role": "Intern - Embedded Systems Software Engineer",
+      "location": "Urbana, IL",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "magna-embedded-software-intern-internship-troy",
+      "company": "Magna",
+      "role": "Embedded Software Intern",
+      "location": "Troy, MI",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "figure-intern-embedded-audio-signal-processing-internship-sunnyvale",
+      "company": "Figure",
+      "role": "Intern – Embedded Audio Signal Processing",
+      "location": "Sunnyvale, CA",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "keysight-technologies-inc-integrated-circuit-product-engineering-intern-internsh",
+      "company": "Keysight Technologies, Inc.",
+      "role": "Integrated Circuit Product Engineering Intern",
+      "location": "Santa Rosa, CA",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "rivian-intern-embedded-systems-software-engineer-internship-urbana",
+      "company": "Rivian",
+      "role": "Intern - Embedded Systems Software Engineer",
+      "location": "Urbana, IL",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "baxter-international-2025-summer-internship-embedded-software-internship-raleigh",
+      "company": "Baxter International",
+      "role": "2025 Summer Internship - Embedded Software",
+      "location": "Raleigh, NC",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "qualcomm-fy25-intern-ncc-software-telemetry-tools-developer-internship-interim-e",
+      "company": "Qualcomm",
+      "role": "FY25 Intern – NCC Software Telemetry Tools Developer Internship - Interim Engineering Intern - SW",
+      "location": "Markham, ON, Canada",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "harman-international-summer-intern-embedded-software-engineer-internship-novi",
+      "company": "HARMAN International",
+      "role": "Summer Intern - Embedded Software Engineer",
+      "location": "Novi, MI",
+      "isActive": true,
+      "daysAgo": "3mo"
+    },
+    {
+      "slug": "nuro-embedded-software-engineer-intern-internship-mountain-view",
+      "company": "Nuro",
+      "role": "Embedded Software Engineer – Intern",
+      "location": "Mountain View, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "cadence-design-systems-software-engineering-intern-circuit-simulation-internship",
+      "company": "Cadence Design Systems",
+      "role": "Software Engineering Intern - Circuit Simulation",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "cadence-design-systems-software-engineering-intern-circuit-simulation-internship",
+      "company": "Cadence Design Systems",
+      "role": "Software Engineering Intern - Circuit Simulation",
+      "location": "San Jose, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "qualcomm-fy25-intern-asic-digital-ic-design-internship-cambridge",
+      "company": "Qualcomm",
+      "role": "FY25 Intern - ASIC Digital IC Design",
+      "location": "Cambridge, UK",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "motorola-embedded-software-engineer-intern-internship-fresno",
+      "company": "Motorola",
+      "role": "Embedded Software Engineer Intern",
+      "location": "Fresno, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "roku-software-engineer-intern-embedded-internship-cambridge",
+      "company": "Roku",
+      "role": "Software Engineer Intern - Embedded",
+      "location": "Cambridge, UK",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "f5-software-engineering-intern-fpga-internship-spokane",
+      "company": "F5",
+      "role": "Software Engineering Intern - FPGA",
+      "location": "Spokane, WA</br>Liberty Lake, WA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "rivian-software-engineering-intern-embedded-software-autonomy-internship-palo-al",
+      "company": "Rivian",
+      "role": "Software Engineering Intern - Embedded Software - Autonomy",
+      "location": "Palo Alto, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "motorola-2025-summer-internship-embedded-software-engineer-internship-hoffman-es",
+      "company": "Motorola",
+      "role": "2025 Summer Internship - Embedded Software Engineer",
+      "location": "Hoffman Estates, IL",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "amazon-sde-intern-embedded-systems-internship-sunnyvale",
+      "company": "Amazon",
+      "role": "SDE Intern (Embedded Systems)",
+      "location": "Sunnyvale, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "baxter-international-2025-summer-internship-embedded-software-internship-raleigh",
+      "company": "Baxter International",
+      "role": "2025 Summer Internship - Embedded Software",
+      "location": "Raleigh, NC",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "rivian-software-engineering-intern-autonomy-embedded-internship-palo-alto",
+      "company": "Rivian",
+      "role": "Software Engineering Intern - Autonomy - Embedded",
+      "location": "Palo Alto, CA",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "northrop-grumman-2025-embedded-software-engineer-intern-internship-cincinnati",
+      "company": "Northrop Grumman",
+      "role": "2025 Embedded Software Engineer Intern",
+      "location": "Cincinnati, OH",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "intel-mecop-silicon-firmware-engineer-intern-internship-hillsboro",
+      "company": "Intel",
+      "role": "MECOP Silicon Firmware Engineer Intern",
+      "location": "Hillsboro, OR",
+      "isActive": true,
+      "daysAgo": "4mo"
+    },
+    {
+      "slug": "applied-materials-2025-summer-embedded-firmware-internship-internship-rochester",
+      "company": "Applied Materials",
+      "role": "2025 Summer Embedded Firmware Internship",
+      "location": "Rochester, NY",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "western-digital-software-engineering-embedded-internship-rochester",
+      "company": "Western Digital",
+      "role": "Software Engineering - Embedded",
+      "location": "Rochester, MN",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "amazon-sde-intern-embedded-systems-internship-los-gatos",
+      "company": "Amazon",
+      "role": "SDE Intern - Embedded Systems",
+      "location": "Los Gatos, CA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "borgwarner-asic-product-engineering-intern-internship-kokomo",
+      "company": "BorgWarner",
+      "role": "ASIC Product Engineering Intern",
+      "location": "Kokomo, IN",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "western-digital-software-engineering-embedded-internship-rochester",
+      "company": "Western Digital",
+      "role": "Software Engineering - Embedded",
+      "location": "Rochester, MN",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "meta-embedded-software-engineering-intern-internship-pittsburgh",
+      "company": "Meta",
+      "role": "Embedded Software Engineering Intern",
+      "location": "Pittsburgh, PA",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "lumentum-embedded-software-engineer-coop-student-internship-ottawa",
+      "company": "Lumentum",
+      "role": "Embedded Software Engineer – Co-op Student",
+      "location": "Ottawa, ON, Canada",
+      "isActive": true,
+      "daysAgo": "5mo"
+    },
+    {
+      "slug": "rivian-intern-embedded-systems-software-engineer-internship-urbana",
+      "company": "Rivian",
+      "role": "Intern - Embedded Systems Software Engineer",
+      "location": "Urbana, IL",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "formlabs-embedded-software-intern-internship-cambridge",
+      "company": "Formlabs",
+      "role": "Embedded Software Intern",
+      "location": "Cambridge, MA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "vermeer-embedded-software-intern-internship-newton",
+      "company": "Vermeer",
+      "role": "Embedded Software Intern",
+      "location": "Newton, IA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "hugging-face-machine-learning-engineer-internship-hardware-optimization-internsh",
+      "company": "Hugging Face",
+      "role": "Machine Learning Engineer Internship - Hardware Optimization",
+      "location": "Remote in USA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "neuralink-embedded-software-engineer-intern-internship-fremont",
+      "company": "Neuralink",
+      "role": "Embedded Software Engineer Intern",
+      "location": "Fremont, CA",
+      "isActive": true,
+      "daysAgo": "6mo"
+    },
+    {
+      "slug": "baxter-international-2025-summer-internship-embedded-software-internship-johnsbu",
+      "company": "Baxter International",
+      "role": "2025 Summer Internship - Embedded Software",
+      "location": "Johnsburg, IL",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "motorola-2025-summer-internship-embedded-software-engineer-internship-hoffman-es",
+      "company": "Motorola",
+      "role": "2025 Summer Internship - Embedded Software Engineer",
+      "location": "Hoffman Estates, IL",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "skydio-embedded-software-engineer-intern-internship-san-mateo",
+      "company": "Skydio",
+      "role": "Embedded Software Engineer Intern",
+      "location": "San Mateo, CA",
+      "isActive": true,
+      "daysAgo": "7mo"
+    },
+    {
+      "slug": "amazon-2025-software-development-engineer-intern-embedded-development-internship",
+      "company": "Amazon",
+      "role": "2025 Software Development Engineer Intern - Embedded Development",
+      "location": "London, UK</br>Cambridge, UK",
+      "isActive": true,
+      "daysAgo": "7mo"
+    }
+  ]
+}
