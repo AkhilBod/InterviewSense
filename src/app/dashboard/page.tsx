@@ -69,6 +69,48 @@ function DashboardPage() {
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgressData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Function to refresh progress data
+  const refreshProgress = async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      setRefreshing(true);
+      const progressRes = await fetch('/api/user-progress');
+      if (progressRes.ok) {
+        const progressData = await progressRes.json();
+        setUserProgress(progressData);
+        setRecentSessions(progressData.recentSessions || []);
+      }
+    } catch (error) {
+      console.error('Error refreshing progress:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Test function to simulate completing an interview
+  const testInterview = async () => {
+    try {
+      setRefreshing(true);
+      await fetch('/api/test-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'behavioral',
+          score: 75 + Math.floor(Math.random() * 25) // Random score 75-100
+        })
+      });
+      
+      // Refresh progress after test
+      await refreshProgress();
+    } catch (error) {
+      console.error('Error running test interview:', error);
+    }
+  };
 
   useEffect(() => {
     // Don't redirect while session is still loading
@@ -165,6 +207,29 @@ function DashboardPage() {
             Welcome back, {session?.user?.name?.split(' ')[0] || 'Interviewer'}! 
           </h1>
           <p className="text-zinc-400 text-lg">Ready to ace your next interview?</p>
+          
+          {/* Progress Test Controls - Development Only */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <Button
+                onClick={testInterview}
+                disabled={refreshing}
+                size="sm"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
+              >
+                {refreshing ? 'Processing...' : 'Test Interview Complete'}
+              </Button>
+              <Button
+                onClick={refreshProgress}
+                disabled={refreshing}
+                size="sm"
+                variant="outline"
+                className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+              >
+                {refreshing ? 'Refreshing...' : 'Refresh Stats'}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Main Action Cards */}
@@ -248,8 +313,39 @@ function DashboardPage() {
 
         {/* Daily Streak/Weekly Goal/Best Score Stats */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Your Progress</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Your Progress</h2>
+            <Button
+              onClick={refreshProgress}
+              disabled={refreshing}
+              size="sm"
+              variant="ghost"
+              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+          {dashboardLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="h-4 bg-zinc-700 rounded animate-pulse mb-2"></div>
+                        <div className="h-8 bg-zinc-700 rounded animate-pulse"></div>
+                      </div>
+                      <div className="p-3 bg-zinc-700 rounded-xl animate-pulse">
+                        <div className="h-8 w-8"></div>
+                      </div>
+                    </div>
+                    <div className="h-3 bg-zinc-700 rounded animate-pulse mt-2"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Daily Streak */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
               <CardContent className="p-6">
@@ -318,7 +414,8 @@ function DashboardPage() {
                 </p>
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}

@@ -125,10 +125,10 @@ export default function Home() {
                   </Button>
                   <Button 
                     onClick={handleGetStartedClick}
-                    size="lg"
-                    className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105 border border-blue-400/20"
+                    size="sm"
+                    className="px-6 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                   >
-                    Start Today - It's Free
+                    Get Started Free
                   </Button>
                 </>
               )}
@@ -210,10 +210,10 @@ export default function Home() {
                               setMobileMenuOpen(false);
                               handleGetStartedClick();
                             }}
-                            size="lg"
-                            className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white w-full font-bold py-4 text-lg rounded-full shadow-lg shadow-blue-500/30 border border-blue-400/20"
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full font-semibold py-3 text-sm rounded-lg shadow-md"
                           >
-                            Start Today - It's Free
+                            Get Started Free
                           </Button>
                         </div>
                       )}
@@ -242,9 +242,9 @@ export default function Home() {
                 <Button
                   onClick={handleGetStartedClick}
                   size="lg"
-                  className="text-lg sm:text-xl px-8 sm:px-10 py-6 sm:py-7 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25"
+                  className="text-base px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-md font-semibold"
                 >
-                  Start Practicing Now <ArrowRight className="ml-2 h-5 sm:h-6 w-5 sm:w-6" />
+                  Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
               
@@ -1126,16 +1126,11 @@ export default function Home() {
                 </p>
               </div>
               <Button
-                asChild
+                onClick={handleGetStartedClick}
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6 sm:px-8 whitespace-nowrap w-full md:w-auto"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-8 py-4 whitespace-nowrap w-full md:w-auto text-base font-semibold flex items-center justify-center"
               >
-                <button
-                  onClick={handleGetStartedClick}
-                  className="text-sm sm:text-base px-6 py-4 sm:py-5 md:py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center"
-                >
-                  Get Started Free <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
+                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
