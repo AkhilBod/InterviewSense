@@ -1844,51 +1844,116 @@ function InterviewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-slate-950 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
         {/* Header */}
-        <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </div>
-            <div className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                        <AvatarFallback className="bg-blue-500">
-                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
-                    <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-slate-800" />
-                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                      <Link href="/dashboard">Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                      <Link href="/start">Exit Interview</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
-                      onClick={handleSignOut}
+        <header className="bg-gradient-to-b from-slate-900 to-slate-800 relative">
+          <nav className="w-full z-50 relative">
+            <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+              {/* Logo Section - Made larger and more prominent */}
+              <div className="flex items-center gap-4">
+                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={56} height={56} className="object-contain" />
+                <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
+              </div>
+
+              {/* Desktop Navigation - Matching landing page style */}
+              <div className="hidden md:flex items-center gap-6">
+                {session ? (
+                  <div className="flex items-center gap-4">
+                    <Button 
+                      asChild 
+                      size="lg"
+                      className="px-5 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                     >
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="outline" size="sm" asChild className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                  <Link href="/login">Sign in</Link>
-                </Button>
-              )}
+                      <Link href="/dashboard">Dashboard</Link>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-zinc-800/50">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                            <AvatarFallback className="bg-blue-500">
+                              {session.user?.name?.charAt(0) || <User className="h-5 w-5" />}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56 bg-zinc-950 border-zinc-800" align="end">
+                        <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-zinc-800" />
+                        <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                          <Link href="/profile">Profile</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                          <Link href="/start">Exit Interview</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
+                          onClick={handleSignOut}
+                        >
+                          Sign out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ) : (
+                  <>
+                    <Button 
+                      asChild 
+                      variant="ghost" 
+                      size="lg"
+                      className="px-6 py-3 text-lg font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full transition-all duration-300"
+                    >
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                    <Button 
+                      asChild
+                      size="lg"
+                      className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105 border border-blue-400/20"
+                    >
+                      <Link href="/signup">Get Started</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+              
+              {/* Mobile Menu Button - Made larger */}
+              <div className="flex md:hidden items-center">
+                {session && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-zinc-800/50">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                          <AvatarFallback className="bg-blue-500">
+                            {session.user?.name?.charAt(0) || <User className="h-5 w-5" />}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 bg-zinc-950 border-zinc-800" align="end">
+                      <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-zinc-800" />
+                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                        <Link href="/dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                        <Link href="/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
+                        <Link href="/start">Exit Interview</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
+                        onClick={handleSignOut}
+                      >
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
             </div>
-          </div>
+          </nav>
         </header>
 
         {/* Main Interview Area */}

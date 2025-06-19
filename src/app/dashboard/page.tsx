@@ -33,11 +33,41 @@ interface RecentAnalysis {
   createdAt: string;
 }
 
+interface UserProgressData {
+  dailyStreak: number;
+  weeklyGoal: number;
+  weeklyProgress: number;
+  bestScore: number;
+  averageScore: number;
+  totalInterviews: number;
+  behavioralInterviews: number;
+  technicalInterviews: number;
+  resumeChecks: number;
+  totalSessions: number;
+  recentSessions: RecentSession[];
+  averageFillerWords: number;
+  bestFillerWordCount: number;
+  currentStreak: number;
+  longestStreak: number;
+  totalActiveDays: number;
+  lastActivityDate: string | null;
+  totalXP: number;
+  level: number;
+  hasActivityToday: boolean;
+  quickStats: {
+    practiceStreak: number;
+    weeklyProgress: string;
+    improvementRate: string;
+    activeDays: number;
+  };
+}
+
 function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [userProgress, setUserProgress] = useState<UserProgressData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
 
   useEffect(() => {
@@ -53,12 +83,24 @@ function DashboardPage() {
       try {
         setDashboardLoading(true);
         
-        // Fetch recent activity
+        // Fetch user progress
+        const progressRes = await fetch('/api/user-progress');
+        if (progressRes.ok) {
+          const progressData = await progressRes.json();
+          setUserProgress(progressData);
+          // Use the recent sessions from progress data as well
+          setRecentSessions(progressData.recentSessions || []);
+        }
+        
+        // Fetch recent activity (keep for analyses)
         const recentActivityRes = await fetch(`/api/recent-activity/${session.user.id}`);
         if (recentActivityRes.ok) {
           const activityData = await recentActivityRes.json();
-          setRecentSessions(activityData.sessions || []);
           setRecentAnalyses(activityData.analyses || []);
+          // Only use sessions if we don't have them from progress
+          if (!userProgress?.recentSessions?.length) {
+            setRecentSessions(activityData.sessions || []);
+          }
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -215,7 +257,7 @@ function DashboardPage() {
                   <div>
                     <p className="text-zinc-400 text-sm">Daily Streak</p>
                     <p className="text-3xl font-bold text-white">
-                      {recentSessions.length > 0 ? Math.min(recentSessions.length, 7) : 0}
+                      {userProgress?.dailyStreak || 0}
                     </p>
                   </div>
                   <div className="p-3 bg-orange-500/20 rounded-xl">
@@ -223,7 +265,7 @@ function DashboardPage() {
                   </div>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
-                  Days of practice
+                  {userProgress?.dailyStreak === 1 ? 'Day' : 'Days'} of practice
                 </p>
               </CardContent>
             </Card>
@@ -235,7 +277,7 @@ function DashboardPage() {
                   <div>
                     <p className="text-zinc-400 text-sm">Weekly Goal</p>
                     <p className="text-3xl font-bold text-white">
-                      {recentSessions.length}/3
+                      {userProgress?.weeklyProgress || 0}/{userProgress?.weeklyGoal || 3}
                     </p>
                   </div>
                   <div className="p-3 bg-blue-500/20 rounded-xl">
@@ -244,6 +286,10 @@ function DashboardPage() {
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
                   Sessions this week
+                  {userProgress?.weeklyProgress && userProgress?.weeklyGoal && 
+                   userProgress.weeklyProgress >= userProgress.weeklyGoal && (
+                    <span className="text-green-400 ml-1">✓ Goal reached!</span>
+                  )}
                 </p>
               </CardContent>
             </Card>
@@ -255,10 +301,7 @@ function DashboardPage() {
                   <div>
                     <p className="text-zinc-400 text-sm">Best Score</p>
                     <p className="text-3xl font-bold text-white">
-                      {recentSessions.length > 0 
-                        ? Math.max(...recentSessions.map(s => s.score || 0)).toFixed(0)
-                        : '0'
-                      }
+                      {userProgress?.bestScore ? userProgress.bestScore.toFixed(0) : '0'}
                     </p>
                   </div>
                   <div className="p-3 bg-green-500/20 rounded-xl">
@@ -267,6 +310,11 @@ function DashboardPage() {
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
                   Your highest score
+                  {userProgress?.averageScore && userProgress?.bestScore && (
+                    <span className="block text-green-400 text-xs mt-1">
+                      Avg: {userProgress.averageScore.toFixed(1)}
+                    </span>
+                  )}
                 </p>
               </CardContent>
             </Card>
@@ -358,20 +406,45 @@ function DashboardPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between">
+                    <span className="text-zinc-400">Practice Streak</span>
+                    <span className="text-white font-semibold">
+                      {userProgress?.quickStats?.practiceStreak || 0} days
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-zinc-400">Total Sessions</span>
-                    <span className="text-white font-semibold">{recentSessions.length}</span>
+                    <span className="text-white font-semibold">
+                      {userProgress?.totalSessions || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-400">Resume Analyses</span>
-                    <span className="text-white font-semibold">{recentAnalyses.length}</span>
+                    <span className="text-white font-semibold">
+                      {userProgress?.resumeChecks || recentAnalyses.length}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Best Score</span>
+                    <span className="text-zinc-400">Weekly Progress</span>
                     <span className="text-white font-semibold">
-                      {recentSessions.length > 0 
-                        ? Math.max(...recentSessions.map(s => s.score || 0)).toFixed(0)
-                        : 'N/A'
-                      }
+                      {userProgress?.quickStats?.weeklyProgress || '0/3'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Improvement Rate</span>
+                    <span className={`font-semibold ${
+                      userProgress?.quickStats?.improvementRate?.startsWith('+') 
+                        ? 'text-green-400' 
+                        : userProgress?.quickStats?.improvementRate?.startsWith('-')
+                        ? 'text-red-400'
+                        : 'text-white'
+                    }`}>
+                      {userProgress?.quickStats?.improvementRate || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">Active Days</span>
+                    <span className="text-white font-semibold">
+                      {userProgress?.quickStats?.activeDays || 0}
                     </span>
                   </div>
                 </div>
