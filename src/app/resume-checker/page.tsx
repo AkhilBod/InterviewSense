@@ -5,6 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const TECH_JOB_TITLES = [
+  { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
+  { id: 'backend-developer', title: 'Backend Developer', description: 'Node.js, Python, Java, Go, APIs, Databases' },
+  { id: 'fullstack-developer', title: 'Full Stack Developer', description: 'Frontend + Backend Development' },
+  { id: 'mobile-developer', title: 'Mobile Developer', description: 'React Native, Flutter, iOS, Android' },
+  { id: 'devops-engineer', title: 'DevOps Engineer', description: 'AWS, Docker, Kubernetes, CI/CD, Infrastructure' },
+  { id: 'software-engineer', title: 'Software Engineer', description: 'General Software Development' },
+  { id: 'senior-software-engineer', title: 'Senior Software Engineer', description: 'Advanced Software Development & Leadership' },
+  { id: 'tech-lead', title: 'Tech Lead', description: 'Technical Leadership & Architecture' },
+  { id: 'engineering-manager', title: 'Engineering Manager', description: 'Team Management & Technical Strategy' },
+  { id: 'aiml-engineer', title: 'AI/ML Engineer', description: 'Python, TensorFlow, PyTorch, Machine Learning' },
+  { id: 'data-engineer', title: 'Data Engineer', description: 'SQL, Spark, Data Pipelines, ETL' },
+  { id: 'data-scientist', title: 'Data Scientist', description: 'Statistics, Machine Learning, Analytics' },
+  { id: 'security-engineer', title: 'Security Engineer', description: 'Cybersecurity, Penetration Testing, InfoSec' },
+  { id: 'qa-engineer', title: 'QA Engineer', description: 'Testing, Automation, Quality Assurance' },
+  { id: 'platform-engineer', title: 'Platform Engineer', description: 'Infrastructure, Platform Tools, Developer Experience' },
+  { id: 'site-reliability-engineer', title: 'Site Reliability Engineer (SRE)', description: 'System Reliability, Monitoring, Performance' },
+  { id: 'cloud-engineer', title: 'Cloud Engineer', description: 'AWS, Azure, GCP, Cloud Architecture' },
+  { id: 'solutions-architect', title: 'Solutions Architect', description: 'System Design, Architecture, Technical Strategy' },
+  { id: 'product-engineer', title: 'Product Engineer', description: 'Product Development, User Experience, Business Logic' },
+  { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' }
+];
 import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer, CheckCircle, Brain, Target } from "lucide-react";
 import Image from 'next/image';
 import { useSession, signOut } from "next-auth/react";
@@ -331,12 +355,25 @@ export default function ResumeCheckerPage() {
                         <label className="block text-sm font-medium mb-2">
                           Target Job Title <span className="text-red-500">*</span>
                         </label>
-                        <Input
-                          placeholder="e.g. Software Engineer"
-                          value={jobTitle}
-                          onChange={(e) => setJobTitle(e.target.value)}
+                        <Select 
+                          value={jobTitle} 
+                          onValueChange={setJobTitle}
                           required
-                        />
+                        >
+                          <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100">
+                            <SelectValue placeholder="Select your job title" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-600 max-h-60">
+                            {TECH_JOB_TITLES.map(job => (
+                              <SelectItem key={job.id} value={job.title}>
+                                <div>
+                                  <div className="font-medium">{job.title}</div>
+                                  <div className="text-sm text-slate-400">{job.description}</div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">

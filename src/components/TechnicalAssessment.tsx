@@ -33,6 +33,29 @@ interface TechnicalAssessmentProps {
   onComplete?: () => void;
 }
 
+const TECH_JOB_TITLES = [
+  { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
+  { id: 'backend-developer', title: 'Backend Developer', description: 'Node.js, Python, Java, Go, APIs, Databases' },
+  { id: 'fullstack-developer', title: 'Full Stack Developer', description: 'Frontend + Backend Development' },
+  { id: 'mobile-developer', title: 'Mobile Developer', description: 'React Native, Flutter, iOS, Android' },
+  { id: 'devops-engineer', title: 'DevOps Engineer', description: 'AWS, Docker, Kubernetes, CI/CD, Infrastructure' },
+  { id: 'software-engineer', title: 'Software Engineer', description: 'General Software Development' },
+  { id: 'senior-software-engineer', title: 'Senior Software Engineer', description: 'Advanced Software Development & Leadership' },
+  { id: 'tech-lead', title: 'Tech Lead', description: 'Technical Leadership & Architecture' },
+  { id: 'engineering-manager', title: 'Engineering Manager', description: 'Team Management & Technical Strategy' },
+  { id: 'aiml-engineer', title: 'AI/ML Engineer', description: 'Python, TensorFlow, PyTorch, Machine Learning' },
+  { id: 'data-engineer', title: 'Data Engineer', description: 'SQL, Spark, Data Pipelines, ETL' },
+  { id: 'data-scientist', title: 'Data Scientist', description: 'Statistics, Machine Learning, Analytics' },
+  { id: 'security-engineer', title: 'Security Engineer', description: 'Cybersecurity, Penetration Testing, InfoSec' },
+  { id: 'qa-engineer', title: 'QA Engineer', description: 'Testing, Automation, Quality Assurance' },
+  { id: 'platform-engineer', title: 'Platform Engineer', description: 'Infrastructure, Platform Tools, Developer Experience' },
+  { id: 'site-reliability-engineer', title: 'Site Reliability Engineer (SRE)', description: 'System Reliability, Monitoring, Performance' },
+  { id: 'cloud-engineer', title: 'Cloud Engineer', description: 'AWS, Azure, GCP, Cloud Architecture' },
+  { id: 'solutions-architect', title: 'Solutions Architect', description: 'System Design, Architecture, Technical Strategy' },
+  { id: 'product-engineer', title: 'Product Engineer', description: 'Product Development, User Experience, Business Logic' },
+  { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' }
+];
+
 // Helper function to parse LeetCode problem from text with better formatting
 function parseLeetCodeProblem(problemText: string) {
   const lines = problemText.split('\n').filter(line => line.trim());
@@ -621,15 +644,26 @@ public:
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="role" className="text-base font-semibold text-slate-200">Role</Label>
-                  <Input
-                    id="role"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    placeholder="e.g., Software Engineer"
+                  <Select 
+                    value={role} 
+                    onValueChange={setRole}
                     required={!useCustomNumber}
                     disabled={useCustomNumber}
-                    className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100 placeholder:text-slate-400"
-                  />
+                  >
+                    <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600 max-h-60">
+                      {TECH_JOB_TITLES.map(job => (
+                        <SelectItem key={job.id} value={job.title}>
+                          <div>
+                            <div className="font-medium">{job.title}</div>
+                            <div className="text-sm text-slate-400">{job.description}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="difficulty" className="text-base font-semibold text-slate-200">Question Difficulty</Label>
