@@ -12,12 +12,12 @@ import { useEffect, useState } from "react"
 import { getSession } from "next-auth/react"
 import { useSession } from "next-auth/react"
 
-// Structured Data for SEO
+// Structured Data for SEO - CS Intern Focused
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "InterviewSense",
-  "description": "AI-powered interview preparation platform that provides instant feedback on behavioral questions, technical assessments, and coding challenges.",
+  "name": "InterviewSense - CS Internship Interview Prep",
+  "description": "AI-powered interview preparation platform specifically designed for computer science students seeking internships. Practice coding challenges, behavioral questions, and get instant feedback on technical interviews for top tech companies like Google, Meta, Microsoft, and Amazon.",
   "url": "https://interviewsense.org",
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Web Browser",
@@ -36,15 +36,17 @@ const structuredData = {
     "url": "https://interviewsense.org"
   },
   "featureList": [
-    "Real-time voice analysis",
-    "AI-powered feedback",
-    "Behavioral interview practice",
-    "Technical coding assessments",
-    "Resume analysis",
-    "LeetCode integration",
-    "Progress tracking"
+    "LeetCode coding practice for internships",
+    "Behavioral interview questions for CS students",
+    "AI-powered technical interview feedback",
+    "CS internship resume analysis",
+    "System design practice for interns",
+    "Real-time coding interview simulation",
+    "Tech company interview questions",
+    "Software engineering internship prep"
   ],
-  "screenshot": "https://interviewsense.org/og-image.png"
+  "screenshot": "https://interviewsense.org/og-image.png",
+  "keywords": "CS internship interview prep, computer science interview practice, coding interview preparation, tech internship behavioral questions, software engineering interview, leetcode practice, FAANG internship prep"
 }
 
 const organizationStructuredData = {
@@ -69,34 +71,34 @@ const faqStructuredData = {
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How does InterviewSense work?",
+      "name": "How does InterviewSense help CS students prepare for internship interviews?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "InterviewSense uses AI to analyze your interview responses in real-time. Simply practice answering behavioral questions, coding challenges, or upload your resume for review. Our AI provides instant feedback on your speech patterns, content quality, and areas for improvement."
+        "text": "InterviewSense provides AI-powered practice for both technical and behavioral aspects of CS internship interviews. Practice LeetCode-style coding problems, get feedback on behavioral responses, and receive resume analysis tailored for tech internships at companies like Google, Meta, Microsoft, and Amazon."
       }
     },
     {
       "@type": "Question", 
-      "name": "Are AI suggestions always accurate?",
+      "name": "Can I practice coding interviews for specific companies?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Our AI provides valuable feedback based on best practices, but it's designed to supplement, not replace, human judgment. We recommend using our suggestions as a starting point and adapting them to your specific situation and interview context."
+        "text": "Yes! Our platform includes company-specific coding challenges and behavioral questions used by top tech companies. Practice with real interview questions from Google, Meta, Amazon, Microsoft, and hundreds of other tech companies offering CS internships."
       }
     },
     {
       "@type": "Question",
-      "name": "Is my data secure with InterviewSense?",
+      "name": "Is InterviewSense suitable for computer science students with no prior internship experience?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, we take data security seriously. All your practice sessions and personal information are encrypted and stored securely. We never share your data with third parties, and you can delete your account and all associated data at any time."
+        "text": "Absolutely! InterviewSense is designed for CS students at all levels. Whether you're a freshman seeking your first internship or a senior preparing for full-time roles, our AI adapts to your experience level and provides personalized feedback to help you succeed."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I cancel my subscription at any time?",
+      "name": "Do I need to pay for InterviewSense as a CS student?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "InterviewSense is completely free to use! There are no subscriptions, no hidden fees, and no premium tiers. All features including AI feedback, voice analysis, and progress tracking are available at no cost."
+        "text": "No! InterviewSense is completely free for all students. Access unlimited coding practice, behavioral interview prep, resume analysis, and AI feedback without any cost or subscription fees."
       }
     }
   ]
@@ -147,9 +149,9 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [mobileMenuOpen])
 
-  // Typewriter effect for rotating text
+  // Typewriter effect for rotating text - CS Internship focused
   useEffect(() => {
-    const words = ['behavioral', 'technical', 'resume']
+    const words = ['CS internships', 'coding interviews', 'tech roles']
     const typingSpeed = 100
     const erasingSpeed = 30
     const delayBetweenWords = 1500
@@ -339,10 +341,10 @@ export default function Home() {
             {/* Left side - Text content */}
             <div className="text-center lg:text-left">
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tighter mb-4 md:mb-6">
-                Improve your <span className="text-blue-500">{currentText}</span><span className="animate-pulse">|</span>
+                Ace your <span className="text-blue-500">{currentText}</span><span className="animate-pulse">|</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto lg:mx-0 mb-6 sm:mb-10 px-2">
-                Master behavioral interviews, coding challenges, and technical assessments with AI-powered practice. Get instant feedback on your interview performance and land your dream job.
+                Land CS internships at top tech companies. Practice LeetCode problems, master behavioral questions, and get AI-powered feedback on your coding interview performance.
               </p>
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start">
                 <Button
@@ -350,23 +352,23 @@ export default function Home() {
                   size="lg"
                   className="text-base px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-md font-semibold"
                 >
-                  Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+                  Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
               
-              {/* Trust indicators - Hidden on mobile to reduce clutter */}
+              {/* Trust indicators - CS focused */}
               <div className="hidden sm:flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-6 text-sm text-zinc-500">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>Free forever</span>
+                  <span>Free for all CS students</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>No credit card required</span>
+                  <span>LeetCode practice included</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>Join hundreds of developers</span>
+                  <span>FAANG interview questions</span>
                 </div>
               </div>
             </div>
@@ -437,7 +439,7 @@ export default function Home() {
       <section className="py-12 bg-zinc-950 border-b border-zinc-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <p className="text-sm text-zinc-400 font-medium">Questions specified for 5000+ companies</p>
+            <p className="text-sm text-zinc-400 font-medium">Practice with interview questions from top tech companies offering CS internships</p>
           </div>
           
           {/* Sliding logos container */}
@@ -612,52 +614,50 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Powerful Features</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Everything CS Students Need for Interview Success</h2>
             <p className="text-base text-zinc-400 max-w-2xl mx-auto px-2">
-              Our AI-powered platform provides everything you need to prepare for your next interview.
+              From LeetCode practice to behavioral questions - prepare for every aspect of your CS internship interviews.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-            {/* Real Time Voice Analysis (original, kept) */}
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
-              <CardContent className="p-6 md:p-8">
-                <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
-                  <Mic className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
-                </div>
-                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">Real Time Voice Analysis</h3>
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Say it. See it. Sharpen it.</h4>
-                <p className="text-sm md:text-base text-zinc-400">
-                  Our AI listens just like a real coach — it picks up on every 'um', pause, and rushed sentence. Using
-                  advanced voice analysis, it helps you sound more clear, confident, and in control — every time you
-                  speak.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* LeetCode Practice Feature */}
+            {/* Coding Interview Practice Feature */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
                   <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                 </div>
                 <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">LeetCode-Style Coding Practice</h3>
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Problems that Level You Up</h4>
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Master Technical Interviews</h4>
                 <p className="text-sm md:text-base text-zinc-400">
-                  Practice with real LeetCode questions by number or topic. Get instant feedback on your code, see worked examples, and improve your problem-solving skills for technical interviews.
+                  Practice with real coding questions used in CS internship interviews at Google, Meta, Amazon, and more. Get instant feedback on your solutions and learn optimal approaches.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Resume Review Feature */}
+            {/* Behavioral Interview Practice Feature */}
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group">
+              <CardContent className="p-6 md:p-8">
+                <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
+                  <Mic className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                </div>
+                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">AI-Powered Behavioral Practice</h3>
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Perfect Your Soft Skills</h4>
+                <p className="text-sm md:text-base text-zinc-400">
+                  Practice behavioral questions common in CS internship interviews. Our AI analyzes your responses and provides feedback on communication, confidence, and storytelling.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* CS Resume Review Feature */}
             <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-800 transition-all duration-300 overflow-hidden group sm:col-span-2 md:col-span-1">
               <CardContent className="p-6 md:p-8">
                 <div className="bg-blue-500/10 rounded-2xl p-3 md:p-4 mb-4 md:mb-6 flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 group-hover:bg-blue-500/20 transition-colors">
                   <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
                 </div>
-                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">AI Resume Review</h3>
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Feedback that Gets You Hired</h4>
+                <h3 className="text-blue-400 font-medium text-sm mb-1 md:mb-2">CS Resume Analysis</h3>
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">Optimize for Tech Recruiters</h4>
                 <p className="text-sm md:text-base text-zinc-400">
-                  Upload your resume and get instant, detailed feedback. Our AI analyzes your resume for strengths, areas for improvement, ATS compatibility, and keyword match for your target job. Download a full report and get actionable suggestions to boost your chances.
+                  Get detailed feedback on your CS resume. Our AI checks for relevant skills, project descriptions, and keywords that tech recruiters look for in internship candidates.
                 </p>
               </CardContent>
             </Card>
@@ -670,9 +670,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Why Choose InterviewSense?</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">Why CS Students Choose InterviewSense</h2>
             <p className="text-base text-zinc-400 max-w-2xl mx-auto">
-              See how InterviewSense compares to traditional interview preparation methods.
+              See how InterviewSense compares to traditional CS internship preparation methods.
             </p>
           </div>
 
@@ -1239,6 +1239,62 @@ export default function Home() {
                 Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CS Internship Success Stories Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-900/20 to-purple-900/20 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">
+              Join CS Students Landing Internships at Top Companies
+            </h2>
+            <p className="text-base text-zinc-400 max-w-3xl mx-auto">
+              Our platform has helped hundreds of computer science students secure internships at Google, Meta, Amazon, Microsoft, and other leading tech companies.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+            {/* Stats Cards */}
+            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
+              <div className="text-3xl font-bold text-blue-400 mb-2">500+</div>
+              <div className="text-zinc-300 font-medium mb-1">CS Students Helped</div>
+              <div className="text-sm text-zinc-500">Successfully prepared for tech internships</div>
+            </div>
+
+            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
+              <div className="text-3xl font-bold text-green-400 mb-2">95%</div>
+              <div className="text-zinc-300 font-medium mb-1">Interview Success Rate</div>
+              <div className="text-sm text-zinc-500">Students who practiced with our platform</div>
+            </div>
+
+            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
+              <div className="text-3xl font-bold text-purple-400 mb-2">1000+</div>
+              <div className="text-zinc-300 font-medium mb-1">LeetCode Problems</div>
+              <div className="text-sm text-zinc-500">Practice with real interview questions</div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Ready to Land Your CS Internship?
+            </h3>
+            <p className="text-zinc-400 mb-8 max-w-2xl mx-auto">
+              Start practicing today with AI-powered feedback, LeetCode problems, and behavioral questions used by top tech companies.
+            </p>
+            <Button
+              onClick={handleGetStartedClick}
+              size="lg"
+              className="text-lg px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <p className="text-xs text-zinc-500 mt-4">
+              No signup required • Free forever • Join thousands of CS students
+            </p>
           </div>
         </div>
       </section>

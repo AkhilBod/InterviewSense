@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { ProgrammaticSEOTemplate, generateMetadata as generateSEOMetadata, getQuestionsForPage } from '@/components/ProgrammaticSEOTemplate'
 import fs from 'fs'
 import path from 'path'
 import { notFound } from 'next/navigation'
@@ -25,177 +26,240 @@ export async function generateStaticParams() {
   }
 }
 
-// Load article data from JSON file
-function getArticleData(slug: string) {
+// Load article data from JSON file and convert to Node.js template format
+function getPageData(slug: string) {
   try {
     const filePath = path.join(process.cwd(), 'generated-content', 'articles', `${slug}.json`)
     const fileContents = fs.readFileSync(filePath, 'utf8')
-    return JSON.parse(fileContents)
+    const article = JSON.parse(fileContents)
+    
+    // Convert article data to Node.js template format matching demo script structure
+    const companyName = extractCompanyName(slug)
+    const roleTitle = extractRoleTitle(slug, article.title || '')
+    
+    return {
+      type: "company-role",
+      title: `${companyName} ${roleTitle} Interview Questions`,
+      slug: article.slug || slug,
+      company: {
+        name: companyName,
+        slug: extractCompanySlug(slug),
+        tier: getTierForCompany(companyName),
+        locations: extractLocations(article.content || ''),
+        hiring_seasons: ["Summer", "Fall", "Spring"],
+        typical_questions: getTypicalQuestions(companyName),
+        difficulty: getDifficultyForCompany(companyName),
+        focus_areas: getFocusAreas(companyName)
+      },
+      role: {
+        title: roleTitle,
+        slug: extractRoleSlug(slug),
+        description: article.metaDescription || `${roleTitle} position with hands-on technical experience`,
+        skills: extractSkills(article.content || '', roleTitle),
+        difficulty: "Medium"
+      },
+      keyword: article.keywords?.[0] || `${companyName} ${roleTitle} interview questions`,
+      description: article.metaDescription || `Ace your ${companyName} ${roleTitle} interview with real questions and AI-powered practice.`,
+      internship: {
+        applyUrl: extractApplyUrl(article.content || ''),
+        simplifyUrl: `https://simplify.jobs/c/${extractCompanySlug(slug)}`,
+        postedDays: extractPostedDays(article.content || ''),
+        location: extractMainLocation(article.content || '')
+      }
+    }
   } catch {
     return null
   }
 }
 
+// Helper functions to extract data from slug and content
+function extractCompanyName(slug: string): string {
+  const parts = slug.split('-')
+  const companyPart = parts[0]
+  return companyPart.charAt(0).toUpperCase() + companyPart.slice(1)
+}
+
+function extractCompanySlug(slug: string): string {
+  return slug.split('-')[0]
+}
+
+function extractRoleTitle(slug: string, title: string): string {
+  if (title.includes('Intern')) {
+    const match = title.match(/([^:]+Intern[^,]*)/i)
+    return match ? match[1].trim() : 'Software Engineering Intern'
+  }
+  return 'Software Engineering Intern'
+}
+
+function extractRoleSlug(slug: string): string {
+  const parts = slug.split('-')
+  return parts.slice(1, -1).join('-') || 'software-engineering-intern'
+}
+
+function extractLocations(content: string): string[] {
+  const locationMatches = content.match(/(?:located in|Location:|in )([A-Z][a-z]+(?: [A-Z][a-z]+)*(?:, [A-Z]{2})?)/g)
+  if (locationMatches) {
+    return locationMatches.map(match => 
+      match.replace(/(?:located in|Location:|in )/i, '').trim()
+    ).slice(0, 3)
+  }
+  return ['Remote', 'USA']
+}
+
+function extractMainLocation(content: string): string {
+  const locations = extractLocations(content)
+  return locations[0] || 'Remote'
+}
+
+function extractSkills(content: string, roleTitle: string): string[] {
+  const defaultSkills = ['Software Engineering', 'Problem Solving', 'Teamwork', 'Communication']
+  
+  // Role-based skill extraction
+  if (roleTitle.toLowerCase().includes('frontend') || roleTitle.toLowerCase().includes('ui')) {
+    return ['JavaScript', 'React', 'HTML/CSS', 'Web Development']
+  }
+  if (roleTitle.toLowerCase().includes('data') || roleTitle.toLowerCase().includes('analytics')) {
+    return ['Python', 'SQL', 'Data Analysis', 'Statistics']
+  }
+  if (roleTitle.toLowerCase().includes('mobile') || roleTitle.toLowerCase().includes('ios') || roleTitle.toLowerCase().includes('android')) {
+    return ['Mobile Development', 'Swift/Kotlin', 'UI/UX', 'App Store Optimization']
+  }
+  if (roleTitle.toLowerCase().includes('embedded') || roleTitle.toLowerCase().includes('firmware')) {
+    return ['C/C++', 'Embedded Systems', 'Hardware Integration', 'Real-time Systems']
+  }
+  if (roleTitle.toLowerCase().includes('ml') || roleTitle.toLowerCase().includes('ai') || roleTitle.toLowerCase().includes('machine learning')) {
+    return ['Machine Learning', 'Python', 'TensorFlow/PyTorch', 'Statistics']
+  }
+  
+  // Content-based skill extraction
+  if (content.includes('JavaScript') || content.includes('React')) {
+    return ['JavaScript', 'React', 'Node.js', 'HTML/CSS']
+  }
+  if (content.includes('Python')) {
+    return ['Python', 'Data Structures', 'Algorithms', 'Machine Learning']
+  }
+  if (content.includes('Java')) {
+    return ['Java', 'Object-Oriented Programming', 'Spring', 'SQL']
+  }
+  
+  return defaultSkills
+}
+
+function getTierForCompany(companyName: string): string {
+  const faangCompanies = ['google', 'meta', 'amazon', 'apple', 'netflix', 'microsoft']
+  const bigTechCompanies = ['salesforce', 'uber', 'airbnb', 'spotify', 'tesla', 'nvidia', 'adobe', 'paypal', 'intel']
+  
+  const lowerName = companyName.toLowerCase()
+  
+  if (faangCompanies.includes(lowerName)) {
+    return 'FAANG'
+  }
+  if (bigTechCompanies.includes(lowerName)) {
+    return 'Big Tech'
+  }
+  return 'Enterprise'
+}
+
+function getTypicalQuestions(companyName: string): number {
+  const lowerName = companyName.toLowerCase()
+  
+  if (['google', 'meta', 'amazon'].includes(lowerName)) {
+    return 350
+  }
+  if (['microsoft', 'apple', 'netflix'].includes(lowerName)) {
+    return 320
+  }
+  if (['salesforce', 'uber', 'airbnb'].includes(lowerName)) {
+    return 280
+  }
+  return 220
+}
+
+function getDifficultyForCompany(companyName: string): string {
+  const hardCompanies = ['google', 'meta', 'apple', 'netflix']
+  const mediumHardCompanies = ['amazon', 'microsoft', 'salesforce', 'uber']
+  
+  const lowerName = companyName.toLowerCase()
+  
+  if (hardCompanies.includes(lowerName)) {
+    return 'Hard'
+  }
+  if (mediumHardCompanies.includes(lowerName)) {
+    return 'Medium-Hard'
+  }
+  return 'Medium'
+}
+
+function getFocusAreas(companyName: string): string[] {
+  const lowerName = companyName.toLowerCase()
+  
+  if (lowerName === 'amazon') {
+    return ['Leadership Principles', 'Algorithms', 'System Design']
+  }
+  if (lowerName === 'google') {
+    return ['Algorithms', 'System Design', 'Behavioral']
+  }
+  if (lowerName === 'meta') {
+    return ['Data Structures', 'System Design', 'Behavioral']
+  }
+  if (lowerName === 'apple') {
+    return ['System Design', 'Coding', 'Product Thinking']
+  }
+  if (lowerName === 'microsoft') {
+    return ['Algorithms', 'System Design', 'Behavioral']
+  }
+  
+  return ['Software Development', 'System Design', 'Behavioral']
+}
+
+function extractApplyUrl(content: string): string {
+  // Look for apply links in content
+  const applyMatch = content.match(/\[Apply[^\]]*\]\(([^)]+)\)/i)
+  if (applyMatch && applyMatch[1] !== '#') {
+    return applyMatch[1]
+  }
+  return '#'
+}
+
+function extractPostedDays(content: string): string {
+  const postedMatch = content.match(/\*\*Posted:\*\*\s*([^|]+)/i)
+  if (postedMatch) {
+    return postedMatch[1].trim()
+  }
+  return '1mo ago'
+}
+
 // Generate metadata for each page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const article = getArticleData(params.slug)
+  const pageData = getPageData(params.slug)
 
-  if (!article) {
+  if (!pageData) {
     return {
       title: 'Internship Not Found',
       description: 'The requested internship article could not be found.'
     }
   }
 
-  return {
-    title: article.title,
-    description: article.metaDescription,
-    keywords: article.keywords,
-    openGraph: {
-      title: article.openGraph?.title || article.title,
-      description: article.openGraph?.description || article.metaDescription,
-      images: [{ url: article.openGraph?.image || '/og-image.png' }],
-      url: article.openGraph?.url || `https://interviewsense.com/opportunities/${params.slug}`,
-      type: 'article',
-      siteName: 'InterviewSense'
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: article.openGraph?.title || article.title,
-      description: article.openGraph?.description || article.metaDescription,
-      images: [article.openGraph?.image || '/og-image.png']
-    },
-    alternates: {
-      canonical: `https://interviewsense.com/opportunities/${params.slug}`
-    }
-  }
+  return generateSEOMetadata(pageData)
 }
 
 export default function OpportunityPage({ params }: PageProps) {
-  const article = getArticleData(params.slug)
+  const pageData = getPageData(params.slug)
 
-  if (!article) {
+  if (!pageData) {
     notFound()
   }
 
+  const questions = getQuestionsForPage(pageData)
+  const relatedPages: any[] = [
+    // Related pages would be populated here based on company/role similarity
+  ]
+
   return (
-    <>
-      {/* Structured Data */}
-      {article.structuredData && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(article.structuredData)
-          }}
-        />
-      )}
-
-      <article className="max-w-4xl mx-auto px-4 py-8">
-        {/* Article Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {article.title}
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            {article.metaDescription}
-          </p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {article.keywords?.slice(0, 5).map((keyword: string) => (
-              <span
-                key={keyword}
-                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-              >
-                {keyword}
-              </span>
-            ))}
-          </div>
-        </header>
-
-        {/* Article Content */}
-        <div 
-          className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
-          dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(article.content || '') }}
-        />
-
-        {/* Related Articles */}
-        <aside className="mt-12 pt-8 border-t border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Related Internship Opportunities
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Browse by Category
-              </h3>
-              <ul className="space-y-1">
-                <li><a href="/opportunities#software" className="text-blue-600 hover:underline">Software Engineering</a></li>
-                <li><a href="/opportunities#data-science" className="text-blue-600 hover:underline">Data Science & AI</a></li>
-                <li><a href="/opportunities#finance" className="text-blue-600 hover:underline">Finance & Consulting</a></li>
-                <li><a href="/opportunities#hardware" className="text-blue-600 hover:underline">Hardware Engineering</a></li>
-              </ul>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Helpful Resources
-              </h3>
-              <ul className="space-y-1">
-                <li><a href="/resume-checker" className="text-blue-600 hover:underline">Resume Checker</a></li>
-                <li><a href="/interview" className="text-blue-600 hover:underline">Practice Interviews</a></li>
-                <li><a href="/cover-letter" className="text-blue-600 hover:underline">Cover Letter Generator</a></li>
-                <li><a href="/technical-assessment" className="text-blue-600 hover:underline">Technical Assessment</a></li>
-              </ul>
-            </div>
-          </div>
-        </aside>
-
-        {/* Call to Action */}
-        <section className="mt-12 p-6 bg-blue-50 rounded-lg text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Ready to Land Your Dream Internship?
-          </h2>
-          <p className="text-gray-700 mb-6">
-            Get personalized help with your internship applications using our AI-powered tools.
-          </p>
-          <div className="space-y-3 sm:space-y-0 sm:space-x-3 sm:flex sm:justify-center">
-            <a
-              href="/resume-checker"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Check Your Resume
-            </a>
-            <a
-              href="/interview"
-              className="inline-block px-6 py-3 bg-white text-blue-600 font-medium rounded-lg border border-blue-600 hover:bg-blue-50 transition-colors"
-            >
-              Practice Interviews
-            </a>
-          </div>
-        </section>
-      </article>
-    </>
+    <ProgrammaticSEOTemplate 
+      data={pageData}
+      questions={questions}
+      relatedPages={relatedPages}
+    />
   )
-}
-
-// Helper function to convert markdown to HTML (basic implementation)
-function formatMarkdownToHTML(markdown: string): string {
-  return markdown
-    // Headers
-    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold mt-8 mb-4">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-10 mb-6">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-12 mb-8">$1</h1>')
-    // Bold and italic
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
-    // Lists
-    .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
-    .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-4">$2</li>')
-    // Paragraphs
-    .replace(/\n\n/g, '</p><p class="mb-4">')
-    .replace(/^(?!<[hlu])/gm, '<p class="mb-4">')
-    .replace(/(?<!>)$/gm, '</p>')
-    // Clean up extra p tags
-    .replace(/<p class="mb-4"><\/p>/g, '')
-    .replace(/<p class="mb-4">(<[hlu])/g, '$1')
 }
