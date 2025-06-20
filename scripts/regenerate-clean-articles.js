@@ -2,38 +2,51 @@ const fs = require('fs');
 const path = require('path');
 
 const GENERATED_CONTENT_DIR = path.join(__dirname, '..', 'generated-content', 'articles');
-const ARTICLES_DIR = path.join(__dirname, '..', 'src', 'app', 'articles');
+const OPPORTUNITIES_DIR = path.join(__dirname, '..', 'src', 'app', 'opportunities');
 
-// Function to create a clean article page from JSON data
-function createArticlePage(articleData) {
+// Function to create a clean opportunity page from JSON data
+function createOpportunityPage(opportunityData) {
+  // Generate function name from slug
+  const functionName = opportunityData.slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('') + 'Page';
+
   return `import { Metadata } from 'next'
-import { ArticleTemplate } from '@/components/ArticleTemplate'
+import { ProgrammaticSEOTemplate, generateMetadata, getQuestionsForPage } from '@/components/ProgrammaticSEOTemplate'
 
-const articleData = ${JSON.stringify(articleData, null, 2)}
+const pageData = ${JSON.stringify(opportunityData, null, 2)}
 
-export const metadata: Metadata = {
-  title: articleData.title,
-  description: articleData.metaDescription,
-  keywords: articleData.keywords,
-}
+export const metadata: Metadata = generateMetadata(pageData)
 
-export default function ArticlePage() {
-  return <ArticleTemplate data={articleData} />
+export default function ${functionName}() {
+  const questions = getQuestionsForPage(pageData)
+  const relatedPages = [
+    // Related pages would be populated here
+  ]
+
+  return (
+    <ProgrammaticSEOTemplate 
+      data={pageData}
+      questions={questions}
+      relatedPages={relatedPages}
+    />
+  )
 }
 `;
 }
 
-async function regenerateArticles() {
-  console.log('Starting article regeneration...');
+async function regenerateOpportunities() {
+  console.log('Starting opportunities regeneration...');
   
-  // Remove existing articles directory
-  if (fs.existsSync(ARTICLES_DIR)) {
-    console.log('Removing existing articles directory...');
-    fs.rmSync(ARTICLES_DIR, { recursive: true, force: true });
+  // Remove existing opportunities directory
+  if (fs.existsSync(OPPORTUNITIES_DIR)) {
+    console.log('Removing existing opportunities directory...');
+    fs.rmSync(OPPORTUNITIES_DIR, { recursive: true, force: true });
   }
   
-  // Create new articles directory
-  fs.mkdirSync(ARTICLES_DIR, { recursive: true });
+  // Create new opportunities directory
+  fs.mkdirSync(OPPORTUNITIES_DIR, { recursive: true });
   
   // Read all article JSON files
   const articleFiles = fs.readdirSync(GENERATED_CONTENT_DIR)
@@ -50,18 +63,18 @@ async function regenerateArticles() {
     .sort((a, b) => b.mtime - a.mtime) // Sort by modification time, newest first
     .slice(0, 1000); // Keep only 1000 most recent
   
-  console.log(`Processing ${articleFiles.length} most recent articles...`);
+  console.log(`Processing ${articleFiles.length} most recent opportunities...`);
   
   let processed = 0;
   let errors = 0;
   
   for (const { file, filePath } of articleFiles) {
     try {
-      // Read article data
-      const articleData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      // Read opportunity data
+      const opportunityData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       
       // Use the slug from the JSON file (which should be clean)
-      const slug = articleData.slug;
+      const slug = opportunityData.slug;
       
       if (!slug) {
         console.log(`Skipping ${file} - no slug found`);
@@ -74,18 +87,18 @@ async function regenerateArticles() {
         continue;
       }
       
-      // Create article directory
-      const articleDir = path.join(ARTICLES_DIR, slug);
-      fs.mkdirSync(articleDir, { recursive: true });
+      // Create opportunity directory
+      const opportunityDir = path.join(OPPORTUNITIES_DIR, slug);
+      fs.mkdirSync(opportunityDir, { recursive: true });
       
       // Create page.tsx
-      const pageContent = createArticlePage(articleData);
-      fs.writeFileSync(path.join(articleDir, 'page.tsx'), pageContent);
+      const pageContent = createOpportunityPage(opportunityData);
+      fs.writeFileSync(path.join(opportunityDir, 'page.tsx'), pageContent);
       
       processed++;
       
       if (processed % 100 === 0) {
-        console.log(`Processed ${processed} articles...`);
+        console.log(`Processed ${processed} opportunities...`);
       }
       
     } catch (error) {
@@ -95,9 +108,9 @@ async function regenerateArticles() {
   }
   
   console.log(`\nRegeneration complete!`);
-  console.log(`Processed: ${processed} articles`);
+  console.log(`Processed: ${processed} opportunities`);
   console.log(`Errors: ${errors}`);
-  console.log(`Articles directory: ${ARTICLES_DIR}`);
+  console.log(`Opportunities directory: ${OPPORTUNITIES_DIR}`);
 }
 
-regenerateArticles().catch(console.error);
+regenerateOpportunities().catch(console.error);

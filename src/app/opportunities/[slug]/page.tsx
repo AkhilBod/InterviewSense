@@ -1,12 +1,7 @@
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
-import { ContentManager } from '@/lib/content-manager';
-import { join } from 'path';
-
-/**
- * Dynamic Internship Opportunity Article Page
- * Renders SEO-optimized articles for individual internship listings
- */
+import { Metadata } from 'next'
+import fs from 'fs'
+import path from 'path'
+import { notFound } from 'next/navigation'
 
 interface PageProps {
   params: {
@@ -17,39 +12,39 @@ interface PageProps {
 // Generate static params for build time generation
 export async function generateStaticParams() {
   try {
-    const contentManager = new ContentManager({
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://interviewsense.com',
-      defaultImage: '/og-image.png',
-      companyName: 'InterviewSense'
-    });
-
-    const outputDir = join(process.cwd(), 'generated-content');
-    const articles = await contentManager.getGeneratedArticles(outputDir);
+    const articlesDir = path.join(process.cwd(), 'generated-content', 'articles')
+    const filenames = fs.readdirSync(articlesDir)
     
-    return articles.map((filename) => ({
-      slug: filename.replace('.json', '')
-    }));
+    return filenames
+      .filter(name => name.endsWith('.json'))
+      .map((filename) => ({
+        slug: filename.replace('.json', '')
+      }))
   } catch {
-    return [];
+    return []
+  }
+}
+
+// Load article data from JSON file
+function getArticleData(slug: string) {
+  try {
+    const filePath = path.join(process.cwd(), 'generated-content', 'articles', `${slug}.json`)
+    const fileContents = fs.readFileSync(filePath, 'utf8')
+    return JSON.parse(fileContents)
+  } catch {
+    return null
   }
 }
 
 // Generate metadata for each page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const contentManager = new ContentManager({
-    baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://interviewsense.com',
-    defaultImage: '/og-image.png',
-    companyName: 'InterviewSense'
-  });
-
-  const outputDir = join(process.cwd(), 'generated-content');
-  const article = await contentManager.getArticleBySlug(params.slug, outputDir);
+  const article = getArticleData(params.slug)
 
   if (!article) {
     return {
       title: 'Internship Not Found',
       description: 'The requested internship article could not be found.'
-    };
+    }
   }
 
   return {
@@ -57,52 +52,43 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: article.metaDescription,
     keywords: article.keywords,
     openGraph: {
-      title: article.openGraph.title,
-      description: article.openGraph.description,
-      images: [{ url: article.openGraph.image }],
-      url: article.openGraph.url,
+      title: article.openGraph?.title || article.title,
+      description: article.openGraph?.description || article.metaDescription,
+      images: [{ url: article.openGraph?.image || '/og-image.png' }],
+      url: article.openGraph?.url || `https://interviewsense.com/opportunities/${params.slug}`,
       type: 'article',
       siteName: 'InterviewSense'
     },
     twitter: {
       card: 'summary_large_image',
-      title: article.openGraph.title,
-      description: article.openGraph.description,
-      images: [article.openGraph.image]
+      title: article.openGraph?.title || article.title,
+      description: article.openGraph?.description || article.metaDescription,
+      images: [article.openGraph?.image || '/og-image.png']
     },
     alternates: {
-      canonical: article.openGraph.url
-    },
-    other: {
-      'article:published_time': article.lastUpdated,
-      'article:modified_time': article.lastUpdated
+      canonical: `https://interviewsense.com/opportunities/${params.slug}`
     }
-  };
+  }
 }
 
-export default async function InternshipOpportunityPage({ params }: PageProps) {
-  const contentManager = new ContentManager({
-    baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://interviewsense.com',
-    defaultImage: '/og-image.png',
-    companyName: 'InterviewSense'
-  });
-
-  const outputDir = join(process.cwd(), 'generated-content');
-  const article = await contentManager.getArticleBySlug(params.slug, outputDir);
+export default function OpportunityPage({ params }: PageProps) {
+  const article = getArticleData(params.slug)
 
   if (!article) {
-    notFound();
+    notFound()
   }
 
   return (
     <>
       {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(article.structuredData)
-        }}
-      />
+      {article.structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(article.structuredData)
+          }}
+        />
+      )}
 
       <article className="max-w-4xl mx-auto px-4 py-8">
         {/* Article Header */}
@@ -114,7 +100,7 @@ export default async function InternshipOpportunityPage({ params }: PageProps) {
             {article.metaDescription}
           </p>
           <div className="flex flex-wrap gap-2 mb-4">
-            {article.keywords.slice(0, 5).map((keyword) => (
+            {article.keywords?.slice(0, 5).map((keyword: string) => (
               <span
                 key={keyword}
                 className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
@@ -123,15 +109,12 @@ export default async function InternshipOpportunityPage({ params }: PageProps) {
               </span>
             ))}
           </div>
-          <p className="text-sm text-gray-500">
-            Last updated: {new Date(article.lastUpdated).toLocaleDateString()}
-          </p>
         </header>
 
         {/* Article Content */}
         <div 
           className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
-          dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(article.content) }}
+          dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(article.content || '') }}
         />
 
         {/* Related Articles */}
@@ -145,10 +128,10 @@ export default async function InternshipOpportunityPage({ params }: PageProps) {
                 Browse by Category
               </h3>
               <ul className="space-y-1">
-                <li><a href="/internship-opportunities#software" className="text-blue-600 hover:underline">Software Engineering</a></li>
-                <li><a href="/internship-opportunities#data-science" className="text-blue-600 hover:underline">Data Science & AI</a></li>
-                <li><a href="/internship-opportunities#quant" className="text-blue-600 hover:underline">Quantitative Finance</a></li>
-                <li><a href="/internship-opportunities#hardware" className="text-blue-600 hover:underline">Hardware Engineering</a></li>
+                <li><a href="/opportunities#software" className="text-blue-600 hover:underline">Software Engineering</a></li>
+                <li><a href="/opportunities#data-science" className="text-blue-600 hover:underline">Data Science & AI</a></li>
+                <li><a href="/opportunities#finance" className="text-blue-600 hover:underline">Finance & Consulting</a></li>
+                <li><a href="/opportunities#hardware" className="text-blue-600 hover:underline">Hardware Engineering</a></li>
               </ul>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
@@ -190,7 +173,7 @@ export default async function InternshipOpportunityPage({ params }: PageProps) {
         </section>
       </article>
     </>
-  );
+  )
 }
 
 // Helper function to convert markdown to HTML (basic implementation)
@@ -214,5 +197,5 @@ function formatMarkdownToHTML(markdown: string): string {
     .replace(/(?<!>)$/gm, '</p>')
     // Clean up extra p tags
     .replace(/<p class="mb-4"><\/p>/g, '')
-    .replace(/<p class="mb-4">(<[hlu])/g, '$1');
+    .replace(/<p class="mb-4">(<[hlu])/g, '$1')
 }
