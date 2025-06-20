@@ -220,7 +220,9 @@ export class InternshipScraper {
 
   private generateSlug(company: string, role: string, location: string): string {
     // Clean company name - remove URLs and special characters
-    const cleanCompany = company.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
+    const cleanCompany = company
+      .replace(/\*\*\[([^\]]+)\]\([^)]+\)\*\*/g, '$1') // Remove bold markdown links **[text](url)**
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links [text](url)
       .replace(/\*\*/g, '') // Remove bold markdown
       .replace(/[^a-z0-9\s]/gi, '')
       .trim();
@@ -229,7 +231,10 @@ export class InternshipScraper {
     const cleanRole = role.replace(/[^a-z0-9\s]/gi, '').trim();
     
     // Clean location - take only first part if multiple locations
-    const cleanLocation = location.split(',')[0].trim().replace(/[^a-z0-9\s]/gi, '');
+    const cleanLocation = location.split(',')[0].trim()
+      .replace(/[^a-z0-9\s]/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
     
     const slug = `${cleanCompany}-${cleanRole}-internship-${cleanLocation}`.toLowerCase()
       .replace(/\s+/g, '-')

@@ -1,214 +1,72 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { Metadata } from 'next'
+import { ArticleTemplate } from '@/components/ArticleTemplate'
 
-// Article metadata
 const articleData = {
-  slug: "sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
-  title: "Sabre Corporation Internship: Software Engineer - 2025 Summer Intern Position in Southlake, TX (2025)",
-  metaDescription: "Apply now for the Sabre Corporation Software Engineer - 2025 Summer Intern internship in Southlake, TX. Learn about requirements, application process, and tips for landing this Summer 2025 tech internship.",
-  keywords: ["Sabre Corporation internship", "Software Engineer - 2025 Summer Intern internship", "Sabre Corporation Software Engineer - 2025 Summer Intern", "summer 2025 internship", "tech internship Southlake, TX", "software internship", "Sabre Corporation careers", "internship application", "tech jobs 2025", "Southlake internship", "Sabre Corporation Southlake", "TX internship", "Sabre Corporation TX", "software engineering internship", "software developer internship"],
-  lastUpdated: "2025-06-19T22:10:25.814Z",
-  structuredData: {
-  "@context": "https://schema.org/",
-  "@type": "JobPosting",
-  "title": "Software Engineer - 2025 Summer Intern Internship",
-  "description": "Software Engineer - 2025 Summer Intern internship opportunity at Sabre Corporation in Southlake, TX for Summer 2025.",
-  "hiringOrganization": {
-    "@type": "Organization",
-    "name": "Sabre Corporation"
-  },
-  "jobLocation": {
-    "@type": "Place",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Southlake, TX"
-    }
-  },
-  "datePosted": "2025-06-13T22:10:25.814Z",
-  "employmentType": "INTERN",
-  "workHours": "40 hours per week",
-  "jobBenefits": "Competitive compensation, mentorship, professional development",
-  "industry": "Technology",
-  "occupationalCategory": "Software Engineering",
-  "qualifications": "Currently enrolled in Computer Science or related field",
-  "responsibilities": "Work on software projects, collaborate with teams, contribute to innovative solutions",
-  "url": "http://localhost:3000/internships/sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
-  "applicationDeadline": "Applications accepted on rolling basis"
-},
-  openGraph: {
+  "slug": "sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
   "title": "Sabre Corporation Internship: Software Engineer - 2025 Summer Intern Position in Southlake, TX (2025)",
-  "description": "Apply now for the Sabre Corporation Software Engineer - 2025 Summer Intern internship in Southlake, TX. Learn about requirements, application process, and tips for landing this Summer 2025 tech internship.",
-  "image": "http://localhost:3000/og-image.png",
-  "url": "http://localhost:3000/internships/sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
-  "type": "article",
-  "site_name": "InterviewSense"
+  "metaDescription": "Apply now for the Sabre Corporation Software Engineer - 2025 Summer Intern internship in Southlake, TX. Learn about requirements, application process, and tips for landing this Summer 2025 tech internship.",
+  "keywords": [
+    "Sabre Corporation internship",
+    "Software Engineer - 2025 Summer Intern internship",
+    "Sabre Corporation Software Engineer - 2025 Summer Intern",
+    "summer 2025 internship",
+    "tech internship Southlake, TX",
+    "software internship",
+    "Sabre Corporation careers",
+    "internship application",
+    "tech jobs 2025",
+    "Southlake internship",
+    "Sabre Corporation Southlake",
+    "TX internship",
+    "Sabre Corporation TX",
+    "software engineering internship",
+    "software developer internship"
+  ],
+  "content": "# Sabre Corporation Software Engineer - 2025 Summer Intern Internship - Summer 2025\n\nAre you looking for a software engineer - 2025 summer intern internship at Sabre Corporation? This comprehensive guide covers everything you need to know about applying for the **Sabre Corporation Software Engineer - 2025 Summer Intern internship** in Southlake, TX for Summer 2025.\n\n**Status:** Currently accepting applications | **Posted:** 6mo ago | **Location:** Southlake, TX\n\nThis internship opportunity is part of the Software Engineering field and offers valuable hands-on experience at one of the industry's leading companies.\n\n## About the Software Engineer - 2025 Summer Intern Internship at Sabre Corporation\n\nThe Software Engineer - 2025 Summer Intern internship at Sabre Corporation offers students an exceptional opportunity to gain real-world experience in software development and engineering. As an intern, you'll work alongside experienced professionals on meaningful projects that directly impact the company's success.\n\n### What You'll Do:\n- Collaborate with cross-functional teams on software projects\n- Apply theoretical knowledge to practical, real-world challenges\n- Participate in code reviews, design discussions, and team meetings\n- Contribute to Sabre Corporation's innovative technology solutions\n- Receive mentorship from senior engineers and industry experts\n\n### Program Highlights:\n- Duration: Summer 2025 (typically 10-12 weeks)\n- Location: Southlake, TX\n- Competitive compensation and benefits\n- Networking opportunities with industry professionals\n- Potential for full-time offer upon graduation\n\n## Application Requirements and Process\n\n### How to Apply\n\nThe application for this position is currently open. [Apply directly here](#).\n\n### Typical Requirements:\n- Currently enrolled in a Computer Science, Engineering, or related program\n- Expected graduation date between December 2025 and June 2027\n- Strong programming fundamentals\n- Previous internship or project experience (preferred)\n- Excellent problem-solving and communication skills\n- Ability to work collaboratively in a team environment\n\n### Application Materials:\n- Updated resume highlighting relevant coursework and projects\n- Cover letter tailored to Sabre Corporation and this specific role\n- Academic transcripts (may be required)\n- Portfolio or GitHub repository showcasing your work\n- References from professors or previous employers\n\n### Application Tips:\n1. **Tailor your resume** to highlight software experience\n2. **Research Sabre Corporation** thoroughly and mention specific projects or values\n3. **Showcase relevant projects** that demonstrate your technical abilities\n4. **Apply early** - many companies review applications on a rolling basis\n5. **Follow up** appropriately after submitting your application\n\n## Sabre Corporation Company Overview\n\nSabre Corporation is a leading technology company known for innovation and excellence in the software space. The company offers interns the opportunity to work on cutting-edge projects while building valuable skills and professional networks.\n\n### Why Choose Sabre Corporation?\n- **Innovation:** Work on projects that push the boundaries of technology\n- **Mentorship:** Learn from experienced professionals in your field\n- **Growth:** Develop both technical and professional skills\n- **Impact:** Contribute to products and services used by millions\n- **Culture:** Experience a collaborative and inclusive work environment\n- **Career Development:** Access to training, workshops, and career guidance\n\n### Internship Program Benefits:\n- Competitive hourly compensation\n- Housing stipend or corporate housing (location dependent)\n- Health and wellness benefits\n- Professional development opportunities\n- Networking events and social activities\n- Potential for return offers and full-time employment\n\n## Location: Southlake, TX\n\nThis internship is located in **Southlake, TX**, offering interns the opportunity to experience working in a dynamic tech hub.\n\n### About Working in Southlake:\n- Access to a thriving tech ecosystem and networking opportunities\n- Vibrant cultural scene and recreational activities\n- Public transportation and commuting options\n- Cost of living considerations for interns\n- Housing resources and recommendations\n\n### Workplace Environment:\n- Modern office facilities with state-of-the-art technology\n- Collaborative workspaces designed for innovation\n- On-site amenities and employee perks\n- Flexible work arrangements (policies vary by company)\n- Health and safety protocols\n\n*Note: Some positions may offer remote or hybrid work options. Check with Sabre Corporation for specific arrangements.*\n\n## Tips for Landing This Internship\n\n### Technical Preparation:\n1. **Review fundamentals** in data structures, algorithms, object-oriented programming, and system design\n2. **Practice coding** on platforms like LeetCode, HackerRank, or Codewars\n3. **Build projects** that demonstrate your skills in relevant technologies\n4. **Contribute to open source** projects to show collaboration skills\n5. **Learn Sabre Corporation's tech stack** through online resources and documentation\n\n### Interview Preparation:\n- **Technical interviews:** Expect questions on data structures, algorithms, and system design\n- **Behavioral interviews:** Prepare STAR method responses for common questions\n- **Company research:** Understand Sabre Corporation's mission, values, and recent news\n- **Mock interviews:** Practice with peers, career services, or online platforms\n- **Questions to ask:** Prepare thoughtful questions about the role and company culture\n\n### Standing Out as a Candidate:\n- **Demonstrate passion** for software and Sabre Corporation's work\n- **Show impact** in your previous experiences and projects\n- **Highlight leadership** experience and teamwork abilities\n- **Express curiosity** and eagerness to learn\n- **Communicate clearly** both verbally and in writing\n\n### Timeline Strategy:\n- Apply as early as possible when applications open\n- Follow up appropriately (but don't be pushy)\n- Prepare for multiple rounds of interviews\n- Be patient - the process can take several weeks\n- Have backup options while waiting for responses\n\n## Similar Internship Opportunities\n\nIf you're interested in this Software Engineer - 2025 Summer Intern position, you might also want to explore these similar opportunities:\n\n### Other software Internships:\n- Similar roles at companies in Southlake, TX\n- Software Engineer - 2025 Summer Intern positions at other major tech companies\n- Related roles in Software Engineering\n\n### Expanding Your Search:\n- **Different locations:** Consider remote or other city options\n- **Company size:** Look at startups, mid-size companies, and corporations\n- **Role variations:** Explore related positions that match your skills\n- **Industry focus:** Consider different sectors that need software talent\n\n### Additional Resources:\n- [University career services](https://career.pitt.edu/) for personalized guidance\n- Professional associations and student organizations\n- Tech meetups and networking events in your area\n- Online job boards and internship databases\n- LinkedIn for networking and job searching\n\n## Application Timeline and Deadlines\n\n### Application Process Timeline:\n\n**Application Submission:** 6mo ago\n- Applications typically reviewed on a rolling basis\n- Early applications often receive faster responses\n\n**Typical Interview Process:**\n1. **Resume screening** (1-2 weeks after application)\n2. **Phone/video screening** (30-45 minutes)\n3. **Technical interview(s)** (1-2 rounds, 45-60 minutes each)\n4. **Final round interviews** (may include behavioral and technical components)\n5. **Decision and offer** (1-2 weeks after final interview)\n\n### Key Dates to Remember:\n- **Early applications:** Best chances for interview consideration\n- **Interview seasons:** Most active from January through April\n- **Decision timeline:** Offers typically made by March-May\n- **Internship start:** Most Summer 2025 programs begin in June\n\n### What to Do While Waiting:\n- Continue applying to other positions\n- Work on technical skills and personal projects\n- Network with professionals in your field\n- Prepare for additional interview opportunities\n- Stay updated on industry trends and company news\n\n## Frequently Asked Questions\n\n**Q: What is the duration of this internship?**\nA: Most Summer 2025 internships run for 10-12 weeks, typically from June through August. Specific dates vary by company.\n\n**Q: Is this a paid internship?**\nA: Yes, Sabre Corporation internships are typically paid positions with competitive hourly rates plus benefits.\n\n**Q: What year students can apply?**\nA: Most internships are open to undergraduate and graduate students. Specific requirements vary, but typically juniors and seniors have the best chances.\n\n**Q: Can I apply if I'm not a CS major?**\nA: Many companies accept students from related fields like Computer Engineering, Electrical Engineering, Mathematics, and other STEM disciplines.\n\n**Q: What programming languages should I know?**\nA: Requirements vary by role, but common languages include Java, Python, C++, JavaScript, and Go. Check the job description for specific requirements.\n\n**Q: Does Sabre Corporation provide visa sponsorship?**\nA: Check directly with Sabre Corporation regarding their visa sponsorship policies for internships.\n\n**Q: How competitive is this internship?**\nA: Sabre Corporation internships are highly competitive. Strong technical skills, relevant experience, and early application improve your chances.\n\n**Q: Can this lead to a full-time offer?**\nA: Many companies extend full-time offers to successful interns. Performance during the internship is a key factor in receiving an offer.\n\n## Conclusion\n\nThe Sabre Corporation Software Engineer - 2025 Summer Intern internship represents an excellent opportunity to gain valuable experience in Software Engineering while working at a leading technology company. Don't miss this opportunity to apply and take the first step toward launching your career in tech.\n\nRemember to:\n- **Apply early** when positions become available\n- **Tailor your application** to Sabre Corporation specifically\n- **Prepare thoroughly** for the interview process\n- **Network actively** within the tech community\n- **Keep developing** your technical and professional skills\n\nGood luck with your application! The tech industry offers incredible opportunities for motivated students who are willing to put in the effort to prepare and apply strategically.\n\n---\n\n*Last updated: 6/19/2025 | Posted 6mo ago*\n\n## Ready to Apply?\n\n🚀 **[Apply Now for Sabre Corporation Software Engineer - 2025 Summer Intern Internship]()**\n\n\n\n📚 **Need more help?** Check out our [internship preparation guide](/internship-prep) and [resume templates](/resume-templates).",
+  "structuredData": {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Software Engineer - 2025 Summer Intern Internship",
+    "description": "Software Engineer - 2025 Summer Intern internship opportunity at Sabre Corporation in Southlake, TX for Summer 2025.",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Sabre Corporation"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Southlake, TX"
+      }
+    },
+    "datePosted": "2025-06-13T22:10:25.814Z",
+    "employmentType": "INTERN",
+    "workHours": "40 hours per week",
+    "jobBenefits": "Competitive compensation, mentorship, professional development",
+    "industry": "Technology",
+    "occupationalCategory": "Software Engineering",
+    "qualifications": "Currently enrolled in Computer Science or related field",
+    "responsibilities": "Work on software projects, collaborate with teams, contribute to innovative solutions",
+    "url": "http://localhost:3000/internships/sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
+    "applicationDeadline": "Applications accepted on rolling basis"
+  },
+  "openGraph": {
+    "title": "Sabre Corporation Internship: Software Engineer - 2025 Summer Intern Position in Southlake, TX (2025)",
+    "description": "Apply now for the Sabre Corporation Software Engineer - 2025 Summer Intern internship in Southlake, TX. Learn about requirements, application process, and tips for landing this Summer 2025 tech internship.",
+    "image": "http://localhost:3000/og-image.png",
+    "url": "http://localhost:3000/internships/sabre-corporation-software-engineer-2025-summer-intern-internship-southlake",
+    "type": "article",
+    "site_name": "InterviewSense"
+  },
+  "lastUpdated": "2025-06-19T22:10:25.814Z"
 }
-};
 
 export const metadata: Metadata = {
   title: articleData.title,
   description: articleData.metaDescription,
   keywords: articleData.keywords,
-  openGraph: {
-    title: articleData.openGraph.title,
-    description: articleData.openGraph.description,
-    images: [{ url: articleData.openGraph.image }],
-    url: articleData.openGraph.url,
-    type: 'article',
-    siteName: articleData.openGraph.site_name
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: articleData.openGraph.title,
-    description: articleData.openGraph.description,
-    images: [articleData.openGraph.image]
-  },
-  alternates: {
-    canonical: articleData.openGraph.url
-  },
-  other: {
-    'article:published_time': articleData.lastUpdated,
-    'article:modified_time': articleData.lastUpdated
-  }
-};
-
-// JSON-LD Structured Data
-function StructuredData() {
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(articleData.structuredData) }}
-    />
-  );
-}
-
-// Loading component
-function ArticleLoading() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-        <div className="space-y-4">
-          <div className="h-4 bg-gray-200 rounded"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Article content component
-async function ArticleContent() {
-  try {
-    // Dynamically import the article content
-    const { ContentManager } = await import('@/lib/content-manager');
-    const { join } = await import('path');
-    
-    const contentManager = new ContentManager({
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://interviewsense.com',
-      defaultImage: '/og-image.png',
-      companyName: 'InterviewSense'
-    });
-
-    const outputDir = join(process.cwd(), 'generated-content');
-    const article = await contentManager.getArticleBySlug("sabre-corporation-software-engineer-2025-summer-intern-internship-southlake", outputDir);
-
-    if (!article) {
-      notFound();
-    }
-
-    return (
-      <article className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Article Header */}
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {article.title}
-          </h1>
-          <p className="text-xl text-gray-600 mb-4">
-            {article.metaDescription}
-          </p>
-          <div className="flex items-center text-sm text-gray-500 space-x-4">
-            <time dateTime={article.lastUpdated}>
-              Last updated: {new Date(article.lastUpdated).toLocaleDateString()}
-            </time>
-            <span>•</span>
-            <span>{article.keywords.length} keywords</span>
-          </div>
-        </header>
-
-        {/* Article Content */}
-        <div 
-          className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-links:text-blue-600 prose-strong:text-gray-900"
-          dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(article.content) }}
-        />
-
-        {/* Call to Action */}
-        <div className="mt-12 p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-xl font-semibold text-blue-900 mb-3">
-            Ready to Practice Interview Questions?
-          </h3>
-          <p className="text-blue-700 mb-4">
-            Get access to thousands of practice questions and expert guidance to ace your next tech interview.
-          </p>
-          <a
-            href="/questionnaire"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Start Practicing Now
-          </a>
-        </div>
-
-        {/* Related Articles */}
-        <div className="mt-12 border-t pt-8">
-          <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-            Related Opportunities
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Related articles would be populated here based on similar companies, roles, or locations */}
-            <div className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-              <h4 className="font-medium text-gray-900 mb-2">Similar Internships</h4>
-              <p className="text-sm text-gray-600">
-                Explore more opportunities in the same field
-              </p>
-              <a href="/articles" className="text-blue-600 text-sm font-medium hover:underline">
-                View All →
-              </a>
-            </div>
-          </div>
-        </div>
-      </article>
-    );
-  } catch (error) {
-    console.error('Error loading article:', error);
-    notFound();
-  }
-}
-
-// Helper function to convert markdown to HTML (basic implementation)
-function formatMarkdownToHTML(markdown) {
-  return markdown
-    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^\)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    .replace(/\n\n/gim, '</p><p>')
-    .replace(/\n/gim, '<br>')
-    .replace(/^(.+)$/gim, '<p>$1</p>');
 }
 
 export default function ArticlePage() {
-  return (
-    <>
-      <StructuredData />
-      <Suspense fallback={<ArticleLoading />}>
-        <ArticleContent />
-      </Suspense>
-    </>
-  );
+  return <ArticleTemplate data={articleData} />
 }

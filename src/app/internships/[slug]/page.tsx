@@ -26,10 +26,23 @@ export async function generateStaticParams() {
     const outputDir = join(process.cwd(), 'generated-content');
     const articles = await contentManager.getGeneratedArticles(outputDir);
     
-    return articles.map((filename) => ({
-      slug: filename.replace('.json', '')
-    }));
-  } catch {
+    // Filter out malformed slugs (those containing URLs or being too long)
+    const validSlugs = articles
+      .map((filename) => filename.replace('.json', ''))
+      .filter((slug) => {
+        // Filter out slugs that contain URLs or are malformed
+        if (slug.includes('http') || slug.includes('utm') || slug.length > 100) {
+          console.warn(`Skipping malformed slug: ${slug}`);
+          return false;
+        }
+        return true;
+      });
+    
+    console.log(`Generated ${validSlugs.length} valid static params from ${articles.length} total articles`);
+    
+    return validSlugs.map((slug) => ({ slug }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
     return [];
   }
 }
