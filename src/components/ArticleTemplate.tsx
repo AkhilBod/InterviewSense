@@ -102,18 +102,7 @@ export function ArticleTemplate({ data }: ArticleTemplateProps) {
             )}
 
             {/* Apply Button */}
-            {data.url && (
-              <div className="text-center">
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Apply Now
-                </a>
-              </div>
-            )}
+
           </div>
 
           {/* Keywords for SEO */}

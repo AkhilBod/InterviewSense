@@ -177,38 +177,7 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
               </p>
               
               {/* Apply Buttons for Internship Listings */}
-              {data.internship && (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                  {data.internship.applyUrl && (
-                    <Button
-                      asChild
-                      size="lg"
-                      className="text-base px-8 py-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-lg shadow-lg font-semibold"
-                    >
-                      <a href={data.internship.applyUrl} target="_blank" rel="noopener noreferrer">
-                        Apply Now <ArrowRight className="ml-2 h-5 w-5" />
-                      </a>
-                    </Button>
-                  )}
-                  
-                  {data.internship.simplifyUrl && (
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="text-base px-8 py-4 border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg"
-                    >
-                      <a href={data.internship.simplifyUrl} target="_blank" rel="noopener noreferrer">
-                        Apply via Simplify
-                      </a>
-                    </Button>
-                  )}
-                  
-                  <div className="text-center text-sm text-zinc-500 mt-2">
-                    Posted {data.internship.postedDays} ago • {data.internship.location}
-                  </div>
-                </div>
-              )}
+
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                 <Button
