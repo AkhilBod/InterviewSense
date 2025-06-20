@@ -17,7 +17,7 @@ function generateOpportunitiesSitemap() {
     .filter(filename => filename.endsWith('.json'))
     .map(filename => filename.replace('.json', ''))
 
-  const baseUrl = 'https://interviewsense.org'
+  const baseUrl = 'https://www.interviewsense.org'
   const currentDate = new Date().toISOString().split('T')[0] // YYYY-MM-DD
 
   let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
