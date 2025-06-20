@@ -205,9 +205,9 @@ export default function Home() {
         {/* Navigation Bar */}
         <nav className="w-full z-50 relative">
           <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-            {/* Logo Section - Made larger and more prominent */}
+            {/* Logo Section - Made smaller and more compact */}
             <div className="flex items-center gap-4">
-              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={56} height={56} className="object-contain" />
+              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={40} height={40} className="object-contain" />
               <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
             </div>
 
@@ -350,7 +350,7 @@ export default function Home() {
                 <Button
                   onClick={handleGetStartedClick}
                   size="lg"
-                  className="text-base px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-md font-semibold"
+                  className="text-base px-8 py-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-md font-semibold"
                 >
                   Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
