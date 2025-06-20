@@ -7,11 +7,9 @@ Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
 
-# Allow all internship SEO pages for crawling
-Allow: /internships/
-Allow: /internships/*/
-Allow: /internships/topics/
-Allow: /internships/topics/*/
+# Allow all opportunity SEO pages for crawling
+Allow: /opportunities/
+Allow: /opportunities/*/
 
 # Important user-facing pages
 Allow: /signup

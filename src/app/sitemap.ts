@@ -1,48 +1,84 @@
 import { MetadataRoute } from 'next'
- 
+import fs from 'fs'
+import path from 'path'
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
+  const baseUrl = 'https://interviewsense.org'
+  
+  // Static pages
+  const staticPages: MetadataRoute.Sitemap = [
     {
-      url: 'https://interviewsense.org',
+      url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: 'https://interviewsense.org/login',
+      url: `${baseUrl}/login`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://interviewsense.org/signup',
+      url: `${baseUrl}/signup`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://interviewsense.org/dashboard',
+      url: `${baseUrl}/dashboard`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: 'https://interviewsense.org/interview',
+      url: `${baseUrl}/interview`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: 'https://interviewsense.org/technical-assessment',
+      url: `${baseUrl}/technical-assessment`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: 'https://interviewsense.org/resume-checker',
+      url: `${baseUrl}/resume-checker`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/opportunities`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
   ]
+
+  // Dynamic opportunity pages
+  let opportunityPages: MetadataRoute.Sitemap = []
+  
+  try {
+    const articlesDir = path.join(process.cwd(), 'generated-content', 'articles')
+    if (fs.existsSync(articlesDir)) {
+      const articleFiles = fs.readdirSync(articlesDir)
+        .filter(file => file.endsWith('.json'))
+      
+      opportunityPages = articleFiles.map(file => {
+        const slug = file.replace('.json', '')
+        return {
+          url: `${baseUrl}/opportunities/${slug}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Error loading opportunities for sitemap:', error)
+  }
+
+  return [...staticPages, ...opportunityPages]
 }
