@@ -140,7 +140,7 @@ export default function InternshipsPage() {
                       asChild
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                     >
-                      <Link href={`/internships/${company.slug}`}>
+                      <Link href="/signup">
                         Practice {company.name} Questions <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -183,7 +183,7 @@ export default function InternshipsPage() {
                       asChild
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                     >
-                      <Link href={`/internships/topics/${topic.slug}`}>
+                      <Link href="/signup">
                         Start Practicing <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -223,7 +223,7 @@ export default function InternshipsPage() {
                     asChild
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                   >
-                    <Link href="/internships/google-software-engineer-intern">
+                    <Link href="/signup">
                       Practice Questions <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -248,7 +248,7 @@ export default function InternshipsPage() {
                     asChild
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                   >
-                    <Link href="/internships/meta-frontend-developer-intern">
+                    <Link href="/signup">
                       Practice Questions <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -273,7 +273,7 @@ export default function InternshipsPage() {
                     asChild
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                   >
-                    <Link href="/internships/amazon-system-design">
+                    <Link href="/signup">
                       Practice Questions <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
