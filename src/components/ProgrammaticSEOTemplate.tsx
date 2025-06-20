@@ -149,7 +149,7 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                 {data.company && (
                   <>
                     <span className="mx-2">→</span>
-                    <Link href={`/internships/${data.company.slug}`} className="hover:text-blue-400">
+                    <Link href="/signup" className="hover:text-blue-400">
                       {data.company.name}
                     </Link>
                   </>
@@ -435,7 +435,7 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                           variant="outline"
                           className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-700"
                         >
-                          <Link href={`/internships/${page.slug}`}>
+                          <Link href="/signup">
                             View Questions <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
