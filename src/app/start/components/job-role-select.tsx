@@ -229,9 +229,11 @@ export default function JobRoleSelect({ onJobDetailsChange, interviewType }: Job
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  {industries.map((ind) => (
-                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                  ))}
+                  {industries
+                    .filter(ind => ind && ind.trim() !== '')
+                    .map((ind) => (
+                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

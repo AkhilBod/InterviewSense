@@ -41,7 +41,8 @@ import {
   LogOut, 
   ChevronDown,
   Play,
-  LayoutDashboard
+  LayoutDashboard,
+  RefreshCw
 } from "lucide-react"
 
 const TECH_JOB_TITLES = [
@@ -85,6 +86,7 @@ interface MicrophoneState {
   selectedDevice: string;
   volume: number;
   isSupported: boolean;
+  isLoading: boolean;
 }
 
 export default function StartPage() {
@@ -111,7 +113,8 @@ export default function StartPage() {
     devices: [],
     selectedDevice: '',
     volume: 100,
-    isSupported: false
+    isSupported: false,
+    isLoading: false
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,23 +128,49 @@ export default function StartPage() {
 
   const checkMicrophoneSupport = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      setMicState(prev => ({ ...prev, isSupported: false }));
+      setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }));
       return;
     }
 
+    setMicState(prev => ({ ...prev, isLoading: true }));
+
     try {
+      // First, request microphone permission to get device labels
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Now enumerate devices (this will include labels after permission is granted)
       const devices = await navigator.mediaDevices.enumerateDevices();
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
+      
+      // Stop the stream as we only needed it for permission
+      stream.getTracks().forEach(track => track.stop());
       
       setMicState(prev => ({
         ...prev,
         isSupported: true,
         devices: audioDevices,
-        selectedDevice: audioDevices[0]?.deviceId || ''
+        selectedDevice: audioDevices[0]?.deviceId || '',
+        isLoading: false
       }));
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      setMicState(prev => ({ ...prev, isSupported: false }));
+      
+      // Try to enumerate devices anyway (might work without labels)
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioDevices = devices.filter(device => device.kind === 'audioinput');
+        
+        setMicState(prev => ({
+          ...prev,
+          isSupported: audioDevices.length > 0,
+          devices: audioDevices,
+          selectedDevice: audioDevices[0]?.deviceId || '',
+          isLoading: false
+        }));
+      } catch (enumError) {
+        console.error('Error enumerating devices:', enumError);
+        setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }));
+      }
     }
   };
 
@@ -172,7 +201,7 @@ export default function StartPage() {
     }
   };
 
-  const handleStartInterview = () => {
+  const handleStartInterview = async () => {
     if (!formData.jobTitle) {
       toast({
         title: "Please enter a job title",
@@ -182,6 +211,8 @@ export default function StartPage() {
       return;
     }
     
+    // Refresh microphone devices before showing the dialog
+    await checkMicrophoneSupport();
     setShowMicSetup(true);
   };
 
@@ -474,24 +505,59 @@ export default function StartPage() {
           <div className="space-y-6 py-4">
             {/* Microphone Selection */}
             <div className="space-y-3">
-              <Label className="text-zinc-300">Microphone</Label>
-              <Select 
-                value={micState.selectedDevice} 
-                onValueChange={(value) => setMicState(prev => ({ ...prev, selectedDevice: value }))}
-              >
-                <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                  <SelectValue placeholder="Select microphone" />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-600">
-                  {micState.devices
-                    .filter(device => device.deviceId && device.deviceId.trim() !== '')
-                    .map(device => (
-                      <SelectItem key={device.deviceId} value={device.deviceId}>
-                        {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label className="text-zinc-300">Microphone</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={checkMicrophoneSupport}
+                  className="text-zinc-400 hover:text-zinc-300 p-1"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {micState.isLoading ? (
+                <div className="bg-zinc-800 border border-zinc-600 rounded-md p-3 text-center">
+                  <div className="flex items-center justify-center space-x-2 text-zinc-400">
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Detecting microphones...</span>
+                  </div>
+                </div>
+              ) : micState.devices.length === 0 ? (
+                <div className="bg-zinc-800 border border-zinc-600 rounded-md p-3 text-center">
+                  <p className="text-sm text-zinc-400 mb-2">
+                    No microphones detected. Please allow microphone access.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={checkMicrophoneSupport}
+                    className="bg-zinc-700 border-zinc-600 hover:bg-zinc-600"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Detect Microphones
+                  </Button>
+                </div>
+              ) : (
+                <Select 
+                  value={micState.selectedDevice} 
+                  onValueChange={(value) => setMicState(prev => ({ ...prev, selectedDevice: value }))}
+                >
+                  <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                    <SelectValue placeholder="Select microphone" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-600">
+                    {micState.devices
+                      .filter(device => device.deviceId && device.deviceId.trim() !== '')
+                      .map(device => (
+                        <SelectItem key={device.deviceId} value={device.deviceId}>
+                          {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Volume Control */}
