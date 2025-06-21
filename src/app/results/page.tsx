@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, ArrowLeft, Download, Share2, RefreshCw, BarChart, Printer, User, TrendingUp, CheckCircle, Target, Brain } from 'lucide-react';
+import { MessageSquare, Download, Share2, RefreshCw, BarChart, Printer, User, TrendingUp, CheckCircle, Target, Brain } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -128,18 +128,10 @@ function ResultsPage() {
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-                <span className="font-semibold text-white">InterviewSense</span>
-              </Link>
-            </div>
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+              <span className="font-semibold text-white">InterviewSense</span>
+            </Link>
             <UserAccountDropdown />
           </div>
         </header>
