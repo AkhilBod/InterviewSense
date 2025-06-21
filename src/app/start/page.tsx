@@ -369,21 +369,21 @@ export default function StartPage() {
                 {/* Resume Upload and Job Title Row */}
                 <div className="flex items-end justify-between gap-6">
                   {/* Job Title Selection */}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
                     <Select 
                       value={formData.jobTitle} 
                       onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
                     >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                      <SelectTrigger className="bg-zinc-800 border-zinc-600 text-left w-full [&>span]:text-left [&>span]:justify-start">
                         <SelectValue placeholder="Select your job title" />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
+                      <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60 w-full">
                         {TECH_JOB_TITLES
                           .filter(job => job.title && job.title.trim() !== '')
                           .map(job => (
-                            <SelectItem key={job.id} value={job.title}>
-                              <div>
+                            <SelectItem key={job.id} value={job.title} className="text-left">
+                              <div className="flex flex-col items-start w-full">
                                 <div className="font-medium">{job.title}</div>
                                 <div className="text-sm text-zinc-400">{job.description}</div>
                               </div>

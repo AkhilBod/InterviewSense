@@ -609,17 +609,17 @@ public:
                     required={!useCustomNumber}
                     disabled={useCustomNumber}
                   >
-                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100">
-                      <SelectValue placeholder="Select your role" />
+                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left">
+                      <SelectValue placeholder="Select your role" className="text-left" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
                       {TECH_JOB_TITLES
                         .filter(job => job.title && job.title.trim() !== '')
                         .map(job => (
-                          <SelectItem key={job.id} value={job.title}>
-                            <div>
-                              <div className="font-medium">{job.title}</div>
-                              <div className="text-sm text-zinc-400">{job.description}</div>
+                          <SelectItem key={job.id} value={job.title} className="justify-start text-left data-[highlighted]:text-left">
+                            <div className="flex flex-col items-start w-full text-left">
+                              <div className="font-medium text-left w-full">{job.title}</div>
+                              <div className="text-sm text-zinc-400 text-left w-full">{job.description}</div>
                             </div>
                           </SelectItem>
                         ))}
