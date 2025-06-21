@@ -117,6 +117,13 @@ const handler = NextAuth({
        * For major providers like Google, this is generally a safe assumption.
        */
       allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
   ],
   session: {
@@ -132,10 +139,44 @@ const handler = NextAuth({
     signOut: '/login',
     error: '/login',
     verifyRequest: '/verify-request',
-    newUser: '/signup'
+    // Remove newUser redirect - let new users go to their intended destination
+    // newUser: '/signup'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile, email, credentials }) {
+      // Log sign-in attempt for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SignIn callback:', { 
+          user: user?.email, 
+          account: account?.provider,
+          error: null 
+        });
+      }
+      
+      // Allow all sign-ins
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // Log redirect for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Redirect callback:', { url, baseUrl });
+      }
+      
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
+    },
+    async jwt({ token, user, account }) {
+      // Log JWT callback for debugging
+      if (process.env.NODE_ENV === 'development' && account) {
+        console.log('JWT callback:', { 
+          provider: account.provider, 
+          userId: user?.id 
+        });
+      }
+      
       if (user) {
         token.id = user.id
       }
@@ -149,7 +190,20 @@ const handler = NextAuth({
     }
   },
   events: {
-    // ...existing events...
+    async signIn({ user, account, profile, isNewUser }) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('User signed in:', { 
+          email: user.email, 
+          provider: account?.provider,
+          isNewUser 
+        });
+      }
+    },
+    async createUser({ user }) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('New user created:', { email: user.email });
+      }
+    }
   },
   debug: process.env.NODE_ENV === 'development',
   // Configure to reduce database calls

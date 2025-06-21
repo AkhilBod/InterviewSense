@@ -113,12 +113,29 @@ function DashboardPage() {
   };
 
   useEffect(() => {
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Dashboard auth check:', { status, hasSession: !!session?.user });
+    }
+    
     // Don't redirect while session is still loading
     if (status === "loading") return;
     
-    if (!session?.user) {
-      router.push('/login');
-      return;
+    // For unauthenticated users, add a delay to account for OAuth redirects
+    // especially for new Google users who might have a slight delay in session establishment
+    if (status === "unauthenticated" || !session?.user) {
+      const timer = setTimeout(() => {
+        // Double-check session status after a brief delay
+        // Only redirect if we're definitively unauthenticated
+        if (status === "unauthenticated") {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Redirecting to login after delay - still unauthenticated');
+          }
+          router.push('/login');
+        }
+      }, 2000); // 2 second delay to allow session to establish for OAuth flows
+      
+      return () => clearTimeout(timer);
     }
 
     const fetchData = async () => {
@@ -151,27 +168,31 @@ function DashboardPage() {
       }
     };
 
-    fetchData();
+    // Only fetch data if we have a session
+    if (session?.user) {
+      fetchData();
+    }
   }, [session, router, status]);
 
-  // Show loading while session is being fetched
+  // Show loading while session is being fetched or during OAuth redirect flow
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <p className="mt-4 text-zinc-400">Setting up your account...</p>
         </div>
       </div>
     );
   }
 
-  if (!session) {
+  // Show loading for a brief moment if no session yet (OAuth might still be completing)
+  if (!session && status !== "unauthenticated") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <p className="mt-4 text-zinc-400">Loading your dashboard...</p>
         </div>
       </div>
     );
