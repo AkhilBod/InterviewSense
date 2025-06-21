@@ -1062,10 +1062,6 @@ export default function Home() {
               <span className="text-sm text-blue-300 font-medium">Join hundreds of developers already practicing</span>
             </div>
             
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 md:mb-6">
-              Ready to Ace Your Next Interview?
-            </h2>
-            
             <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto">
               Join thousands of developers who've already landed their dream jobs. 
               <span className="text-blue-400 font-semibold"> Start practicing in under 30 seconds.</span>
@@ -1226,7 +1222,6 @@ export default function Home() {
           <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 max-w-5xl mx-auto backdrop-blur-sm">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
               <div className="max-w-xl text-center md:text-left">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 md:mb-4">Ready to ace your next interview?</h2>
                 <p className="text-sm sm:text-base text-zinc-400 mb-0">
                   Join thousands of professionals who have transformed their interview skills with InterviewSense.
                 </p>

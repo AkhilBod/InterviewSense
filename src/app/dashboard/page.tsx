@@ -227,30 +227,6 @@ function DashboardPage() {
           <h1 className="text-4xl font-bold text-white mb-4">
             Welcome back, {session?.user?.name?.split(' ')[0] || 'Interviewer'}! 
           </h1>
-          <p className="text-zinc-400 text-lg">Ready to ace your next interview?</p>
-          
-          {/* Progress Test Controls - Development Only */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-6 flex items-center justify-center gap-4">
-              <Button
-                onClick={testInterview}
-                disabled={refreshing}
-                size="sm"
-                className="bg-yellow-600 hover:bg-yellow-700 text-white"
-              >
-                {refreshing ? 'Processing...' : 'Test Interview Complete'}
-              </Button>
-              <Button
-                onClick={refreshProgress}
-                disabled={refreshing}
-                size="sm"
-                variant="outline"
-                className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
-              >
-                {refreshing ? 'Refreshing...' : 'Refresh Stats'}
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Main Action Cards */}

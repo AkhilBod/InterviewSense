@@ -150,7 +150,7 @@ function LoginPage() {
         const data = await response.json()
         
         if (!data.onboardingCompleted) {
-          router.push('/questionnaire')
+          router.push('/dashboard')
           return
         }
         

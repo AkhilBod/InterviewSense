@@ -1,34 +1,5 @@
 "use client"
 
-// Add global type declarations for Speech Recognition
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number;
-  results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message?: string;
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-  onend: (() => void) | null;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognition;
-    webkitSpeechRecognition?: new () => SpeechRecognition;
-  }
-}
-
 import Link from "next/link";
 import { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -246,7 +217,6 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [thoughtProcess, setThoughtProcess] = useState('');
-  const [currentTranscript, setCurrentTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -266,10 +236,6 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   // Audio recording refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  
-  // Speech recognition refs for live transcript
-  const speechRecognitionRef = useRef<any>(null);
-  const transcriptRef = useRef<HTMLDivElement | null>(null);
 
   // Language templates
   const languageTemplates: Record<string, string> = {
@@ -312,39 +278,6 @@ public:
 }`,
     csharp: `public class Solution {
     public int[] Solution() {
-        // Write your solution here
-        
-    }
-}`,
-    java: `class Solution {
-    public int solution() {
-        // Write your solution here
-        
-    }
-}`,
-    cpp: `class Solution {
-public:
-    int solution() {
-        // Write your solution here
-        
-    }
-};`,
-    typescript: `function solution(): number {
-    // Write your solution here
-    
-}`,
-    go: `func solution() int {
-    // Write your solution here
-    
-}`,
-    rust: `impl Solution {
-    pub fn solution() -> i32 {
-        // Write your solution here
-        
-    }
-}`,
-    csharp: `public class Solution {
-    public int Solution() {
         // Write your solution here
         
     }
@@ -397,88 +330,6 @@ public:
       console.error('Error fetching question:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Speech Recognition for live transcript
-  const startSpeechRecognition = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      console.warn('Speech recognition not supported in this browser');
-      return;
-    }
-
-    // @ts-ignore - Speech recognition types might not be fully supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    
-    let finalTranscript = '';
-    let interimTranscript = '';
-    
-    recognition.onresult = (event) => {
-      finalTranscript = '';
-      interimTranscript = '';
-      
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-      
-      // Update the current transcript state with both final and interim results
-      const combinedTranscript = thoughtProcess + finalTranscript + interimTranscript;
-      setCurrentTranscript(combinedTranscript);
-      
-      // Auto-scroll to bottom
-      if (transcriptRef.current) {
-        transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
-      }
-    };
-    
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-    };
-    
-    recognition.onend = () => {
-      // Save the final transcript
-      if (finalTranscript) {
-        setThoughtProcess(prev => prev + finalTranscript);
-      }
-      
-      // Restart recognition if still recording
-      if (isRecording && speechRecognitionRef.current) {
-        try {
-          recognition.start();
-        } catch (error) {
-          console.warn('Could not restart speech recognition:', error);
-        }
-      }
-    };
-    
-    speechRecognitionRef.current = recognition;
-    
-    try {
-      recognition.start();
-    } catch (error) {
-      console.error('Could not start speech recognition:', error);
-    }
-  };
-
-  const stopSpeechRecognition = () => {
-    if (speechRecognitionRef.current) {
-      speechRecognitionRef.current.stop();
-      speechRecognitionRef.current = null;
-      
-      // Save any remaining transcript
-      if (currentTranscript && currentTranscript !== thoughtProcess) {
-        setThoughtProcess(currentTranscript);
-      }
     }
   };
 
@@ -550,9 +401,6 @@ public:
       recorder.start();
       setIsRecording(true);
       
-      // Start speech recognition for live transcript
-      startSpeechRecognition();
-      
       toast({
         title: "Recording started",
         description: "Explain your solution clearly into your microphone",
@@ -604,9 +452,6 @@ public:
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
-      // Stop speech recognition
-      stopSpeechRecognition();
       
       // Stop all audio tracks from the stream
       if (mediaRecorderRef.current.stream) {
@@ -1067,41 +912,16 @@ public:
                     )}
                   </div>
                   
-                  {/* Live Transcript Display */}
-                  <div 
-                    ref={transcriptRef}
-                    className="flex-1 min-h-[120px] max-h-[200px] bg-slate-900 border border-slate-600 rounded-md p-3 overflow-y-auto"
-                  >
-                    {currentTranscript || thoughtProcess ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className={`h-2 w-2 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                          <span className="text-xs text-slate-400 font-medium">
-                            {isRecording ? 'LIVE TRANSCRIPT' : 'TRANSCRIPT'}
-                          </span>
-                          {isTranscribing && (
-                            <div className="flex items-center gap-1">
-                              <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
-                              <span className="text-xs text-blue-400">Processing...</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-slate-200 whitespace-pre-wrap leading-relaxed">
-                          {isRecording ? currentTranscript : thoughtProcess}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-center">
-                        <div className={`h-3 w-3 rounded-full mb-3 ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                        <p className="text-slate-400 text-sm mb-1">
-                          {isRecording ? 'Recording...' : 'Click the microphone button to start recording'}
-                        </p>
-                        <p className="text-slate-500 text-xs">
-                          Your explanation will appear here as you speak
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  <Textarea
+                    value={thoughtProcess}
+                    onChange={(e) => setThoughtProcess(e.target.value)}
+                    className="flex-1 min-h-[120px] max-h-[200px] resize-none bg-slate-900 border-slate-600 focus:border-blue-500 transition-colors"
+                    placeholder="Explain your solution approach here. Consider including:
+• Your algorithm strategy and why you chose it
+• Time and space complexity analysis
+• How you handle edge cases
+• Alternative approaches you considered"
+                  />
                 </div>
               </div>
               
