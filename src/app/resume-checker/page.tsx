@@ -308,89 +308,91 @@ export default function ResumeCheckerPage() {
             <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
               <div className="w-full max-w-2xl">
                 <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
-                  <CardHeader className="text-center pt-8">
-                    <CardTitle className="text-2xl font-bold">Resume Checker</CardTitle>
-                    <p className="text-zinc-400 mt-2 text-base">
-                      Upload your resume and get instant AI-powered feedback and suggestions.
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-6 px-8 pb-8">
+                  <CardContent className="space-y-6 px-8 pb-8 pt-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Upload Resume (PDF, DOC, DOCX)
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
-                            onClick={() =>
-                              document.getElementById("resume-upload")?.click()
-                            }
+                      {/* Job Title and Resume Upload Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Job Title Section - Takes 2/3 of the space */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium mb-2">
+                            Job Title
+                          </label>
+                          <Select 
+                            value={jobTitle} 
+                            onValueChange={setJobTitle}
+                            required
                           >
-                            <Upload className="h-4 w-4 mr-2" />
-                            {resume ? "Change File" : "Upload Resume"}
-                          </Button>
-                          <input
-                            id="resume-upload"
-                            name="resume"
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={handleResumeChange}
-                          />
+                            <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                              <SelectValue placeholder="Select your job title" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
+                              {TECH_JOB_TITLES.map(job => (
+                                <SelectItem key={job.id} value={job.title}>
+                                  <div>
+                                    <div className="font-medium">{job.title}</div>
+                                    <div className="text-sm text-zinc-400">{job.description}</div>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Resume Upload Section - Takes 1/3 of the space */}
+                        <div className="md:col-span-1">
+                          <label className="block text-sm font-medium mb-2">
+                            Resume
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+                              onClick={() =>
+                                document.getElementById("resume-upload")?.click()
+                              }
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              {resume ? "Change File" : "Upload Resume"}
+                            </Button>
+                            <input
+                              id="resume-upload"
+                              name="resume"
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                              onChange={handleResumeChange}
+                            />
+                          </div>
                           {resume && (
-                            <span className="text-sm text-zinc-400 flex items-center">
-                              <FileText className="h-3 w-3 mr-1" />
-                              {resume.name.length > 20
-                                ? `${resume.name.substring(0, 20)}...`
-                                : resume.name}
-                            </span>
+                            <div className="mt-2">
+                              <span className="text-xs text-zinc-400 flex items-center">
+                                <FileText className="h-3 w-3 mr-1" />
+                                {resume.name.length > 15
+                                  ? `${resume.name.substring(0, 15)}...`
+                                  : resume.name}
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Target Job Title <span className="text-red-500">*</span>
-                        </label>
-                        <Select 
-                          value={jobTitle} 
-                          onValueChange={setJobTitle}
-                          required
-                        >
-                          <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100">
-                            <SelectValue placeholder="Select your job title" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-slate-600 max-h-60">
-                            {TECH_JOB_TITLES.map(job => (
-                              <SelectItem key={job.id} value={job.title}>
-                                <div>
-                                  <div className="font-medium">{job.title}</div>
-                                  <div className="text-sm text-slate-400">{job.description}</div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Target Company (Optional)
+                          Company
                         </label>
                         <Input
-                          placeholder="e.g. Google, Amazon"
+                          placeholder="Company"
                           value={company}
                           onChange={(e) => setCompany(e.target.value)}
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Job Description (Optional)
+                          Job Description
                         </label>
                         <Textarea
-                          placeholder="Paste the job description here for more personalized feedback..."
+                          placeholder="Job Description"
                           value={jobDescription}
                           onChange={(e) => setJobDescription(e.target.value)}
                           className="min-h-[100px]"

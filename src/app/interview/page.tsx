@@ -5,25 +5,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/avatar';
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 import {
   Sheet,
   SheetContent,
@@ -40,80 +28,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
-import React from 'react';
 import CodeEditor from '@/components/CodeEditor';
-
-// Simple Wave Visualization Component
-const WaveformVisualization = ({ audioLevels }: { audioLevels: number[] }) => {
-  const averageLevel = audioLevels.length > 0 
-    ? audioLevels.reduce((sum, level) => sum + level, 0) / audioLevels.length 
-    : 0;
-  
-  // Convert audio level to wave amplitude (0-30px range)
-  const amplitude = Math.max(2, Math.min(30, averageLevel * 0.5));
-  
-  // Create wave path - simple sine wave
-  const createWavePath = (width: number, height: number, amp: number, offset: number = 0) => {
-    const centerY = height / 2;
-    const frequency = 0.02; // Wave frequency
-    const points = [];
-    
-    for (let x = 0; x <= width; x += 2) {
-      const y = centerY + Math.sin((x + offset) * frequency) * amp;
-      points.push(`${x},${y}`);
-    }
-    
-    return `M ${points.join(' L ')}`;
-  };
-  
-  const [animationOffset, setAnimationOffset] = React.useState(0);
-  
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimationOffset(prev => (prev + 5) % 314); // Animate wave movement
-    }, 50);
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  return (
-    <svg 
-      width="100%" 
-      height="40" 
-      className="absolute inset-0" 
-      viewBox="0 0 300 40"
-      preserveAspectRatio="none"
-    >
-      {/* Primary wave */}
-      <path
-        d={createWavePath(300, 40, amplitude, animationOffset)}
-        stroke="rgb(59 130 246)"
-        strokeWidth="2"
-        fill="none"
-        opacity={0.8}
-        filter="drop-shadow(0 0 4px rgba(59, 130, 246, 0.3))"
-      />
-      
-      {/* Secondary wave (slightly offset for depth) */}
-      <path
-        d={createWavePath(300, 40, amplitude * 0.6, animationOffset + 50)}
-        stroke="rgb(147 197 253)"
-        strokeWidth="1.5"
-        fill="none"
-        opacity={0.5}
-      />
-      
-      {/* Tertiary wave (more subtle) */}
-      <path
-        d={createWavePath(300, 40, amplitude * 0.3, animationOffset - 30)}
-        stroke="rgb(191 219 254)"
-        strokeWidth="1"
-        fill="none"
-        opacity={0.3}
-      />
-    </svg>
-  );
-};
 
 const mockQuestions = [
   {
@@ -1242,7 +1157,7 @@ function InterviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-zinc-400">{loadingMessage}</p>
@@ -1838,126 +1753,30 @@ function InterviewPage() {
     }, 1500); // 1.5 second delay to simulate analysis
   };
 
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' })
-  }
-
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
+      <div className="min-h-screen bg-zinc-900 flex flex-col">
         {/* Header */}
-        <header className="bg-gradient-to-b from-slate-900 to-slate-800 relative">
-          <nav className="w-full z-50 relative">
-            <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-              {/* Logo Section - Made larger and more prominent */}
-              <div className="flex items-center gap-4">
-                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={56} height={56} className="object-contain" />
-                <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
-              </div>
-
-              {/* Desktop Navigation - Matching landing page style */}
-              <div className="hidden md:flex items-center gap-6">
-                {session ? (
-                  <div className="flex items-center gap-4">
-                    <Button 
-                      asChild 
-                      size="lg"
-                      className="px-5 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    >
-                      <Link href="/dashboard">Dashboard</Link>
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-zinc-800/50">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                            <AvatarFallback className="bg-blue-500">
-                              {session.user?.name?.charAt(0) || <User className="h-5 w-5" />}
-                            </AvatarFallback>
-                          </Avatar>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56 bg-zinc-950 border-zinc-800" align="end">
-                        <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-zinc-800" />
-                        <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
-                          <Link href="/profile">Profile</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
-                          <Link href="/start">Exit Interview</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
-                          onClick={handleSignOut}
-                        >
-                          Sign out
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ) : (
-                  <>
-                    <Button 
-                      asChild 
-                      variant="ghost" 
-                      size="lg"
-                      className="px-6 py-3 text-lg font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full transition-all duration-300"
-                    >
-                      <Link href="/login">Sign In</Link>
-                    </Button>
-                    <Button 
-                      asChild
-                      size="lg"
-                      className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105 border border-blue-400/20"
-                    >
-                      <Link href="/signup">Get Started</Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-              
-              {/* Mobile Menu Button - Made larger */}
-              <div className="flex md:hidden items-center">
-                {session && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-zinc-800/50">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                          <AvatarFallback className="bg-blue-500">
-                            {session.user?.name?.charAt(0) || <User className="h-5 w-5" />}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-zinc-950 border-zinc-800" align="end">
-                      <DropdownMenuLabel className="text-zinc-400">My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-zinc-800" />
-                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
-                        <Link href="/dashboard">Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
-                        <Link href="/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer">
-                        <Link href="/start">Exit Interview</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-400 hover:bg-zinc-800 hover:text-red-300 cursor-pointer"
-                        onClick={handleSignOut}
-                      >
-                        Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </div>
-          </nav>
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+              <span className="font-semibold text-white">InterviewSense</span>
+            </Link>
+            <nav className="flex items-center gap-4">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <UserAccountDropdown />
+            </nav>
+          </div>
         </header>
 
         {/* Main Interview Area */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-20">
           <div className="w-full max-w-6xl">
             {/* Two-column layout for md+ screens, stacked for smaller screens */}
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
@@ -2080,7 +1899,7 @@ function InterviewPage() {
                 </div>
 
                 {/* Question Display */}
-                <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3">
+                <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3">
                   <p className="text-white text-xs sm:text-sm leading-relaxed text-center md:text-left">
                     {/* Show transcript when ElevenLabs is playing, or full question when ready/feedback */}
                     {elevenLabsStatus === 'playing' ? currentTranscript : 
@@ -2099,7 +1918,7 @@ function InterviewPage() {
                           setInterviewPhase('speaking');
                           speakQuestion(currentQuestion.question);
                         }}
-                        className="text-slate-400 hover:text-white hover:bg-slate-800 text-xs px-2 py-1"
+                        className="text-slate-400 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
                       >
                         <RefreshCw className="h-2.5 w-2.5 mr-1" />
                         Replay Question
@@ -2108,19 +1927,48 @@ function InterviewPage() {
                   )}
                 </div>
 
-                {/* Simple waveform visualization when recording */}
+                {/* Enhanced waveform visualization when recording */}
                 {interviewPhase === 'recording' && (
                   <div className="mb-3">
-                    <div className="bg-slate-900/40 border border-slate-700/50 backdrop-blur-sm rounded-lg p-3">
-                      <div className="h-16 bg-gradient-to-b from-slate-950/30 to-slate-950/70 rounded-lg p-3 relative overflow-hidden flex items-center justify-center">
+                    <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3">
+                      <div className="flex items-end justify-center space-x-1 h-16 bg-gradient-to-b from-zinc-900/30 to-zinc-900/70 rounded-lg p-3 relative overflow-hidden">
                         {/* Background grid effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent"></div>
                         
-                        {/* Simple wave visualization */}
-                        <WaveformVisualization audioLevels={audioLevels} />
+                        {/* Waveform bars */}
+                        {audioLevels.map((level, i) => (
+                          <div
+                            key={i}
+                            className="relative transition-all duration-100 ease-out rounded-sm"
+                            style={{
+                              width: '3px',
+                              height: `${Math.max(3, level * 0.9)}px`,
+                              background: level > 25 
+                                ? `linear-gradient(to top, rgb(59 130 246), rgb(147 197 253), rgb(191 219 254))`
+                                : `linear-gradient(to top, rgb(59 130 246 / 0.6), rgb(147 197 253 / 0.4))`,
+                              boxShadow: level > 30 
+                                ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level /100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
+                                : level > 15 
+                                  ? `0 0 4px rgba(59, 130, 246, ${Math.min(0.6, level / 120)})` 
+                                  : 'none',
+                              transform: level > 40 ? `scaleY(${1 + (level - 40) / 200})` : 'scaleY(1)',
+                              opacity: Math.max(0.4, Math.min(1, level / 60))
+                            }}
+                          >
+                            {/* Peak indicator */}
+                            {level > 50 && (
+                              <div 
+                                className="absolute top-0 left-0 w-full h-1 bg-blue-300 rounded-full animate-pulse"
+                                style={{
+                                  boxShadow: '0 0 6px rgba(147, 197, 253, 0.8)'
+                                }}
+                              ></div>
+                            )}
+                          </div>
+                        ))}
                         
                         {/* Center line indicator */}
-                        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent opacity-30"></div>
+                        <div className="absolute inset-x-0 bottom-4 h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent opacity-30"></div>
                       </div>
                       
                       <div className="flex items-center justify-center mt-2 space-x-2">
@@ -2128,7 +1976,7 @@ function InterviewPage() {
                           <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                           <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping"></div>
                         </div>
-                        <p className="text-slate-300 text-xs font-medium">Recording your response...</p>
+                        <p className="text-zinc-300 text-xs font-medium">Recording your response...</p>
                         <div className="flex space-x-1">
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
@@ -2142,9 +1990,9 @@ function InterviewPage() {
                 {/* Answer Display (when available) */}
                 {answer && interviewPhase === 'feedback' && (
                   <div className="mb-3">
-                    <div className="bg-slate-900/50 border border-slate-700 backdrop-blur-sm rounded-lg p-3">
-                      <div className="text-xs text-slate-400 mb-1">Your Response:</div>
-                      <p className="text-slate-300 text-xs leading-relaxed">{answer}</p>
+                    <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3">
+                      <div className="text-xs text-zinc-400 mb-1">Your Response:</div>
+                      <p className="text-zinc-300 text-xs leading-relaxed">{answer}</p>
                     </div>
                   </div>
                 )}
@@ -2174,7 +2022,7 @@ function InterviewPage() {
                       <Button
                         onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
                         disabled={isSubmitting}
-                        className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-lg py-1.5 text-xs"
+                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg py-1.5 text-xs"
                       >
                         {isSubmitting ? (
                           <>
@@ -2231,7 +2079,7 @@ function InterviewPage() {
                         setCurrentTranscript(visibleQuestions[currentQuestionIndex]?.question || '');
                         setInterviewPhase('ready');
                       }}
-                      className="w-full bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-1.5 text-xs"
+                      className="w-full bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg py-1.5 text-xs"
                     >
                       <Mic className="h-2.5 w-2.5 mr-1" />
                       Skip to Recording
@@ -2248,15 +2096,15 @@ function InterviewPage() {
           <>
             {/* Desktop Popup (md and up) */}
             <div className="hidden md:block fixed inset-y-0 right-0 w-1/2 lg:w-2/5 xl:w-1/3 z-50">
-              <div className="h-full flex flex-col bg-slate-950/95 backdrop-blur-md border-l border-slate-800">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <div className="h-full flex flex-col bg-zinc-900/95 backdrop-blur-md border-l border-zinc-800">
+                {                /* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-zinc-800">
                   <h3 className="text-lg font-semibold text-white">Interview Feedback</h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setFeedbackVisible(false)}
-                    className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full p-1"
+                    className="text-slate-400 hover:text-white hover:bg-zinc-800 rounded-full p-1"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2275,9 +2123,9 @@ function InterviewPage() {
             </div>
 
             {/* Mobile Full Width (sm and below) */}
-            <div className="md:hidden border-t border-slate-800 p-4">
+            <div className="md:hidden border-t border-zinc-800 p-4">
               <div className="max-w-4xl mx-auto">
-                <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm text-white rounded-lg">
+                <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm text-white rounded-lg">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">Interview Feedback</CardTitle>
@@ -2285,7 +2133,7 @@ function InterviewPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setFeedbackVisible(false)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-800 rounded-full p-1"
+                        className="text-slate-400 hover:text-white hover:bg-zinc-800 rounded-full p-1"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2378,7 +2226,7 @@ function InterviewPage() {
 export default function InterviewPageWithSuspense() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-zinc-400">Loading...</p>

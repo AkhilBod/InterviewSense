@@ -543,18 +543,10 @@ public:
   // Parse the question for display - no longer needed since we use the structured display
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-        <CardHeader className="pb-6 text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-4">
-            Technical Assessment
-          </CardTitle>
-          <CardDescription className="text-slate-400 text-lg leading-relaxed max-w-4xl mx-auto">
-            Get an optimally selected LeetCode problem from the complete database of 3000+ questions, targeted to your company and role, or specify any problem by number
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="bg-gradient-to-r from-slate-700/30 to-slate-600/30 p-6 rounded-xl border border-slate-600/50">
+    <div className="container mx-auto p-4 pt-8 space-y-6">
+      <Card className="bg-gradient-to-br from-zinc-800 to-zinc-900 border-zinc-700 text-zinc-100 adow-xl">
+        <CardContent className="space-y-6 pt-8">
+          <div className="bg-gradient-to-r from-zinc-700/30 to-zinc-600/30 p-6 rounded-xl border border-zinc-600/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`w-3 h-12 rounded-full transition-colors duration-300 ${useCustomNumber ? 'bg-gradient-to-b from-blue-500 to-blue-600' : 'bg-gradient-to-b from-blue-500 to-blue-600'}`}></div>
@@ -562,7 +554,7 @@ public:
                   <Label htmlFor="useCustomNumber" className="font-semibold cursor-pointer block mb-2 text-lg">
                     {useCustomNumber ? 'Specific Problem Selection' : 'AI-Powered Problem Selection'}
                   </Label>
-                  <p className="text-sm text-slate-400 leading-relaxed max-w-md">
+                  <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
                     {useCustomNumber 
                       ? 'Get any specific problem from the 3000+ LeetCode database by number' 
                       : 'AI selects optimal problem from 3000+ questions based on company, role, and difficulty'}
@@ -581,7 +573,7 @@ public:
           <form onSubmit={handleSubmit} className="space-y-6">
             {useCustomNumber ? (
               <div className="space-y-3">
-                <Label htmlFor="leetcodeNumber" className="text-base font-semibold text-slate-200">LeetCode Question Number</Label>
+                <Label htmlFor="leetcodeNumber" className="text-base font-semibold text-zinc-200">LeetCode Question Number</Label>
                 <Input
                   id="leetcodeNumber"
                   value={leetcodeNumber}
@@ -591,14 +583,14 @@ public:
                   type="number"
                   min="1"
                   max="3000"
-                  className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100 placeholder:text-slate-400"
+                  className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 placeholder:text-zinc-400"
                 />
-                <p className="text-sm text-slate-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
+                <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-3">
-                  <Label htmlFor="company" className="text-base font-semibold text-slate-200">Company</Label>
+                  <Label htmlFor="company" className="text-base font-semibold text-zinc-200">Company</Label>
                   <Input
                     id="company"
                     value={company}
@@ -606,26 +598,26 @@ public:
                     placeholder="e.g., Google"
                     required={!useCustomNumber}
                     disabled={useCustomNumber}
-                    className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100 placeholder:text-slate-400"
+                    className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 placeholder:text-zinc-400"
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="role" className="text-base font-semibold text-slate-200">Role</Label>
+                  <Label htmlFor="role" className="text-base font-semibold text-zinc-200">Role</Label>
                   <Select 
                     value={role} 
                     onValueChange={setRole}
                     required={!useCustomNumber}
                     disabled={useCustomNumber}
                   >
-                    <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100">
+                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100">
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600 max-h-60">
+                    <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
                       {TECH_JOB_TITLES.map(job => (
                         <SelectItem key={job.id} value={job.title}>
                           <div>
                             <div className="font-medium">{job.title}</div>
-                            <div className="text-sm text-slate-400">{job.description}</div>
+                            <div className="text-sm text-zinc-400">{job.description}</div>
                           </div>
                         </SelectItem>
                       ))}
@@ -633,17 +625,17 @@ public:
                   </Select>
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="difficulty" className="text-base font-semibold text-slate-200">Question Difficulty</Label>
+                  <Label htmlFor="difficulty" className="text-base font-semibold text-zinc-200">Question Difficulty</Label>
                   <Select 
                     value={difficulty} 
                     onValueChange={setDifficulty} 
                     required={!useCustomNumber}
                     disabled={useCustomNumber}
                   >
-                    <SelectTrigger className="bg-slate-700 border-slate-600 focus:border-blue-500 text-slate-100">
+                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100">
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
+                    <SelectContent className="bg-zinc-800 border-zinc-600">
                       <SelectItem value="easy">Easy</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="hard">Hard</SelectItem>
@@ -667,8 +659,8 @@ public:
       {question && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
           {/* Problem Panel - Left Side */}
-          <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full overflow-hidden">
-            <CardHeader className="pb-4 border-b border-slate-700">
+          <Card className="bg-zinc-800 border-zinc-700 text-zinc-100 h-full overflow-hidden">
+            <CardHeader className="pb-4 border-b border-zinc-700">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <CardTitle className="text-2xl font-bold text-white">
@@ -691,10 +683,10 @@ public:
                     })()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
+                <div className="flex items-center gap-2 text-sm text-zinc-400">
                   <span>Topics:</span>
-                  <span className="bg-slate-700 px-2 py-1 rounded text-xs">Array</span>
-                  <span className="bg-slate-700 px-2 py-1 rounded text-xs">Hash Table</span>
+                  <span className="bg-zinc-700 px-2 py-1 rounded text-xs">Array</span>
+                  <span className="bg-zinc-700 px-2 py-1 rounded text-xs">Hash Table</span>
                 </div>
               </div>
             </CardHeader>
@@ -705,7 +697,7 @@ public:
                   <div className="space-y-6">
                     {/* Problem Description */}
                     <div className="space-y-4">
-                      <p className="text-slate-300 leading-relaxed text-base">
+                      <p className="text-zinc-300 leading-relaxed text-base">
                         {leetcodeProblem.description}
                       </p>
                     </div>
@@ -716,22 +708,22 @@ public:
                         {leetcodeProblem.examples.map((example, index) => (
                           <div key={index} className="space-y-3">
                             <h4 className="text-base font-bold text-white">Example {index + 1}:</h4>
-                            <div className="bg-slate-900/80 rounded-lg p-4 border border-slate-600/50 font-mono text-sm">
+                            <div className="bg-zinc-900/80 rounded-lg p-4 border border-zinc-600/50 font-mono text-sm">
                               <div className="space-y-2">
                                 <div>
-                                  <span className="text-slate-400 font-semibold">Input: </span>
+                                  <span className="text-zinc-400 font-semibold">Input: </span>
                                   <span className="text-blue-300">{example.input}</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-400 font-semibold">Output: </span>
+                                  <span className="text-zinc-400 font-semibold">Output: </span>
                                   <span className="text-blue-300">{example.output}</span>
                                 </div>
                               </div>
                             </div>
                             {example.explanation && (
-                              <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/30">
-                                <p className="text-slate-300 text-sm">
-                                  <span className="font-semibold text-slate-200">Explanation: </span>
+                              <div className="bg-zinc-700/30 rounded-lg p-3 border border-zinc-600/30">
+                                <p className="text-zinc-300 text-sm">
+                                  <span className="font-semibold text-zinc-200">Explanation: </span>
                                   {example.explanation}
                                 </p>
                               </div>

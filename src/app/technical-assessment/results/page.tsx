@@ -6,21 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, BarChart, MessageSquare, ChevronLeft, Download, Printer, Share2, User, CheckCircle, TrendingUp } from "lucide-react";
+import { RefreshCw, BarChart, MessageSquare, ChevronLeft, Download, Printer, Share2, User, CheckCircle, TrendingUp, ArrowLeft } from "lucide-react";
 import Image from 'next/image';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { toast } from "@/components/ui/use-toast";
 import { exportToPDF, printReport, shareReport, formatTechnicalReportForSharing } from "@/lib/export";
 import { useSession, signOut } from "next-auth/react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 
 // Helper function to parse LeetCode problem from text
 function parseLeetCodeProblem(problemText: string) {
@@ -172,10 +164,6 @@ export default function TechnicalAssessmentResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<TechnicalAssessmentResult | null>(null);
   const { data: session } = useSession();
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
-  };
 
   useEffect(() => {
     const loadResults = async () => {
@@ -392,56 +380,25 @@ export default function TechnicalAssessmentResultsPage() {
     <ProtectedRoute>
       <div className="flex flex-col min-h-screen bg-slate-900 text-white">
         {/* Header */}
-        <header className="border-b border-slate-800">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
               <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-              <span className="font-bold text-xl">InterviewSense</span>
-            </div>
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
-                  <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/dashboard">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/dashboard/technical">
-                      <ChevronLeft className="mr-2 h-4 w-4" />
-                      Back to Technical Assessment
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                    <Link href="/">Home</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
-                    onClick={handleSignOut}
-                  >
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
-                <Link href="/login">Sign in</Link>
-              </Button>
-            )}
+              <span className="font-semibold text-white">InterviewSense</span>
+            </Link>
+            <nav className="flex items-center gap-4">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <UserAccountDropdown />
+            </nav>
           </div>
         </header>
 
-        <div className="flex-1 py-8 bg-slate-900">
+        <div className="flex-1 py-8 bg-slate-900 pt-20">
           <div className="container mx-auto px-4">
 
             <div id="technical-results-content" className="max-w-5xl mx-auto">

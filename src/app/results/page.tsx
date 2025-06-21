@@ -4,28 +4,16 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, ChevronLeft, Download, Share2, RefreshCw, BarChart, Printer, User, TrendingUp, CheckCircle, Target, Brain } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Download, Share2, RefreshCw, BarChart, Printer, User, TrendingUp, CheckCircle, Target, Brain } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage
-} from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
 import { toast } from "@/components/ui/use-toast";
 import { exportToPDF, printReport, shareReport, formatInterviewReportForSharing } from "@/lib/export";
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 
 function ResultsPage() {
   const { data: session } = useSession();
@@ -115,10 +103,6 @@ function ResultsPage() {
     return "text-red-500";
   };
 
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
-  };
-
   const getBarColor = (score: number) => {
     if (score >= 90) return "bg-green-600";
     if (score >= 75) return "bg-blue-600";
@@ -128,7 +112,7 @@ function ResultsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-zinc-400">Analyzing your interview performance...</p>
@@ -140,79 +124,46 @@ function ResultsPage() {
   
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
+      <div className="min-h-screen bg-zinc-900 text-white">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-              <span className="font-semibold text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                        <AvatarFallback className="bg-blue-500">
-                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end">
-                    <DropdownMenuLabel className="text-slate-400">My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-slate-800" />
-                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                      <Link href="/dashboard">Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                      <Link href="/interview">
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back to Interview
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
-                      <Link href="/">Home</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-red-400 hover:bg-slate-800 hover:text-red-300 cursor-pointer"
-                      onClick={handleSignOut}
-                    >
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button variant="outline" size="sm" asChild className="text-slate-300 border-slate-700 hover:bg-slate-800">
-                  <Link href="/login">Sign in</Link>
-                </Button>
-              )}
-            </nav>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Link>
+              </Button>
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+                <span className="font-semibold text-white">InterviewSense</span>
+              </Link>
+            </div>
+            <UserAccountDropdown />
           </div>
         </header>
 
-        <div className="pt-16 px-4 h-full overflow-y-auto">
+        <div className="pt-20 px-4 h-full overflow-y-auto">
           <div className="container mx-auto px-4 py-8">
 
             <div id="interview-results-content" className="max-w-5xl mx-auto">
               {/* Header Card */}
-              <Card className="bg-slate-800 border-slate-700 text-slate-100 mb-6">
+              <Card className="bg-zinc-800/50 border-zinc-700/50 text-white mb-6">
                 <CardHeader className="text-center py-6">
                   <CardTitle className="text-2xl">Interview Performance Report</CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-zinc-400">
                     {interviewSummary.jobRole} at {interviewSummary.company} • {interviewSummary.date}
                   </CardDescription>
                 </CardHeader>
               </Card>
 
               {/* Score Card with Modern Design */}
-              <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl mb-6">
+              <Card className="bg-gradient-to-br from-zinc-800/50 to-zinc-800/70 border-zinc-700/50 text-white shadow-xl mb-6">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     {/* Overall Score with Circular Progress */}
-                    <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-8 min-w-[200px] mx-auto md:mx-0">
+                    <div className="flex flex-col items-center bg-zinc-700/30 rounded-2xl p-8 min-w-[200px] mx-auto md:mx-0">
                       <div className="relative w-32 h-32 mb-4">
                         <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
                           {/* Background circle */}
@@ -223,7 +174,7 @@ function ResultsPage() {
                             stroke="currentColor"
                             strokeWidth="6"
                             fill="transparent"
-                            className="text-slate-600/40"
+                            className="text-zinc-600/40"
                           />
                           {/* Progress circle */}
                           <circle

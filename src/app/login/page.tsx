@@ -7,19 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, ChevronLeft, Mail, AlertCircle, ArrowRight, LogOut, User, XCircle, CheckCircle2 } from 'lucide-react'
+import { MessageSquare, ArrowLeft, Mail, AlertCircle, ArrowRight, LogOut, User, XCircle, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FcGoogle } from 'react-icons/fc'
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAccountDropdown } from '@/components/UserAccountDropdown'
 
 function LoginPage() {
   const { data: session } = useSession()
@@ -217,7 +211,7 @@ function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
@@ -225,39 +219,7 @@ function LoginPage() {
           </Link>
           <nav className="flex items-center gap-4">
             {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      {session.user?.name && (
-                        <p className="font-medium text-sm text-white">{session.user.name}</p>
-                      )}
-                      {session.user?.email && (
-                        <p className="w-[200px] truncate text-sm text-zinc-400">
-                          {session.user.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuItem
-                    className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserAccountDropdown />
             ) : (
               <Link href="/signup">
                 <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Sign up</Button>
@@ -267,7 +229,7 @@ function LoginPage() {
         </div>
       </header>
 
-      <div className="flex-1 py-12 flex items-center justify-center relative">
+      <div className="flex-1 pt-20 py-12 flex items-center justify-center relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container px-4 max-w-md relative z-10">
           <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">

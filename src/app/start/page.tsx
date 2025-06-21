@@ -215,109 +215,73 @@ export default function StartPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-zinc-900 text-white">
       {/* Header */}
-      <nav className="w-full z-50 relative border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-          {/* Logo Section */}
-          <div className="flex items-center gap-4">
-            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={56} height={56} className="object-contain" />
-            <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
-          </div>
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+            <span className="font-semibold text-white">InterviewSense</span>
+          </Link>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-6">
+          <nav className="flex items-center gap-4">
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                      <AvatarFallback className="bg-slate-700">
-                        {session.user?.name?.[0]?.toUpperCase() || 'U'}
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
+                      <AvatarFallback className="bg-blue-500">
+                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-700" align="end">
+                <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {session.user?.name && (
+                        <p className="font-medium text-sm text-white">{session.user.name}</p>
+                      )}
+                      {session.user?.email && (
+                        <p className="w-[200px] truncate text-sm text-zinc-400">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="flex items-center text-slate-300 hover:text-white">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut()} className="text-red-400 hover:text-red-300">
+                  <DropdownMenuItem
+                    className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
+                    <span>Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <>
-                <Button 
-                  asChild 
-                  variant="ghost" 
-                  size="lg"
-                  className="px-6 py-3 text-lg font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-full transition-all duration-300"
-                >
-                  <Link href="/login">Sign In</Link>
-                </Button>
-                <Button 
-                  asChild
-                  size="lg"
-                  className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105 border border-blue-400/20"
-                >
-                  <Link href="/signup">Start Today - It's Free</Link>
-                </Button>
-              </>
+              <Link href="/login">
+                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
+              </Link>
             )}
-          </div>
-          
-          {/* Mobile Menu for smaller screens */}
-          <div className="flex md:hidden items-center">
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                      <AvatarFallback className="bg-slate-700">
-                        {session.user?.name?.[0]?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-slate-900 border-slate-700" align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="flex items-center text-slate-300 hover:text-white">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut()} className="text-red-400 hover:text-red-300">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="outline" className="border-slate-700 hover:bg-slate-800">
-                <Link href="/login">Sign in</Link>
-              </Button>
-            )}
-          </div>
+          </nav>
         </div>
-      </nav>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           
           {/* Left Side - Breathing Circle */}
@@ -368,27 +332,27 @@ export default function StartPage() {
 
           {/* Right Side - Form */}
           <div className="space-y-6">
-            <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm">
+            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
               <CardContent className="p-8 space-y-6">
                 
                 {/* Resume Upload and Job Title Row */}
                 <div className="flex items-end justify-between gap-6">
                   {/* Job Title Selection */}
                   <div className="flex-1">
-                    <Label className="text-slate-300 text-sm mb-2 block">Job Title</Label>
+                    <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
                     <Select 
                       value={formData.jobTitle} 
                       onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
                     >
-                      <SelectTrigger className="bg-slate-800 border-slate-600">
+                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
                         <SelectValue placeholder="Select your job title" />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-600 max-h-60">
+                      <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
                         {TECH_JOB_TITLES.map(job => (
                           <SelectItem key={job.id} value={job.title}>
                             <div>
                               <div className="font-medium">{job.title}</div>
-                              <div className="text-sm text-slate-400">{job.description}</div>
+                              <div className="text-sm text-zinc-400">{job.description}</div>
                             </div>
                           </SelectItem>
                         ))}
@@ -398,13 +362,13 @@ export default function StartPage() {
 
                   {/* Resume Upload */}
                   <div className="flex-shrink-0">
-                    <Label className="text-slate-300 text-sm mb-2 block">Resume</Label>
+                    <Label className="text-zinc-300 text-sm mb-2 block">Resume</Label>
                     <div className="flex items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="bg-slate-800/50 hover:bg-slate-700/50 border-slate-600/50 text-slate-300"
+                        className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <Upload className="h-4 w-4 mr-2" />
@@ -418,7 +382,7 @@ export default function StartPage() {
                         className="hidden"
                       />
                       {formData.resume && (
-                        <span className="text-sm text-slate-400 flex items-center">
+                        <span className="text-sm text-zinc-400 flex items-center">
                           <FileText className="h-3 w-3 mr-1" />
                           {formData.resume.name.length > 20
                             ? `${formData.resume.name.substring(0, 20)}...`
@@ -431,15 +395,15 @@ export default function StartPage() {
 
                 {/* Experience Level */}
                 <div className="space-y-3">
-                  <Label className="text-slate-300">Experience Level</Label>
+                  <Label className="text-zinc-300">Experience Level</Label>
                   <Select 
                     value={formData.experienceLevel} 
                     onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
                   >
-                    <SelectTrigger className="bg-slate-800 border-slate-600">
+                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
+                    <SelectContent className="bg-zinc-800 border-zinc-600">
                       <SelectItem value="Intern">Intern</SelectItem>
                       <SelectItem value="Entry-level">Entry-level (0-2 years)</SelectItem>
                       <SelectItem value="Mid-level">Mid-level (2-5 years)</SelectItem>
@@ -450,15 +414,15 @@ export default function StartPage() {
 
                 {/* Number of Questions */}
                 <div className="space-y-3">
-                  <Label className="text-slate-300">Number of Questions</Label>
+                  <Label className="text-zinc-300">Number of Questions</Label>
                   <Select 
                     value={formData.numberOfQuestions.toString()} 
                     onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
                   >
-                    <SelectTrigger className="bg-slate-800 border-slate-600">
+                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
+                    <SelectContent className="bg-zinc-800 border-zinc-600">
                       {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
                         <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
                       ))}
@@ -468,12 +432,12 @@ export default function StartPage() {
 
                 {/* Company Input */}
                 <div className="space-y-3">
-                  <Label className="text-slate-300">Company (Optional)</Label>
+                  <Label className="text-zinc-300">Company (Optional)</Label>
                   <Input
                     placeholder="e.g., Google, Apple, Meta"
                     value={formData.company}
                     onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                    className="bg-slate-800 border-slate-600 focus:border-blue-400"
+                    className="bg-zinc-800 border-zinc-600 focus:border-blue-400"
                   />
                 </div>
 
@@ -494,13 +458,13 @@ export default function StartPage() {
 
       {/* Microphone Setup Dialog */}
       <Dialog open={showMicSetup} onOpenChange={setShowMicSetup}>
-        <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700">
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-700">
           <DialogHeader>
             <div className="flex items-center space-x-2">
               <Mic className="h-5 w-5 text-blue-400" />
               <DialogTitle className="text-white">Microphone Setup</DialogTitle>
             </div>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-zinc-400">
               Configure your microphone before starting the interview
             </DialogDescription>
           </DialogHeader>
@@ -508,15 +472,15 @@ export default function StartPage() {
           <div className="space-y-6 py-4">
             {/* Microphone Selection */}
             <div className="space-y-3">
-              <Label className="text-slate-300">Microphone</Label>
+              <Label className="text-zinc-300">Microphone</Label>
               <Select 
                 value={micState.selectedDevice} 
                 onValueChange={(value) => setMicState(prev => ({ ...prev, selectedDevice: value }))}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-600">
+                <SelectTrigger className="bg-zinc-800 border-zinc-600">
                   <SelectValue placeholder="Select microphone" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
+                <SelectContent className="bg-zinc-800 border-zinc-600">
                   {micState.devices.map(device => (
                     <SelectItem key={device.deviceId} value={device.deviceId}>
                       {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
@@ -529,11 +493,11 @@ export default function StartPage() {
             {/* Volume Control */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-slate-300">Volume</Label>
-                <span className="text-slate-400">{micState.volume}%</span>
+                <Label className="text-zinc-300">Volume</Label>
+                <span className="text-zinc-400">{micState.volume}%</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Volume2 className="h-4 w-4 text-slate-400" />
+                <Volume2 className="h-4 w-4 text-zinc-400" />
                 <Slider
                   value={[micState.volume]}
                   onValueChange={(value) => setMicState(prev => ({ ...prev, volume: value[0] }))}
@@ -550,7 +514,7 @@ export default function StartPage() {
             <Button
               variant="outline"
               onClick={() => setShowMicSetup(false)}
-              className="flex-1 border-slate-600 hover:bg-slate-800"
+              className="flex-1 border-zinc-600 hover:bg-zinc-800"
             >
               Cancel
             </Button>

@@ -5,19 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Download, Save, CheckCircle, TrendingUp, User, LogOut, MessageSquare, BarChart, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, Download, Save, CheckCircle, TrendingUp, User, LogOut, MessageSquare, BarChart } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 
 interface Question {
   id: number;
@@ -82,10 +76,6 @@ function BehavioralResults() {
       console.error('Error exporting results:', error);
     }
   };
-
-  const handleBackToDashboard = () => {
-    router.push('/dashboard');
-  };
   
   const answeredQuestionsCount = Object.keys(answers).length;
   const completionRate = questions.length > 0 ? Math.round((answeredQuestionsCount / questions.length) * 100) : 0;
@@ -136,78 +126,23 @@ function BehavioralResults() {
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
-              <span className="font-semibold text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                        <AvatarFallback className="bg-blue-500">
-                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        {session.user?.name && (
-                          <p className="font-medium text-sm text-white">{session.user.name}</p>
-                        )}
-                        {session.user?.email && (
-                          <p className="w-[200px] truncate text-sm text-zinc-400">
-                            {session.user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
                 </Link>
-              )}
-            </nav>
+              </Button>
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="https://i.ibb.co/hNsCy7F/logo.webp" alt="InterviewSense" width={32} height={32} className="object-contain" />
+                <span className="font-semibold text-white">InterviewSense</span>
+              </Link>
+            </div>
+            <UserAccountDropdown />
           </div>
         </header>
 
-        <div className="pt-16 px-4 h-full overflow-y-auto">
-          {/* Header with Back Button */}
-          <div className="mb-8 px-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <Button variant="ghost" size="sm" onClick={handleBackToDashboard} className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
-                <ChevronLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-              
-              {/* Export Button */}
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm" onClick={handleExportResults} className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export Results
-                </Button>
-              </div>
-            </div>
-          </div>
-
+        <div className="pt-20 px-4 h-full overflow-y-auto">
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-9 gap-8 px-4 max-w-[1900px] mx-auto">
             {/* Left Column - Results Analysis (55% on desktop) */}

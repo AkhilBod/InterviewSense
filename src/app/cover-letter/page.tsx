@@ -5,20 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Copy, Check } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Copy, Check, FileText } from "lucide-react";
 import Image from 'next/image';
 import jsPDF from 'jspdf'; // Import jsPDF
 import { useSession, signOut } from "next-auth/react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute'
-import CoverLetterLoadingModal from '@/components/CoverLetterLoadingModal';
+import { UserAccountDropdown } from '@/components/UserAccountDropdown';
 
 interface CoverLetter {
   id: string;
@@ -33,6 +26,7 @@ export default function CoverLetterPage() {
   const [resume, setResume] = useState<File | null>(null);
   const [resumeName, setResumeName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previousLetters, setPreviousLetters] = useState<CoverLetter[]>([]);
@@ -67,6 +61,14 @@ export default function CoverLetterPage() {
     formData.append("resume", resume);
 
     try {
+      setLoadingStep("Analyzing your resume...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setLoadingStep("Processing job description...");
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setLoadingStep("Creating your personalized cover letter...");
+      
       const response = await fetch("/api/generate-cover-letter", {
         method: "POST",
         body: formData,
@@ -100,6 +102,7 @@ export default function CoverLetterPage() {
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
+      setLoadingStep("");
     }
   };
 
@@ -141,6 +144,14 @@ export default function CoverLetterPage() {
     formData.append("resume", resume);
 
     try {
+      setLoadingStep("Analyzing your resume...");
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setLoadingStep("Processing job description...");
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      setLoadingStep("Creating new version...");
+      
       const response = await fetch("/api/generate-cover-letter", {
         method: "POST",
         body: formData,
@@ -174,6 +185,7 @@ export default function CoverLetterPage() {
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
+      setLoadingStep("");
     }
   };
 
@@ -249,319 +261,263 @@ export default function CoverLetterPage() {
               <span className="font-semibold text-white">InterviewSense</span>
             </Link>
             <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                        <AvatarFallback className="bg-blue-500">
-                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        {session.user?.name && (
-                          <p className="font-medium text-sm text-white">{session.user.name}</p>
-                        )}
-                        {session.user?.email && (
-                          <p className="w-[200px] truncate text-sm text-zinc-400">
-                            {session.user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
-                </Link>
-              )}
+              <UserAccountDropdown />
             </nav>
           </div>
         </header>
 
         <div className="w-full max-w-2xl mx-auto mt-16">
           <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
-            <CardHeader className="text-center pt-8">
-              <CardTitle className="text-2xl font-bold">Cover Letter Generator</CardTitle>
-              <p className="text-zinc-400 mt-2 text-base">
-                Generate a personalized cover letter for your next job application.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6 px-8 pb-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <p className="text-sm text-zinc-400 mb-4">Upload your resume, enter the company name, and provide a job description to generate a personalized cover letter.</p>
-                
-                {/* Company Name Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Company Name <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-zinc-500 mb-3">
-                    Enter the name of the company you're applying to. This will be used to personalize your cover letter.
-                  </p>
-                  <Input
-                    placeholder="e.g., Google, Microsoft, Apple..."
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
+            <CardContent className="space-y-6 px-8 pb-8 pt-8">
+              {isLoading ? (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+                  <h3 className="text-xl font-semibold text-white mb-3">{loadingStep}</h3>
+                  <p className="text-zinc-400">Please wait while we craft your perfect cover letter...</p>
                 </div>
+              ) : (
+                <>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    
+                    {/* Company Name and Resume Upload Row - Better Space Distribution */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Company Name Section - Takes 2/3 of the space */}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium mb-2">
+                          Company Name
+                        </label>
+                        <Input
+                          placeholder="Company Name"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500 text-lg py-3"
+                          required
+                        />
+                      </div>
 
-                {/* Resume Upload Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Upload Resume <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-zinc-500 mb-3">
-                    We'll extract your personal information, experience, and skills from your resume automatically.
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="bg-zinc-800 hover:bg-zinc-700/70 border-zinc-700 text-zinc-300 whitespace-nowrap"
-                      onClick={() =>
-                        document.getElementById("resume-upload")?.click()
-                      }
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {resumeName ? "Change File" : "Upload Resume"}
-                    </Button>
-                    <input
-                      id="resume-upload"
-                      name="resume"
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onChange={handleResumeChange}
-                    />
-                    {resumeName && (
-                      <span className="text-sm text-zinc-400 truncate" title={resumeName}>
-                        {resumeName}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Job Description Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Job Description <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-zinc-500 mb-3">
-                    Paste the complete job posting here. We'll extract the job title, company name, and requirements automatically.
-                  </p>
-                  <Textarea
-                    placeholder="Paste the full job description here including job title, company name, responsibilities, and requirements..."
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    className="min-h-[250px] bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                    <div className="text-sm">{error}</div>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-3 text-base font-semibold"
-                  size="lg"
-                  disabled={isLoading || !resume || !jobDescription || !companyName}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Generating...
-                    </div>
-                  ) : (
-                    "Generate Cover Letter"
-                  )}
-                </Button>
-              </form>
-
-              {generatedCoverLetter && (
-                <div className="mt-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-xl font-semibold flex items-center text-white">
-                        <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-                        Your Cover Letter
-                      </h3>
-                      {previousLetters.length > 1 && (
+                      {/* Resume Upload Section - Takes 1/3 of the space */}
+                      <div className="md:col-span-1">
+                        <label className="block text-sm font-medium mb-2">
+                          Resume
+                        </label>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-zinc-400">Version:</span>
-                          <select 
-                            value={currentLetterId || ''}
-                            onChange={(e) => switchToLetter(e.target.value)}
-                            className="bg-zinc-700 border border-zinc-600 text-white text-sm rounded px-2 py-1"
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+                            onClick={() => document.getElementById("resume-upload")?.click()}
                           >
-                            {previousLetters.map((letter, index) => (
-                              <option key={letter.id} value={letter.id}>
-                                {index === 0 ? 'Latest' : `Version ${previousLetters.length - index}`}
-                                ({letter.timestamp.toLocaleTimeString()})
-                              </option>
-                            ))}
-                          </select>
+                            <Upload className="h-4 w-4 mr-2" />
+                            {resumeName ? "Change Resume" : "Upload Resume"}
+                          </Button>
+                          <input
+                            id="resume-upload"
+                            name="resume"
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleResumeChange}
+                          />
                         </div>
-                      )}
+                        {resumeName && (
+                          <div className="mt-2">
+                            <span className="text-xs text-zinc-400 flex items-center">
+                              <FileText className="h-3 w-3 mr-1" />
+                              {resumeName.length > 15
+                                ? `${resumeName.substring(0, 15)}...`
+                                : resumeName}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="bg-blue-600 hover:bg-blue-500 border-blue-600 text-white hover:text-white flex items-center gap-2 px-4 py-2"
-                      onClick={handleDownload}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download PDF
-                    </Button>
-                  </div>
-                  
-                  {/* Cover Letter Preview */}
-                  <div className="bg-white text-gray-900 p-8 rounded-lg shadow-lg border border-zinc-300 font-serif">
-                    <div 
-                      className="prose prose-lg max-w-none leading-relaxed"
-                      style={{ 
-                        fontFamily: 'Georgia, "Times New Roman", serif',
-                        lineHeight: '1.6',
-                        fontSize: '14px'
-                      }}
-                    >
-                      {generatedCoverLetter.split('\n').map((line, index) => {
-                        const trimmedLine = line.trim();
-                        
-                        // Empty lines for spacing
-                        if (!trimmedLine) {
-                          return <div key={index} className="h-4" />;
-                        }
-                        
-                        // Header sections (contact info)
-                        if (trimmedLine.includes('@') || /^\(\d{3}\)/.test(trimmedLine) || /^\d+/.test(trimmedLine)) {
-                          return (
-                            <div key={index} className="text-sm text-gray-700 mb-1">
-                              {trimmedLine}
-                            </div>
-                          );
-                        }
-                        
-                        // Date
-                        if (/^\w+\s+\d+,\s+\d{4}/.test(trimmedLine)) {
-                          return (
-                            <div key={index} className="text-sm text-gray-700 mb-6 mt-4">
-                              {trimmedLine}
-                            </div>
-                          );
-                        }
-                        
-                        // Salutation
-                        if (trimmedLine.toLowerCase().startsWith('dear')) {
-                          return (
-                            <div key={index} className="text-base font-medium text-gray-900 mb-4">
-                              {trimmedLine}
-                            </div>
-                          );
-                        }
-                        
-                        // Closing
-                        if (trimmedLine.toLowerCase().includes('sincerely') || 
-                            trimmedLine.toLowerCase().includes('best regards') ||
-                            trimmedLine.toLowerCase().includes('yours truly')) {
-                          return (
-                            <div key={index} className="text-base text-gray-900 mt-6 mb-2">
-                              {trimmedLine}
-                            </div>
-                          );
-                        }
-                        
-                        // Name at the end
-                        if (index > 0 && generatedCoverLetter.split('\n')[index - 1].toLowerCase().includes('sincerely')) {
-                          return (
-                            <div key={index} className="text-base font-medium text-gray-900 mt-8">
-                              {trimmedLine}
-                            </div>
-                          );
-                        }
-                        
-                        // Regular paragraphs
-                        return (
-                          <p key={index} className="text-base text-gray-800 mb-4 leading-relaxed">
-                            {trimmedLine}
-                          </p>
-                        );
-                      })}
+
+                    {/* Job Description Section */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Job Description
+                      </label>
+                      <Textarea
+                        placeholder="Job Description"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        className="min-h-[250px] bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      />
                     </div>
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="mt-6 flex gap-3">
+
+                    {error && (
+                      <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <div className="text-sm">{error}</div>
+                      </div>
+                    )}
+
                     <Button
-                      variant="outline"
-                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white flex items-center gap-2"
-                      onClick={handleCopyToClipboard}
-                    >
-                      {copySuccess ? (
-                        <>
-                          <Check className="h-4 w-4 text-green-400" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          Copy to Clipboard
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
-                      onClick={generateNewLetter}
+                      type="submit"
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-3 text-base font-semibold"
+                      size="lg"
                       disabled={isLoading || !resume || !jobDescription || !companyName}
                     >
-                      {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full animate-spin"></div>
-                          Generating...
-                        </div>
-                      ) : (
-                        "Generate New Letter"
-                      )}
+                      Generate Cover Letter
                     </Button>
-                  </div>
-                </div>
+                  </form>
+
+                  {generatedCoverLetter && (
+                    <div className="mt-8">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                          <h3 className="text-xl font-semibold flex items-center text-white">
+                            <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+                            Your Cover Letter
+                          </h3>
+                          {previousLetters.length > 1 && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-zinc-400">Version:</span>
+                              <select 
+                                value={currentLetterId || ''}
+                                onChange={(e) => switchToLetter(e.target.value)}
+                                className="bg-zinc-700 border border-zinc-600 text-white text-sm rounded px-2 py-1"
+                              >
+                                {previousLetters.map((letter, index) => (
+                                  <option key={letter.id} value={letter.id}>
+                                    {index === 0 ? 'Latest' : `Version ${previousLetters.length - index}`}
+                                    ({letter.timestamp.toLocaleTimeString()})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-blue-600 hover:bg-blue-500 border-blue-600 text-white hover:text-white flex items-center gap-2 px-4 py-2"
+                          onClick={handleDownload}
+                        >
+                          <Download className="h-4 w-4" />
+                          Download PDF
+                        </Button>
+                      </div>
+                      
+                      {/* Cover Letter Preview */}
+                      <div className="bg-white text-gray-900 p-8 rounded-lg shadow-lg border border-zinc-300 font-serif">
+                        <div 
+                          className="prose prose-lg max-w-none leading-relaxed"
+                          style={{ 
+                            fontFamily: 'Georgia, "Times New Roman", serif',
+                            lineHeight: '1.6',
+                            fontSize: '14px'
+                          }}
+                        >
+                          {generatedCoverLetter.split('\n').map((line, index) => {
+                            const trimmedLine = line.trim();
+                            
+                            // Empty lines for spacing
+                            if (!trimmedLine) {
+                              return <div key={index} className="h-4" />;
+                            }
+                            
+                            // Header sections (contact info)
+                            if (trimmedLine.includes('@') || /^\(\d{3}\)/.test(trimmedLine) || /^\d+/.test(trimmedLine)) {
+                              return (
+                                <div key={index} className="text-sm text-gray-700 mb-1">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            }
+                            
+                            // Date
+                            if (/^\w+\s+\d+,\s+\d{4}/.test(trimmedLine)) {
+                              return (
+                                <div key={index} className="text-sm text-gray-700 mb-6 mt-4">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            }
+                            
+                            // Salutation
+                            if (trimmedLine.toLowerCase().startsWith('dear')) {
+                              return (
+                                <div key={index} className="text-base font-medium text-gray-900 mb-4">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            }
+                            
+                            // Closing
+                            if (trimmedLine.toLowerCase().includes('sincerely') || 
+                                trimmedLine.toLowerCase().includes('best regards') ||
+                                trimmedLine.toLowerCase().includes('yours truly')) {
+                              return (
+                                <div key={index} className="text-base text-gray-900 mt-6 mb-2">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            }
+                            
+                            // Name at the end
+                            if (index > 0 && generatedCoverLetter.split('\n')[index - 1].toLowerCase().includes('sincerely')) {
+                              return (
+                                <div key={index} className="text-base font-medium text-gray-900 mt-8">
+                                  {trimmedLine}
+                                </div>
+                              );
+                            }
+                            
+                            // Regular paragraphs
+                            return (
+                              <p key={index} className="text-base text-gray-800 mb-4 leading-relaxed">
+                                {trimmedLine}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="mt-6 flex gap-3">
+                        <Button
+                          variant="outline"
+                          className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white flex items-center gap-2"
+                          onClick={handleCopyToClipboard}
+                        >
+                          {copySuccess ? (
+                            <>
+                              <Check className="h-4 w-4 text-green-400" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4" />
+                              Copy to Clipboard
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
+                          onClick={generateNewLetter}
+                          disabled={isLoading || !resume || !jobDescription || !companyName}
+                        >
+                          {isLoading ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full animate-spin"></div>
+                              Generating...
+                            </div>
+                          ) : (
+                            "Generate New Letter"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Loading Modal */}
-        <CoverLetterLoadingModal 
-          isOpen={isLoading}
-          onClose={() => {}} // Prevent closing during generation
-        />
       </div>
     </ProtectedRoute>
   );
