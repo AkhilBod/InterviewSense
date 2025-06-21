@@ -11,7 +11,10 @@ import {
   ChevronRight,
   Flame,
   Target,
-  Trophy
+  Trophy,
+  GitBranch,
+  Code2,
+  Route
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
