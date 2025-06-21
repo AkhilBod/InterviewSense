@@ -348,14 +348,16 @@ export default function StartPage() {
                         <SelectValue placeholder="Select your job title" />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
-                        {TECH_JOB_TITLES.map(job => (
-                          <SelectItem key={job.id} value={job.title}>
-                            <div>
-                              <div className="font-medium">{job.title}</div>
-                              <div className="text-sm text-zinc-400">{job.description}</div>
-                            </div>
-                          </SelectItem>
-                        ))}
+                        {TECH_JOB_TITLES
+                          .filter(job => job.title && job.title.trim() !== '')
+                          .map(job => (
+                            <SelectItem key={job.id} value={job.title}>
+                              <div>
+                                <div className="font-medium">{job.title}</div>
+                                <div className="text-sm text-zinc-400">{job.description}</div>
+                              </div>
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -481,11 +483,13 @@ export default function StartPage() {
                   <SelectValue placeholder="Select microphone" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-800 border-zinc-600">
-                  {micState.devices.map(device => (
-                    <SelectItem key={device.deviceId} value={device.deviceId}>
-                      {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
-                    </SelectItem>
-                  ))}
+                  {micState.devices
+                    .filter(device => device.deviceId && device.deviceId.trim() !== '')
+                    .map(device => (
+                      <SelectItem key={device.deviceId} value={device.deviceId}>
+                        {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

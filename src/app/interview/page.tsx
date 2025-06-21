@@ -69,6 +69,28 @@ const mockQuestions = [
 ];
 
 function InterviewPage() {
+  // Safari compatibility detection
+  const [isSafari, setIsSafari] = useState(false);
+  const [safariVersion, setSafariVersion] = useState(0);
+  
+  // Detect Safari and version on mount
+  useEffect(() => {
+    const detectSafari = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isSafariBrowser = /safari/.test(userAgent) && !/chrome/.test(userAgent) && !/firefox/.test(userAgent);
+      setIsSafari(isSafariBrowser);
+      
+      if (isSafariBrowser) {
+        const safariVersionMatch = userAgent.match(/version\/(\d+)/);
+        const version = safariVersionMatch ? parseInt(safariVersionMatch[1]) : 0;
+        setSafariVersion(version);
+        console.log(`Safari detected, version: ${version}`);
+      }
+    };
+    
+    detectSafari();
+  }, []);
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -667,37 +689,55 @@ function InterviewPage() {
   // Audio visualization functions
   const setupAudioVisualization = (stream: MediaStream) => {
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Safari-specific AudioContext handling
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) {
+        console.warn('AudioContext not supported, skipping visualization');
+        return;
+      }
+      
+      const audioCtx = new AudioContextClass();
+      
+      // Safari requires user interaction to start AudioContext
+      if (audioCtx.state === 'suspended' && isSafari) {
+        console.log('Resuming suspended AudioContext for Safari');
+        audioCtx.resume().catch(err => console.warn('Could not resume AudioContext:', err));
+      }
+      
       const analyserNode = audioCtx.createAnalyser();
       const source = audioCtx.createMediaStreamSource(stream);
       
-      // Advanced settings optimized for human speech detection
-      analyserNode.fftSize = 1024; // Higher resolution for better frequency analysis
-      analyserNode.smoothingTimeConstant = 0.2; // Minimal smoothing for faster response
-      analyserNode.minDecibels = -100; // Lower threshold for quiet speech
-      analyserNode.maxDecibels = -10; // Higher ceiling for dynamic range
+      // Safari-compatible settings - more conservative for better compatibility
+      analyserNode.fftSize = isSafari && safariVersion < 14 ? 256 : 1024;
+      analyserNode.smoothingTimeConstant = isSafari ? 0.3 : 0.2;
+      analyserNode.minDecibels = -90; // Less aggressive for Safari
+      analyserNode.maxDecibels = -20;
       
-      // Add a gain node for better control over input sensitivity
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = 2.0; // Boost input signal for better detection
-      
-      // Create a high-pass filter to reduce low-frequency noise
-      const highPassFilter = audioCtx.createBiquadFilter();
-      highPassFilter.type = 'highpass';
-      highPassFilter.frequency.value = 80; // Cut frequencies below 80Hz
-      highPassFilter.Q.value = 0.7;
-      
-      // Create a low-pass filter to focus on speech frequencies
-      const lowPassFilter = audioCtx.createBiquadFilter();
-      lowPassFilter.type = 'lowpass';
-      lowPassFilter.frequency.value = 8000; // Cut frequencies above 8kHz
-      lowPassFilter.Q.value = 0.7;
-      
-      // Connect the audio pipeline: source -> highpass -> lowpass -> gain -> analyser
-      source.connect(highPassFilter);
-      highPassFilter.connect(lowPassFilter);
-      lowPassFilter.connect(gainNode);
-      gainNode.connect(analyserNode);
+      // Simplified audio pipeline for Safari compatibility
+      if (isSafari) {
+        // Direct connection for Safari to avoid filter compatibility issues
+        source.connect(analyserNode);
+        console.log('🍎 Using Safari-optimized audio pipeline');
+      } else {
+        // Advanced pipeline for other browsers
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = 2.0;
+        
+        const highPassFilter = audioCtx.createBiquadFilter();
+        highPassFilter.type = 'highpass';
+        highPassFilter.frequency.value = 80;
+        highPassFilter.Q.value = 0.7;
+        
+        const lowPassFilter = audioCtx.createBiquadFilter();
+        lowPassFilter.type = 'lowpass';
+        lowPassFilter.frequency.value = 8000;
+        lowPassFilter.Q.value = 0.7;
+        
+        source.connect(highPassFilter);
+        highPassFilter.connect(lowPassFilter);
+        lowPassFilter.connect(gainNode);
+        gainNode.connect(analyserNode);
+      }
       
       setAudioContext(audioCtx);
       setAnalyser(analyserNode);
@@ -707,6 +747,10 @@ function InterviewPage() {
       startAudioVisualization(analyserNode);
     } catch (error) {
       console.error('Error setting up audio visualization:', error);
+      // Fallback for Safari - skip audio visualization if it fails
+      if (isSafari) {
+        console.log('🍎 Safari audio visualization failed, continuing without visualization');
+      }
     }
   };
 
@@ -1279,11 +1323,14 @@ function InterviewPage() {
           return;
         }
         
-        // Browser detection for Safari-specific handling
+        // Enhanced browser detection for Safari-specific handling
         const browserInfo = {
-          isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-                   (navigator.userAgent.includes('AppleWebKit') && !navigator.userAgent.includes('Chrome'))
+          isSafari: isSafari || /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                   (navigator.userAgent.includes('AppleWebKit') && !navigator.userAgent.includes('Chrome')),
+          safariVersion: safariVersion
         };
+        
+        console.log(`🔍 Browser detection: Safari=${browserInfo.isSafari}, Version=${browserInfo.safariVersion}`);
         
         // Check if this setup session is still valid
         if (setupSessionRef.current !== setupSessionId) {
@@ -1321,15 +1368,26 @@ function InterviewPage() {
           return;
         }
         
-        // Simple audio constraints
+        // Safari-optimized audio constraints
         const audioConstraints = { 
-          audio: {
+          audio: browserInfo.isSafari ? {
+            // Safari-specific constraints - more conservative
+            echoCancellation: true,
+            noiseSuppression: false, // Sometimes problematic in Safari
+            autoGainControl: browserInfo.safariVersion >= 14, // Only for newer Safari
+            sampleRate: 44100, // Standard sample rate for Safari
+            channelCount: 1 // Mono for better compatibility
+          } : {
+            // Advanced constraints for other browsers
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1
           } 
         };
         
+        console.log(`🎙️ Using ${browserInfo.isSafari ? 'Safari-optimized' : 'standard'} audio constraints:`, audioConstraints);
         console.log("Getting user media...");
         const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
         
@@ -1767,6 +1825,16 @@ function InterviewPage() {
           </div>
         </header>
 
+        {/* Safari Compatibility Notice */}
+        {isSafari && (
+          <div className="fixed top-16 left-4 right-4 z-40 max-w-4xl mx-auto">
+            <div className="bg-blue-600/90 border border-blue-500/50 rounded-lg p-3 text-center text-white text-sm backdrop-blur-sm">
+              <span className="font-medium">🍎 Safari Detected:</span> Using optimized settings for best compatibility. 
+              If you experience issues, try Chrome or Firefox.
+            </div>
+          </div>
+        )}
+
         {/* Main Interview Area */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-20">
           <div className="w-full max-w-6xl">
@@ -2151,8 +2219,21 @@ function InterviewPage() {
           onClose={() => setShowPermissionGuide(false)}
         />
 
-        {/* Animation Styles - Exact copy from start page */}
+        {/* Animation and Safari Compatibility Styles */}
         <style jsx>{`
+          /* Safari compatibility fixes */
+          @supports not (backdrop-filter: blur(10px)) {
+            .backdrop-blur-lg {
+              background: rgba(9, 9, 11, 0.95) !important;
+            }
+            .backdrop-blur-md {
+              background: rgba(9, 9, 11, 0.90) !important;
+            }
+            .backdrop-blur-sm {
+              background: rgba(39, 39, 42, 0.80) !important;
+            }
+          }
+          
           @keyframes breathing {
             0%, 100% {
               transform: translateY(0px) scale(1);
