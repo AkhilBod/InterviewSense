@@ -304,9 +304,11 @@ export default function ResumeCheckerPage() {
 
         <div className="pt-16 px-4 h-full overflow-y-auto">
           {!showResults ? (
-            // Resume Checker Form - Centered
+            // Resume Checker Form - Centered with Progress
             <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
               <div className="w-full max-w-2xl">
+
+
                 <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
                   <CardContent className="space-y-6 px-8 pb-8 pt-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -322,7 +324,7 @@ export default function ResumeCheckerPage() {
                             onValueChange={setJobTitle}
                             required
                           >
-                            <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                            <SelectTrigger className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500">
                               <SelectValue placeholder="Select your job title" />
                             </SelectTrigger>
                             <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
@@ -379,23 +381,24 @@ export default function ResumeCheckerPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Company
+                          Company (Optional)
                         </label>
                         <Input
                           placeholder="Company"
                           value={company}
                           onChange={(e) => setCompany(e.target.value)}
+                          className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Job Description
+                          Job Description (Optional)
                         </label>
                         <Textarea
-                          placeholder="Job Description"
+                          placeholder="Paste the job description here for more targeted analysis..."
                           value={jobDescription}
                           onChange={(e) => setJobDescription(e.target.value)}
-                          className="min-h-[100px]"
+                          className="min-h-[120px] bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
 
@@ -408,11 +411,11 @@ export default function ResumeCheckerPage() {
 
                       <Button
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6"
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6 text-base font-semibold"
                         size="lg"
                         disabled={isLoading || !resume || !jobTitle}
                       >
-                        {isLoading ? "Analyzing..." : "Check Resume"}
+                        {isLoading ? "Analyzing Resume..." : "Analyze Resume"}
                       </Button>
                     </form>
                   </CardContent>
