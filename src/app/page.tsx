@@ -1059,7 +1059,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-blue-300 font-medium">Join hundreds of developers already practicing</span>
+              <span className="text-sm text-blue-300 font-medium">Join developers already practicing</span>
             </div>
             
             <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto">
@@ -1070,7 +1070,7 @@ export default function Home() {
             {/* Social proof stats */}
             <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-10 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">100+</div>
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1">500+</div>
                 <div className="text-sm text-zinc-400">Active Users</div>
               </div>
               <div className="text-center">
@@ -1234,62 +1234,6 @@ export default function Home() {
                 Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CS Internship Success Stories Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-900/20 to-purple-900/20 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4">
-              Join CS Students Landing Internships at Top Companies
-            </h2>
-            <p className="text-base text-zinc-400 max-w-3xl mx-auto">
-              Our platform has helped hundreds of computer science students secure internships at Google, Meta, Amazon, Microsoft, and other leading tech companies.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
-            {/* Stats Cards */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
-              <div className="text-3xl font-bold text-blue-400 mb-2">500+</div>
-              <div className="text-zinc-300 font-medium mb-1">CS Students Helped</div>
-              <div className="text-sm text-zinc-500">Successfully prepared for tech internships</div>
-            </div>
-
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
-              <div className="text-3xl font-bold text-green-400 mb-2">95%</div>
-              <div className="text-zinc-300 font-medium mb-1">Interview Success Rate</div>
-              <div className="text-sm text-zinc-500">Students who practiced with our platform</div>
-            </div>
-
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
-              <div className="text-3xl font-bold text-purple-400 mb-2">1000+</div>
-              <div className="text-zinc-300 font-medium mb-1">LeetCode Problems</div>
-              <div className="text-sm text-zinc-500">Practice with real interview questions</div>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">
-              Ready to Land Your CS Internship?
-            </h3>
-            <p className="text-zinc-400 mb-8 max-w-2xl mx-auto">
-              Start practicing today with AI-powered feedback, LeetCode problems, and behavioral questions used by top tech companies.
-            </p>
-            <Button
-              onClick={handleGetStartedClick}
-              size="lg"
-              className="text-lg px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <p className="text-xs text-zinc-500 mt-4">
-              No signup required • Free forever • Join thousands of CS students
-            </p>
           </div>
         </div>
       </section>
