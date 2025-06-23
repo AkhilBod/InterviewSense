@@ -31,6 +31,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import CareerRoadmapLoadingModal from '@/components/CareerRoadmapLoadingModal';
 
 const TECH_JOB_TITLES = [
   { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
@@ -89,9 +90,25 @@ export default function CareerRoadmapPage() {
     }
     
     try {
-      // Simulate roadmap generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      router.push('/career-roadmap/plan');
+      const response = await fetch('/api/career-roadmap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(roadmapData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate career roadmap');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        router.push('/career-roadmap/results');
+      } else {
+        throw new Error(data.error || 'Failed to generate career roadmap');
+      }
     } catch (error) {
       console.error('Career roadmap generation error:', error);
       setError("Failed to generate career roadmap. Please try again.");
@@ -359,6 +376,12 @@ export default function CareerRoadmapPage() {
           </div>
         </div>
       </div>
+
+      {/* Loading Modal */}
+      <CareerRoadmapLoadingModal 
+        isOpen={isLoading}
+        onClose={() => {}} // Don't allow closing during analysis
+      />
     </ProtectedRoute>
   );
 } 

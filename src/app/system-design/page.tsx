@@ -37,15 +37,10 @@ export default function SystemDesignPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [learningData, setLearningData] = useState({
-    currentLevel: '',
-    experience: '',
-    focusAreas: [] as string[],
-    learningGoals: '',
-    timeCommitment: '',
-    preferredStyle: '',
-    testType: '',
-    companyType: ''
+  const [formData, setFormData] = useState({
+    experienceLevel: '',
+    testDifficulty: '',
+    targetCompany: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,35 +48,35 @@ export default function SystemDesignPage() {
     setIsLoading(true);
     setError(null);
     
-    if (!learningData.currentLevel || !learningData.preferredStyle) {
-      setError("Please provide your current level and test difficulty.");
+    if (!formData.experienceLevel || !formData.testDifficulty) {
+      setError("Please provide your experience level and test difficulty.");
       setIsLoading(false);
       return;
     }
     
     try {
-      // Simulate learning path generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      router.push('/system-design/learning-path');
+      const response = await fetch('/api/system-design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate system design test');
+      }
+
+      // Store the result and navigate to results page
+      sessionStorage.setItem('systemDesignTest', JSON.stringify(result.data));
+      router.push('/system-design/results');
     } catch (error) {
-      console.error('System design setup error:', error);
-      setError("Failed to create learning path. Please try again.");
+      console.error('System design generation error:', error);
+      setError("Failed to generate system design test. Please try again.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleFocusAreaChange = (area: string, checked: boolean) => {
-    if (checked) {
-      setLearningData(prev => ({
-        ...prev,
-        focusAreas: [...prev.focusAreas, area]
-      }));
-    } else {
-      setLearningData(prev => ({
-        ...prev,
-        focusAreas: prev.focusAreas.filter(a => a !== area)
-      }));
     }
   };
 
@@ -168,7 +163,7 @@ export default function SystemDesignPage() {
                         Your Experience Level
                       </label>
                       <div className="relative">
-                        <Select value={learningData.currentLevel} onValueChange={(value) => setLearningData(prev => ({ ...prev, currentLevel: value }))}>
+                        <Select value={formData.experienceLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}>
                           <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-red-500/50 focus:border-red-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-red-500/10">
                             <SelectValue placeholder="Select your experience level" />
                           </SelectTrigger>
@@ -190,7 +185,7 @@ export default function SystemDesignPage() {
                         Test Difficulty
                       </label>
                       <div className="relative">
-                        <Select value={learningData.preferredStyle} onValueChange={(value) => setLearningData(prev => ({ ...prev, preferredStyle: value }))}>
+                        <Select value={formData.testDifficulty} onValueChange={(value) => setFormData(prev => ({ ...prev, testDifficulty: value }))}>
                           <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-red-500/50 focus:border-red-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-red-500/10">
                             <SelectValue placeholder="Choose test difficulty" />
                           </SelectTrigger>
@@ -205,28 +200,6 @@ export default function SystemDesignPage() {
                       </div>
                     </div>
 
-                    {/* Test Type */}
-                    <div className="space-y-3 group">
-                      <label className="text-red-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                        Test Format
-                      </label>
-                      <div className="relative">
-                        <Select value={learningData.testType} onValueChange={(value) => setLearningData(prev => ({ ...prev, testType: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-red-500/50 focus:border-red-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-red-500/10">
-                            <SelectValue placeholder="Select test format" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="scenario">Design Challenge (45 min)</SelectItem>
-                            <SelectItem value="quick">Quick Assessment (15 min)</SelectItem>
-                            <SelectItem value="comprehensive">Comprehensive Test (90 min)</SelectItem>
-                            <SelectItem value="mock-interview">Mock Interview (60 min)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      </div>
-                    </div>
-
                     {/* Target Company Type */}
                     <div className="space-y-3 group">
                       <label className="text-red-300 text-sm font-medium flex items-center gap-2">
@@ -234,7 +207,7 @@ export default function SystemDesignPage() {
                         Target Company Type (Optional)
                       </label>
                       <div className="relative">
-                        <Select value={learningData.companyType} onValueChange={(value) => setLearningData(prev => ({ ...prev, companyType: value }))}>
+                        <Select value={formData.targetCompany} onValueChange={(value) => setFormData(prev => ({ ...prev, targetCompany: value }))}>
                           <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-red-500/50 focus:border-red-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-red-500/10">
                             <SelectValue placeholder="What type of company are you targeting?" />
                           </SelectTrigger>
@@ -261,13 +234,13 @@ export default function SystemDesignPage() {
                       <Button
                         type="submit"
                         className="w-full h-14 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-red-500/25 hover:shadow-red-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-red-400/20"
-                        disabled={isLoading || !learningData.currentLevel || !learningData.preferredStyle}
+                        disabled={isLoading || !formData.experienceLevel || !formData.testDifficulty}
                       >
                         <Code2 className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                         <span>{isLoading ? "Preparing Test..." : "Start System Design Test"}</span>
                       </Button>
                       
-                      {(!learningData.currentLevel || !learningData.preferredStyle) && (
+                      {(!formData.experienceLevel || !formData.testDifficulty) && (
                         <p className="text-center text-zinc-400 text-sm mt-3">
                           Please select your experience level and test difficulty to begin
                         </p>
