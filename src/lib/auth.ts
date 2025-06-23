@@ -6,6 +6,35 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 
+// Extend the built-in session types
+declare module "next-auth" {
+  interface User {
+    id: string
+    email: string
+    name?: string | null
+    emailVerified?: Date | null;
+    password?: string | null;
+  }
+  
+  interface Session {
+    user: {
+      id: string
+      email: string
+      name?: string | null
+      image?: string | null
+    }
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    picture?: string | null;
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -65,96 +94,52 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      // For credentials provider, we already check email verification in authorize
-      if (account?.type === 'credentials') {
-        return true;
-      }
-
-      // For OAuth providers (like Google), automatically verify email
-      if (account?.type === 'oauth') {
-        try {
-          // For OAuth providers, we can trust the email is verified
-          const verifiedDate = new Date();
-
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          });
-
-          // If user doesn't exist, create new user with verified email
-          if (!dbUser) {
-            await prisma.user.create({
-              data: {
-                email: user.email!,
-                name: user.name,
-                image: user.image,
-                emailVerified: verifiedDate,
-                onboardingCompleted: false,
-              } as Prisma.UserCreateInput,
-            });
-            return true;
-          }
-
-          // If user exists, ensure email is verified and update other fields
-          await prisma.user.update({
-            where: { id: dbUser.id },
-            data: {
-              emailVerified: verifiedDate,
-              name: user.name,
-              image: user.image,
-            } as Prisma.UserUpdateInput,
-          });
-
-          return true;
-        } catch (error) {
-          console.error('Error in signIn callback:', error);
+      if (account?.provider === "google") {
+        if (!user.email) {
           return false;
         }
+        const userExists = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+        if (userExists && !userExists.emailVerified) {
+          await prisma.user.update({
+            where: { id: userExists.id },
+            data: { emailVerified: new Date() },
+          });
+        }
       }
-
       return true;
     },
-    async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
-      return `${baseUrl}/dashboard`;
-    },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
-        session.user.image = token.picture as string;
+      if (token && session.user) {
+        session.user.id = token.id;
+        session.user.name = token.name || null;
+        session.user.email = token.email || '';
+        session.user.image = token.picture || null;
       }
       return session;
     },
     async jwt({ token, user }) {
-      try {
-        const dbUser = await prisma.user.findFirst({
-          where: {
-            email: token.email as string,
-          },
-        });
-
-        if (!dbUser) {
-          if (user) {
-            token.id = user?.id;
-          }
-          return token;
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+      }
+      return token;
+    },
+  },
+  events: {
+    async createUser({ user }) {
+      if (user.id && user.email) {
+        const userInDb = await prisma.user.findUnique({ where: { id: user.id }});
+        if (userInDb && !userInDb.password && !userInDb.emailVerified) {
+            await prisma.user.update({
+                where: { id: userInDb.id },
+                data: { emailVerified: new Date() }
+            });
         }
-
-        return {
-          id: dbUser.id,
-          name: dbUser.name || '',
-          email: dbUser.email || '',
-          picture: dbUser.image || '',
-        };
-      } catch (error) {
-        console.error('Error in jwt callback:', error);
-        return token;
       }
     }
-  },
-  debug: process.env.NODE_ENV === 'development',
+  }
 };

@@ -387,12 +387,6 @@ export default function TechnicalAssessmentResultsPage() {
               <span className="font-semibold text-white">InterviewSense</span>
             </Link>
             <nav className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
               <UserAccountDropdown />
             </nav>
           </div>

@@ -900,8 +900,7 @@ public:
                     )}
                     {audioUrl && !isTranscribing && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-blue-400">Recording saved:</span>
-                        <audio src={audioUrl} controls className="h-8" />
+                        <span className="text-xs text-green-400">✓ Recording saved</span>
                       </div>
                     )}
                   </div>
