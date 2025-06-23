@@ -232,81 +232,155 @@ function DashboardPage() {
           </h1>
         </div>
 
-        {/* Main Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {/* First 4 Cards - 4 Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
           {/* Behavioral Interview */}
           <Card className="bg-gradient-to-br from-slate-800/60 via-blue-900/30 to-slate-800/60 border-blue-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-blue-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-blue-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-4 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-xl border border-blue-500/20">
-                  <MessageSquare className="h-10 w-10 text-blue-300" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-blue-500/30 to-blue-600/30 rounded-xl border border-blue-500/20">
+                  <MessageSquare className="h-8 w-8 text-blue-300" />
                 </div>
-                <ChevronRight className="h-6 w-6 text-blue-400" />
+                <ChevronRight className="h-5 w-5 text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-2">Behavioral Interview</h3>
-              <p className="text-blue-200 text-sm mb-4">Practice behavioral questions and storytelling skills</p>
-              <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg">
-                <Link href="/start?type=behavioral">
-                  Start Practice
-                </Link>
-              </Button>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-1">Behavioral Interview</h3>
+                <p className="text-blue-200 text-sm mb-3 leading-snug">Practice behavioral questions and storytelling skills</p>
+                <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/start?type=behavioral">
+                    Start Practice
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           {/* Technical Interview */}
           <Card className="bg-gradient-to-br from-slate-800/60 via-green-900/30 to-slate-800/60 border-green-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-green-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-green-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-4 bg-gradient-to-br from-green-500/30 to-green-600/30 rounded-xl border border-green-500/20">
-                  <Brain className="h-10 w-10 text-green-300" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-green-500/30 to-green-600/30 rounded-xl border border-green-500/20">
+                  <Brain className="h-8 w-8 text-green-300" />
                 </div>
-                <ChevronRight className="h-6 w-6 text-green-400" />
+                <ChevronRight className="h-5 w-5 text-green-400" />
               </div>
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent mb-2">Technical Interview</h3>
-              <p className="text-green-200 text-sm mb-4">Challenge yourself with coding and technical problem-solving</p>
-              <Button asChild className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 shadow-lg">
-                <Link href="/dashboard/technical">
-                  Start Practice
-                </Link>
-              </Button>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent mb-1">Technical Interview</h3>
+                <p className="text-green-200 text-sm mb-3 leading-snug">Challenge yourself with coding and technical problem-solving</p>
+                <Button asChild className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/dashboard/technical">
+                    Start Practice
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           {/* Resume Analysis */}
           <Card className="bg-gradient-to-br from-slate-800/60 via-purple-900/30 to-slate-800/60 border-purple-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-purple-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-purple-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-4 bg-gradient-to-br from-purple-500/30 to-purple-600/30 rounded-xl border border-purple-500/20">
-                  <FileCheck2 className="h-10 w-10 text-purple-300" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-purple-500/30 to-purple-600/30 rounded-xl border border-purple-500/20">
+                  <FileCheck2 className="h-8 w-8 text-purple-300" />
                 </div>
-                <ChevronRight className="h-6 w-6 text-purple-400" />
+                <ChevronRight className="h-5 w-5 text-purple-400" />
               </div>
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2">Resume Analysis</h3>
-              <p className="text-purple-200 text-sm mb-4">Get AI-powered feedback to optimize your resume</p>
-              <Button asChild className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 shadow-lg">
-                <Link href="/resume-checker">
-                  Analyze Resume
-                </Link>
-              </Button>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-1">Resume Analysis</h3>
+                <p className="text-purple-200 text-sm mb-3 leading-snug">Get AI-powered feedback to optimize your resume</p>
+                <Button asChild className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/resume-checker">
+                    Analyze Resume
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           {/* Cover Letter */}
           <Card className="bg-gradient-to-br from-slate-800/60 via-orange-900/30 to-slate-800/60 border-orange-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-orange-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-orange-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-4 bg-gradient-to-br from-orange-500/30 to-orange-600/30 rounded-xl border border-orange-500/20">
-                  <FileText className="h-10 w-10 text-orange-300" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-orange-500/30 to-orange-600/30 rounded-xl border border-orange-500/20">
+                  <FileText className="h-8 w-8 text-orange-300" />
                 </div>
-                <ChevronRight className="h-6 w-6 text-orange-400" />
+                <ChevronRight className="h-5 w-5 text-orange-400" />
               </div>
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-2">Cover Letter</h3>
-              <p className="text-orange-200 text-sm mb-4">Create compelling cover letters that stand out</p>
-              <Button asChild className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white border-0 shadow-lg">
-                <Link href="/cover-letter">
-                  Create Cover Letter
-                </Link>
-              </Button>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent mb-1">Cover Letter</h3>
+                <p className="text-orange-200 text-sm mb-3 leading-snug">Create compelling cover letters that stand out</p>
+                <Button asChild className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/cover-letter">
+                    Create Cover Letter
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bottom 3 Cards - 3 Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-16">
+          {/* Portfolio Review */}
+          <Card className="bg-gradient-to-br from-slate-800/60 via-cyan-900/30 to-slate-800/60 border-cyan-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-cyan-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-cyan-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-cyan-500/30 to-cyan-600/30 rounded-xl border border-cyan-500/20">
+                  <GitBranch className="h-8 w-8 text-cyan-300" />
+                </div>
+                <ChevronRight className="h-5 w-5 text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-1">Portfolio Review</h3>
+                <p className="text-cyan-200 text-sm mb-3 leading-snug">Get feedback on your projects and portfolio</p>
+                <Button asChild className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/portfolio-review">
+                    Review Portfolio
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* System Design Basics */}
+          <Card className="bg-gradient-to-br from-slate-800/60 via-red-900/30 to-slate-800/60 border-red-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-red-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-red-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-red-500/30 to-red-600/30 rounded-xl border border-red-500/20">
+                  <Code2 className="h-8 w-8 text-red-300" />
+                </div>
+                <ChevronRight className="h-5 w-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent mb-1">System Design Basics</h3>
+                <p className="text-red-200 text-sm mb-3 leading-snug">Learn fundamentals of system architecture and design</p>
+                <Button asChild className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/system-design">
+                    Learn Basics
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Career Roadmap */}
+          <Card className="bg-gradient-to-br from-slate-800/60 via-amber-900/30 to-slate-800/60 border-amber-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-amber-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-amber-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-3 bg-gradient-to-br from-amber-500/30 to-amber-600/30 rounded-xl border border-amber-500/20">
+                  <Target className="h-8 w-8 text-amber-300" />
+                </div>
+                <ChevronRight className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent mb-1">Career Roadmap</h3>
+                <p className="text-amber-200 text-sm mb-3 leading-snug">Plan your career path and set achievable goals</p>
+                <Button asChild className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white border-0 shadow-lg text-sm py-2">
+                  <Link href="/career-roadmap">
+                    View Roadmap
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
