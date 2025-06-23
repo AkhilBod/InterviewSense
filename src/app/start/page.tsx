@@ -364,45 +364,68 @@ export default function StartPage() {
           {/* Right Side - Form */}
           <div className="space-y-4 sm:space-y-6 order-1 lg:order-2 flex justify-center">
             <div className="w-full max-w-lg">
-              <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
-                <CardContent className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+              {/* Header Section */}
+              <div className="text-center mb-6 lg:mb-8">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent mb-3">
+                  Ready to shine in your interview?
+                </h1>
+                <p className="text-zinc-400 text-sm sm:text-base">
+                  Let's prepare you for success with personalized practice
+                </p>
+              </div>
+
+              <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-blue-900/20 border border-blue-500/20 backdrop-blur-sm shadow-2xl shadow-blue-500/10">
+                <CardContent className="p-6 sm:p-8 space-y-6">
                   
                   {/* Resume Upload and Job Title - Stack on Mobile */}
-                  <div className="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:justify-between lg:gap-6">
+                  <div className="space-y-6 lg:space-y-0 lg:flex lg:items-end lg:justify-between lg:gap-6">
                     {/* Job Title Selection */}
-                    <div className="flex-1 min-w-0">
-                      <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
-                      <Select 
-                        value={formData.jobTitle} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-600 text-left w-full [&>span]:text-left [&>span]:justify-start">
-                          <SelectValue placeholder="Select your job title" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60 w-full">
-                          {TECH_JOB_TITLES
-                            .filter(job => job.title && job.title.trim() !== '')
-                            .map(job => (
-                              <SelectItem key={job.id} value={job.title} className="text-left">
-                                <div className="flex flex-col items-start w-full">
-                                  <div className="font-medium">{job.title}</div>
-                                  <div className="text-sm text-zinc-400 hidden sm:block">{job.description}</div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex-1 min-w-0 group">
+                      <Label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                        What role are you targeting?
+                      </Label>
+                      <div className="relative">
+                        <Select 
+                          value={formData.jobTitle} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
+                        >
+                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-left w-full h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10 [&>span]:text-left [&>span]:justify-start">
+                            <SelectValue placeholder="Choose your dream role..." className="text-zinc-400" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60 w-full">
+                            {TECH_JOB_TITLES
+                              .filter(job => job.title && job.title.trim() !== '')
+                              .map(job => (
+                                <SelectItem 
+                                  key={job.id} 
+                                  value={job.title} 
+                                  className="text-left hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
+                                >
+                                  <div className="flex flex-col items-start w-full">
+                                    <div className="font-medium text-white">{job.title}</div>
+                                    <div className="text-sm text-blue-300/70 hidden sm:block">{job.description}</div>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
                     </div>
 
                     {/* Resume Upload */}
-                    <div className="lg:flex-shrink-0">
-                      <Label className="text-zinc-300 text-sm mb-2 block">Resume</Label>
-                      <div className="flex items-center gap-2">
+                    <div className="lg:flex-shrink-0 group">
+                      <Label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                        Your resume
+                      </Label>
+                      <div className="flex items-center gap-3">
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
+                          className="bg-gradient-to-r from-blue-600/10 to-blue-700/10 hover:from-blue-600/20 hover:to-blue-700/20 border-2 border-blue-500/30 hover:border-blue-400/50 text-blue-300 hover:text-blue-200 transition-all duration-300 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 h-12 px-4"
                           onClick={() => fileInputRef.current?.click()}
                         >
                           <Upload className="h-4 w-4 mr-2" />
@@ -416,76 +439,116 @@ export default function StartPage() {
                           className="hidden"
                         />
                         {formData.resume && (
-                          <span className="text-sm text-zinc-400 flex items-center truncate max-w-32 sm:max-w-none">
-                            <FileText className="h-3 w-3 mr-1 flex-shrink-0" />
-                            <span className="truncate">
+                          <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
+                            <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                            <span className="text-sm text-green-300 truncate max-w-32 sm:max-w-none">
                               {formData.resume.name.length > 15
                                 ? `${formData.resume.name.substring(0, 15)}...`
                                 : formData.resume.name}
                             </span>
-                          </span>
+                          </div>
                         )}
                       </div>
                     </div>
                   </div>
 
                   {/* Experience Level */}
-                  <div className="space-y-2 sm:space-y-3">
-                    <Label className="text-zinc-300">Experience Level</Label>
-                    <Select 
-                      value={formData.experienceLevel} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
-                    >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-600">
-                        <SelectItem value="Intern">Intern</SelectItem>
-                        <SelectItem value="Entry-level">Entry-level (0-2 years)</SelectItem>
-                        <SelectItem value="Mid-level">Mid-level (2-5 years)</SelectItem>
-                        <SelectItem value="Senior">Senior (5+ years)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-3 group">
+                    <Label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                      Your experience level
+                    </Label>
+                    <div className="relative">
+                      <Select 
+                        value={formData.experienceLevel} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
+                      >
+                        <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
+                          <SelectItem value="Intern" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
+                            Intern
+                          </SelectItem>
+                          <SelectItem value="Entry-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
+                            Entry-level (0-2 years)
+                          </SelectItem>
+                          <SelectItem value="Mid-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
+                            Mid-level (2-5 years)
+                          </SelectItem>
+                          <SelectItem value="Senior" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
+                            Senior (5+ years)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
                   </div>
 
                   {/* Number of Questions */}
-                  <div className="space-y-2 sm:space-y-3">
-                    <Label className="text-zinc-300">Number of Questions</Label>
-                    <Select 
-                      value={formData.numberOfQuestions.toString()} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
-                    >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-600">
-                        {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
-                          <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-3 group">
+                    <Label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                      How many questions?
+                    </Label>
+                    <div className="relative">
+                      <Select 
+                        value={formData.numberOfQuestions.toString()} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
+                      >
+                        <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
+                          {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
+                            <SelectItem 
+                              key={num} 
+                              value={num.toString()}
+                              className="hover:bg-blue-500/10 focus:bg-blue-500/20"
+                            >
+                              {num} questions
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
                   </div>
 
                   {/* Company Input */}
-                  <div className="space-y-2 sm:space-y-3">
-                    <Label className="text-zinc-300">Company (Optional)</Label>
-                    <Input
-                      placeholder="e.g., Google, Apple, Meta"
-                      value={formData.company}
-                      onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                      className="bg-zinc-800 border-zinc-600 focus:border-blue-400"
-                    />
+                  <div className="space-y-3 group">
+                    <Label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                      Target company (optional)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        placeholder="e.g., Google, Apple, Meta"
+                        value={formData.company}
+                        onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                        className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10 placeholder:text-zinc-500"
+                      />
+                      <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
                   </div>
 
                   {/* Start Interview Button */}
-                  <Button
-                    onClick={handleStartInterview}
-                    disabled={!isFormValid()}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-4 sm:py-6 text-base sm:text-lg font-medium shadow transition-colors disabled:opacity-50 disabled:pointer-events-none"
-                  >
-                    <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    Start Interview
-                  </Button>
+                  <div className="pt-4">
+                    <Button
+                      onClick={handleStartInterview}
+                      disabled={!isFormValid()}
+                      className="w-full h-14 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-blue-400/20"
+                    >
+                      <Play className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                      <span>Start Your Journey</span>
+                    </Button>
+                    
+                    {!isFormValid() && (
+                      <p className="text-center text-zinc-400 text-sm mt-3">
+                        Please select a job title to get started
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>

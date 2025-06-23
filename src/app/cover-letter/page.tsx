@@ -267,11 +267,21 @@ export default function CoverLetterPage() {
         </header>
 
         <div className="w-full max-w-2xl mx-auto mt-16">
-          <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
-            <CardContent className="space-y-6 px-8 pb-8 pt-8">
+          {/* Header Section */}
+          <div className="text-center mb-6 lg:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent mb-3">
+              Craft your perfect cover letter
+            </h1>
+            <p className="text-zinc-400 text-sm sm:text-base">
+              Create compelling, personalized cover letters that get you noticed
+            </p>
+          </div>
+
+          <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-orange-900/20 border border-orange-500/20 backdrop-blur-sm shadow-2xl shadow-orange-500/10">
+            <CardContent className="p-6 sm:p-8 space-y-6">
               {isLoading ? (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+                  <div className="w-16 h-16 border-4 border-orange-600/20 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
                   <h3 className="text-xl font-semibold text-white mb-3">{loadingStep}</h3>
                   <p className="text-zinc-400">Please wait while we craft your perfect cover letter...</p>
                 </div>
@@ -282,22 +292,27 @@ export default function CoverLetterPage() {
                     {/* Company Name and Resume Upload Row - Better Space Distribution */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Company Name Section - Takes 2/3 of the space */}
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">
+                      <div className="md:col-span-2 group">
+                        <label className="text-orange-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                          <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                           Company Name
                         </label>
-                        <Input
-                          placeholder="Company Name"
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                          className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500 text-lg py-3"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            placeholder="e.g., Google, Meta, Apple"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-orange-500/50 focus:border-orange-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-500/10 text-lg placeholder:text-zinc-500"
+                            required
+                          />
+                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
                       </div>
 
                       {/* Resume Upload Section - Takes 1/3 of the space */}
-                      <div className="md:col-span-1">
-                        <label className="block text-sm font-medium mb-2">
+                      <div className="md:col-span-1 group">
+                        <label className="text-orange-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                          <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                           Resume
                         </label>
                         <div className="flex items-center gap-2">
@@ -305,11 +320,11 @@ export default function CoverLetterPage() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+                            className="bg-gradient-to-r from-orange-600/10 to-orange-700/10 hover:from-orange-600/20 hover:to-orange-700/20 border-2 border-orange-500/30 hover:border-orange-400/50 text-orange-300 hover:text-orange-200 transition-all duration-300 shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 h-12 px-4"
                             onClick={() => document.getElementById("resume-upload")?.click()}
                           >
                             <Upload className="h-4 w-4 mr-2" />
-                            {resumeName ? "Change Resume" : "Upload Resume"}
+                            {resumeName ? "Change" : "Upload"}
                           </Button>
                           <input
                             id="resume-upload"
@@ -321,30 +336,36 @@ export default function CoverLetterPage() {
                           />
                         </div>
                         {resumeName && (
-                          <div className="mt-2">
-                            <span className="text-xs text-zinc-400 flex items-center">
-                              <FileText className="h-3 w-3 mr-1" />
-                              {resumeName.length > 15
-                                ? `${resumeName.substring(0, 15)}...`
-                                : resumeName}
-                            </span>
+                          <div className="mt-3">
+                            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
+                              <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                              <span className="text-sm text-green-300 truncate">
+                                {resumeName.length > 15
+                                  ? `${resumeName.substring(0, 15)}...`
+                                  : resumeName}
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
                     </div>
 
                     {/* Job Description Section */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
+                    <div className="space-y-3 group">
+                      <label className="text-orange-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                         Job Description
                       </label>
-                      <Textarea
-                        placeholder="Job Description"
-                        value={jobDescription}
-                        onChange={(e) => setJobDescription(e.target.value)}
-                        className="min-h-[250px] bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
-                        required
-                      />
+                      <div className="relative">
+                        <Textarea
+                          placeholder="Paste the complete job description here for the most targeted cover letter..."
+                          value={jobDescription}
+                          onChange={(e) => setJobDescription(e.target.value)}
+                          className="min-h-[250px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-orange-500/50 focus:border-orange-500 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-500/10 placeholder:text-zinc-500"
+                          required
+                        />
+                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
                     </div>
 
                     {error && (
@@ -354,14 +375,22 @@ export default function CoverLetterPage() {
                       </div>
                     )}
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-3 text-base font-semibold"
-                      size="lg"
-                      disabled={isLoading || !resume || !jobDescription || !companyName}
-                    >
-                      Generate Cover Letter
-                    </Button>
+                    <div className="pt-4">
+                      <Button
+                        type="submit"
+                        className="w-full h-14 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 hover:from-orange-500 hover:via-orange-400 hover:to-orange-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-orange-400/20"
+                        disabled={isLoading || !resume || !jobDescription || !companyName}
+                      >
+                        <FileText className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                        <span>Generate Cover Letter</span>
+                      </Button>
+                      
+                      {(!resume || !jobDescription || !companyName) && (
+                        <p className="text-center text-zinc-400 text-sm mt-3">
+                          Please upload a resume, enter company name, and provide job description
+                        </p>
+                      )}
+                    </div>
                   </form>
 
                   {generatedCoverLetter && (

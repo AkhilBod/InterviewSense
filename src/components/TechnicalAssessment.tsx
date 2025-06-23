@@ -544,14 +544,24 @@ public:
 
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
-      <Card className="bg-gradient-to-br from-zinc-800 to-zinc-900 border-zinc-700 text-zinc-100 adow-xl">
-        <CardContent className="space-y-6 pt-8">
-          <div className="bg-gradient-to-r from-zinc-700/30 to-zinc-600/30 p-6 rounded-xl border border-zinc-600/50">
+      {/* Header Section */}
+      <div className="text-center mb-6 lg:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-clip-text text-transparent mb-3">
+          Ready for your technical challenge?
+        </h1>
+        <p className="text-zinc-400 text-sm sm:text-base">
+          Practice coding problems with AI-powered feedback and analysis
+        </p>
+      </div>
+
+      <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-green-900/20 border border-green-500/20 backdrop-blur-sm shadow-2xl shadow-green-500/10">
+        <CardContent className="p-6 sm:p-8 space-y-6">
+          <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={`w-3 h-12 rounded-full transition-colors duration-300 ${useCustomNumber ? 'bg-gradient-to-b from-blue-500 to-blue-600' : 'bg-gradient-to-b from-blue-500 to-blue-600'}`}></div>
+                <div className={`w-3 h-12 rounded-full transition-colors duration-300 ${useCustomNumber ? 'bg-gradient-to-b from-green-500 to-green-600' : 'bg-gradient-to-b from-green-500 to-green-600'}`}></div>
                 <div>
-                  <Label htmlFor="useCustomNumber" className="font-semibold cursor-pointer block mb-2 text-lg">
+                  <Label htmlFor="useCustomNumber" className="font-semibold cursor-pointer block mb-2 text-lg text-green-300">
                     {useCustomNumber ? 'Specific Problem Selection' : 'AI-Powered Problem Selection'}
                   </Label>
                   <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
@@ -565,95 +575,125 @@ public:
                 id="useCustomNumber"
                 checked={useCustomNumber}
                 onCheckedChange={setUseCustomNumber}
-                className="data-[state=checked]:bg-blue-600"
+                className="data-[state=checked]:bg-green-600"
               />
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {useCustomNumber ? (
-              <div className="space-y-3">
-                <Label htmlFor="leetcodeNumber" className="text-base font-semibold text-zinc-200">LeetCode Question Number</Label>
-                <Input
-                  id="leetcodeNumber"
-                  value={leetcodeNumber}
-                  onChange={(e) => setLeetcodeNumber(e.target.value)}
-                  placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
-                  required
-                  type="number"
-                  min="1"
-                  max="3000"
-                  className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 placeholder:text-zinc-400"
-                />
+              <div className="space-y-4 group">
+                <Label htmlFor="leetcodeNumber" className="text-green-300 text-sm font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  LeetCode Question Number
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="leetcodeNumber"
+                    value={leetcodeNumber}
+                    onChange={(e) => setLeetcodeNumber(e.target.value)}
+                    placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
+                    required
+                    type="number"
+                    min="1"
+                    max="3000"
+                    className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
+                  />
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
                 <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-3">
-                  <Label htmlFor="company" className="text-base font-semibold text-zinc-200">Company</Label>
-                  <Input
-                    id="company"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="e.g., Google"
-                    required={!useCustomNumber}
-                    disabled={useCustomNumber}
-                    className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 placeholder:text-zinc-400"
-                  />
+                <div className="space-y-4 group">
+                  <Label htmlFor="company" className="text-green-300 text-sm font-medium flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Company
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="company"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="e.g., Google, Meta, Apple"
+                      required={!useCustomNumber}
+                      disabled={useCustomNumber}
+                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-50"
+                    />
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <Label htmlFor="role" className="text-base font-semibold text-zinc-200">Role</Label>
-                  <Select 
-                    value={role} 
-                    onValueChange={setRole}
-                    required={!useCustomNumber}
-                    disabled={useCustomNumber}
-                  >
-                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left">
-                      <SelectValue placeholder="Select your role" className="text-left" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
-                      {TECH_JOB_TITLES
-                        .filter(job => job.title && job.title.trim() !== '')
-                        .map(job => (
-                          <SelectItem key={job.id} value={job.title} className="justify-start text-left data-[highlighted]:text-left">
-                            <div className="flex flex-col items-start w-full text-left">
-                              <div className="font-medium text-left w-full">{job.title}</div>
-                              <div className="text-sm text-zinc-400 text-left w-full">{job.description}</div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-4 group">
+                  <Label htmlFor="role" className="text-green-300 text-sm font-medium flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Role
+                  </Label>
+                  <div className="relative">
+                    <Select 
+                      value={role} 
+                      onValueChange={setRole}
+                      required={!useCustomNumber}
+                      disabled={useCustomNumber}
+                    >
+                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left disabled:opacity-50">
+                        <SelectValue placeholder="Select your role" className="text-left text-zinc-400" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
+                        {TECH_JOB_TITLES
+                          .filter(job => job.title && job.title.trim() !== '')
+                          .map(job => (
+                            <SelectItem 
+                              key={job.id} 
+                              value={job.title} 
+                              className="justify-start text-left data-[highlighted]:text-left hover:bg-green-500/10 focus:bg-green-500/20 transition-colors"
+                            >
+                              <div className="flex flex-col items-start w-full text-left">
+                                <div className="font-medium text-left w-full text-white">{job.title}</div>
+                                <div className="text-sm text-green-300/70 text-left w-full">{job.description}</div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <Label htmlFor="difficulty" className="text-base font-semibold text-zinc-200">Question Difficulty</Label>
-                  <Select 
-                    value={difficulty} 
-                    onValueChange={setDifficulty} 
-                    required={!useCustomNumber}
-                    disabled={useCustomNumber}
-                  >
-                    <SelectTrigger className="bg-zinc-700 border-zinc-600 focus:border-blue-500 text-zinc-100">
-                      <SelectValue placeholder="Select difficulty" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600">
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-4 group">
+                  <Label htmlFor="difficulty" className="text-green-300 text-sm font-medium flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Question Difficulty
+                  </Label>
+                  <div className="relative">
+                    <Select 
+                      value={difficulty} 
+                      onValueChange={setDifficulty} 
+                      required={!useCustomNumber}
+                      disabled={useCustomNumber}
+                    >
+                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 disabled:opacity-50">
+                        <SelectValue placeholder="Select difficulty" className="text-zinc-400" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
+                        <SelectItem value="easy" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Easy</SelectItem>
+                        <SelectItem value="medium" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Medium</SelectItem>
+                        <SelectItem value="hard" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
                 </div>
               </div>
             )}
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 shadow-lg transition-all duration-200"
-            >
-              {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {useCustomNumber ? 'Get Specific LeetCode Problem' : 'Get AI-Selected Problem'}
-            </Button>
+            <div className="pt-4">
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-14 bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-500 hover:via-green-400 hover:to-green-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-green-400/20"
+              >
+                {loading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
+                <span>{useCustomNumber ? 'Get Specific Problem' : 'Generate AI Problem'}</span>
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

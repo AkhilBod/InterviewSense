@@ -307,42 +307,59 @@ export default function ResumeCheckerPage() {
             // Resume Checker Form - Centered with Progress
             <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
               <div className="w-full max-w-2xl">
+                {/* Header Section */}
+                <div className="text-center mb-6 lg:mb-8">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent mb-3">
+                    Optimize your resume for success
+                  </h1>
+                  <p className="text-zinc-400 text-sm sm:text-base">
+                    Get AI-powered feedback to make your resume stand out to recruiters
+                  </p>
+                </div>
 
-
-                <Card className="bg-zinc-800/50 border-zinc-700/50 shadow-xl">
-                  <CardContent className="space-y-6 px-8 pb-8 pt-8">
+                <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-purple-900/20 border border-purple-500/20 backdrop-blur-sm shadow-2xl shadow-purple-500/10">
+                  <CardContent className="p-6 sm:p-8 space-y-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                       {/* Job Title and Resume Upload Row */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Job Title Section - Takes 2/3 of the space */}
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-2">
+                        <div className="md:col-span-2 group">
+                          <label className="text-purple-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                             Job Title
                           </label>
-                          <Select 
-                            value={jobTitle} 
-                            onValueChange={setJobTitle}
-                            required
-                          >
-                            <SelectTrigger className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500">
-                              <SelectValue placeholder="Select your job title" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
-                              {TECH_JOB_TITLES.map(job => (
-                                <SelectItem key={job.id} value={job.title}>
-                                  <div>
-                                    <div className="font-medium">{job.title}</div>
-                                    <div className="text-sm text-zinc-400">{job.description}</div>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="relative">
+                            <Select 
+                              value={jobTitle} 
+                              onValueChange={setJobTitle}
+                              required
+                            >
+                              <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10">
+                                <SelectValue placeholder="Select your target role..." className="text-zinc-400" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
+                                {TECH_JOB_TITLES.map(job => (
+                                  <SelectItem 
+                                    key={job.id} 
+                                    value={job.title}
+                                    className="hover:bg-purple-500/10 focus:bg-purple-500/20 transition-colors"
+                                  >
+                                    <div>
+                                      <div className="font-medium text-white">{job.title}</div>
+                                      <div className="text-sm text-purple-300/70">{job.description}</div>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          </div>
                         </div>
 
                         {/* Resume Upload Section - Takes 1/3 of the space */}
-                        <div className="md:col-span-1">
-                          <label className="block text-sm font-medium mb-2">
+                        <div className="md:col-span-1 group">
+                          <label className="text-purple-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                             Resume
                           </label>
                           <div className="flex items-center gap-2">
@@ -350,13 +367,13 @@ export default function ResumeCheckerPage() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 text-zinc-300"
+                              className="bg-gradient-to-r from-purple-600/10 to-purple-700/10 hover:from-purple-600/20 hover:to-purple-700/20 border-2 border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 transition-all duration-300 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 h-12 px-4"
                               onClick={() =>
                                 document.getElementById("resume-upload")?.click()
                               }
                             >
                               <Upload className="h-4 w-4 mr-2" />
-                              {resume ? "Change File" : "Upload Resume"}
+                              {resume ? "Change" : "Upload"}
                             </Button>
                             <input
                               id="resume-upload"
@@ -368,38 +385,50 @@ export default function ResumeCheckerPage() {
                             />
                           </div>
                           {resume && (
-                            <div className="mt-2">
-                              <span className="text-xs text-zinc-400 flex items-center">
-                                <FileText className="h-3 w-3 mr-1" />
-                                {resume.name.length > 15
-                                  ? `${resume.name.substring(0, 15)}...`
-                                  : resume.name}
-                              </span>
+                            <div className="mt-3">
+                              <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
+                                <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                                <span className="text-sm text-green-300 truncate">
+                                  {resume.name.length > 15
+                                    ? `${resume.name.substring(0, 15)}...`
+                                    : resume.name}
+                                </span>
+                              </div>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
+
+                      <div className="space-y-3 group">
+                        <label className="text-purple-300 text-sm font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                           Company (Optional)
                         </label>
-                        <Input
-                          placeholder="Company"
-                          value={company}
-                          onChange={(e) => setCompany(e.target.value)}
-                          className="bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        <div className="relative">
+                          <Input
+                            placeholder="e.g., Google, Meta, Apple"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10 placeholder:text-zinc-500"
+                          />
+                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
+
+                      <div className="space-y-3 group">
+                        <label className="text-purple-300 text-sm font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                           Job Description (Optional)
                         </label>
-                        <Textarea
-                          placeholder="Paste the job description here for more targeted analysis..."
-                          value={jobDescription}
-                          onChange={(e) => setJobDescription(e.target.value)}
-                          className="min-h-[120px] bg-zinc-700/50 border-zinc-600 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        <div className="relative">
+                          <Textarea
+                            placeholder="Paste the job description here for more targeted analysis..."
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                            className="min-h-[120px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10 placeholder:text-zinc-500"
+                          />
+                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
                       </div>
 
                       {error && (
@@ -409,14 +438,22 @@ export default function ResumeCheckerPage() {
                         </div>
                       )}
 
-                      <Button
-                        type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6 text-base font-semibold"
-                        size="lg"
-                        disabled={isLoading || !resume || !jobTitle}
-                      >
-                        {isLoading ? "Analyzing Resume..." : "Analyze Resume"}
-                      </Button>
+                      <div className="pt-4">
+                        <Button
+                          type="submit"
+                          className="w-full h-14 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 hover:from-purple-500 hover:via-purple-400 hover:to-purple-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-purple-400/20"
+                          disabled={isLoading || !resume || !jobTitle}
+                        >
+                          <Brain className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                          <span>{isLoading ? "Analyzing Resume..." : "Analyze Resume"}</span>
+                        </Button>
+                        
+                        {(!resume || !jobTitle) && (
+                          <p className="text-center text-zinc-400 text-sm mt-3">
+                            Please upload a resume and select a job title to get started
+                          </p>
+                        )}
+                      </div>
                     </form>
                   </CardContent>
                 </Card>
