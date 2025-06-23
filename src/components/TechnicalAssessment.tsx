@@ -882,25 +882,27 @@ public:
                       {isRecording ? (
                         <>
                           <MicOff className="h-4 w-4" />
-                          Stop Recording
+                          <span className="hidden sm:inline">Stop Recording</span>
+                          <span className="sm:hidden">Stop</span>
                         </>
                       ) : (
                         <>
                           <Mic className="h-4 w-4" />
-                          Record Explanation
+                          <span className="hidden sm:inline">Record Explanation</span>
+                          <span className="sm:hidden">Record</span>
                         </>
                       )}
                     </Button>
-                    {!isRecording && <MicrophoneTest />}
                     {isTranscribing && (
                       <div className="flex items-center text-sm text-slate-400">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Transcribing your explanation...
+                        <span className="hidden sm:inline">Transcribing your explanation...</span>
+                        <span className="sm:hidden">Transcribing...</span>
                       </div>
                     )}
                     {audioUrl && !isTranscribing && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-green-400">✓ Recording saved</span>
+                        <span className="text-xs text-green-400">✓ <span className="hidden sm:inline">Recording saved</span><span className="sm:hidden">Saved</span></span>
                       </div>
                     )}
                   </div>
@@ -988,12 +990,14 @@ public:
                 >
                   {!code || !thoughtProcess ? (
                     <>
-                      <span>Complete Code & Explanation to Submit</span>
+                      <span className="hidden sm:inline">Complete Code & Explanation to Submit</span>
+                      <span className="sm:hidden">Complete & Submit</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle className="h-5 w-5" />
-                      <span>Submit Solution for Analysis</span>
+                      <span className="hidden sm:inline">Submit Solution for Analysis</span>
+                      <span className="sm:hidden">Submit Solution</span>
                     </>
                   )}
                 </Button>

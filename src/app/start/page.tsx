@@ -312,14 +312,14 @@ export default function StartPage() {
       </header>
 
       {/* Main Content */}
-      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+      <div className="pt-16 sm:pt-20 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center justify-center lg:min-h-[70vh]">
           
           {/* Left Side - Breathing Circle */}
-          <div className="flex flex-col items-center justify-center space-y-8">
+          <div className="flex flex-col items-center justify-center space-y-4 lg:space-y-8 order-2 lg:order-1">
             <div className="relative">
               {/* Breathing Dotted Circle Pattern */}
-              <div className="w-80 h-80 rounded-full relative animate-breathing">
+              <div className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 rounded-full relative animate-breathing">
                 <svg className="w-full h-full" viewBox="0 0 100 100">
                   {/* Main dotted circle with dot animation */}
                   <circle
@@ -362,129 +362,133 @@ export default function StartPage() {
           </div>
 
           {/* Right Side - Form */}
-          <div className="space-y-6">
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
-              <CardContent className="p-8 space-y-6">
-                
-                {/* Resume Upload and Job Title Row */}
-                <div className="flex items-end justify-between gap-6">
-                  {/* Job Title Selection */}
-                  <div className="flex-1 min-w-0">
-                    <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
+          <div className="space-y-4 sm:space-y-6 order-1 lg:order-2 flex justify-center">
+            <div className="w-full max-w-lg">
+              <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
+                <CardContent className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+                  
+                  {/* Resume Upload and Job Title - Stack on Mobile */}
+                  <div className="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:justify-between lg:gap-6">
+                    {/* Job Title Selection */}
+                    <div className="flex-1 min-w-0">
+                      <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
+                      <Select 
+                        value={formData.jobTitle} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
+                      >
+                        <SelectTrigger className="bg-zinc-800 border-zinc-600 text-left w-full [&>span]:text-left [&>span]:justify-start">
+                          <SelectValue placeholder="Select your job title" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60 w-full">
+                          {TECH_JOB_TITLES
+                            .filter(job => job.title && job.title.trim() !== '')
+                            .map(job => (
+                              <SelectItem key={job.id} value={job.title} className="text-left">
+                                <div className="flex flex-col items-start w-full">
+                                  <div className="font-medium">{job.title}</div>
+                                  <div className="text-sm text-zinc-400 hidden sm:block">{job.description}</div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Resume Upload */}
+                    <div className="lg:flex-shrink-0">
+                      <Label className="text-zinc-300 text-sm mb-2 block">Resume</Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {formData.resume ? "Change" : "Upload"}
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleResumeUpload}
+                          className="hidden"
+                        />
+                        {formData.resume && (
+                          <span className="text-sm text-zinc-400 flex items-center truncate max-w-32 sm:max-w-none">
+                            <FileText className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">
+                              {formData.resume.name.length > 15
+                                ? `${formData.resume.name.substring(0, 15)}...`
+                                : formData.resume.name}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Experience Level */}
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label className="text-zinc-300">Experience Level</Label>
                     <Select 
-                      value={formData.jobTitle} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
+                      value={formData.experienceLevel} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
                     >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-600 text-left w-full [&>span]:text-left [&>span]:justify-start">
-                        <SelectValue placeholder="Select your job title" />
+                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                        <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60 w-full">
-                        {TECH_JOB_TITLES
-                          .filter(job => job.title && job.title.trim() !== '')
-                          .map(job => (
-                            <SelectItem key={job.id} value={job.title} className="text-left">
-                              <div className="flex flex-col items-start w-full">
-                                <div className="font-medium">{job.title}</div>
-                                <div className="text-sm text-zinc-400">{job.description}</div>
-                              </div>
-                            </SelectItem>
-                          ))}
+                      <SelectContent className="bg-zinc-800 border-zinc-600">
+                        <SelectItem value="Intern">Intern</SelectItem>
+                        <SelectItem value="Entry-level">Entry-level (0-2 years)</SelectItem>
+                        <SelectItem value="Mid-level">Mid-level (2-5 years)</SelectItem>
+                        <SelectItem value="Senior">Senior (5+ years)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Resume Upload */}
-                  <div className="flex-shrink-0">
-                    <Label className="text-zinc-300 text-sm mb-2 block">Resume</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {formData.resume ? "Change File" : "Upload Resume"}
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleResumeUpload}
-                        className="hidden"
-                      />
-                      {formData.resume && (
-                        <span className="text-sm text-zinc-400 flex items-center">
-                          <FileText className="h-3 w-3 mr-1" />
-                          {formData.resume.name.length > 20
-                            ? `${formData.resume.name.substring(0, 20)}...`
-                            : formData.resume.name}
-                        </span>
-                      )}
-                    </div>
+                  {/* Number of Questions */}
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label className="text-zinc-300">Number of Questions</Label>
+                    <Select 
+                      value={formData.numberOfQuestions.toString()} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
+                    >
+                      <SelectTrigger className="bg-zinc-800 border-zinc-600">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-800 border-zinc-600">
+                        {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
+                          <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
 
-                {/* Experience Level */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Experience Level</Label>
-                  <Select 
-                    value={formData.experienceLevel} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
+                  {/* Company Input */}
+                  <div className="space-y-2 sm:space-y-3">
+                    <Label className="text-zinc-300">Company (Optional)</Label>
+                    <Input
+                      placeholder="e.g., Google, Apple, Meta"
+                      value={formData.company}
+                      onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                      className="bg-zinc-800 border-zinc-600 focus:border-blue-400"
+                    />
+                  </div>
+
+                  {/* Start Interview Button */}
+                  <Button
+                    onClick={handleStartInterview}
+                    disabled={!isFormValid()}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-4 sm:py-6 text-base sm:text-lg font-medium shadow transition-colors disabled:opacity-50 disabled:pointer-events-none"
                   >
-                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600">
-                      <SelectItem value="Intern">Intern</SelectItem>
-                      <SelectItem value="Entry-level">Entry-level (0-2 years)</SelectItem>
-                      <SelectItem value="Mid-level">Mid-level (2-5 years)</SelectItem>
-                      <SelectItem value="Senior">Senior (5+ years)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Number of Questions */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Number of Questions</Label>
-                  <Select 
-                    value={formData.numberOfQuestions.toString()} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
-                  >
-                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600">
-                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Company Input */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Company (Optional)</Label>
-                  <Input
-                    placeholder="e.g., Google, Apple, Meta"
-                    value={formData.company}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                    className="bg-zinc-800 border-zinc-600 focus:border-blue-400"
-                  />
-                </div>
-
-                {/* Start Interview Button */}
-                <Button
-                  onClick={handleStartInterview}
-                  disabled={!isFormValid()}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6 text-lg font-medium shadow transition-colors disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <Play className="mr-2 h-5 w-5" />
-                  Start Interview
-                </Button>
-              </CardContent>
-            </Card>
+                    <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Start Interview
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
