@@ -89,221 +89,130 @@ function extractSkills(role: string): string[] {
   return ['Software Engineering', 'Problem Solving', 'Teamwork', 'Communication']
 }
 
-// Generate comprehensive article content
-function generateArticleContent(opportunity: InternshipOpportunity): string {
-  const skills = extractSkills(opportunity.role)
-  const tier = getCompanyTier(opportunity.company)
+// Generate typical question count based on company tier
+function getQuestionCount(tier: string): number {
+  switch (tier) {
+    case 'FAANG': return Math.floor(Math.random() * 100) + 300 // 300-400
+    case 'Big Tech': return Math.floor(Math.random() * 80) + 250 // 250-330
+    default: return Math.floor(Math.random() * 50) + 150 // 150-200
+  }
+}
+
+// Generate difficulty based on company tier
+function getDifficulty(tier: string): string {
+  switch (tier) {
+    case 'FAANG': return 'Hard'
+    case 'Big Tech': return 'Medium-Hard'
+    default: return 'Medium'
+  }
+}
+
+// Generate sample questions based on role and company
+function generateSampleQuestions(role: string, company: string, skills: string[]): string {
+  const behavioralQuestions = [
+    {
+      category: 'Time Management',
+      question: 'How do you handle tight deadlines and pressure?',
+      difficulty: 'Medium',
+      type: 'Behavioral',
+      answer: `**Situation:** During finals week last semester, I had three major coding assignments due within 48 hours, plus two exams to study for. **Task:** I needed to manage my time effectively to complete everything without compromising quality. **Action:** I started by listing all tasks and estimating time for each. I prioritized based on due dates and complexity, then created a detailed schedule with specific time blocks. I eliminated distractions by working in the library, used the Pomodoro Technique for focused coding sessions, and took strategic breaks to avoid burnout. When I realized one assignment was taking longer than expected, I reached out to the TA for clarification rather than spending hours debugging alone. **Result:** I completed all assignments on time and performed well on my exams. This experience taught me the importance of planning, prioritization, and knowing when to seek help. I now proactively manage my schedule to avoid such situations, but I'm confident in my ability to perform under pressure when necessary.`
+    },
+    {
+      category: 'Problem Solving',
+      question: 'Describe a challenging project you worked on and how you overcame obstacles',
+      difficulty: 'Medium',
+      type: 'Behavioral',
+      answer: `**Situation:** For my internship application portfolio, I decided to build a real-time chat application using technologies I'd never used before - Node.js, Socket.io, and MongoDB. **Task:** I had 3 weeks to complete it while managing coursework and a part-time job. **Action:** I broke the project into smaller milestones: basic server setup, user authentication, real-time messaging, and UI polish. When I got stuck on implementing WebSocket connections, I systematically researched documentation, watched tutorials, and posted specific questions on Stack Overflow. I also reached out to a senior student who had experience with similar projects. **Result:** I successfully completed the application, which helped me land my internship. The experience taught me how to learn new technologies quickly and the importance of asking for help when needed. I now use this same methodical approach for tackling unfamiliar technical challenges.`
+    },
+    {
+      category: 'Teamwork',
+      question: 'Tell me about a time when you had to work with a difficult team member',
+      difficulty: 'Medium',
+      type: 'Behavioral',
+      answer: `**Situation:** During my CS capstone project, I was paired with a teammate who rarely attended meetings and didn't complete assigned tasks on time. **Task:** I needed to ensure our group project (a web application) stayed on track while maintaining team harmony. **Action:** I first approached them privately to understand if they were facing personal challenges. I discovered they were struggling with the React framework we chose. Instead of escalating to the professor, I offered to pair-program with them and created a shared study schedule. I also redistributed some tasks to better match everyone's strengths. **Result:** Our teammate became more engaged, contributed meaningfully to the project, and we delivered a successful application. I learned that apparent 'difficult' behavior often stems from underlying challenges, and proactive communication can resolve most team conflicts.`
+    }
+  ]
+
+  const technicalQuestions = skills.includes('JavaScript') ? [
+    {
+      category: 'JavaScript Fundamentals',
+      question: 'Implement a debounce function in JavaScript',
+      difficulty: 'Medium',
+      type: 'Technical',
+      hint: 'Consider time/space complexity, edge cases, and explain your thought process clearly.'
+    },
+    {
+      category: 'Async Programming',
+      question: 'Create a custom Promise implementation',
+      difficulty: 'Hard',
+      type: 'Technical',
+      hint: 'Consider time/space complexity, edge cases, and explain your thought process clearly.'
+    },
+    {
+      category: 'Object-Oriented Programming',
+      question: 'Build a simple event emitter class',
+      difficulty: 'Medium',
+      type: 'Technical',
+      hint: 'Consider time/space complexity, edge cases, and explain your thought process clearly.'
+    }
+  ] : [
+    {
+      category: 'Data Structures',
+      question: 'Implement a binary search tree with insert and search operations',
+      difficulty: 'Medium',
+      type: 'Technical',
+      hint: 'Consider time/space complexity, edge cases, and explain your thought process clearly.'
+    },
+    {
+      category: 'Algorithms',
+      question: 'Find the longest substring without repeating characters',
+      difficulty: 'Medium',
+      type: 'Technical',
+      hint: 'Consider time/space complexity, edge cases, and explain your thought process clearly.'
+    },
+    {
+      category: 'System Design',
+      question: 'Design a URL shortener service like bit.ly',
+      difficulty: 'Hard',
+      type: 'Technical',
+      hint: 'Consider scalability, database design, and system architecture.'
+    }
+  ]
+
+  let questionsHTML = ''
   
-  return `# ${opportunity.company} ${opportunity.role} Internship - Summer 2025
+  // Add behavioral questions
+  behavioralQuestions.forEach(q => {
+    questionsHTML += `
+${q.difficulty}${q.type}
 
-Are you looking for a ${opportunity.role.toLowerCase()} internship at ${opportunity.company}? This comprehensive guide covers everything you need to know about applying for the **${opportunity.company} ${opportunity.role} internship** in ${opportunity.location} for Summer 2025.
+${q.category}
 
-**Location:** ${opportunity.location}
-**Company Tier:** ${tier}
-**Application Status:** ${opportunity.status === 'closed' ? 'Currently Closed' : 'Open for Applications'}
+### ${q.question}
 
-This internship opportunity is part of the Software Engineering field and offers valuable hands-on experience at ${tier === 'FAANG' ? 'one of the most prestigious technology companies' : tier === 'Big Tech' ? 'a leading technology company' : 'an innovative company'}.
+#### Sample Answer (STAR Method):
 
-## About the ${opportunity.role} Internship at ${opportunity.company}
+${q.answer}
 
-The ${opportunity.role} internship at ${opportunity.company} offers students an exceptional opportunity to gain real-world experience in software development and engineering. As an intern, you'll work alongside experienced professionals on meaningful projects that directly impact the company's success.
+Practice This Question`
+  })
 
-### What You'll Do:
-- Collaborate with cross-functional teams on software projects
-- Apply theoretical knowledge to practical, real-world challenges
-- Work with technologies including: ${skills.join(', ')}
-- Participate in code reviews, design discussions, and team meetings
-- Contribute to ${opportunity.company}'s innovative technology solutions
-- Receive mentorship from senior engineers and industry experts
+  // Add technical questions
+  technicalQuestions.forEach(q => {
+    questionsHTML += `
 
-### Program Highlights:
-- Duration: Summer 2025 (typically 10-12 weeks)
-- Location: ${opportunity.location}
-- Competitive compensation and benefits
-- Networking opportunities with industry professionals
-- Potential for full-time offer upon graduation
-- Hands-on experience with cutting-edge technology
+${q.difficulty}${q.type}
 
-## Application Requirements and Process
+${q.category}
 
-### How to Apply
-${opportunity.applicationUrl && opportunity.applicationUrl !== '#' ? `[Apply directly here](${opportunity.applicationUrl})` : 'The application for this position is currently open.'}
-${opportunity.simplifyUrl ? `\n[Apply with Simplify](${opportunity.simplifyUrl})` : ''}
+### ${q.question}
 
-### Typical Requirements:
-- Currently enrolled in a Computer Science, Engineering, or related program
-- Expected graduation date between December 2025 and June 2027
-- Strong programming fundamentals in relevant languages
-- Previous internship or project experience (preferred)
-- Excellent problem-solving and communication skills
-- Ability to work collaboratively in a team environment
-- Experience with: ${skills.join(', ')}
+💡 **Approach:** ${q.hint}
 
-### Application Materials:
-- Updated resume highlighting relevant coursework and projects
-- Cover letter tailored to ${opportunity.company} and this specific role
-- Academic transcripts (may be required)
-- Portfolio or GitHub repository showcasing your work
-- References from professors or previous employers
+Practice This Question`
+  })
 
-### Application Tips:
-1. **Tailor your resume** to highlight ${skills[0].toLowerCase()} experience
-2. **Research ${opportunity.company}** thoroughly and mention specific projects or values
-3. **Showcase relevant projects** that demonstrate your technical abilities
-4. **Apply early** - many companies review applications on a rolling basis
-5. **Follow up** appropriately after submitting your application
-
-## ${opportunity.company} Company Overview
-
-${opportunity.company} is ${tier === 'FAANG' ? 'a leading technology giant known for innovation and excellence' : tier === 'Big Tech' ? 'a prominent technology company known for innovation and excellence' : 'an innovative technology company'} in the software space. The company offers interns the opportunity to work on cutting-edge projects while building valuable skills and professional networks.
-
-### Why Choose ${opportunity.company}?
-- **Innovation:** Work on projects that push the boundaries of technology
-- **Mentorship:** Learn from experienced professionals in your field
-- **Growth:** Develop both technical and professional skills
-- **Impact:** Contribute to products and services used by ${tier === 'FAANG' ? 'billions' : tier === 'Big Tech' ? 'millions' : 'thousands'}
-- **Culture:** Experience a collaborative and inclusive work environment
-- **Career Development:** Access to training, workshops, and career guidance
-
-### Internship Program Benefits:
-- Competitive hourly compensation
-- Housing stipend or corporate housing (location dependent)
-- Health and wellness benefits
-- Professional development opportunities
-- Networking events and social activities
-- Potential for return offers and full-time employment
-
-## Location: ${opportunity.location}
-
-This internship is located in **${opportunity.location}**, offering interns the opportunity to experience working in ${opportunity.location.includes('Remote') ? 'a flexible remote environment' : 'a dynamic tech hub'}.
-
-### About Working in ${opportunity.location.split(',')[0]}:
-${opportunity.location.includes('Remote') ? 
-`- Flexibility to work from anywhere
-- Access to virtual collaboration tools
-- Work-life balance opportunities
-- No commuting required
-- Global team collaboration experience` :
-`- Access to a thriving tech ecosystem and networking opportunities
-- Vibrant cultural scene and recreational activities
-- Public transportation and commuting options
-- Cost of living considerations for interns
-- Housing resources and recommendations`}
-
-### Workplace Environment:
-- Modern office facilities with state-of-the-art technology
-- Collaborative workspaces designed for innovation
-- On-site amenities and employee perks
-- Flexible work arrangements (policies vary by company)
-- Health and safety protocols
-
-*Note: Some positions may offer remote or hybrid work options. Check with ${opportunity.company} for specific arrangements.*
-
-## Technical Skills and Technologies
-
-As a ${opportunity.role} intern at ${opportunity.company}, you'll work with a variety of technologies and develop skills in:
-
-### Primary Technologies:
-${skills.map(skill => `- **${skill}:** Essential for this role`).join('\n')}
-
-### Additional Skills You'll Develop:
-- Version control systems (Git)
-- Agile development methodologies
-- Code review and testing practices
-- Documentation and technical writing
-- Cross-functional collaboration
-- Project management basics
-
-## Tips for Landing This Internship
-
-### Technical Preparation:
-1. **Review fundamentals** in data structures, algorithms, and system design
-2. **Practice coding** on platforms like LeetCode, HackerRank, or Codewars
-3. **Build projects** that demonstrate your skills in ${skills[0]} and ${skills[1]}
-4. **Contribute to open source** projects to show collaboration skills
-5. **Learn ${opportunity.company}'s tech stack** through online resources
-
-### Interview Preparation:
-- **Technical interviews:** Expect questions on data structures, algorithms, and ${skills[0]}
-- **Behavioral interviews:** Prepare STAR method responses for common questions
-- **Company research:** Understand ${opportunity.company}'s mission, values, and recent news
-- **Mock interviews:** Practice with peers, career services, or online platforms
-- **Questions to ask:** Prepare thoughtful questions about the role and company culture
-
-### Standing Out as a Candidate:
-- **Demonstrate passion** for ${skills[0].toLowerCase()} and ${opportunity.company}'s work
-- **Show impact** in your previous experiences and projects
-- **Highlight leadership** experience and teamwork abilities
-- **Express curiosity** and eagerness to learn
-- **Communicate clearly** both verbally and in writing
-
-## Similar Internship Opportunities
-
-If you're interested in this ${opportunity.role} position, you might also want to explore these similar opportunities:
-
-### Other ${skills[0]} Internships:
-- Similar roles at companies in ${opportunity.location}
-- ${opportunity.role} positions at other ${tier.toLowerCase()} companies
-- Related roles in ${skills[1]} and ${skills[2]}
-
-### Expanding Your Search:
-- **Different locations:** Consider remote or other city options
-- **Company size:** Look at startups, mid-size companies, and corporations
-- **Role variations:** Explore related positions that match your skills
-- **Industry focus:** Consider different sectors that need ${skills[0].toLowerCase()} talent
-
-## Application Timeline and Deadlines
-
-### Application Process Timeline:
-- Applications typically reviewed on a rolling basis
-- Early applications often receive faster responses
-${opportunity.age ? `- **Posted:** ${opportunity.age}` : ''}
-
-**Typical Interview Process:**
-1. **Resume screening** (1-2 weeks after application)
-2. **Phone/video screening** (30-45 minutes)
-3. **Technical interview(s)** (1-2 rounds, 45-60 minutes each)
-4. **Final round interviews** (may include behavioral and technical components)
-5. **Decision and offer** (1-2 weeks after final interview)
-
-### Key Dates to Remember:
-- **Early applications:** Best chances for interview consideration
-- **Interview seasons:** Most active from January through April
-- **Decision timeline:** Offers typically made by March-May
-- **Internship start:** Most Summer 2025 programs begin in June
-
-## Frequently Asked Questions
-
-**Q: What is the duration of this internship?**
-A: Most Summer 2025 internships run for 10-12 weeks, typically from June through August.
-
-**Q: Is this a paid internship?**
-A: Yes, ${tier === 'FAANG' ? 'FAANG companies typically offer highly competitive compensation' : tier === 'Big Tech' ? 'big tech companies typically offer competitive compensation' : 'most technology internships are paid positions'}.
-
-**Q: What year students can apply?**
-A: Most internships are open to undergraduate and graduate students, typically juniors and seniors.
-
-**Q: What programming languages should I know?**
-A: Based on this role, focus on: ${skills.slice(0, 3).join(', ')}
-
-**Q: How competitive is this internship?**
-A: ${tier === 'FAANG' ? 'Extremely competitive - thousands of applications for limited spots' : tier === 'Big Tech' ? 'Highly competitive with strong technical requirements' : 'Competitive, but achievable with proper preparation'}.
-
-## Conclusion
-
-The ${opportunity.company} ${opportunity.role} internship represents an excellent opportunity to gain valuable experience while working at ${tier === 'FAANG' ? 'one of the world\'s most prestigious technology companies' : 'a leading technology company'}. Don't miss this opportunity to apply and take the first step toward launching your career in tech.
-
-Remember to:
-- **Apply early** when positions become available
-- **Tailor your application** to ${opportunity.company} specifically
-- **Prepare thoroughly** for the interview process focusing on ${skills[0]}
-- **Network actively** within the tech community
-- **Keep developing** your technical skills in ${skills.join(', ')}
-
-Good luck with your application! The tech industry offers incredible opportunities for motivated students who are willing to put in the effort to prepare and apply strategically.
-
-${opportunity.applicationUrl && opportunity.applicationUrl !== '#' ? `\n[Apply Now](${opportunity.applicationUrl})` : ''}
-${opportunity.simplifyUrl ? `\n[Apply with Simplify](${opportunity.simplifyUrl})` : ''}`
+  return questionsHTML
 }
 
 // Parse README content from SimplifyJobs repository
@@ -313,7 +222,7 @@ async function parseSimplifyJobsData(): Promise<InternshipOpportunity[]> {
     const response = await fetch('https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md')
     const content = await response.text()
     
-    // Extract table content (everything after "| Company" and before "⬆️ Back to Top")
+    // Extract table content
     const tableStart = content.indexOf('| Company')
     const tableEnd = content.indexOf('⬆️ Back to Top ⬆️')
     
@@ -337,7 +246,6 @@ async function parseSimplifyJobsData(): Promise<InternshipOpportunity[]> {
           const location = columns[2].trim()
           const applicationCol = columns[3]
           
-          // Extract application URL
           let applicationUrl = '#'
           let simplifyUrl = ''
           let status: 'open' | 'closed' = 'open'
@@ -347,19 +255,16 @@ async function parseSimplifyJobsData(): Promise<InternshipOpportunity[]> {
             status = 'closed'
           }
           
-          // Extract application URL
           const applyMatch = applicationCol.match(/\[Apply\]\((.*?)\)/)
           if (applyMatch) {
             applicationUrl = applyMatch[1]
           }
           
-          // Extract Simplify URL
           const simplifyMatch = applicationCol.match(/\[Simplify\]\((.*?)\)/)
           if (simplifyMatch) {
             simplifyUrl = simplifyMatch[1]
           }
           
-          // Extract age if present
           if (columns.length > 4) {
             age = columns[4].trim()
           }
@@ -389,42 +294,20 @@ async function parseSimplifyJobsData(): Promise<InternshipOpportunity[]> {
 // Generate article for a single opportunity
 function generateArticle(opportunity: InternshipOpportunity): GeneratedArticle {
   const slug = createSlug(opportunity.company, opportunity.role, opportunity.location)
-  const title = `${opportunity.company} ${opportunity.role} Interview Questions & Practice`
+  const title = `${opportunity.company} ${opportunity.role} Interview Questions`
   const metaDescription = `Ace your ${opportunity.company} ${opportunity.role} interview with AI-powered practice questions and feedback. Get ready for your ${opportunity.location} internship.`
   
-  const content = `# ${opportunity.company} ${opportunity.role} Interview Preparation
+  const tier = getCompanyTier(opportunity.company)
+  const skills = extractSkills(opportunity.role)
+  const questionCount = getQuestionCount(tier)
+  const difficulty = getDifficulty(tier)
+  
+  // Minimal content - the ProgrammaticSEOTemplate generates the full UI
+  const content = `**Location:** ${opportunity.location}
+**Posted:** ${opportunity.age || '1mo ago'}
 
-Prepare for your ${opportunity.company} ${opportunity.role} internship interview with comprehensive practice questions and AI-powered feedback.
-
-**Location:** ${opportunity.location}
-**Application Status:** ${opportunity.status === 'closed' ? 'Currently Closed' : 'Open for Applications'}
-
-## Interview Practice Features
-
-- Real interview questions from ${opportunity.company}
-- AI-powered feedback and scoring
-- Technical and behavioral question practice
-- Company-specific preparation tips
-- Industry insights and trends
-
-## About This Opportunity
-
-${opportunity.company} is offering a ${opportunity.role} internship position in ${opportunity.location}. This is an excellent opportunity to gain hands-on experience in software engineering.
-
-${opportunity.applicationUrl && opportunity.applicationUrl !== '#' ? `[Apply Here](${opportunity.applicationUrl})` : ''}
-${opportunity.simplifyUrl ? `\n[Apply with Simplify](${opportunity.simplifyUrl})` : ''}
-
-## Interview Preparation Tips
-
-1. Research ${opportunity.company}'s products and mission
-2. Practice coding problems and system design
-3. Prepare behavioral examples using the STAR method
-4. Review your resume and be ready to discuss projects
-5. Prepare thoughtful questions about the role and company
-
-## Start Your Interview Practice
-
-Use our AI-powered interview practice tool to prepare for your ${opportunity.company} interview and increase your chances of success.`
+${opportunity.applicationUrl && opportunity.applicationUrl !== '#' ? `[Apply](${opportunity.applicationUrl})` : ''}
+${opportunity.simplifyUrl ? `[Apply with Simplify](${opportunity.simplifyUrl})` : ''}`
 
   return {
     slug,
@@ -435,7 +318,9 @@ Use our AI-powered interview practice tool to prepare for your ${opportunity.com
       `${opportunity.role} interview questions`,
       `${opportunity.company} internship`,
       'interview practice',
-      'AI interview prep'
+      'AI interview prep',
+      `${opportunity.company} ${opportunity.role}`,
+      `${skills[0]} interview questions`
     ],
     content,
     structuredData: {
@@ -465,7 +350,7 @@ Use our AI-powered interview practice tool to prepare for your ${opportunity.com
   }
 }
 
-// Main function to scrape and generate articles
+// Main function
 async function main() {
   console.log('Fetching opportunities from SimplifyJobs repository...')
   
@@ -477,7 +362,6 @@ async function main() {
     return
   }
   
-  // Create directories if they don't exist
   const articlesDir = path.join(process.cwd(), 'generated-content', 'articles')
   if (!fs.existsSync(articlesDir)) {
     fs.mkdirSync(articlesDir, { recursive: true })
@@ -497,27 +381,7 @@ async function main() {
     }
   }
   
-  // Generate summary data
-  const summaryData = {
-    totalOpportunities: opportunities.length,
-    companies: Array.from(new Set(opportunities.map(o => o.company))).sort(),
-    locations: Array.from(new Set(opportunities.map(o => o.location))).sort(),
-    roles: Array.from(new Set(opportunities.map(o => o.role))).sort(),
-    lastUpdated: new Date().toISOString()
-  }
-  
-  const dataDir = path.join(process.cwd(), 'generated-content', 'data')
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true })
-  }
-  
-  fs.writeFileSync(path.join(dataDir, 'latest.json'), JSON.stringify(summaryData, null, 2))
-  
-  console.log(`\nGeneration complete!`)
-  console.log(`- Generated ${opportunities.length} articles`)
-  console.log(`- Companies: ${summaryData.companies.length}`)
-  console.log(`- Unique locations: ${summaryData.locations.length}`)
-  console.log(`- Unique roles: ${summaryData.roles.length}`)
+  console.log(`\nGeneration complete! Generated ${opportunities.length} articles`)
 }
 
 // Run the script
