@@ -16,38 +16,47 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch recent interview sessions (last 10)
-    const recentSessions = await prisma.interviewSession.findMany({
+    // Get user stats which contain recent sessions
+    const userStats = await prisma.userStats.findUnique({
       where: { userId },
-      orderBy: { completedAt: 'desc' },
-      take: 10,
       select: {
-        id: true,
-        type: true,
-        score: true,
-        completedAt: true,
+        recentSessions: true,
+        totalResumeChecks: true,
       }
     });
 
-    // Fetch recent resume analyses (last 10)
-    const recentAnalyses = await prisma.resumeAnalysis.findMany({
+    // Get recent practice sessions (last 10)
+    const recentPracticeSessions = await prisma.practiceSession.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 10,
       select: {
         id: true,
-        overallScore: true,
+        type: true,
+        score: true,
         createdAt: true,
       }
     });
     
+    // Transform sessions to match expected format
+    const sessions = recentPracticeSessions.map(session => ({
+      id: session.id,
+      type: session.type,
+      score: session.score,
+      completedAt: session.createdAt.toISOString()
+    }));
+
+    // Create mock analyses from resume sessions
+    const resumeSessions = recentPracticeSessions.filter(session => session.type === 'resume');
+    const analyses = resumeSessions.map(session => ({
+      id: session.id,
+      score: session.score,
+      createdAt: session.createdAt.toISOString()
+    }));
+    
     return NextResponse.json({
-      sessions: recentSessions,
-      analyses: recentAnalyses.map(analysis => ({
-        id: analysis.id,
-        score: analysis.overallScore, // Map overallScore to score for consistency
-        createdAt: analysis.createdAt
-      }))
+      sessions: sessions.filter(s => s.type !== 'resume'), // Interview sessions only
+      analyses: analyses // Resume analyses
     });
   } catch (error) {
     console.error('Error fetching recent activity:', error);

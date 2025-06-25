@@ -80,11 +80,46 @@ function DashboardPage() {
     
     try {
       setRefreshing(true);
-      const progressRes = await fetch('/api/user-progress');
-      if (progressRes.ok) {
-        const progressData = await progressRes.json();
-        setUserProgress(progressData);
-        setRecentSessions(progressData.recentSessions || []);
+      const statsRes = await fetch('/api/user-stats');
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        // Map new stats structure to existing interface
+        const mappedProgress = {
+          dailyStreak: statsData.stats?.dailyStreak || 0,
+          weeklyGoal: statsData.stats?.weeklyGoal || 3,
+          weeklyProgress: statsData.stats?.weeklyProgress || 0,
+          bestScore: Math.max(
+            statsData.stats?.bestInterviewScore || 0,
+            statsData.stats?.bestResumeScore || 0,
+            statsData.stats?.bestTechnicalScore || 0,
+            statsData.stats?.bestBehavioralScore || 0
+          ),
+          averageScore: statsData.stats?.averageScore || 0,
+          totalInterviews: statsData.stats?.totalInterviews || 0,
+          behavioralInterviews: statsData.stats?.totalInterviews || 0,
+          technicalInterviews: statsData.stats?.totalInterviews || 0,
+          resumeChecks: statsData.stats?.totalResumeChecks || 0,
+          totalSessions: statsData.stats?.totalSessions || 0,
+          recentSessions: statsData.stats?.recentSessions || [],
+          averageFillerWords: 0, 
+          bestFillerWordCount: 0,
+          currentStreak: statsData.stats?.dailyStreak || 0,
+          longestStreak: statsData.stats?.longestStreak || 0,
+          totalActiveDays: statsData.stats?.totalSessions || 0,
+          lastActivityDate: statsData.stats?.lastActivityDate || null,
+          totalXP: 0,
+          level: 1,
+          hasActivityToday: !!statsData.stats?.lastActivityDate,
+          quickStats: {
+            practiceStreak: statsData.insights?.streak?.current || 0,
+            weeklyProgress: `${statsData.insights?.weeklyGoal?.current || 0}/${statsData.insights?.weeklyGoal?.target || 3}`,
+            improvementRate: statsData.stats?.scoreImprovement > 0 ? `+${statsData.stats?.scoreImprovement?.toFixed(1)}` : 
+                            statsData.stats?.scoreImprovement < 0 ? `${statsData.stats?.scoreImprovement?.toFixed(1)}` : 'N/A',
+            activeDays: statsData.stats?.totalSessions || 0
+          }
+        };
+        setUserProgress(mappedProgress);
+        setRecentSessions(statsData.stats?.recentSessions || []);
       }
     } catch (error) {
       console.error('Error refreshing progress:', error);
@@ -93,27 +128,7 @@ function DashboardPage() {
     }
   };
 
-  // Test function to simulate completing an interview
-  const testInterview = async () => {
-    try {
-      setRefreshing(true);
-      await fetch('/api/test-interview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'behavioral',
-          score: 75 + Math.floor(Math.random() * 25) // Random score 75-100
-        })
-      });
-      
-      // Refresh progress after test
-      await refreshProgress();
-    } catch (error) {
-      console.error('Error running test interview:', error);
-    }
-  };
+
 
   useEffect(() => {
     // Debug logging for development
@@ -145,13 +160,47 @@ function DashboardPage() {
       try {
         setDashboardLoading(true);
         
-        // Fetch user progress
-        const progressRes = await fetch('/api/user-progress');
-        if (progressRes.ok) {
-          const progressData = await progressRes.json();
-          setUserProgress(progressData);
-          // Use the recent sessions from progress data as well
-          setRecentSessions(progressData.recentSessions || []);
+        // Fetch user stats
+        const statsRes = await fetch('/api/user-stats');
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          // Map new stats structure to existing interface
+          const mappedProgress = {
+            dailyStreak: statsData.stats?.dailyStreak || 0,
+            weeklyGoal: statsData.stats?.weeklyGoal || 3,
+            weeklyProgress: statsData.stats?.weeklyProgress || 0,
+            bestScore: Math.max(
+              statsData.stats?.bestInterviewScore || 0,
+              statsData.stats?.bestResumeScore || 0,
+              statsData.stats?.bestTechnicalScore || 0,
+              statsData.stats?.bestBehavioralScore || 0
+            ),
+            averageScore: statsData.stats?.averageScore || 0,
+            totalInterviews: statsData.stats?.totalInterviews || 0,
+            behavioralInterviews: statsData.stats?.totalInterviews || 0,
+            technicalInterviews: statsData.stats?.totalInterviews || 0,
+            resumeChecks: statsData.stats?.totalResumeChecks || 0,
+            totalSessions: statsData.stats?.totalSessions || 0,
+            recentSessions: statsData.stats?.recentSessions || [],
+            averageFillerWords: 0, 
+            bestFillerWordCount: 0,
+            currentStreak: statsData.stats?.dailyStreak || 0,
+            longestStreak: statsData.stats?.longestStreak || 0,
+            totalActiveDays: statsData.stats?.totalSessions || 0,
+            lastActivityDate: statsData.stats?.lastActivityDate || null,
+            totalXP: 0,
+            level: 1,
+            hasActivityToday: !!statsData.stats?.lastActivityDate,
+            quickStats: {
+              practiceStreak: statsData.insights?.streak?.current || 0,
+              weeklyProgress: `${statsData.insights?.weeklyGoal?.current || 0}/${statsData.insights?.weeklyGoal?.target || 3}`,
+              improvementRate: statsData.stats?.scoreImprovement > 0 ? `+${statsData.stats?.scoreImprovement?.toFixed(1)}` : 
+                              statsData.stats?.scoreImprovement < 0 ? `${statsData.stats?.scoreImprovement?.toFixed(1)}` : 'N/A',
+              activeDays: statsData.stats?.totalSessions || 0
+            }
+          };
+          setUserProgress(mappedProgress);
+          setRecentSessions(statsData.stats?.recentSessions || []);
         }
         
         // Fetch recent activity (keep for analyses)
@@ -621,6 +670,8 @@ function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
+
+
           </div>
         </div>
         </main>

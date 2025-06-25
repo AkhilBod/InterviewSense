@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// Test endpoint to simulate completing an interview (for testing)
+// Test endpoint to simulate completing a resume analysis (for testing)
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -12,28 +12,28 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type = 'behavioral', score = 85 } = body;
+    const { score = 80 } = body;
 
-    // Use new stats system
+    // Use StatsManager to update stats
     const { StatsManager } = await import('@/lib/stats');
     const result = await StatsManager.updateStatsAfterSession(session.user.id, {
-      sessionType: type,
+      sessionType: 'resume',
       score: score,
-      duration: Math.floor(Math.random() * 20) + 10, // Random 10-30 minutes
+      duration: Math.floor(Math.random() * 10) + 5, // Random 5-15 minutes
       completed: true,
-      improvements: ['Better eye contact', 'More specific examples', 'Stronger conclusions']
+      improvements: ['Add more quantified achievements', 'Strengthen action verbs', 'Include relevant keywords']
     });
 
     return NextResponse.json({
-      message: 'Test interview completed successfully',
+      message: 'Test resume analysis completed successfully',
       result,
       note: 'This is a test endpoint for development. Remove in production.'
     });
   } catch (error) {
-    console.error('Error in test interview:', error);
+    console.error('Error in test resume analysis:', error);
     return NextResponse.json(
-      { error: 'Failed to complete test interview' },
+      { error: 'Failed to complete test resume analysis' },
       { status: 500 }
     );
   }
-}
+} 
