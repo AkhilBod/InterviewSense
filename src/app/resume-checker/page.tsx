@@ -362,18 +362,34 @@ export default function ResumeCheckerPage() {
                             <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
                             Resume
                           </label>
-                          <div className="flex items-center gap-2">
+                          <div className="w-full">
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="bg-gradient-to-r from-purple-600/10 to-purple-700/10 hover:from-purple-600/20 hover:to-purple-700/20 border-2 border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 transition-all duration-300 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 h-12 px-4"
+                              className={`w-full flex items-center justify-center text-sm ${resume 
+                                ? "bg-gradient-to-r from-purple-600/30 to-purple-700/30 hover:from-purple-600/40 hover:to-purple-700/40 border-2 border-purple-400/70 hover:border-purple-300/90 text-purple-200 hover:text-purple-100 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/35 h-12 px-4"
+                                : "bg-gradient-to-r from-purple-600/10 to-purple-700/10 hover:from-purple-600/20 hover:to-purple-700/20 border-2 border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 transition-all duration-300 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 h-12 px-4"
+                              }`}
                               onClick={() =>
                                 document.getElementById("resume-upload")?.click()
                               }
                             >
-                              <Upload className="h-4 w-4 mr-2" />
-                              {resume ? "Change" : "Upload"}
+                              {resume ? (
+                                <>
+                                  <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {resume.name.length > 25
+                                      ? `${resume.name.substring(0, 25)}...`
+                                      : resume.name}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  <span>Upload Resume</span>
+                                </>
+                              )}
                             </Button>
                             <input
                               id="resume-upload"
@@ -384,18 +400,6 @@ export default function ResumeCheckerPage() {
                               onChange={handleResumeChange}
                             />
                           </div>
-                          {resume && (
-                            <div className="mt-3">
-                              <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
-                                <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
-                                <span className="text-sm text-green-300 truncate">
-                                  {resume.name.length > 15
-                                    ? `${resume.name.substring(0, 15)}...`
-                                    : resume.name}
-                                </span>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
 
