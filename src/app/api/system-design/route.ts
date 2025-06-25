@@ -10,78 +10,184 @@ interface SystemDesignRequest {
 }
 
 async function generateSystemDesignTest(data: SystemDesignRequest) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    generationConfig: {
+      temperature: 0.9,  // Higher temperature for more variety
+      topP: 0.95,
+      topK: 50
+    }
+  });
 
-  const prompt = `Generate a comprehensive system design interview problem based on:
+  // Add timestamp and random element to ensure different questions each time
+  const timestamp = Date.now();
+  const randomSeed = Math.floor(Math.random() * 1000);
+  
+  // List of varied system design problems to ensure diversity
+  const systemTypes = [
+    'Chat/Messaging System', 'Social Media Feed', 'Video Streaming Platform', 'E-commerce Platform',
+    'Search Engine', 'Ride Sharing Service', 'Food Delivery App', 'Music Streaming Service',
+    'News Feed Aggregator', 'Photo Sharing Platform', 'Real-time Collaboration Tool',
+    'Gaming Leaderboard', 'Notification System', 'API Rate Limiter', 'Distributed Cache',
+    'Log Aggregation System', 'Payment Processing System', 'Content Delivery Network',
+    'Recommendation Engine', 'URL Shortener', 'File Storage System', 'Auction Platform',
+    'Parking Lot System', 'Online Banking System', 'Inventory Management System'
+  ];
+
+  const prompt = `Generate a UNIQUE and VARIED system design interview problem. Use timestamp ${timestamp} and seed ${randomSeed} to ensure uniqueness.
+
+Based on:
 - Experience Level: ${data.experienceLevel}
 - Difficulty: ${data.testDifficulty}
-- Target Company: ${data.targetCompany || 'General'}
+- Target Company: ${data.targetCompany || 'General Tech Company'}
 
-Return a JSON object with this exact structure:
+Create a problem that is DIFFERENT from common examples like URL shorteners. Choose from diverse system types like: ${systemTypes.join(', ')}.
+
+Requirements:
+- Make it realistic and interview-appropriate for ${data.experienceLevel} level
+- Ensure the problem matches ${data.testDifficulty} difficulty
+- Include specific business context and use cases
+- Avoid overused examples - be creative and unique
+
+Return ONLY a valid JSON object with this exact structure:
 {
   "problem": {
-    "title": "Design [System Name]",
-    "description": "Clear problem description with context",
-    "requirements": ["requirement1", "requirement2", "requirement3"],
-    "constraints": ["constraint1", "constraint2", "constraint3"],
+    "title": "Design [Unique System Name]",
+    "description": "Clear, detailed problem description with business context and realistic constraints",
+    "requirements": ["functional requirement 1", "functional requirement 2", "functional requirement 3", "functional requirement 4", "functional requirement 5"],
+    "constraints": ["technical constraint 1", "performance constraint 2", "business constraint 3", "scale constraint 4"],
     "estimatedTime": "45 minutes"
   },
   "guidance": {
-    "approach": ["step1", "step2", "step3", "step4", "step5"],
-    "keyComponents": ["component1", "component2", "component3"],
-    "scaleConsiderations": ["scale1", "scale2", "scale3"],
-    "commonPitfalls": ["pitfall1", "pitfall2", "pitfall3"]
+    "approach": ["Clarify requirements and scope", "Estimate scale and capacity planning", "Design high-level architecture", "Deep dive into core components", "Address scalability and reliability"],
+    "keyComponents": ["component1 with description", "component2 with description", "component3 with description", "component4 with description"],
+    "scaleConsiderations": ["scaling strategy 1", "scaling strategy 2", "scaling strategy 3", "performance optimization"],
+    "commonPitfalls": ["common mistake 1", "common mistake 2", "common mistake 3"]
   },
   "evaluation": {
     "criteria": [
-      {"category": "Requirements Clarity", "description": "How well requirements are understood", "weight": 20},
-      {"category": "System Architecture", "description": "Quality of high-level design", "weight": 25},
-      {"category": "Scalability", "description": "Understanding of scale challenges", "weight": 20},
-      {"category": "Technology Choices", "description": "Appropriate tech stack selection", "weight": 20},
-      {"category": "Communication", "description": "Clarity of explanation", "weight": 15}
+      {"category": "Requirements Clarity", "description": "How well requirements are understood and clarified", "weight": 20},
+      {"category": "System Architecture", "description": "Quality and clarity of high-level design", "weight": 25},
+      {"category": "Scalability", "description": "Understanding of scale challenges and solutions", "weight": 20},
+      {"category": "Technology Choices", "description": "Appropriate tech stack and database selection", "weight": 20},
+      {"category": "Communication", "description": "Clarity of explanation and presentation", "weight": 15}
     ]
   },
   "tips": {
-    "timeManagement": ["tip1", "tip2", "tip3"],
-    "communicationTips": ["tip1", "tip2", "tip3"],
-    "drawingTips": ["tip1", "tip2", "tip3"]
+    "timeManagement": ["time management tip 1", "time management tip 2", "time management tip 3"],
+    "communicationTips": ["communication tip 1", "communication tip 2", "communication tip 3"],
+    "drawingTips": ["drawing tip 1", "drawing tip 2", "drawing tip 3"]
   }
-}
-
-Make the problem realistic, relevant to ${data.targetCompany || 'general'} companies, and appropriate for ${data.experienceLevel} level with ${data.testDifficulty} difficulty.`;
+}`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const text = response.text();
 
   try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Clean the response text
+    let cleanedText = text.trim();
+    
+    // Remove markdown code blocks if present
+    cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    
+    // Find JSON object in the response
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error('No JSON found in Gemini response:', text);
       throw new Error('No JSON found in response');
     }
-    return JSON.parse(jsonMatch[0]);
+    
+    const parsedData = JSON.parse(jsonMatch[0]);
+    
+    // Validate that we have the required structure
+    if (!parsedData.problem || !parsedData.problem.title || !parsedData.guidance) {
+      console.error('Invalid JSON structure from Gemini:', parsedData);
+      throw new Error('Invalid response structure');
+    }
+    
+    console.log('Successfully generated system design problem:', parsedData.problem.title);
+    return parsedData;
   } catch (parseError) {
-    // Fallback test data
-    return {
-      problem: {
-        title: "Design a URL Shortener Service",
-        description: "Design a URL shortening service like bit.ly that can handle millions of requests per day. Users should be able to create short URLs and redirect to original URLs.",
+    console.error('Error parsing Gemini response:', parseError, 'Raw text:', text);
+    
+    // Multiple fallback problems to ensure variety even when Gemini fails
+    const fallbackProblems = [
+      {
+        title: "Design a Real-time Chat System",
+        description: "Design a real-time messaging platform like WhatsApp that supports individual and group chats, file sharing, and can handle millions of concurrent users globally.",
         requirements: [
-          "Shorten long URLs to a 7-character string",
-          "Redirect users from short URL to original URL",
-          "Handle 100M URLs shortened per month",
-          "Support custom aliases (optional)",
-          "Analytics on URL usage"
-        ],
-        constraints: [
-          "99.9% availability required",
-          "URL redirection should be fast (<100ms)",
-          "System should handle peak loads",
-          "Data should be persistent",
-          "Consider global distribution"
-        ],
-        estimatedTime: "45 minutes"
+          "Support real-time messaging between users",
+          "Handle individual and group conversations",
+          "Support file and media sharing",
+          "Show online/offline status",
+          "Message delivery and read receipts"
+        ]
       },
+      {
+        title: "Design a Video Streaming Platform",
+        description: "Design a video streaming service like Netflix that can serve millions of users worldwide with high-quality video content and personalized recommendations.",
+        requirements: [
+          "Stream videos in multiple qualities",
+          "Support millions of concurrent viewers",
+          "Provide personalized recommendations",
+          "Handle content upload and processing",
+          "Support multiple devices and platforms"
+        ]
+      },
+      {
+        title: "Design a Social Media Feed",
+        description: "Design a social media feed system like Instagram that can generate personalized feeds for millions of users based on their interests and social connections.",
+        requirements: [
+          "Generate personalized feeds for users",
+          "Handle posts, likes, comments, and shares",
+          "Support image and video content",
+          "Real-time notifications",
+          "Content recommendation algorithm"
+        ]
+      },
+      {
+        title: "Design a Ride Sharing Service",
+        description: "Design a ride-sharing platform like Uber that connects riders with drivers, handles real-time location tracking, and processes payments.",
+        requirements: [
+          "Match riders with nearby drivers",
+          "Real-time location tracking",
+          "Dynamic pricing based on demand",
+          "Payment processing and split fares",
+          "Rating and review system"
+        ]
+      },
+      {
+        title: "Design a Food Delivery Platform",
+        description: "Design a food delivery system like DoorDash that connects restaurants, delivery drivers, and customers while managing orders and logistics.",
+        requirements: [
+          "Restaurant and menu management",
+          "Order placement and tracking",
+          "Driver assignment and routing",
+          "Real-time delivery tracking",
+          "Payment processing and commissions"
+        ]
+      }
+    ];
+    
+    // Select a random fallback problem
+    const randomIndex = Math.floor(Math.random() * fallbackProblems.length);
+    const selectedProblem = fallbackProblems[randomIndex];
+    
+          return {
+        problem: {
+          title: selectedProblem.title,
+          description: selectedProblem.description,
+          requirements: selectedProblem.requirements,
+          constraints: [
+            "99.9% availability required",
+            "Response time under 200ms",
+            "System should handle peak loads",
+            "Data should be persistent and consistent",
+            "Consider global distribution and scaling"
+          ],
+          estimatedTime: "45 minutes"
+        },
       guidance: {
         approach: [
           "Clarify requirements and constraints",
@@ -146,7 +252,14 @@ Make the problem realistic, relevant to ${data.targetCompany || 'general'} compa
 }
 
 async function analyzeSystemDesign(problem: any, responses: any) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    generationConfig: {
+      temperature: 0.3,  // Lower temperature for more consistent analysis
+      topP: 0.8,
+      topK: 40
+    }
+  });
 
   const prompt = `
 You are an expert system design interviewer. Analyze the following system design interview performance:

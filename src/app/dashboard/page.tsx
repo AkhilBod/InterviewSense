@@ -391,7 +391,7 @@ function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* System Design Basics */}
+          {/* System Design Practice */}
           <Card className="bg-gradient-to-br from-slate-800/60 via-red-900/30 to-slate-800/60 border-red-700/30 backdrop-blur-sm hover:from-slate-800/80 hover:via-red-900/50 hover:to-slate-800/80 transition-all duration-300 shadow-lg hover:shadow-red-500/20">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
@@ -401,11 +401,11 @@ function DashboardPage() {
                 <ChevronRight className="h-5 w-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent mb-1">System Design Basics</h3>
-                <p className="text-red-200 text-sm mb-3 leading-snug">Learn fundamentals of system architecture and design</p>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent mb-1">System Design Practice</h3>
+                <p className="text-red-200 text-sm mb-3 leading-snug">Practice system architecture with AI-generated problems</p>
                 <Button asChild className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 shadow-lg text-sm py-2">
                   <Link href="/system-design">
-                    Learn Basics
+                    Start Practice
                   </Link>
                 </Button>
               </div>
