@@ -1,20 +1,28 @@
 User-agent: *
 Allow: /
 
+# Important pages for crawling
+Allow: /
+Allow: /signup
+Allow: /login
+Allow: /contact
+Allow: /opportunities/
+Allow: /opportunities/*/
+
 # Disallow admin and internal pages
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
-
-# Allow all opportunity SEO pages for crawling
-Allow: /opportunities/
-Allow: /opportunities/*/
-
-# Important user-facing pages
-Allow: /signup
-Allow: /login
-Allow: /dashboard
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /interview/
+Disallow: /resume-checker/
+Disallow: /system-design/
+Disallow: /technical-assessment/
+Disallow: /career-roadmap/
+Disallow: /portfolio-review/
+Disallow: /cover-letter/
 
 # Sitemap location
 Sitemap: https://interviewsense.org/sitemap.xml

@@ -103,9 +103,27 @@ export default function CareerRoadmapPage() {
       }
 
       const data = await response.json();
+      console.log('🚀 API Response received:', data);
+      console.log('🚀 Response structure:', {
+        hasSuccess: !!data.success,
+        hasAnalysis: !!data.analysis,
+        analysisType: typeof data.analysis
+      });
       
       if (data.success) {
-        router.push('/career-roadmap/results');
+        // Store the complete response data in localStorage to pass to results page
+        console.log('💾 Storing data in localStorage:', data);
+        localStorage.setItem('careerRoadmapResults', JSON.stringify(data));
+        
+        // Verify the data was stored
+        const verification = localStorage.getItem('careerRoadmapResults');
+        console.log('🔍 Verification - data in localStorage:', verification ? 'EXISTS' : 'NOT FOUND');
+        console.log('✅ Data stored successfully, navigating to results...');
+        
+        // Small delay to ensure localStorage write completes
+        setTimeout(() => {
+          router.push('/career-roadmap/results');
+        }, 100);
       } else {
         throw new Error(data.error || 'Failed to generate career roadmap');
       }

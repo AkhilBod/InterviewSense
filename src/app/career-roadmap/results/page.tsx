@@ -39,7 +39,8 @@ import {
   Lightbulb,
   Trophy,
   Network,
-  GraduationCap
+  GraduationCap,
+  Code2
 } from "lucide-react"
 
 interface RoadmapAnalysis {
@@ -110,7 +111,7 @@ interface ResultsData {
 }
 
 // Mock data - in real implementation, this would come from API
-const mockAnalysis = {
+const mockAnalysis: RoadmapAnalysis = {
   overallScore: 85,
   summary: "Your career transition from Frontend Developer to Tech Lead is highly achievable within 2 years. Your strong technical foundation and growing leadership interest position you well for this advancement.",
   currentRoleAnalysis: {
@@ -156,6 +157,36 @@ const mockAnalysis = {
       }
     ]
   },
+  skillsAnalysis: {
+    technicalSkills: [
+      {
+        skill: "React/Frontend Frameworks",
+        importance: 90,
+        currentLevel: "Advanced",
+        targetLevel: "Expert",
+        learningPriority: "Medium"
+      },
+      {
+        skill: "Backend Development",
+        importance: 85,
+        currentLevel: "Beginner",
+        targetLevel: "Intermediate",
+        learningPriority: "High"
+      }
+    ],
+    softSkills: [
+      {
+        skill: "Technical Leadership",
+        importance: 95,
+        description: "Essential for leading technical decisions and mentoring team members"
+      },
+      {
+        skill: "Communication",
+        importance: 88,
+        description: "Critical for collaborating with stakeholders and explaining technical concepts"
+      }
+    ]
+  },
   recommendations: {
     immediate: [
       "Start contributing to backend codebases in your current role",
@@ -172,13 +203,102 @@ const mockAnalysis = {
       "Build relationships with engineering managers",
       "Develop expertise in emerging frontend technologies"
     ]
+  },
+  certifications: [
+    {
+      name: "AWS Solutions Architect Associate",
+      provider: "Amazon Web Services",
+      priority: "High",
+      estimatedTime: "3 months",
+      description: "Fundamental cloud architecture knowledge for tech leadership"
+    }
+  ],
+  networking: {
+    communities: ["React Community", "Engineering Leadership Groups"],
+    events: ["Tech Lead conferences", "Frontend meetups"],
+    platforms: ["LinkedIn", "Twitter", "Dev.to"]
+  },
+  resources: {
+    courses: [
+      {
+        title: "System Design Course",
+        provider: "Educative",
+        type: "Online",
+        duration: "8 weeks"
+      }
+    ],
+    books: ["The Tech Lead's Toolkit", "Designing Data-Intensive Applications"],
+    podcasts: ["Software Engineering Daily", "The Changelog"],
+    blogs: ["Engineering at Netflix", "Uber Engineering"]
   }
 }
 
 export default function CareerRoadmapResultsPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const analysis = mockAnalysis
+  const [analysis, setAnalysis] = useState<RoadmapAnalysis | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    console.log('🔄 Results page useEffect triggered');
+    
+    // Try to get analysis data from localStorage
+    const storedData = localStorage.getItem('careerRoadmapResults');
+    console.log('🔍 Stored data from localStorage:', storedData);
+    
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        console.log('📊 Parsed data (first 500 chars):', JSON.stringify(parsedData).substring(0, 500));
+        console.log('📊 Data structure check:', {
+          hasSuccess: !!parsedData.success,
+          hasAnalysis: !!parsedData.analysis,
+          hasOverallScore: parsedData.overallScore !== undefined,
+          analysisType: typeof parsedData.analysis,
+          keys: Object.keys(parsedData)
+        });
+        
+        // Check if it's the full response with success property
+        if (parsedData.success && parsedData.analysis) {
+          console.log('✅ Using REAL analysis data from API response');
+          console.log('✅ Analysis summary:', parsedData.analysis.summary);
+          console.log('✅ Analysis overall score:', parsedData.analysis.overallScore);
+          setAnalysis(parsedData.analysis);
+          
+          // DON'T clear immediately - keep for debugging
+          setTimeout(() => {
+            localStorage.removeItem('careerRoadmapResults');
+          }, 5000);
+          
+        } else if (parsedData.analysis) {
+          console.log('⚠️ Using analysis data (alternate structure)');
+          setAnalysis(parsedData.analysis);
+        } else if (parsedData.overallScore !== undefined) {
+          console.log('⚠️ Using direct analysis object');
+          setAnalysis(parsedData);
+        } else {
+          console.error('❌ Invalid data structure:', parsedData);
+          console.log('❌ Falling back to MOCK data');
+          // TEMPORARILY DISABLE MOCK DATA TO FORCE DEBUGGING
+          // setAnalysis(mockAnalysis);
+          setAnalysis(null); // This will show error state instead
+        }
+      } catch (error) {
+        console.error('❌ Error parsing stored analysis:', error);
+        console.log('❌ Falling back to MOCK data');
+        // TEMPORARILY DISABLE MOCK DATA 
+        // setAnalysis(mockAnalysis);
+        setAnalysis(null);
+      }
+    } else {
+      console.warn('⚠️ No data found in localStorage');
+      console.log('🔍 All localStorage keys:', Object.keys(localStorage));
+      // TEMPORARILY DISABLE MOCK DATA TO FORCE DEBUGGING
+      // setAnalysis(mockAnalysis);
+      setAnalysis(null); // This will show "No Analysis Data Found" instead
+    }
+    setIsLoading(false);
+  }, [])
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-amber-400'
@@ -202,6 +322,40 @@ export default function CareerRoadmapResultsPage() {
   }
 
 
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+            <p className="text-zinc-400">Loading your career roadmap...</p>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  // Show error state if no analysis data
+  if (!analysis) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-400 mb-4">No Analysis Data Found</h1>
+            <p className="text-zinc-400 mb-6">Unable to load your career roadmap analysis.</p>
+            <Button 
+              onClick={() => router.push('/career-roadmap')}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              Create New Roadmap
+            </Button>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
@@ -439,6 +593,71 @@ export default function CareerRoadmapResultsPage() {
 
 
 
+          {/* Skills Analysis */}
+          {analysis.skillsAnalysis && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Technical Skills */}
+              <Card className="bg-zinc-800/50 border-zinc-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-400">
+                    <Code2 className="h-5 w-5" />
+                    Technical Skills
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analysis.skillsAnalysis.technicalSkills?.map((skill, index) => (
+                      <div key={index} className="bg-zinc-900/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-white">{skill.skill}</h4>
+                          <Badge className={getPriorityColor(skill.learningPriority)}>
+                            {skill.learningPriority} Priority
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-zinc-400">Current: </span>
+                            <span className="text-zinc-300">{skill.currentLevel}</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-400">Target: </span>
+                            <span className="text-zinc-300">{skill.targetLevel}</span>
+                          </div>
+                        </div>
+                        <Progress value={skill.importance} className="h-2 mt-2" />
+                        <p className="text-xs text-zinc-400 mt-1">Importance: {skill.importance}%</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Soft Skills */}
+              <Card className="bg-zinc-800/50 border-zinc-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-purple-400">
+                    <Users className="h-5 w-5" />
+                    Soft Skills
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analysis.skillsAnalysis.softSkills?.map((skill, index) => (
+                      <div key={index} className="bg-zinc-900/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-white">{skill.skill}</h4>
+                          <span className="text-purple-400 text-sm font-medium">{skill.importance}%</span>
+                        </div>
+                        <p className="text-zinc-300 text-sm">{skill.description}</p>
+                        <Progress value={skill.importance} className="h-2 mt-2" />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Recommendations */}
           <Card className="bg-zinc-800/50 border-zinc-700 mb-8">
             <CardHeader>
@@ -496,6 +715,164 @@ export default function CareerRoadmapResultsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Certifications and Learning Resources */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Certifications */}
+            {analysis.certifications && analysis.certifications.length > 0 && (
+              <Card className="bg-zinc-800/50 border-zinc-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-400">
+                    <Award className="h-5 w-5" />
+                    Recommended Certifications
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analysis.certifications.map((cert, index) => (
+                      <div key={index} className="bg-zinc-900/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-white">{cert.name}</h4>
+                          <Badge className={getPriorityColor(cert.priority)}>
+                            {cert.priority} Priority
+                          </Badge>
+                        </div>
+                        <p className="text-zinc-400 text-sm mb-2">{cert.provider}</p>
+                        <p className="text-zinc-300 text-sm mb-2">{cert.description}</p>
+                        <div className="flex items-center gap-2 text-xs text-zinc-400">
+                          <Clock className="h-3 w-3" />
+                          <span>Estimated time: {cert.estimatedTime}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Networking */}
+            {analysis.networking && (
+              <Card className="bg-zinc-800/50 border-zinc-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-cyan-400">
+                    <Network className="h-5 w-5" />
+                    Networking & Community
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analysis.networking.communities && analysis.networking.communities.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-cyan-300 mb-2">Communities to Join</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.networking.communities.map((community, index) => (
+                            <Badge key={index} variant="secondary" className="bg-cyan-900/30 text-cyan-300 border-cyan-700">
+                              {community}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {analysis.networking.events && analysis.networking.events.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-cyan-300 mb-2">Events to Attend</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.networking.events.map((event, index) => (
+                            <Badge key={index} variant="secondary" className="bg-cyan-900/30 text-cyan-300 border-cyan-700">
+                              {event}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {analysis.networking.platforms && analysis.networking.platforms.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-cyan-300 mb-2">Platforms to Use</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.networking.platforms.map((platform, index) => (
+                            <Badge key={index} variant="secondary" className="bg-cyan-900/30 text-cyan-300 border-cyan-700">
+                              {platform}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Learning Resources */}
+          {analysis.resources && (
+            <Card className="bg-zinc-800/50 border-zinc-700 mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-indigo-400">
+                  <BookOpen className="h-5 w-5" />
+                  Learning Resources
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Courses */}
+                  {analysis.resources.courses && analysis.resources.courses.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-indigo-300 mb-3 flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4" />
+                        Recommended Courses
+                      </h4>
+                      <div className="space-y-3">
+                        {analysis.resources.courses.map((course, index) => (
+                          <div key={index} className="bg-zinc-900/50 p-3 rounded-lg">
+                            <h5 className="font-medium text-white text-sm">{course.title}</h5>
+                            <p className="text-zinc-400 text-xs">{course.provider} • {course.type} • {course.duration}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Books, Podcasts, Blogs */}
+                  <div className="space-y-4">
+                    {analysis.resources.books && analysis.resources.books.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-medium text-indigo-300 mb-2">Books</h4>
+                        <div className="space-y-1">
+                          {analysis.resources.books.map((book, index) => (
+                            <p key={index} className="text-zinc-300 text-sm">• {book}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysis.resources.podcasts && analysis.resources.podcasts.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-medium text-indigo-300 mb-2">Podcasts</h4>
+                        <div className="space-y-1">
+                          {analysis.resources.podcasts.map((podcast, index) => (
+                            <p key={index} className="text-zinc-300 text-sm">• {podcast}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysis.resources.blogs && analysis.resources.blogs.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-medium text-indigo-300 mb-2">Blogs</h4>
+                        <div className="space-y-1">
+                          {analysis.resources.blogs.map((blog, index) => (
+                            <p key={index} className="text-zinc-300 text-sm">• {blog}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
 
 

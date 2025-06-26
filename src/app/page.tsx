@@ -184,6 +184,11 @@ export default function Home() {
 
   return (
     <>
+      {/* Meta tags to prevent redirect detection */}
+      <meta name="robots" content="index,follow,noarchive" />
+      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+      <link rel="canonical" href="https://interviewsense.org" />
+      
       {/* Structured Data for SEO */}
       <script 
         type="application/ld+json" 

@@ -10,22 +10,46 @@ const publicRoutes = [
   '/verify-user',
   '/forgot-password',
   '/reset-password',
+  '/contact',
+  '/opportunities',
   '/api/auth/signup',
   '/api/auth/verify',
   '/api/auth/forgot-password',
   '/api/auth/reset-password'
 ]
 
+// SEO and opportunity routes that should be crawlable
+const seoRoutes = [
+  '/opportunities/',
+  '/internship-opportunities',
+  '/sitemap.xml'
+]
+
 export default async function middleware(request: NextRequestWithAuth) {
-  const token = await getToken({ req: request })
+  const pathname = request.nextUrl.pathname
+
+  // Always allow access to the homepage for SEO crawlers
+  if (pathname === '/') {
+    return NextResponse.next()
+  }
+
+  // Allow all SEO and opportunity routes
+  if (seoRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next()
+  }
+
+  // Check if it's a public route
   const isPublicRoute = publicRoutes.some(route => 
-    request.nextUrl.pathname.startsWith(route)
+    pathname === route || pathname.startsWith(route)
   )
 
   // Allow public routes and API routes that don't require auth
   if (isPublicRoute) {
     return NextResponse.next()
   }
+
+  // For protected routes, check authentication
+  const token = await getToken({ req: request })
 
   // Redirect to login if not authenticated
   if (!token) {
@@ -49,7 +73,8 @@ export const config = {
      * - manifest.json (PWA manifest)
      * - public folder assets
      * - API auth routes (handled by NextAuth)
+     * - Static assets
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|logo\\.webp|og-image\\.png|manifest\\.json|api/auth|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|eot|ttf|otf)).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|logo\\.webp|og-image\\.png|manifest\\.json|api/auth|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|eot|ttf|otf)).*)',
   ],
 } 

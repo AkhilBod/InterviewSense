@@ -42,9 +42,14 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    noarchive: false,
+    nosnippet: false,
+    noimageindex: false,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
+      noimageindex: false,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
@@ -104,6 +109,9 @@ export const metadata: Metadata = {
   applicationName: 'InterviewSense',
   referrer: 'origin-when-cross-origin',
   category: 'Technology',
+  other: {
+    'google-site-verification': process.env.GOOGLE_SITE_VERIFICATION || '',
+  },
 }
 
 export default function RootLayout({
