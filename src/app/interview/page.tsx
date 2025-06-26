@@ -140,11 +140,7 @@ function InterviewPage() {
   // ElevenLabs audio status for visual feedback
   const [elevenLabsStatus, setElevenLabsStatus] = useState<'idle' | 'generating' | 'loading' | 'playing'>('idle');
   
-  // Word-by-word animation states
-  const [fullQuestionText, setFullQuestionText] = useState('');
-  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const wordAnimationRef = useRef<NodeJS.Timeout | null>(null);
+
   
   // Ref to prevent race conditions in TTS initialization
   const ttsStartingRef = useRef(false);
@@ -426,75 +422,47 @@ function InterviewPage() {
   };
 
   const speakQuestion = async (questionText: string) => {
+    // Prevent concurrent TTS calls
+    if (ttsStartingRef.current) {
+      console.log('🔄 TTS already starting, skipping concurrent call');
+      return;
+    }
+    
+    ttsStartingRef.current = true;
+    
     try {
-      // Prevent multiple TTS calls from running simultaneously
-      if (ttsStartingRef.current) {
-        console.log('⚠️ TTS already in progress, skipping...');
-        return;
-      }
+      console.log('🎤 Starting ElevenLabs TTS for:', questionText.substring(0, 50) + '...');
+      setElevenLabsStatus('generating'); // Show "Generating audio..."
       
-      ttsStartingRef.current = true;
-      console.log('🎙️ Starting ElevenLabs TTS for question:', questionText.substring(0, 50) + '...');
+             const result = await elevenLabsTTS.synthesizeSpeech(questionText, {
+         stability: 0.65,
+         similarityBoost: 0.85,
+         style: 0.25,
+         useSpeakerBoost: true
+       });
+
+      console.log('✅ ElevenLabs TTS successful, audio URL:', result.audioUrl?.substring(0, 50) + '...');
       
-      // Stop any existing speech synthesis or audio
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      // Create and configure audio
+      const audio = new Audio(result.audioUrl);
+      audio.preload = 'auto';
       
-      // Stop any existing audio elements
-      const existingAudio = document.querySelectorAll('audio');
-      existingAudio.forEach(audio => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-      
-      // Prepare for word-by-word animation and set ElevenLabs status
-      resetWordAnimation();
+      // Prepare for ElevenLabs status
       setCurrentTranscript(''); // Clear transcript initially
       setIsSpeaking(true);
       setInterviewPhase('speaking');
-      setElevenLabsStatus('generating'); // Show "Generating AI Voice..."
-      
-      // Start speaking animation
+      setElevenLabsStatus('loading'); // Show "Loading audio..."
       startSpeakingAnimation();
       
-      // Generate speech using ElevenLabs with interview-optimized settings
-      const result = await elevenLabsTTS.synthesizeSpeech(questionText, {
-        stability: 0.65,       // Higher stability for clear, consistent speech
-        similarityBoost: 0.85, // High similarity for professional tone
-        style: 0.25,          // Low style variation for formal context
-        useSpeakerBoost: true  // Enhanced clarity for interviews
-      });
-      
-      console.log('✅ ElevenLabs audio generated, credits used:', result.creditsUsed);
-      setElevenLabsStatus('loading'); // Show "Loading Audio..."
-      
-      // Create audio element for playback
-      const audio = new Audio(result.audioUrl);
-      audio.volume = 1.0;
-      
-      // Set up simplified audio event handlers
-      audio.oncanplaythrough = () => {
-        console.log('🎵 ElevenLabs audio ready to play');
-      };
-      
-      audio.onloadedmetadata = () => {
-        console.log('🎵 Audio metadata loaded, duration:', audio.duration);
+      // Set up event handlers
+      audio.onloadeddata = () => {
+        console.log('🔊 ElevenLabs audio loaded and ready');
+        setElevenLabsStatus('loading'); // Keep showing loading until play starts
       };
       
       audio.onplay = () => {
         console.log('🔊 ElevenLabs audio playback started');
         setElevenLabsStatus('playing'); // Show "🔊 ElevenLabs Speaking"
-        
-        // Start word-by-word animation based on audio duration
-        if (audio.duration && audio.duration > 0) {
-          const durationMs = audio.duration * 1000;
-          startWordByWordAnimation(questionText, durationMs);
-        } else {
-          // Fallback if duration is not available - estimate based on text length
-          const estimatedDurationMs = questionText.split(' ').length * 600; // ~600ms per word
-          startWordByWordAnimation(questionText, estimatedDurationMs);
-        }
       };
       
       audio.onended = () => {
@@ -502,7 +470,6 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        stopWordByWordAnimation(); // Stop word animation
         setCurrentTranscript(questionText); // Ensure full text is shown
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -516,7 +483,6 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        stopWordByWordAnimation(); // Stop word animation
         setCurrentTranscript(questionText); // Show full text on error
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -540,7 +506,6 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        stopWordByWordAnimation(); // Stop word animation
         setCurrentTranscript(questionText); // Show full text on playback failure
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -583,10 +548,6 @@ function InterviewPage() {
           utterance.onstart = () => {
             console.log('🔊 Browser TTS fallback started');
             setElevenLabsStatus('playing'); // Show speaking status
-            
-            // Start word animation for browser TTS (estimate duration)
-            const estimatedDurationMs = questionText.split(' ').length * 700; // ~700ms per word for browser TTS
-            startWordByWordAnimation(questionText, estimatedDurationMs);
           };
           
           utterance.onend = () => {
@@ -594,7 +555,6 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
-            stopWordByWordAnimation(); // Stop word animation
             setCurrentTranscript(questionText); // Ensure full text is shown
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
@@ -605,7 +565,6 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
-            stopWordByWordAnimation(); // Stop word animation
             setCurrentTranscript(questionText); // Show full text on error
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
@@ -624,7 +583,6 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
-        stopWordByWordAnimation(); // Stop word animation
         setCurrentTranscript(questionText); // Show full text immediately
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -1645,59 +1603,6 @@ function InterviewPage() {
       setIsTranscribing(false);
     }
   };
-
-  // Word-by-word animation functions
-  const startWordByWordAnimation = (text: string, durationMs: number) => {
-    // Clear any existing animation
-    stopWordByWordAnimation();
-    
-    const words = text.split(' ').filter(word => word.trim().length > 0);
-    setFullQuestionText(text);
-    setDisplayedWords([]);
-    setCurrentWordIndex(0);
-    
-    if (words.length === 0) return;
-    
-    // Calculate timing for each word
-    const wordsPerMs = words.length / durationMs;
-    const msPerWord = Math.max(150, durationMs / words.length); // Minimum 150ms per word
-    
-    console.log(`🎬 Starting word animation: ${words.length} words over ${durationMs}ms (${msPerWord.toFixed(0)}ms per word)`);
-    
-    let currentIndex = 0;
-    
-    const animateNextWord = () => {
-      if (currentIndex < words.length) {
-        setDisplayedWords(prev => [...prev, words[currentIndex]]);
-        setCurrentWordIndex(currentIndex + 1);
-        currentIndex++;
-        
-        wordAnimationRef.current = setTimeout(animateNextWord, msPerWord);
-      } else {
-        // Animation complete - show full text
-        setCurrentTranscript(text);
-        console.log('✅ Word animation completed');
-      }
-    };
-    
-    // Start the animation
-    animateNextWord();
-  };
-  
-  const stopWordByWordAnimation = () => {
-    if (wordAnimationRef.current) {
-      clearTimeout(wordAnimationRef.current);
-      wordAnimationRef.current = null;
-    }
-  };
-  
-  const resetWordAnimation = () => {
-    stopWordByWordAnimation();
-    setDisplayedWords([]);
-    setCurrentWordIndex(0);
-    setFullQuestionText('');
-  };
-
   const handleNextQuestion = () => {
     if (answer.trim() !== '') {
       if (!completedQuestions.includes(currentQuestion.id)) {
@@ -2128,23 +2033,7 @@ function InterviewPage() {
                     </Button>
                   )}
 
-                  {/* Emergency/Fallback buttons - show if TTS is stuck or failed */}
-                  {(interviewPhase === 'speaking' || interviewPhase === 'loading') && (
-                    <Button
-                      onClick={() => {
-                        console.log('🚨 Emergency override: Skipping to ready state');
-                        window.speechSynthesis.cancel();
-                        setIsSpeaking(false);
-                        stopSpeakingAnimation();
-                        setCurrentTranscript(visibleQuestions[currentQuestionIndex]?.question || '');
-                        setInterviewPhase('ready');
-                      }}
-                      className="w-full bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg py-1.5 text-xs"
-                    >
-                      <Mic className="h-2.5 w-2.5 mr-1" />
-                      Skip to Recording
-                    </Button>
-                  )}
+
                 </div>
               </div>
             </div>

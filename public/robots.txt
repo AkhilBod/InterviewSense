@@ -14,6 +14,12 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
+
+# Block WordPress-specific files (not applicable to Next.js)
+Disallow: /xmlrpc.php
+Disallow: /wp-admin/
+Disallow: /wp-content/
+Disallow: /wp-includes/
 Disallow: /dashboard/
 Disallow: /profile/
 Disallow: /interview/
@@ -27,5 +33,3 @@ Disallow: /cover-letter/
 # Sitemap location
 Sitemap: https://interviewsense.org/sitemap.xml
 
-# Crawl delay (optional)
-Crawl-delay: 1
