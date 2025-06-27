@@ -5,7 +5,7 @@ const path = require('path');
  * Updates the main sitemap to include all generated internship pages
  */
 function updateSitemap() {
-  const baseUrl = 'https://interviewsense.org';
+  const baseUrl = 'https://www.interviewsense.org';
   const currentDate = new Date().toISOString().split('T')[0];
   
   console.log('📄 Updating sitemap with new internship pages...');

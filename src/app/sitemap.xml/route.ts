@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 export async function GET() {
-  const baseUrl = 'https://interviewsense.org'
+  const baseUrl = 'https://www.interviewsense.org'
   
   // Get all opportunity slugs
   const opportunitiesDir = path.join(process.cwd(), 'generated-content', 'articles')

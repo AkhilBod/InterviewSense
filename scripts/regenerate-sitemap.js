@@ -5,7 +5,7 @@ const path = require('path');
  * Regenerates the internships sitemap based on current articles
  */
 function regenerateInternshipsSitemap() {
-  const baseUrl = 'https://interviewsense.org';
+  const baseUrl = 'https://www.interviewsense.org';
   const currentDate = new Date().toISOString().split('T')[0];
   
   console.log('🔄 Regenerating internships sitemap from current articles...');

@@ -329,7 +329,7 @@ async function generateInternshipArticles() {
 async function generateSitemap(internships: InternshipData[]) {
   console.log('🗺️  Generating sitemap...');
   
-  const baseUrl = 'https://interviewsense.org';
+  const baseUrl = 'https://www.interviewsense.org';
   const currentDate = new Date().toISOString().split('T')[0];
   
   const urls = internships.map(internship => 

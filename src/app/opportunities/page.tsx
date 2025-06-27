@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Interview Opportunities | InterviewSense',
     description: 'Browse through hundreds of tech internship interview questions and practice opportunities from top companies.',
-    url: 'https://interviewsense.org/opportunities',
+    url: 'https://www.interviewsense.org/opportunities',
     siteName: 'InterviewSense',
     type: 'website',
   },

@@ -110,10 +110,10 @@ export function generateMetadata(data: PageData): Metadata {
       title: data.title,
       description: data.description,
       type: 'website',
-      url: `https://interviewsense.org/internships/${data.slug}`,
+      url: `https://www.interviewsense.org/internships/${data.slug}`,
     },
     alternates: {
-      canonical: `https://interviewsense.org/internships/${data.slug}`,
+      canonical: `https://www.interviewsense.org/internships/${data.slug}`,
     }
   }
 }
@@ -124,7 +124,7 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
     "@type": "EducationalOrganization",
     "name": `InterviewSense - ${data.title}`,
     "description": data.description,
-    "url": `https://interviewsense.org/internships/${data.slug}`,
+    "url": `https://www.interviewsense.org/internships/${data.slug}`,
     "teaches": questions.map(q => q.topic),
     "educationalLevel": "undergraduate",
     "courseMode": "online"

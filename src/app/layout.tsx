@@ -68,20 +68,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://interviewsense.org',
+    url: 'https://www.interviewsense.org',
     siteName: 'InterviewSense - CS Internship Interview Prep',
     title: 'InterviewSense - CS Internship Interview Preparation | LeetCode Practice & AI Feedback',
     description: 'Land CS internships at top tech companies with AI-powered interview prep. Practice LeetCode problems, master behavioral questions, and get instant feedback. Free for all computer science students.',
     images: [
       {
-        url: 'https://interviewsense.org/og-image.png',
+        url: 'https://www.interviewsense.org/og-image.png',
         width: 1200,
         height: 630,
         alt: 'InterviewSense - CS Internship Interview Preparation Platform',
         type: 'image/png',
       },
       {
-        url: 'https://interviewsense.org/og-image-square.png',
+        url: 'https://www.interviewsense.org/og-image-square.png',
         width: 1200,
         height: 1200,
         alt: 'InterviewSense - CS Interview Prep',
@@ -97,12 +97,12 @@ export const metadata: Metadata = {
     creator: '@interviewsense',
     title: 'InterviewSense - CS Internship Interview Preparation',
     description: 'Land CS internships at top tech companies with AI-powered interview prep. Practice LeetCode problems, master behavioral questions, and get instant feedback.',
-    images: ['https://interviewsense.org/og-image.png'],
+    images: ['https://www.interviewsense.org/og-image.png'],
   },
   
   // Additional meta tags
   alternates: {
-    canonical: 'https://interviewsense.org',
+    canonical: 'https://www.interviewsense.org',
   },
   
   // App-specific meta

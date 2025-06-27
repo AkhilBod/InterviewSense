@@ -59,12 +59,12 @@ export default function CreatorStatsPage() {
   }, [])
 
   const generateSignupLink = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://interviewsense.org'
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.interviewsense.org'
     return `${baseUrl}/signup?code=${encodeURIComponent(creatorCode)}`
   }
 
   const generateHomepageLink = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://interviewsense.org'
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.interviewsense.org'
     return `${baseUrl}?code=${encodeURIComponent(creatorCode)}`
   }
 

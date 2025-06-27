@@ -154,15 +154,15 @@ export default function CreatorTestPage() {
             {[
               {
                 title: 'Production Homepage',
-                url: 'https://interviewsense.org?code=Koja'
+                url: 'https://www.interviewsense.org?code=Koja'
               },
               {
                 title: 'Production Signup',
-                url: 'https://interviewsense.org/signup?code=Koja'
+                url: 'https://www.interviewsense.org/signup?code=Koja'
               },
               {
                 title: 'Production Analytics',
-                url: 'https://interviewsense.org/creator'
+                url: 'https://www.interviewsense.org/creator'
               }
             ].map((link, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-zinc-900/30 rounded-lg">

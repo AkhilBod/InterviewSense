@@ -140,6 +140,11 @@ function InterviewPage() {
   // ElevenLabs audio status for visual feedback
   const [elevenLabsStatus, setElevenLabsStatus] = useState<'idle' | 'generating' | 'loading' | 'playing'>('idle');
   
+  // Simple typewriter effect
+  const [typewriterText, setTypewriterText] = useState('');
+  const [isTypewriting, setIsTypewriting] = useState(false);
+  const typewriterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
 
   
   // Ref to prevent race conditions in TTS initialization
@@ -463,6 +468,9 @@ function InterviewPage() {
       audio.onplay = () => {
         console.log('🔊 ElevenLabs audio playback started');
         setElevenLabsStatus('playing'); // Show "🔊 ElevenLabs Speaking"
+        
+        // Start typewriter effect when audio actually starts playing
+        startTypewriter(questionText);
       };
       
       audio.onended = () => {
@@ -470,6 +478,7 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
+        stopTypewriter(); // Stop typewriter animation
         setCurrentTranscript(questionText); // Ensure full text is shown
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -483,6 +492,7 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
+        stopTypewriter(); // Stop typewriter on error
         setCurrentTranscript(questionText); // Show full text on error
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -506,6 +516,7 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
+        stopTypewriter(); // Stop typewriter on playback failure
         setCurrentTranscript(questionText); // Show full text on playback failure
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -548,6 +559,7 @@ function InterviewPage() {
           utterance.onstart = () => {
             console.log('🔊 Browser TTS fallback started');
             setElevenLabsStatus('playing'); // Show speaking status
+            startTypewriter(questionText); // Start typewriter for browser TTS too
           };
           
           utterance.onend = () => {
@@ -555,6 +567,7 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
+            stopTypewriter(); // Stop typewriter
             setCurrentTranscript(questionText); // Ensure full text is shown
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
@@ -565,6 +578,7 @@ function InterviewPage() {
             setIsSpeaking(false);
             setElevenLabsStatus('idle'); // Reset status
             stopSpeakingAnimation();
+            stopTypewriter(); // Stop typewriter on error
             setCurrentTranscript(questionText); // Show full text on error
             setInterviewPhase('ready');
             ttsStartingRef.current = false; // Allow new TTS calls
@@ -583,6 +597,7 @@ function InterviewPage() {
         setIsSpeaking(false);
         setElevenLabsStatus('idle'); // Reset status
         stopSpeakingAnimation();
+        stopTypewriter(); // Stop typewriter
         setCurrentTranscript(questionText); // Show full text immediately
         setInterviewPhase('ready');
         ttsStartingRef.current = false; // Allow new TTS calls
@@ -1603,6 +1618,41 @@ function InterviewPage() {
       setIsTranscribing(false);
     }
   };
+  // Simple typewriter functions
+  const startTypewriter = (text: string) => {
+    const words = text.split(' ').filter(word => word.trim().length > 0);
+    if (words.length === 0) return;
+    
+    setIsTypewriting(true);
+    setTypewriterText('');
+    
+    let currentIndex = 0;
+    
+    const showNextWord = () => {
+      if (currentIndex < words.length) {
+        const currentWords = words.slice(0, currentIndex + 1);
+        setTypewriterText(currentWords.join(' '));
+        currentIndex++;
+        
+        typewriterTimeoutRef.current = setTimeout(showNextWord, 350); // 0.35 seconds per word
+      } else {
+        // Finished - show complete text and stop typewriter
+        setTypewriterText(text);
+        setIsTypewriting(false);
+      }
+    };
+    
+    showNextWord();
+  };
+  
+  const stopTypewriter = () => {
+    if (typewriterTimeoutRef.current) {
+      clearTimeout(typewriterTimeoutRef.current);
+      typewriterTimeoutRef.current = null;
+    }
+    setIsTypewriting(false);
+  };
+
   const handleNextQuestion = () => {
     if (answer.trim() !== '') {
       if (!completedQuestions.includes(currentQuestion.id)) {
@@ -1866,8 +1916,8 @@ function InterviewPage() {
                 {/* Question Display */}
                 <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3">
                   <p className="text-white text-xs sm:text-sm leading-relaxed text-center md:text-left">
-                    {/* Show transcript when ElevenLabs is playing, or full question when ready/feedback */}
-                    {elevenLabsStatus === 'playing' ? currentTranscript : 
+                    {/* Show typewriter text when ElevenLabs is playing, or full question otherwise */}
+                    {elevenLabsStatus === 'playing' && isTypewriting ? typewriterText : 
                      (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
                      (currentQuestion ? currentQuestion.question : '') : 
                      currentTranscript}

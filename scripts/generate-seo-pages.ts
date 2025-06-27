@@ -371,11 +371,11 @@ export default function ${skill.slug.split('-').map((word: string) =>
 
 async function generateSitemap() {
   const urls = [
-    'https://interviewsense.org',
-    'https://interviewsense.org/internships',
-    ...companies.map(c => `https://interviewsense.org/internships/${c.slug}`),
-    ...skills.map(s => `https://interviewsense.org/internships/topics/${s.slug}`),
-    ...allCombinations.map(c => `https://interviewsense.org/internships/${c.slug}`)
+    'https://www.interviewsense.org',
+    'https://www.interviewsense.org/internships',
+    ...companies.map(c => `https://www.interviewsense.org/internships/${c.slug}`),
+    ...skills.map(s => `https://www.interviewsense.org/internships/topics/${s.slug}`),
+    ...allCombinations.map(c => `https://www.interviewsense.org/internships/${c.slug}`)
   ]
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

@@ -18,7 +18,7 @@ const structuredData = {
   "@type": "SoftwareApplication",
   "name": "InterviewSense - CS Internship Interview Prep",
   "description": "AI-powered interview preparation platform specifically designed for computer science students seeking internships. Practice coding challenges, behavioral questions, and get instant feedback on technical interviews for top tech companies like Google, Meta, Microsoft, and Amazon.",
-  "url": "https://interviewsense.org",
+  "url": "https://www.interviewsense.org",
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Web Browser",
   "offers": {
@@ -33,7 +33,7 @@ const structuredData = {
   "provider": {
     "@type": "Organization",
     "name": "InterviewSense",
-    "url": "https://interviewsense.org"
+    "url": "https://www.interviewsense.org"
   },
   "featureList": [
     "LeetCode coding practice for internships",
@@ -45,7 +45,7 @@ const structuredData = {
     "Tech company interview questions",
     "Software engineering internship prep"
   ],
-  "screenshot": "https://interviewsense.org/og-image.png",
+          "screenshot": "https://www.interviewsense.org/og-image.png",
   "keywords": "CS internship interview prep, computer science interview practice, coding interview preparation, tech internship behavioral questions, software engineering interview, leetcode practice, FAANG internship prep"
 }
 
@@ -53,8 +53,8 @@ const organizationStructuredData = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "InterviewSense",
-  "url": "https://interviewsense.org",
-  "logo": "https://interviewsense.org/logo.webp",
+  "url": "https://www.interviewsense.org",
+  "logo": "https://www.interviewsense.org/logo.webp",
   "sameAs": [
     "https://twitter.com/interviewsense"
   ],
@@ -187,7 +187,7 @@ export default function Home() {
       {/* Meta tags to prevent redirect detection */}
       <meta name="robots" content="index,follow,noarchive" />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-      <link rel="canonical" href="https://interviewsense.org" />
+      <link rel="canonical" href="https://www.interviewsense.org" />
       
       {/* Structured Data for SEO */}
       <script 
