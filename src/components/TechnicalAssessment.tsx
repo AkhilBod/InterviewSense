@@ -962,7 +962,7 @@ public class Solution {
       </Card>
 
       {question && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)]">
           {/* Problem/Solutions Panel - Left Side */}
           <Card className="bg-zinc-800 border-zinc-700 text-zinc-100 h-full overflow-hidden">
             <CardHeader className="pb-4 border-b border-zinc-700">
@@ -1019,7 +1019,7 @@ public class Solution {
                   {(() => {
                     const leetcodeProblem = parseLeetCodeProblem(question);
                     return (
-                      <div className="space-y-6">
+                      <div className="space-y-6 pb-40">
                         {/* Problem Description */}
                         <div className="space-y-4">
                           <p className="text-zinc-300 leading-relaxed text-base">
@@ -1130,7 +1130,7 @@ public class Solution {
                 </TabsContent>
                 
                 <TabsContent value="solutions" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
-                  <div className="space-y-6">
+                  <div className="space-y-6 pb-40">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <Lightbulb className="h-5 w-5 text-green-400" />
@@ -1164,7 +1164,7 @@ public class Solution {
                       </div>
                     ) : (
                       solutions.map((solution: any, index: number) => (
-                      <Card key={solution.id} className="bg-zinc-800/50 border border-zinc-700/50 overflow-hidden">
+                      <Card key={solution.id} className="bg-zinc-800/50 border border-zinc-700/50 overflow-hidden mb-6">
                         <CardHeader className="pb-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -1204,48 +1204,16 @@ public class Solution {
                             {solution.description}
                           </p>
                           
-                          {/* Pros and Cons */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <h5 className="text-sm font-semibold text-green-400 flex items-center gap-1">
-                                <CheckCircle className="h-3 w-3" />
-                                Pros
-                              </h5>
-                              <ul className="text-xs text-zinc-400 space-y-1">
-                                                                 {solution.pros.map((pro: string, i: number) => (
-                                   <li key={i} className="flex items-start gap-2">
-                                     <span className="text-green-400 mt-0.5">•</span>
-                                     {pro}
-                                   </li>
-                                 ))}
-                               </ul>
-                             </div>
-                             <div className="space-y-2">
-                               <h5 className="text-sm font-semibold text-red-400 flex items-center gap-1">
-                                 <Target className="h-3 w-3" />
-                                 Cons
-                               </h5>
-                               <ul className="text-xs text-zinc-400 space-y-1">
-                                 {solution.cons.map((con: string, i: number) => (
-                                   <li key={i} className="flex items-start gap-2">
-                                     <span className="text-red-400 mt-0.5">•</span>
-                                     {con}
-                                   </li>
-                                 ))}
-                              </ul>
-                            </div>
-                          </div>
-                          
                           {/* Code Implementation */}
                           <Collapsible className="bg-zinc-900/50 rounded-lg border border-zinc-600/50">
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-900/70 transition-colors">
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-900/70 transition-colors rounded-t-lg">
                               <span className="font-medium text-zinc-200 flex items-center gap-2">
                                 <ExternalLink className="h-4 w-4" />
                                 View Implementation
                               </span>
                               <ChevronDown className="h-4 w-4 text-zinc-400" />
                             </CollapsibleTrigger>
-                            <CollapsibleContent className="px-4 pb-4">
+                            <CollapsibleContent className="px-4 pb-4 rounded-b-lg">
                               <Tabs defaultValue="javascript" className="w-full">
                                 <TabsList className="grid grid-cols-3 w-full bg-zinc-800">
                                   <TabsTrigger value="javascript" className="text-xs">JavaScript</TabsTrigger>
