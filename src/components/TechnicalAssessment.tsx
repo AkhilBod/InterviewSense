@@ -299,6 +299,14 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   // Add state for microphone permission guide
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
   
+  // Add state for active tab
+  const [activeTab, setActiveTab] = useState('problem');
+  
+  // Add state for dynamic solutions
+  const [solutions, setSolutions] = useState<any[]>([]);
+  const [solutionsLoading, setSolutionsLoading] = useState(false);
+  const [solutionsGenerated, setSolutionsGenerated] = useState(false);
+  
   // Monaco Editor ref
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -353,19 +361,207 @@ public:
 }`
   };
 
+  // Generate solutions using Gemini
+  const generateSolutions = async () => {
+    if (solutionsLoading || solutionsGenerated) return;
+    
+    setSolutionsLoading(true);
+    try {
+      const leetcodeProblem = parseLeetCodeProblem(question);
+      
+      const prompt = `
+Generate 3 different solution approaches for this coding problem:
+
+Problem: ${leetcodeProblem.title}
+Description: ${leetcodeProblem.description}
+Difficulty: ${leetcodeProblem.difficulty}
+
+For each approach, provide:
+1. Title (descriptive name)
+2. Time complexity
+3. Space complexity  
+4. Description (2-3 sentences)
+5. 3 pros and 3 cons
+6. Code implementation in JavaScript, Python, and Java
+
+Please structure as a JSON array with this format:
+[
+  {
+    "id": "approach-1",
+    "title": "Approach Name",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(1)",
+    "difficulty": "Easy|Medium|Hard",
+    "description": "Brief description",
+    "pros": ["Pro 1", "Pro 2", "Pro 3"],
+    "cons": ["Con 1", "Con 2", "Con 3"],
+    "code": {
+      "javascript": "function solution() { ... }",
+      "python": "def solution(): ...",
+      "java": "public class Solution { ... }"
+    }
+  }
+]
+
+Generate approaches from brute force to optimal, ensuring code is syntactically correct and well-commented.
+`;
+
+      const response = await fetch('/api/gemini-behavioral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt,
+          systemPrompt: "You are an expert software engineer providing multiple solution approaches for coding problems. Always return valid JSON."
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.response) {
+        try {
+          // Extract JSON from response if it's wrapped in markdown
+          let jsonStr = data.response;
+          if (jsonStr.includes('```json')) {
+            jsonStr = jsonStr.match(/```json\s*([\s\S]*?)\s*```/)?.[1] || jsonStr;
+          } else if (jsonStr.includes('```')) {
+            jsonStr = jsonStr.match(/```\s*([\s\S]*?)\s*```/)?.[1] || jsonStr;
+          }
+          
+          const generatedSolutions = JSON.parse(jsonStr);
+          setSolutions(generatedSolutions);
+          setSolutionsGenerated(true);
+          
+          toast({
+            title: "Solutions generated",
+            description: `${generatedSolutions.length} solution approaches ready`,
+          });
+        } catch (parseError) {
+          console.error('Error parsing solutions JSON:', parseError);
+          toast({
+            title: "Error parsing solutions",
+            description: "Failed to parse generated solutions. Using fallback.",
+            variant: "destructive"
+          });
+          // Fallback to basic solutions
+          setSolutions(getFallbackSolutions());
+          setSolutionsGenerated(true);
+        }
+      } else {
+        throw new Error('Failed to generate solutions');
+      }
+    } catch (error) {
+      console.error('Error generating solutions:', error);
+      toast({
+        title: "Error generating solutions",
+        description: "Using fallback solutions instead.",
+        variant: "destructive"
+      });
+      // Fallback to basic solutions
+      setSolutions(getFallbackSolutions());
+      setSolutionsGenerated(true);
+    } finally {
+      setSolutionsLoading(false);
+    }
+  };
+
+  // Fallback solutions in case Gemini fails
+  const getFallbackSolutions = () => {
+    return [
+      {
+        id: 'brute-force',
+        title: 'Brute Force Approach',
+        timeComplexity: 'O(n²)',
+        spaceComplexity: 'O(1)',
+        difficulty: 'Easy',
+        description: 'A straightforward approach that checks all possible combinations.',
+        pros: ['Easy to understand', 'Simple implementation', 'Good starting point'],
+        cons: ['High time complexity', 'May timeout on large inputs', 'Not scalable'],
+        code: {
+          javascript: `// Brute force approach
+function solution() {
+    // Implementation details depend on the specific problem
+    // This is a placeholder for the actual solution
+    return [];
+}`,
+          python: `# Brute force approach
+def solution():
+    # Implementation details depend on the specific problem
+    # This is a placeholder for the actual solution
+    pass`,
+          java: `// Brute force approach
+public class Solution {
+    public int[] solution() {
+        // Implementation details depend on the specific problem
+        // This is a placeholder for the actual solution
+        return new int[]{};
+    }
+}`
+        }
+      },
+      {
+        id: 'optimal',
+        title: 'Optimized Approach',
+        timeComplexity: 'O(n)',
+        spaceComplexity: 'O(n)',
+        difficulty: 'Medium',
+        description: 'An optimized solution using efficient data structures and algorithms.',
+        pros: ['Better time complexity', 'Scalable solution', 'Industry standard'],
+        cons: ['Uses more space', 'Slightly more complex', 'Requires understanding of data structures'],
+        code: {
+          javascript: `// Optimized approach
+function solution() {
+    // Implementation details depend on the specific problem
+    // This is a placeholder for the actual solution
+    return [];
+}`,
+          python: `# Optimized approach
+def solution():
+    # Implementation details depend on the specific problem
+    # This is a placeholder for the actual solution
+    pass`,
+          java: `// Optimized approach
+public class Solution {
+    public int[] solution() {
+        // Implementation details depend on the specific problem
+        // This is a placeholder for the actual solution
+        return new int[]{};
+    }
+}`
+        }
+      }
+    ];
+  };
+
   // Update code when language changes
   useEffect(() => {
     if (!code || Object.values(languageTemplates).includes(code)) {
       setCode(languageTemplates[language]);
     }
-  }, [language]);
+  }, [language, code, languageTemplates]);
 
   // Initialize with default template
   useEffect(() => {
     if (!code) {
       setCode(languageTemplates[language]);
     }
-  }, []);
+  }, [code, language, languageTemplates]);
+
+  // Reset solutions when question changes
+  useEffect(() => {
+    if (question) {
+      setSolutions([]);
+      setSolutionsGenerated(false);
+      setSolutionsLoading(false);
+      setActiveTab('problem'); // Start with problem tab
+    }
+  }, [question]);
+
+  // Auto-generate solutions when switching to solutions tab
+  useEffect(() => {
+    if (activeTab === 'solutions' && question && !solutionsGenerated && !solutionsLoading) {
+      generateSolutions();
+    }
+  }, [activeTab, question, solutionsGenerated, solutionsLoading, generateSolutions]);
 
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
@@ -609,8 +805,6 @@ public:
     }
   };
 
-  // Parse the question for display - no longer needed since we use the structured display
-
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
       {/* Header Section */}
@@ -769,7 +963,7 @@ public:
 
       {question && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
-          {/* Problem Panel - Left Side */}
+          {/* Problem/Solutions Panel - Left Side */}
           <Card className="bg-zinc-800 border-zinc-700 text-zinc-100 h-full overflow-hidden">
             <CardHeader className="pb-4 border-b border-zinc-700">
               <div className="flex items-center justify-between mb-4">
@@ -801,118 +995,313 @@ public:
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 h-full overflow-y-auto pb-6">
-              {(() => {
-                const leetcodeProblem = parseLeetCodeProblem(question);
-                return (
-                  <div className="space-y-6">
-                    {/* Problem Description */}
-                    <div className="space-y-4 mt-6">
-                      <p className="text-zinc-300 leading-relaxed text-base">
-                        {leetcodeProblem.description}
-                      </p>
-                    </div>
+            
+            <CardContent className="h-full overflow-hidden p-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                <TabsList className="w-full justify-start bg-zinc-800/50 border-b border-zinc-700 rounded-none h-12 p-1">
+                  <TabsTrigger 
+                    value="problem" 
+                    className="data-[state=active]:bg-green-600/20 data-[state=active]:text-green-300 data-[state=active]:border-green-500/50 flex items-center gap-2 h-10"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Problem
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="solutions" 
+                    className="data-[state=active]:bg-green-600/20 data-[state=active]:text-green-300 data-[state=active]:border-green-500/50 flex items-center gap-2 h-10"
+                  >
+                    <Lightbulb className="h-4 w-4" />
+                    Solutions
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="problem" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                  {(() => {
+                    const leetcodeProblem = parseLeetCodeProblem(question);
+                    return (
+                      <div className="space-y-6">
+                        {/* Problem Description */}
+                        <div className="space-y-4">
+                          <p className="text-zinc-300 leading-relaxed text-base">
+                            {leetcodeProblem.description}
+                          </p>
+                        </div>
 
-                    {/* Examples */}
-                    {leetcodeProblem.examples && leetcodeProblem.examples.length > 0 && (
-                      <div className="space-y-4">
-                        {leetcodeProblem.examples.map((example, index) => (
-                          <div key={index} className="space-y-3">
-                            <h4 className="text-base font-bold text-white">Example {index + 1}:</h4>
-                            <div className="bg-zinc-900/80 rounded-lg p-4 border border-zinc-600/50 font-mono text-sm">
-                              <div className="space-y-2">
-                                <div>
-                                  <span className="text-zinc-400 font-semibold">Input: </span>
-                                  <span className="text-blue-300">{example.input}</span>
+                        {/* Examples */}
+                        {leetcodeProblem.examples && leetcodeProblem.examples.length > 0 && (
+                          <div className="space-y-4">
+                            {leetcodeProblem.examples.map((example, index) => (
+                              <div key={index} className="space-y-3">
+                                <h4 className="text-base font-bold text-white">Example {index + 1}:</h4>
+                                <div className="bg-zinc-900/80 rounded-lg p-4 border border-zinc-600/50 font-mono text-sm">
+                                  <div className="space-y-2">
+                                    <div>
+                                      <span className="text-zinc-400 font-semibold">Input: </span>
+                                      <span className="text-blue-300">{example.input}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-zinc-400 font-semibold">Output: </span>
+                                      <span className="text-blue-300">{example.output}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <span className="text-zinc-400 font-semibold">Output: </span>
-                                  <span className="text-blue-300">{example.output}</span>
+                                {example.explanation && (
+                                  <div className="bg-zinc-700/30 rounded-lg p-3 border border-zinc-600/30">
+                                    <p className="text-zinc-300 text-sm">
+                                      <span className="font-semibold text-zinc-200">Explanation: </span>
+                                      {example.explanation}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Individual Dropdowns Section */}
+                        <div className="space-y-4">
+                          {/* Recommended Time & Space Complexity */}
+                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                              <span className="font-medium text-zinc-200">Recommended Time & Space Complexity</span>
+                              <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="p-4 pt-0">
+                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50 space-y-3">
+                                <div className="flex items-center gap-3">
+                                  <Clock className="h-4 w-4 text-blue-400" />
+                                  <div className="flex-1">
+                                    <div className="text-sm text-zinc-400">Time Complexity</div>
+                                    <code className="text-blue-400 text-sm">{leetcodeProblem.timeComplexity}</code>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <Box className="h-4 w-4 text-purple-400" />
+                                  <div className="flex-1">
+                                    <div className="text-sm text-zinc-400">Space Complexity</div>
+                                    <code className="text-purple-400 text-sm">{leetcodeProblem.spaceComplexity}</code>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            {example.explanation && (
-                              <div className="bg-zinc-700/30 rounded-lg p-3 border border-zinc-600/30">
-                                <p className="text-zinc-300 text-sm">
-                                  <span className="font-semibold text-zinc-200">Explanation: </span>
-                                  {example.explanation}
+                            </CollapsibleContent>
+                          </Collapsible>
+
+                          {/* Hint 1 */}
+                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                              <span className="font-medium text-zinc-200">Hint 1</span>
+                              <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="p-4 pt-0">
+                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
+                                <p className="text-zinc-300 text-sm leading-relaxed">
+                                  {leetcodeProblem.hints[0] || "Consider the basic approach first - what data structures could help solve this problem?"}
                                 </p>
                               </div>
-                            )}
+                            </CollapsibleContent>
+                          </Collapsible>
+
+                          {/* Hint 2 */}
+                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                              <span className="font-medium text-zinc-200">Hint 2</span>
+                              <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="p-4 pt-0">
+                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
+                                <p className="text-zinc-300 text-sm leading-relaxed">
+                                  {leetcodeProblem.hints[1] || "Think about edge cases - what happens with empty inputs, single elements, or boundary conditions?"}
+                                </p>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </div>
+
+                        {/* Follow Up */}
+                        {leetcodeProblem.followUp && (
+                          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                            <h4 className="text-base font-bold text-blue-300 mb-2">Follow-up:</h4>
+                            <p className="text-slate-300 text-sm">{leetcodeProblem.followUp}</p>
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
-
-                    {/* Individual Dropdowns Section */}
-                    <div className="space-y-4">
-                      {/* Recommended Time & Space Complexity */}
-                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                          <span className="font-medium text-zinc-200">Recommended Time & Space Complexity</span>
-                          <ChevronDown className="h-4 w-4 text-zinc-400" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-4 pt-0">
-                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50 space-y-3">
-                            <div className="flex items-center gap-3">
-                              <Clock className="h-4 w-4 text-blue-400" />
-                              <div className="flex-1">
-                                <div className="text-sm text-zinc-400">Time Complexity</div>
-                                <code className="text-blue-400 text-sm">{leetcodeProblem.timeComplexity}</code>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Box className="h-4 w-4 text-purple-400" />
-                              <div className="flex-1">
-                                <div className="text-sm text-zinc-400">Space Complexity</div>
-                                <code className="text-purple-400 text-sm">{leetcodeProblem.spaceComplexity}</code>
-                              </div>
-                            </div>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* Hint 1 */}
-                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                          <span className="font-medium text-zinc-200">Hint 1</span>
-                          <ChevronDown className="h-4 w-4 text-zinc-400" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-4 pt-0">
-                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
-                            <p className="text-zinc-300 text-sm leading-relaxed">
-                              {leetcodeProblem.hints[0] || "Consider the basic approach first - what data structures could help solve this problem?"}
-                            </p>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* Hint 2 */}
-                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                          <span className="font-medium text-zinc-200">Hint 2</span>
-                          <ChevronDown className="h-4 w-4 text-zinc-400" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-4 pt-0">
-                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
-                            <p className="text-zinc-300 text-sm leading-relaxed">
-                              {leetcodeProblem.hints[1] || "Think about edge cases - what happens with empty inputs, single elements, or boundary conditions?"}
-                            </p>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
+                    );
+                  })()}
+                </TabsContent>
+                
+                <TabsContent value="solutions" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5 text-green-400" />
+                        Solution Approaches
+                      </h3>
+                      <div className="text-sm text-zinc-400">
+                        {solutionsLoading ? 'Generating solutions...' : `${solutions.length} approaches available`}
+                      </div>
                     </div>
-
-                    {/* Follow Up */}
-                    {leetcodeProblem.followUp && (
-                      <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                        <h4 className="text-base font-bold text-blue-300 mb-2">Follow-up:</h4>
-                        <p className="text-slate-300 text-sm">{leetcodeProblem.followUp}</p>
+                    
+                    {solutionsLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center space-y-4">
+                          <Loader2 className="h-8 w-8 animate-spin text-green-400 mx-auto" />
+                          <p className="text-zinc-400">Generating optimal solutions with AI...</p>
+                        </div>
                       </div>
+                    ) : !solutionsGenerated ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center space-y-4">
+                          <Zap className="h-8 w-8 text-green-400 mx-auto" />
+                          <p className="text-zinc-400">Click "Generate Solutions" to see AI-powered approaches</p>
+                          <Button 
+                            onClick={generateSolutions}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Lightbulb className="h-4 w-4 mr-2" />
+                            Generate Solutions
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      solutions.map((solution: any, index: number) => (
+                      <Card key={solution.id} className="bg-zinc-800/50 border border-zinc-700/50 overflow-hidden">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                solution.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                                solution.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-red-500/20 text-red-400'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h4 className="text-lg font-semibold text-white">{solution.title}</h4>
+                                <div className="flex items-center gap-4 mt-1">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Clock className="h-3 w-3 text-blue-400" />
+                                    <span className="text-blue-400">Time: {solution.timeComplexity}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Box className="h-3 w-3 text-purple-400" />
+                                    <span className="text-purple-400">Space: {solution.spaceComplexity}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              index === 0 ? 'bg-red-500/20 text-red-400' :
+                              index === 1 ? 'bg-green-500/20 text-green-400' :
+                              'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {index === 0 ? 'Brute Force' : index === 1 ? 'Optimal' : 'Alternative'}
+                            </span>
+                          </div>
+                        </CardHeader>
+                        
+                        <CardContent className="space-y-4">
+                          <p className="text-zinc-300 text-sm leading-relaxed">
+                            {solution.description}
+                          </p>
+                          
+                          {/* Pros and Cons */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <h5 className="text-sm font-semibold text-green-400 flex items-center gap-1">
+                                <CheckCircle className="h-3 w-3" />
+                                Pros
+                              </h5>
+                              <ul className="text-xs text-zinc-400 space-y-1">
+                                                                 {solution.pros.map((pro: string, i: number) => (
+                                   <li key={i} className="flex items-start gap-2">
+                                     <span className="text-green-400 mt-0.5">•</span>
+                                     {pro}
+                                   </li>
+                                 ))}
+                               </ul>
+                             </div>
+                             <div className="space-y-2">
+                               <h5 className="text-sm font-semibold text-red-400 flex items-center gap-1">
+                                 <Target className="h-3 w-3" />
+                                 Cons
+                               </h5>
+                               <ul className="text-xs text-zinc-400 space-y-1">
+                                 {solution.cons.map((con: string, i: number) => (
+                                   <li key={i} className="flex items-start gap-2">
+                                     <span className="text-red-400 mt-0.5">•</span>
+                                     {con}
+                                   </li>
+                                 ))}
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          {/* Code Implementation */}
+                          <Collapsible className="bg-zinc-900/50 rounded-lg border border-zinc-600/50">
+                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-900/70 transition-colors">
+                              <span className="font-medium text-zinc-200 flex items-center gap-2">
+                                <ExternalLink className="h-4 w-4" />
+                                View Implementation
+                              </span>
+                              <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="px-4 pb-4">
+                              <Tabs defaultValue="javascript" className="w-full">
+                                <TabsList className="grid grid-cols-3 w-full bg-zinc-800">
+                                  <TabsTrigger value="javascript" className="text-xs">JavaScript</TabsTrigger>
+                                  <TabsTrigger value="python" className="text-xs">Python</TabsTrigger>
+                                  <TabsTrigger value="java" className="text-xs">Java</TabsTrigger>
+                                </TabsList>
+                                {Object.entries(solution.code).map(([lang, code]: [string, any]) => (
+                                  <TabsContent key={lang} value={lang} className="mt-4">
+                                    <div className="bg-[#1e1e1e] rounded-lg overflow-hidden border border-zinc-700">
+                                      <div className="p-2 bg-zinc-800 border-b border-zinc-700 flex items-center justify-between">
+                                        <span className="text-xs text-zinc-400 capitalize">{lang}</span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(code as string);
+                                            toast({
+                                              title: "Code copied",
+                                              description: "Solution code copied to clipboard",
+                                            });
+                                          }}
+                                          className="h-6 px-2 text-xs hover:bg-zinc-700"
+                                        >
+                                          Copy
+                                        </Button>
+                                      </div>
+                                      <Editor
+                                        height="200px"
+                                        language={lang === 'javascript' ? 'javascript' : lang}
+                                        value={code as string}
+                                        theme="vs-dark"
+                                        options={{
+                                          readOnly: true,
+                                          minimap: { enabled: false },
+                                          fontSize: 12,
+                                          lineNumbers: 'on',
+                                          scrollBeyondLastLine: false,
+                                          automaticLayout: true,
+                                          tabSize: 2,
+                                          wordWrap: 'on',
+                                        }}
+                                      />
+                                    </div>
+                                  </TabsContent>
+                                ))}
+                              </Tabs>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </CardContent>
+                      </Card>
+                      ))
                     )}
+
                   </div>
-                );
-              })()}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
