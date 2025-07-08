@@ -10,19 +10,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User, Mic, MicOff, Play, CheckCircle } from "lucide-react";
+import { Loader2, User, Mic, MicOff, Play, CheckCircle, ChevronDown, ChevronUp, Lightbulb, Clock, Box, ExternalLink, BookOpen, Zap, Target } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from "@/components/ui/use-toast";
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuide';
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
@@ -56,6 +59,20 @@ const TECH_JOB_TITLES = [
   { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' }
 ];
 
+// Helper function to clean markdown formatting from text
+function cleanMarkdownText(text: string): string {
+  return text
+    // Remove bold markdown
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    // Remove italic markdown
+    .replace(/\*(.*?)\*/g, '$1')
+    // Remove code backticks
+    .replace(/`(.*?)`/g, '$1')
+    // Remove extra spaces
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // Helper function to parse LeetCode problem from text with better formatting
 function parseLeetCodeProblem(problemText: string) {
   const lines = problemText.split('\n').filter(line => line.trim());
@@ -66,6 +83,9 @@ function parseLeetCodeProblem(problemText: string) {
   let description = '';
   let examples: { input: string; output: string; explanation?: string }[] = [];
   let constraints: string[] = [];
+  let hints: string[] = [];
+  let timeComplexity = '';
+  let spaceComplexity = '';
   
   let currentSection = '';
   let currentExample: any = {};
@@ -117,6 +137,23 @@ function parseLeetCodeProblem(problemText: string) {
       currentSection = 'constraints';
       continue;
     }
+
+    // Extract hints
+    if (line.includes('**Hint') || line.startsWith('Hint')) {
+      currentSection = 'hints';
+      continue;
+    }
+
+    // Extract complexity
+    if (line.includes('Time Complexity:')) {
+      timeComplexity = line.replace('Time Complexity:', '').trim();
+      continue;
+    }
+
+    if (line.includes('Space Complexity:')) {
+      spaceComplexity = line.replace('Space Complexity:', '').trim();
+      continue;
+    }
     
     if (line.includes('Follow up') || line.includes('Follow-up')) {
       currentSection = 'followup';
@@ -152,6 +189,8 @@ function parseLeetCodeProblem(problemText: string) {
       } else if (line.match(/^\d+/) || line.includes('<=') || line.includes('>=')) {
         constraints.push(line);
       }
+    } else if (currentSection === 'hints' && line.length > 0 && !line.startsWith('**') && !line.startsWith('Hint')) {
+      hints.push(line.trim());
     }
   }
   
@@ -194,19 +233,49 @@ function parseLeetCodeProblem(problemText: string) {
     );
     description = substantialLines.slice(0, 3).join(' ').substring(0, 300) + '...';
   }
+
+  // Default hints if none found
+  if (hints.length === 0) {
+    // Check if it's a string manipulation problem
+    if (description.toLowerCase().includes('string') || examples.some(ex => typeof ex.input === 'string' && ex.input.includes('"'))) {
+      hints = [
+        "First, clean up the string by handling extra spaces (leading, trailing, and between words)",
+        "Consider splitting the string into an array of words for easier manipulation",
+        "Think about how to efficiently join the words back together in reverse order"
+      ];
+    } else {
+      hints = [
+        "Try to break down the problem into smaller subproblems",
+        "Consider using appropriate data structures",
+        "Think about edge cases"
+      ];
+    }
+  }
+
+  // Default complexities if none found
+  if (!timeComplexity || !spaceComplexity) {
+    // For string manipulation problems
+    if (description.toLowerCase().includes('string') || examples.some(ex => typeof ex.input === 'string' && ex.input.includes('"'))) {
+      timeComplexity = "O(n) where n is the length of the string";
+      spaceComplexity = "O(n) to store the array of words";
+    } else {
+      timeComplexity = "O(n)";
+      spaceComplexity = "O(1)";
+    }
+  }
   
   return {
     number,
     title,
     difficulty: difficulty as 'Easy' | 'Medium' | 'Hard',
-    description: description.trim(),
+    description: cleanMarkdownText(description.trim()),
     examples,
-    constraints,
-    followUp: constraints.length > 0 ? "Can you solve it in O(1) extra space complexity?" : undefined
+    hints,
+    timeComplexity,
+    spaceComplexity,
+    followUp: "Can you optimize your solution further?" // Generic follow-up question
   };
 }
-
-
 
 export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [loading, setLoading] = useState(false);
@@ -738,7 +807,7 @@ public:
                 return (
                   <div className="space-y-6">
                     {/* Problem Description */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-6">
                       <p className="text-zinc-300 leading-relaxed text-base">
                         {leetcodeProblem.description}
                       </p>
@@ -775,22 +844,64 @@ public:
                       </div>
                     )}
 
-                    {/* Constraints */}
-                    {leetcodeProblem.constraints && leetcodeProblem.constraints.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="text-base font-bold text-white">Constraints:</h4>
-                        <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-600/30">
-                          <ul className="space-y-2 text-slate-300">
-                            {leetcodeProblem.constraints.map((constraint, index) => (
-                              <li key={index} className="flex items-start gap-2">
-                                <span className="text-slate-500 mt-1.5 text-xs">•</span>
-                                <span className="font-mono text-sm">{constraint}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
+                    {/* Individual Dropdowns Section */}
+                    <div className="space-y-4">
+                      {/* Recommended Time & Space Complexity */}
+                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                          <span className="font-medium text-zinc-200">Recommended Time & Space Complexity</span>
+                          <ChevronDown className="h-4 w-4 text-zinc-400" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-4 pt-0">
+                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Clock className="h-4 w-4 text-blue-400" />
+                              <div className="flex-1">
+                                <div className="text-sm text-zinc-400">Time Complexity</div>
+                                <code className="text-blue-400 text-sm">{leetcodeProblem.timeComplexity}</code>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Box className="h-4 w-4 text-purple-400" />
+                              <div className="flex-1">
+                                <div className="text-sm text-zinc-400">Space Complexity</div>
+                                <code className="text-purple-400 text-sm">{leetcodeProblem.spaceComplexity}</code>
+                              </div>
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Hint 1 */}
+                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                          <span className="font-medium text-zinc-200">Hint 1</span>
+                          <ChevronDown className="h-4 w-4 text-zinc-400" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-4 pt-0">
+                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
+                            <p className="text-zinc-300 text-sm leading-relaxed">
+                              {leetcodeProblem.hints[0] || "Consider the basic approach first - what data structures could help solve this problem?"}
+                            </p>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Hint 2 */}
+                      <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
+                          <span className="font-medium text-zinc-200">Hint 2</span>
+                          <ChevronDown className="h-4 w-4 text-zinc-400" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-4 pt-0">
+                          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
+                            <p className="text-zinc-300 text-sm leading-relaxed">
+                              {leetcodeProblem.hints[1] || "Think about edge cases - what happens with empty inputs, single elements, or boundary conditions?"}
+                            </p>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
 
                     {/* Follow Up */}
                     {leetcodeProblem.followUp && (
