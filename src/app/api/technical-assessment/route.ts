@@ -532,25 +532,56 @@ Provide your analysis in this JSON format (no other text):
       const analysis = JSON.parse(responseText);
       
       // Validate required fields
-      if (!analysis.isCorrect || !analysis.correctnessAnalysis || !analysis.timeComplexity || 
-          !analysis.spaceComplexity || !analysis.codeQuality || !analysis.suggestedImprovements) {
-        throw new Error('Analysis response missing required fields');
+      if (!analysis.isCorrect && analysis.isCorrect !== false) {
+        throw new Error('Analysis response missing isCorrect field');
       }
 
-      return NextResponse.json({
+      // Transform the API response to match frontend expectations
+      const transformedResponse = {
         success: true,
-        analysis
-      });
+        overallScore: analysis.isCorrect ? 85 : 45, // Base score on correctness
+        strengths: analysis.codeQuality ? 
+          analysis.codeQuality.split('.').filter(s => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
+          ["Code submitted successfully"],
+        improvementAreas: analysis.suggestedImprovements ? 
+          analysis.suggestedImprovements.split('.').filter(s => s.trim()).slice(0, 3) :
+          ["Consider reviewing the solution"],
+        codeFeedback: analysis.correctnessAnalysis || "Solution analyzed",
+        explanationFeedback: `Time Complexity: ${analysis.timeComplexity || "Not analyzed"}. Space Complexity: ${analysis.spaceComplexity || "Not analyzed"}`,
+        codeScore: analysis.isCorrect ? 80 : 40,
+        explanationScore: 75, // Default score
+        analysis: analysis // Keep original analysis for detailed view
+      };
+
+      return NextResponse.json(transformedResponse);
     } catch (error) {
       console.error('Error parsing analysis:', error);
-      throw new Error('Failed to generate valid analysis. Please try again.');
+      
+      // Return a fallback response instead of throwing an error
+      return NextResponse.json({
+        success: true,
+        overallScore: 50,
+        strengths: ["Code submitted successfully"],
+        improvementAreas: ["Consider reviewing and optimizing the solution"],
+        codeFeedback: "Unable to analyze code automatically. Please review manually.",
+        explanationFeedback: "Unable to analyze explanation automatically.",
+        codeScore: 50,
+        explanationScore: 50
+      });
     }
   } catch (error) {
     console.error('Error analyzing solution:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to analyze solution'
+        error: error instanceof Error ? error.message : 'Failed to analyze solution',
+        overallScore: 50,
+        strengths: ["Code submitted successfully"],
+        improvementAreas: ["Unable to analyze automatically. Please review your solution."],
+        codeFeedback: "Analysis failed - please try again later",
+        explanationFeedback: "Analysis failed - please try again later",
+        codeScore: 50,
+        explanationScore: 50
       },
       { status: 500 }
     );

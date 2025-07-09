@@ -235,11 +235,41 @@ export default function TechnicalAssessmentResultsPage() {
             }),
           });
           
-          if (!response.ok) {
-            throw new Error('Failed to analyze solution');
-          }
-          
           const analysis = await response.json();
+          
+          // Handle API errors gracefully
+          if (!response.ok || !analysis.success) {
+            console.warn('API returned error, using fallback data:', analysis.error);
+            // Use the fallback data provided by the API
+            const fullResult: TechnicalAssessmentResult = {
+              company: assessmentData.company,
+              role: assessmentData.role,
+              date: new Date(assessmentData.date).toLocaleDateString(),
+              difficulty: assessmentData.difficulty,
+              overallScore: analysis.overallScore || 50,
+              strengths: analysis.strengths || ["Code submitted successfully"],
+              improvementAreas: analysis.improvementAreas || ["Unable to analyze automatically"],
+              codeFeedback: analysis.codeFeedback || "Analysis failed",
+              explanationFeedback: analysis.explanationFeedback || "Analysis failed",
+              questions: [{
+                id: 1,
+                leetCodeTitle: question.leetCodeTitle,
+                prompt: question.prompt,
+                code: question.code,
+                codeLanguage: "javascript",
+                codeScore: analysis.codeScore || 50,
+                explanation: question.explanation,
+                explanationScore: analysis.explanationScore || 50,
+                audioUrl: question.audioUrl,
+                feedback: "Analysis failed - please try again later"
+              }]
+            };
+            
+            localStorage.setItem("technicalAssessmentResult", JSON.stringify(fullResult));
+            localStorage.removeItem("technicalAssessmentData");
+            setResult(fullResult);
+            return;
+          }
           
           // Create the full result object
           const fullResult: TechnicalAssessmentResult = {
@@ -545,13 +575,13 @@ export default function TechnicalAssessmentResultsPage() {
                         </div>
                         <div className="text-center">
                           <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                            {result.strengths.length}
+                            {result.strengths?.length || 0}
                           </div>
                           <div className="text-slate-400 text-xs uppercase tracking-wide">Strengths</div>
                         </div>
                         <div className="text-center">
                           <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                            {result.improvementAreas.length}
+                            {result.improvementAreas?.length || 0}
                           </div>
                           <div className="text-slate-400 text-xs uppercase tracking-wide">To Improve</div>
                         </div>
@@ -579,7 +609,7 @@ export default function TechnicalAssessmentResultsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {result.strengths.length > 0 ? result.strengths.map((strength, index) => (
+                    {(result.strengths?.length || 0) > 0 ? result.strengths?.map((strength, index) => (
                       <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
                         <div className="flex items-start gap-4">
                           <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-green-500/30 transition-colors">
@@ -612,7 +642,7 @@ export default function TechnicalAssessmentResultsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {result.improvementAreas.length > 0 ? result.improvementAreas.map((area, index) => (
+                    {(result.improvementAreas?.length || 0) > 0 ? result.improvementAreas?.map((area, index) => (
                       <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
                         <div className="flex items-start gap-4">
                           <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-yellow-500/30 transition-colors">
