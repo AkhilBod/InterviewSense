@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, User, Mic, MicOff, Play, CheckCircle, ChevronDown, ChevronUp, Lightbulb, Clock, Box, ExternalLink, BookOpen, Zap, Target } from "lucide-react";
+import { Loader2, User, Mic, MicOff, Play, CheckCircle, ChevronDown, ChevronUp, Lightbulb, Clock, Box, ExternalLink, BookOpen, Zap, Target, RefreshCw, ArrowRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from "@/components/ui/use-toast";
@@ -696,66 +696,67 @@ public class Solution {
   // Add state for tracking current LeetCode number
   const [currentLeetCodeNumber, setCurrentLeetCodeNumber] = useState<number | null>(null);
 
-  const handleSkip = async () => {
-    try {
-      setLoading(true);
+  const [isSkipping, setIsSkipping] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Function to get the next question
+  const getNextQuestion = async () => {
+    if (problemMode === 'preset') {
+      const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
+      if (!preset) {
+        throw new Error('Please select a preset');
+      }
       
-      if (problemMode === 'preset') {
-        const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
-        if (!preset) {
-          throw new Error('Please select a preset');
-        }
-        
-        // Get the current category from the question if not selected
-        if (!selectedCategory && question) {
-          const currentProblem = parseLeetCodeProblem(question);
-          // Find which category contains this problem
-          for (const [category, problems] of Object.entries(BLIND75_PROBLEMS)) {
-            if (problems.some(p => p.id === currentProblem.number)) {
-              setSelectedCategory(category);
-              break;
-            }
+      // Get the current category from the question if not selected
+      if (!selectedCategory && question) {
+        const currentProblem = parseLeetCodeProblem(question);
+        // Find which category contains this problem
+        for (const [category, problems] of Object.entries(BLIND75_PROBLEMS)) {
+          if (problems.some(p => p.id === currentProblem.number)) {
+            setSelectedCategory(category);
+            break;
           }
         }
+      }
 
-        // Get problems for this category and preset only
-        if (!selectedCategory) {
-          throw new Error('Please select a category to continue');
-        }
-        
-        let problems: { id: number; title: string; difficulty: string; }[] = [];
-        
-        switch (selectedPreset) {
-          case 'blind75':
-            problems = BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS] || [];
-            break;
-          case 'neetcode150':
-            problems = NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS] || [];
-            break;
-          case 'grind75':
-            problems = GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS] || [];
-            break;
-        }
-        
-        if (problems.length === 0) {
-          throw new Error(`No problems available for ${selectedCategory} category in ${preset.title}.`);
-        }
+      // Get problems for this category and preset only
+      if (!selectedCategory) {
+        throw new Error('Please select a category to continue');
+      }
+      
+      let problems: { id: number; title: string; difficulty: string; }[] = [];
+      
+      switch (selectedPreset) {
+        case 'blind75':
+          problems = BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS] || [];
+          break;
+        case 'neetcode150':
+          problems = NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS] || [];
+          break;
+        case 'grind75':
+          problems = GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS] || [];
+          break;
+      }
+      
+      if (problems.length === 0) {
+        throw new Error(`No problems available for ${selectedCategory} category in ${preset.title}.`);
+      }
 
-        // Find current problem index
-        const currentNumber = currentLeetCodeNumber || 
-          (question ? parseLeetCodeProblem(question).number : null);
-        
-        const currentIndex = problems.findIndex(p => p.id === currentNumber);
-        
-        if (currentIndex === -1 || currentIndex === problems.length - 1) {
-          throw new Error(`No more problems available in ${selectedCategory} category for ${preset.title}.`);
-        }
+      // Find current problem index
+      const currentNumber = currentLeetCodeNumber || 
+        (question ? parseLeetCodeProblem(question).number : null);
+      
+      const currentIndex = problems.findIndex(p => p.id === currentNumber);
+      
+      if (currentIndex === -1 || currentIndex === problems.length - 1) {
+        throw new Error(`No more problems available in ${selectedCategory} category for ${preset.title}.`);
+      }
 
-        // Get next problem in this category
-        const nextProblem = problems[currentIndex + 1];
-        
-        // Use Gemini just to fetch the full problem content
-        const prompt = `Get LeetCode problem #${nextProblem.id} (${nextProblem.title}).
+      // Get next problem in this category
+      const nextProblem = problems[currentIndex + 1];
+      
+      // Use Gemini just to fetch the full problem content
+      const prompt = `Get LeetCode problem #${nextProblem.id} (${nextProblem.title}).
 
 Return the EXACT problem as it appears on LeetCode with:
 1. Problem number and title
@@ -766,66 +767,79 @@ Return the EXACT problem as it appears on LeetCode with:
 
 DO NOT modify or generate a new problem. Return the exact LeetCode problem #${nextProblem.id}.`;
 
-        const response: Response = await fetch('/api/technical-assessment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            prompt,
-            useCustomNumber: true,
-            leetcodeNumber: nextProblem.id.toString(),
-            preset: selectedPreset,
-            category: selectedCategory
-          }),
-        });
-        
-        const data: { success: boolean; question: string; error?: string } = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to fetch next problem');
-        }
-
-        // Update the current question
-        setQuestion(data.question);
-        
-        // Extract and save the new question number
-        const newNumber = parseLeetCodeProblem(data.question).number;
-        setCurrentLeetCodeNumber(newNumber);
-        
-        // Reset the form for the new question
-        setCode(languageTemplates[language]);
-        setThoughtProcess('');
-        setAudioUrl(null);
-        
-        // Reset solutions
-        setSolutions([]);
-        setSolutionsGenerated(false);
-        setSolutionsLoading(false);
-        setActiveTab('problem');
-        
-        window.scrollTo(0, 0);
-        
-        toast({
-          title: `Next ${selectedCategory} Problem`,
-          description: `Problem ${currentIndex + 2}/${problems.length}: #${newNumber} (${nextProblem.title})`,
-        });
-      } else {
-        // For AI mode, get another random problem from the same category
-        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-        handleSubmit(fakeEvent);
+      const response: Response = await fetch('/api/technical-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt,
+          useCustomNumber: true,
+          leetcodeNumber: nextProblem.id.toString(),
+          preset: selectedPreset,
+          category: selectedCategory
+        }),
+      });
+      
+      const data: { success: boolean; question: string; error?: string } = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch next problem');
       }
+
+      // Update the current question
+      setQuestion(data.question);
+      
+      // Extract and save the new question number
+      const newNumber = parseLeetCodeProblem(data.question).number;
+      setCurrentLeetCodeNumber(newNumber);
+      
+      // Reset the form for the new question
+      setCode(languageTemplates[language]);
+      setThoughtProcess('');
+      setAudioUrl(null);
+      
+      // Reset solutions
+      setSolutions([]);
+      setSolutionsGenerated(false);
+      setSolutionsLoading(false);
+      setActiveTab('problem');
+      
+      window.scrollTo(0, 0);
+      
+      toast({
+        title: `Next ${selectedCategory} Problem`,
+        description: `Problem ${currentIndex + 2}/${problems.length}: #${newNumber} (${nextProblem.title})`,
+      });
+    } else {
+      // For AI mode, get another random problem from the same category
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+      await handleSubmit(fakeEvent);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (isSkipping) return;
+    setIsSkipping(true);
+    try {
+      // Get next question
+      await getNextQuestion();
+      toast({
+        title: "Question Skipped",
+        description: "Moving to next question...",
+      });
     } catch (error) {
-      console.error('Error getting next question:', error);
+      console.error('Error skipping question:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to get next question',
+        description: "Failed to skip question. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsSkipping(false);
     }
   };
 
   const handleNext = async () => {
+    if (isSubmitting) return;
     if (!code || !thoughtProcess) {
       toast({
         title: "Incomplete Solution",
@@ -835,9 +849,8 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      setLoading(true);
-      
       // Save current solution first
       const currentNumber = currentLeetCodeNumber || 
         (question ? parseLeetCodeProblem(question).number : null);
@@ -874,6 +887,11 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
         currentProblem: solutionData
       }));
 
+      toast({
+        title: "Solution Submitted",
+        description: "Redirecting to results...",
+      });
+
       // Navigate to results page
       router.push('/technical-assessment/results');
       
@@ -885,7 +903,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -2546,19 +2564,39 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                   <Button 
                     variant="outline"
                     onClick={handleSkip}
+                    disabled={isSkipping || isSubmitting}
                     className="flex-1 h-12 text-base font-semibold border-slate-600 hover:bg-slate-700"
                   >
-                    Skip Question
+                    {isSkipping ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Skipping...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="w-4 h-4 mr-2" />
+                        Skip Question
+                      </>
+                    )}
                   </Button>
                   
                   {/* Submit/Next button */}
                   <Button 
                     onClick={handleNext}
-                    disabled={!code || !thoughtProcess}
+                    disabled={isSkipping || isSubmitting || !code || !thoughtProcess}
                     className="flex-1 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <CheckCircle className="h-5 w-5" />
-                    <span>Submit & Continue</span>
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Submit & Continue
+                      </>
+                    )}
                   </Button>
                 </div>
                 
