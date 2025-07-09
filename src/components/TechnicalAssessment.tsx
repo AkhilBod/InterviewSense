@@ -81,25 +81,27 @@ const LEETCODE_PRESETS: LeetCodePreset[] = [
   {
     id: 'blind75',
     title: 'Blind 75',
-    description: 'Essential 75 questions for tech interviews',
+    description: 'Classic collection of coding interview problems',
     totalProblems: 75,
     categories: [
       { name: 'Arrays & Hashing', count: 8, icon: '📦' },
-      { name: 'Two Pointers', count: 3, icon: '👉' },
-      { name: 'Sliding Window', count: 4, icon: '🔍' },
-      { name: 'Stack', count: 1, icon: '📚' },
-      { name: 'Binary Search', count: 2, icon: '🎯' },
-      { name: 'Linked List', count: 6, icon: '⛓️' },
-      { name: 'Trees', count: 11, icon: '🌳' },
-      { name: 'Tries', count: 3, icon: '📝' },
-      { name: 'Heap / Priority Queue', count: 1, icon: '⚡' },
-      { name: 'Backtracking', count: 2, icon: '↩️' },
-      { name: 'Graphs', count: 7, icon: '🕸️' },
-      { name: 'Dynamic Programming', count: 11, icon: '🧮' },
-      { name: 'Greedy', count: 2, icon: '💡' },
-      { name: 'Intervals', count: 5, icon: '⏱️' },
-      { name: 'Matrix', count: 3, icon: '🔲' },
-      { name: 'Bit Manipulation', count: 5, icon: '🔢' }
+      { name: 'Two Pointers', count: 3, icon: '🧭' },
+      { name: 'Sliding Window', count: 4, icon: '🚪' },
+      { name: 'Stack', count: 1, icon: '🧱' },
+      { name: 'Binary Search', count: 2, icon: '🔍' },
+      { name: 'Linked List', count: 6, icon: '🔗' },
+      { name: 'Trees', count: 11, icon: '🌲' },
+      { name: 'Heap / Priority Queue', count: 1, icon: '📊' },
+      { name: 'Backtracking', count: 2, icon: '🧠' },
+      { name: 'Tries', count: 3, icon: '✏️' },
+      { name: 'Graphs', count: 6, icon: '🌐' },
+      { name: 'Advanced Graphs', count: 1, icon: '🔁' },
+      { name: '1-D Dynamic Programming', count: 10, icon: '➕' },
+      { name: '2-D Dynamic Programming', count: 2, icon: '🔢' },
+      { name: 'Greedy', count: 2, icon: '🪙' },
+      { name: 'Intervals', count: 5, icon: '⏱' },
+      { name: 'Math & Geometry', count: 3, icon: '📐' },
+      { name: 'Bit Manipulation', count: 5, icon: '⚙️' }
     ],
     difficulty: 'Mixed',
     estimatedHours: 40,
@@ -111,22 +113,24 @@ const LEETCODE_PRESETS: LeetCodePreset[] = [
     description: 'Extended collection of must-solve problems',
     totalProblems: 150,
     categories: [
-      { name: 'Arrays & Hashing', count: 8, icon: '📦' },
-      { name: 'Two Pointers', count: 4, icon: '👉' },
-      { name: 'Sliding Window', count: 6, icon: '🔍' },
-      { name: 'Stack', count: 7, icon: '📚' },
-      { name: 'Binary Search', count: 6, icon: '🎯' },
-      { name: 'Linked List', count: 8, icon: '⛓️' },
-      { name: 'Trees', count: 15, icon: '🌳' },
-      { name: 'Tries', count: 3, icon: '📝' },
-      { name: 'Heap / Priority Queue', count: 7, icon: '⚡' },
-      { name: 'Backtracking', count: 8, icon: '↩️' },
-      { name: 'Graphs', count: 13, icon: '🕸️' },
-      { name: 'Dynamic Programming', count: 13, icon: '🧮' },
-      { name: 'Greedy', count: 7, icon: '💡' },
-      { name: 'Intervals', count: 6, icon: '⏱️' },
-      { name: 'Math & Geometry', count: 8, icon: '📐' },
-      { name: 'Bit Manipulation', count: 5, icon: '🔢' }
+      { name: 'Arrays & Hashing', count: 9, icon: '📦' },
+      { name: 'Two Pointers', count: 5, icon: '🧭' },
+      { name: 'Sliding Window', count: 6, icon: '🚪' },
+      { name: 'Stack', count: 7, icon: '🧱' },
+      { name: 'Binary Search', count: 7, icon: '🔍' },
+      { name: 'Linked List', count: 11, icon: '🔗' },
+      { name: 'Trees', count: 15, icon: '🌲' },
+      { name: 'Heap / Priority Queue', count: 7, icon: '📊' },
+      { name: 'Backtracking', count: 9, icon: '🧠' },
+      { name: 'Tries', count: 3, icon: '✏️' },
+      { name: 'Graphs', count: 13, icon: '🌐' },
+      { name: 'Advanced Graphs', count: 6, icon: '🧭' },
+      { name: '1-D Dynamic Programming', count: 12, icon: '➕' },
+      { name: '2-D Dynamic Programming', count: 11, icon: '🔢' },
+      { name: 'Greedy', count: 8, icon: '🪙' },
+      { name: 'Intervals', count: 6, icon: '⏱' },
+      { name: 'Math & Geometry', count: 8, icon: '🧮' },
+      { name: 'Bit Manipulation', count: 7, icon: '⚙️' }
     ],
     difficulty: 'Mixed',
     estimatedHours: 75,
@@ -135,27 +139,26 @@ const LEETCODE_PRESETS: LeetCodePreset[] = [
   {
     id: 'grind75',
     title: 'Grind 75',
-    description: 'Structured study plan for coding interviews',
+    description: 'Time-efficient list of 75 essential coding interview questions',
     totalProblems: 75,
     categories: [
-      { name: 'Arrays & Hashing', count: 11, icon: '📦' },
+      { name: 'Array', count: 11, icon: '📦' },
+      { name: 'Binary', count: 1, icon: '🔢' },
+      { name: 'Binary Search', count: 5, icon: '🔍' },
+      { name: 'Binary Tree', count: 9, icon: '🌲' },
+      { name: 'Dynamic Programming', count: 5, icon: '📈' },
+      { name: 'Graph', count: 10, icon: '🌐' },
+      { name: 'Hash Table', count: 1, icon: '🧮' },
+      { name: 'Heap', count: 4, icon: '📊' },
+      { name: 'Linked List', count: 5, icon: '🔗' },
+      { name: 'Matrix', count: 1, icon: '🧱' },
+      { name: 'Recursion', count: 3, icon: '🔁' },
       { name: 'Stack', count: 7, icon: '📚' },
-      { name: 'Linked List', count: 5, icon: '⛓️' },
-      { name: 'String', count: 8, icon: '📝' },
-      { name: 'Binary Tree', count: 9, icon: '🌳' },
-      { name: 'Binary Search', count: 5, icon: '🎯' },
-      { name: 'Graph', count: 10, icon: '🕸️' },
-      { name: 'Binary Search Tree', count: 3, icon: '🔍' },
-      { name: 'Hash Table', count: 1, icon: '📊' },
-      { name: 'Dynamic Programming', count: 5, icon: '🧮' },
-      { name: 'Binary', count: 1, icon: '0️⃣' },
-      { name: 'Heap', count: 4, icon: '⚡' },
-      { name: 'Trie', count: 2, icon: '📚' },
-      { name: 'Recursion', count: 3, icon: '🔄' },
-      { name: 'Matrix', count: 1, icon: '🔲' }
+      { name: 'String', count: 8, icon: '🧵' },
+      { name: 'Trie', count: 2, icon: '✏️' }
     ],
     difficulty: 'Mixed',
-    estimatedHours: 45,
+    estimatedHours: 25,
     icon: '💪'
   }
 ];
@@ -388,6 +391,9 @@ const ProblemStatement = ({ text }: { text: string }) => {
 };
 
 export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
+  // Add loading state at the top of the component
+  const [isLoading, setIsLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
@@ -710,118 +716,50 @@ public class Solution {
 
   // Function to get the next question
   const getNextQuestion = async () => {
-    if (problemMode === 'preset') {
-      const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
-      if (!preset) {
-        throw new Error('Please select a preset');
-      }
-      
-      // Get the current category from the question if not selected
-      if (!selectedCategory && question) {
-        const currentProblem = parseLeetCodeProblem(question);
-        // Find which category contains this problem
-        for (const [category, problems] of Object.entries(BLIND75_PROBLEMS)) {
-          if (problems.some(p => p.id === currentProblem.number)) {
-            setSelectedCategory(category);
-            break;
-          }
-        }
-      }
-
-      // Get problems for this category and preset only
-      if (!selectedCategory) {
-        throw new Error('Please select a category to continue');
-      }
-      
-      let problems: { id: number; title: string; difficulty: string; }[] = [];
-      
-      switch (selectedPreset) {
-        case 'blind75':
-          problems = BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS] || [];
-          break;
-        case 'neetcode150':
-          problems = NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS] || [];
-          break;
-        case 'grind75':
-          problems = GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS] || [];
-          break;
-      }
-      
-      if (problems.length === 0) {
-        throw new Error(`No problems available for ${selectedCategory} category in ${preset.title}.`);
-      }
-
-      // Find current problem index
-      const currentNumber = currentLeetCodeNumber || 
-        (question ? parseLeetCodeProblem(question).number : null);
-      
-      const currentIndex = problems.findIndex(p => p.id === currentNumber);
-      
-      if (currentIndex === -1 || currentIndex === problems.length - 1) {
-        throw new Error(`No more problems available in ${selectedCategory} category for ${preset.title}.`);
-      }
-
-      // Get next problem in this category
-      const nextProblem = problems[currentIndex + 1];
-      
-      // Use Gemini just to fetch the full problem content
-      const prompt = `Get LeetCode problem #${nextProblem.id} (${nextProblem.title}).
-
-Return the EXACT problem as it appears on LeetCode with:
-1. Problem number and title
-2. Difficulty (${nextProblem.difficulty})
-3. Full description
-4. Examples
-5. Constraints
-
-DO NOT modify or generate a new problem. Return the exact LeetCode problem #${nextProblem.id}.`;
-
-      const response: Response = await fetch('/api/technical-assessment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          prompt,
-          useCustomNumber: true,
-          leetcodeNumber: nextProblem.id.toString(),
-          preset: selectedPreset,
-          category: selectedCategory
-        }),
-      });
-      
-      const data: { success: boolean; question: string; error?: string } = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch next problem');
-      }
-
-      // Update the current question
-      setQuestion(data.question);
-      
-      // Extract and save the new question number
-      const newNumber = parseLeetCodeProblem(data.question).number;
-      setCurrentLeetCodeNumber(newNumber);
-      
-      // Reset the form for the new question
-      setCode(languageTemplates[language]);
-      setThoughtProcess('');
-      setAudioUrl(null);
-      
-      // Reset solutions
+    try {
+      setIsLoading(true);
+      setQuestion('');
       setSolutions([]);
       setSolutionsGenerated(false);
-      setSolutionsLoading(false);
-      setActiveTab('problem');
-      
-      window.scrollTo(0, 0);
-      
-      toast({
-        title: `Next ${selectedCategory} Problem`,
-        description: `Problem ${currentIndex + 2}/${problems.length}: #${newNumber} (${nextProblem.title})`,
+
+      // If a specific question is selected, use its ID
+      const response = await fetch('/api/technical-assessment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          company,
+          role,
+          difficulty,
+          useCustomNumber: selectedQuestion ? true : false,
+          leetcodeNumber: selectedQuestion?.id,
+          preset: selectedPreset,
+          category: selectedCategory,
+          generateSolutions: false
+        }),
       });
-    } else {
-      // For AI mode, get another random problem from the same category
-      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-      await handleSubmit(fakeEvent);
+
+      const data = await response.json();
+
+      if (data.success) {
+        setQuestion(data.question);
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to generate question. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error getting question:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate question. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -943,7 +881,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
       
       if (problemMode === 'ai') {
         // For AI mode, get a random problem from our collections
-        const allCollections = [BLIND75_PROBLEMS, NEETCODE150_PROBLEMS, GRIND75_PROBLEMS];
+        const allCollections = [BLIND75_PROBLEMS, NEETCODE_150_PROBLEMS, GRIND75_PROBLEMS];
         const randomCollection = allCollections[Math.floor(Math.random() * allCollections.length)];
         const categories = Object.keys(randomCollection);
         const randomCategory = categories[Math.floor(Math.random() * categories.length)];
@@ -976,7 +914,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
             case 'blind75':
               return BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS];
             case 'neetcode150':
-              return NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS];
+              return NEETCODE_150_PROBLEMS[selectedCategory as keyof typeof NEETCODE_150_PROBLEMS];
             case 'grind75':
               return GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS];
             default:
@@ -1402,59 +1340,119 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
 
   // Add Grind 75 problems mapping
   const GRIND75_PROBLEMS = {
-    'Arrays & Hashing': [
-      { id: 1, title: 'Two Sum', difficulty: 'Easy', time: 15 },
-      { id: 121, title: 'Best Time to Buy and Sell Stock', difficulty: 'Easy', time: 20 },
-      { id: 169, title: 'Majority Element', difficulty: 'Easy', time: 20 },
-      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy', time: 15 },
-      { id: 57, title: 'Insert Interval', difficulty: 'Medium', time: 25 },
-      { id: 15, title: '3Sum', difficulty: 'Medium', time: 30 },
-      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium', time: 30 },
-      { id: 39, title: 'Combination Sum', difficulty: 'Medium', time: 30 },
-      { id: 56, title: 'Merge Intervals', difficulty: 'Medium', time: 30 },
-      { id: 75, title: 'Sort Colors', difficulty: 'Medium', time: 25 },
-      { id: 11, title: 'Container With Most Water', difficulty: 'Medium', time: 35 }
+    'Array': [
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
+      { id: 169, title: 'Majority Element', difficulty: 'Easy' },
+      { id: 75, title: 'Sort Colors', difficulty: 'Medium' },
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
+      { id: 53, title: 'Maximum Subarray', difficulty: 'Medium' },
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
+      { id: 57, title: 'Insert Interval', difficulty: 'Medium' },
+      { id: 15, title: '3Sum', difficulty: 'Medium' },
+      { id: 54, title: 'Spiral Matrix', difficulty: 'Medium' },
+      { id: 42, title: 'Trapping Rain Water', difficulty: 'Hard' },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard' }
     ],
-    'Stack': [
-      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy', time: 20 },
-      { id: 232, title: 'Implement Queue using Stacks', difficulty: 'Easy', time: 20 },
-      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium', time: 30 },
-      { id: 155, title: 'Min Stack', difficulty: 'Medium', time: 20 },
-      { id: 42, title: 'Trapping Rain Water', difficulty: 'Hard', time: 35 },
-      { id: 224, title: 'Basic Calculator', difficulty: 'Hard', time: 40 },
-      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard', time: 35 }
-    ],
-    'Binary Tree': [
-      { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy', time: 15 },
-      { id: 110, title: 'Balanced Binary Tree', difficulty: 'Easy', time: 15 },
-      { id: 543, title: 'Diameter of Binary Tree', difficulty: 'Easy', time: 30 },
-      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy', time: 15 },
-      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium', time: 20 },
-      { id: 236, title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', time: 25 },
-      { id: 199, title: 'Binary Tree Right Side View', difficulty: 'Medium', time: 20 },
-      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium', time: 25 },
-      { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard', time: 40 }
+    'Binary': [
+      { id: 67, title: 'Add Binary', difficulty: 'Easy' }
     ],
     'Binary Search': [
-      { id: 704, title: 'Binary Search', difficulty: 'Easy', time: 15 },
-      { id: 278, title: 'First Bad Version', difficulty: 'Easy', time: 20 },
-      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium', time: 30 },
-      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium', time: 35 },
-      { id: 1235, title: 'Maximum Profit in Job Scheduling', difficulty: 'Hard', time: 45 }
+      { id: 278, title: 'First Bad Version', difficulty: 'Easy' },
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium' },
+      { id: 310, title: 'Minimum Height Trees', difficulty: 'Medium' }
+    ],
+    'Binary Tree': [
+      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy' },
+      { id: 543, title: 'Diameter of Binary Tree', difficulty: 'Easy' },
+      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
+      { id: 236, title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium' },
+      { id: 199, title: 'Binary Tree Right Side View', difficulty: 'Medium' },
+      { id: 98, title: 'Validate Binary Search Tree', difficulty: 'Medium' },
+      { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' }
+    ],
+    'Dynamic Programming': [
+      { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
+      { id: 322, title: 'Coin Change', difficulty: 'Medium' },
+      { id: 416, title: 'Partition Equal Subset Sum', difficulty: 'Medium' },
+      { id: 139, title: 'Word Break', difficulty: 'Medium' },
+      { id: 1235, title: 'Maximum Profit in Job Scheduling', difficulty: 'Hard' }
+    ],
+    'Graph': [
+      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
+      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
+      { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
+      { id: 994, title: 'Rotting Oranges', difficulty: 'Medium' },
+      { id: 127, title: 'Word Ladder', difficulty: 'Hard' },
+      { id: 721, title: 'Accounts Merge', difficulty: 'Medium' },
+      { id: 310, title: 'Minimum Height Trees', difficulty: 'Medium' },
+      { id: 621, title: 'Task Scheduler', difficulty: 'Medium' },
+      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium' },
+      { id: 79, title: 'Word Search', difficulty: 'Medium' }
+    ],
+    'Hash Table': [
+      { id: 383, title: 'Ransom Note', difficulty: 'Easy' }
+    ],
+    'Heap': [
+      { id: 973, title: 'K Closest Points to Origin', difficulty: 'Medium' },
+      { id: 295, title: 'Find Median from Data Stream', difficulty: 'Hard' },
+      { id: 621, title: 'Task Scheduler', difficulty: 'Medium' },
+      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' }
+    ],
+    'Linked List': [
+      { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
+      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' },
+      { id: 876, title: 'Middle of the Linked List', difficulty: 'Easy' },
+      { id: 146, title: 'LRU Cache', difficulty: 'Medium' },
+      { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' }
+    ],
+    'Matrix': [
+      { id: 542, title: '01 Matrix', difficulty: 'Medium' }
+    ],
+    'Recursion': [
+      { id: 39, title: 'Combination Sum', difficulty: 'Medium' },
+      { id: 46, title: 'Permutations', difficulty: 'Medium' },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' }
+    ],
+    'Stack': [
+      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy' },
+      { id: 155, title: 'Min Stack', difficulty: 'Medium' },
+      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium' },
+      { id: 22, title: 'Generate Parentheses', difficulty: 'Medium' },
+      { id: 224, title: 'Basic Calculator', difficulty: 'Hard' },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard' },
+      { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' }
+    ],
+    'String': [
+      { id: 409, title: 'Longest Palindrome', difficulty: 'Easy' },
+      { id: 3, title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium' },
+      { id: 8, title: 'String to Integer (atoi)', difficulty: 'Medium' },
+      { id: 5, title: 'Longest Palindromic Substring', difficulty: 'Medium' },
+      { id: 17, title: 'Letter Combinations of a Phone Number', difficulty: 'Medium' },
+      { id: 438, title: 'Find All Anagrams in a String', difficulty: 'Medium' },
+      { id: 76, title: 'Minimum Window Substring', difficulty: 'Hard' },
+      { id: 127, title: 'Word Ladder', difficulty: 'Hard' }
+    ],
+    'Trie': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 79, title: 'Word Search', difficulty: 'Medium' }
     ]
   };
 
   // Add Blind 75 problems mapping
   const BLIND75_PROBLEMS = {
     'Arrays & Hashing': [
-      { id: 1, title: 'Two Sum', difficulty: 'Easy' },
-      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
       { id: 242, title: 'Valid Anagram', difficulty: 'Easy' },
+      { id: 1, title: 'Two Sum', difficulty: 'Easy' },
       { id: 49, title: 'Group Anagrams', difficulty: 'Medium' },
       { id: 347, title: 'Top K Frequent Elements', difficulty: 'Medium' },
       { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
-      { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' },
-      { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' }
+      { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' },
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
+      { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' }
     ],
     'Two Pointers': [
       { id: 125, title: 'Valid Palindrome', difficulty: 'Easy' },
@@ -1476,18 +1474,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
     ],
     'Linked List': [
       { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
-      { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
       { id: 21, title: 'Merge Two Sorted Lists', difficulty: 'Easy' },
-      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' },
+      { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
+      { id: 143, title: 'Reorder List', difficulty: 'Medium' },
       { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' },
-      { id: 143, title: 'Reorder List', difficulty: 'Medium' }
+      { id: 23, title: 'Merge K Sorted Lists', difficulty: 'Hard' }
     ],
     'Trees': [
       { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy' },
       { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy' },
       { id: 100, title: 'Same Tree', difficulty: 'Easy' },
       { id: 572, title: 'Subtree of Another Tree', difficulty: 'Easy' },
-      { id: 235, title: 'Lowest Common Ancestor of a Binary Search Tree', difficulty: 'Medium' },
+      { id: 235, title: 'Lowest Common Ancestor of a Binary Search Tree', difficulty: 'Easy' },
       { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
       { id: 98, title: 'Validate Binary Search Tree', difficulty: 'Medium' },
       { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
@@ -1495,38 +1493,43 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 124, title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard' },
       { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' }
     ],
-    'Tries': [
-      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
-      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
-      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
-    ],
     'Heap / Priority Queue': [
-      { id: 295, title: 'Find Median from Data Stream', difficulty: 'Hard' }
+      { id: 295, title: 'Find Median From Data Stream', difficulty: 'Hard' }
     ],
     'Backtracking': [
       { id: 39, title: 'Combination Sum', difficulty: 'Medium' },
       { id: 79, title: 'Word Search', difficulty: 'Medium' }
     ],
+    'Tries': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
+      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
+    ],
     'Graphs': [
-      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
-      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
-      { id: 417, title: 'Pacific Atlantic Water Flow', difficulty: 'Medium' },
       { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
+      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
+      { id: 417, title: 'Pacific Atlantic Water Flow', difficulty: 'Medium' },
+      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
       { id: 261, title: 'Graph Valid Tree', difficulty: 'Medium' },
-      { id: 323, title: 'Number of Connected Components in an Undirected Graph', difficulty: 'Medium' },
+      { id: 323, title: 'Number of Connected Components in an Undirected Graph', difficulty: 'Medium' }
+    ],
+    'Advanced Graphs': [
       { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' }
     ],
-    'Dynamic Programming': [
+    '1-D Dynamic Programming': [
       { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
-      { id: 322, title: 'Coin Change', difficulty: 'Medium' },
-      { id: 300, title: 'Longest Increasing Subsequence', difficulty: 'Medium' },
-      { id: 139, title: 'Word Break', difficulty: 'Medium' },
-      { id: 377, title: 'Combination Sum IV', difficulty: 'Medium' },
       { id: 198, title: 'House Robber', difficulty: 'Medium' },
       { id: 213, title: 'House Robber II', difficulty: 'Medium' },
+      { id: 5, title: 'Longest Palindromic Substring', difficulty: 'Medium' },
+      { id: 647, title: 'Palindromic Substrings', difficulty: 'Medium' },
       { id: 91, title: 'Decode Ways', difficulty: 'Medium' },
-      { id: 62, title: 'Unique Paths', difficulty: 'Medium' },
+      { id: 322, title: 'Coin Change', difficulty: 'Medium' },
       { id: 152, title: 'Maximum Product Subarray', difficulty: 'Medium' },
+      { id: 139, title: 'Word Break', difficulty: 'Medium' },
+      { id: 300, title: 'Longest Increasing Subsequence', difficulty: 'Medium' }
+    ],
+    '2-D Dynamic Programming': [
+      { id: 62, title: 'Unique Paths', difficulty: 'Medium' },
       { id: 1143, title: 'Longest Common Subsequence', difficulty: 'Medium' }
     ],
     'Greedy': [
@@ -1534,43 +1537,45 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 55, title: 'Jump Game', difficulty: 'Medium' }
     ],
     'Intervals': [
-      { id: 252, title: 'Meeting Rooms', difficulty: 'Easy' },
-      { id: 253, title: 'Meeting Rooms II', difficulty: 'Medium' },
-      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
       { id: 57, title: 'Insert Interval', difficulty: 'Medium' },
-      { id: 435, title: 'Non-overlapping Intervals', difficulty: 'Medium' }
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
+      { id: 435, title: 'Non Overlapping Intervals', difficulty: 'Medium' },
+      { id: 252, title: 'Meeting Rooms', difficulty: 'Easy' },
+      { id: 253, title: 'Meeting Rooms II', difficulty: 'Medium' }
     ],
-    'Matrix': [
-      { id: 73, title: 'Set Matrix Zeroes', difficulty: 'Medium' },
+    'Math & Geometry': [
+      { id: 48, title: 'Rotate Image', difficulty: 'Medium' },
       { id: 54, title: 'Spiral Matrix', difficulty: 'Medium' },
-      { id: 48, title: 'Rotate Image', difficulty: 'Medium' }
+      { id: 73, title: 'Set Matrix Zeroes', difficulty: 'Medium' }
     ],
     'Bit Manipulation': [
-      { id: 268, title: 'Missing Number', difficulty: 'Easy' },
-      { id: 190, title: 'Reverse Bits', difficulty: 'Easy' },
       { id: 191, title: 'Number of 1 Bits', difficulty: 'Easy' },
       { id: 338, title: 'Counting Bits', difficulty: 'Easy' },
+      { id: 190, title: 'Reverse Bits', difficulty: 'Easy' },
+      { id: 268, title: 'Missing Number', difficulty: 'Easy' },
       { id: 371, title: 'Sum of Two Integers', difficulty: 'Medium' }
     ]
   };
 
   // Add NeetCode 150 problems mapping
-  const NEETCODE150_PROBLEMS = {
+  const NEETCODE_150_PROBLEMS = {
     'Arrays & Hashing': [
       { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
       { id: 242, title: 'Valid Anagram', difficulty: 'Easy' },
       { id: 1, title: 'Two Sum', difficulty: 'Easy' },
       { id: 49, title: 'Group Anagrams', difficulty: 'Medium' },
       { id: 347, title: 'Top K Frequent Elements', difficulty: 'Medium' },
-      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
       { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' },
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
+      { id: 36, title: 'Valid Sudoku', difficulty: 'Medium' },
       { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' }
     ],
     'Two Pointers': [
       { id: 125, title: 'Valid Palindrome', difficulty: 'Easy' },
-      { id: 167, title: 'Two Sum II', difficulty: 'Medium' },
+      { id: 167, title: 'Two Sum II - Input Array Is Sorted', difficulty: 'Medium' },
       { id: 15, title: '3Sum', difficulty: 'Medium' },
-      { id: 11, title: 'Container With Most Water', difficulty: 'Medium' }
+      { id: 11, title: 'Container With Most Water', difficulty: 'Medium' },
+      { id: 42, title: 'Trapping Rain Water', difficulty: 'Hard' }
     ],
     'Sliding Window': [
       { id: 121, title: 'Best Time to Buy and Sell Stock', difficulty: 'Easy' },
@@ -1593,19 +1598,23 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 704, title: 'Binary Search', difficulty: 'Easy' },
       { id: 74, title: 'Search a 2D Matrix', difficulty: 'Medium' },
       { id: 875, title: 'Koko Eating Bananas', difficulty: 'Medium' },
-      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' },
       { id: 153, title: 'Find Minimum in Rotated Sorted Array', difficulty: 'Medium' },
-      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium' }
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 981, title: 'Time Based Key Value Store', difficulty: 'Medium' },
+      { id: 4, title: 'Median of Two Sorted Arrays', difficulty: 'Hard' }
     ],
     'Linked List': [
       { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
       { id: 21, title: 'Merge Two Sorted Lists', difficulty: 'Easy' },
       { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
-      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' },
+      { id: 143, title: 'Reorder List', difficulty: 'Medium' },
       { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' },
-      { id: 138, title: 'Copy List with Random Pointer', difficulty: 'Medium' },
+      { id: 138, title: 'Copy List With Random Pointer', difficulty: 'Medium' },
       { id: 2, title: 'Add Two Numbers', difficulty: 'Medium' },
-      { id: 143, title: 'Reorder List', difficulty: 'Medium' }
+      { id: 287, title: 'Find the Duplicate Number', difficulty: 'Medium' },
+      { id: 146, title: 'LRU Cache', difficulty: 'Medium' },
+      { id: 23, title: 'Merge K Sorted Lists', difficulty: 'Hard' },
+      { id: 25, title: 'Reverse Nodes in K Group', difficulty: 'Hard' }
     ],
     'Trees': [
       { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy' },
@@ -1614,7 +1623,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 110, title: 'Balanced Binary Tree', difficulty: 'Easy' },
       { id: 100, title: 'Same Tree', difficulty: 'Easy' },
       { id: 572, title: 'Subtree of Another Tree', difficulty: 'Easy' },
-      { id: 235, title: 'Lowest Common Ancestor of a BST', difficulty: 'Medium' },
+      { id: 235, title: 'Lowest Common Ancestor of a Binary Search Tree', difficulty: 'Easy' },
       { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
       { id: 199, title: 'Binary Tree Right Side View', difficulty: 'Medium' },
       { id: 1448, title: 'Count Good Nodes in Binary Tree', difficulty: 'Medium' },
@@ -1623,11 +1632,6 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' },
       { id: 124, title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard' },
       { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' }
-    ],
-    'Tries': [
-      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
-      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
-      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
     ],
     'Heap / Priority Queue': [
       { id: 703, title: 'Kth Largest Element in a Stream', difficulty: 'Easy' },
@@ -1641,12 +1645,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
     'Backtracking': [
       { id: 78, title: 'Subsets', difficulty: 'Medium' },
       { id: 39, title: 'Combination Sum', difficulty: 'Medium' },
+      { id: 40, title: 'Combination Sum II', difficulty: 'Medium' },
       { id: 46, title: 'Permutations', difficulty: 'Medium' },
       { id: 90, title: 'Subsets II', difficulty: 'Medium' },
-      { id: 40, title: 'Combination Sum II', difficulty: 'Medium' },
       { id: 79, title: 'Word Search', difficulty: 'Medium' },
       { id: 131, title: 'Palindrome Partitioning', difficulty: 'Medium' },
-      { id: 51, title: 'N-Queens', difficulty: 'Hard' }
+      { id: 17, title: 'Letter Combinations of a Phone Number', difficulty: 'Medium' },
+      { id: 51, title: 'N Queens', difficulty: 'Hard' }
+    ],
+    'Tries': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
+      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
     ],
     'Graphs': [
       { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
@@ -1659,24 +1669,44 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
       { id: 210, title: 'Course Schedule II', difficulty: 'Medium' },
       { id: 684, title: 'Redundant Connection', difficulty: 'Medium' },
-      { id: 323, title: 'Number of Connected Components', difficulty: 'Medium' },
       { id: 261, title: 'Graph Valid Tree', difficulty: 'Medium' },
-      { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' }
+      { id: 127, title: 'Word Ladder', difficulty: 'Hard' },
+      { id: 332, title: 'Reconstruct Itinerary', difficulty: 'Hard' }
     ],
-    'Dynamic Programming': [
+    'Advanced Graphs': [
+      { id: 778, title: 'Swim in Rising Water', difficulty: 'Hard' },
+      { id: 743, title: 'Network Delay Time', difficulty: 'Medium' },
+      { id: 1584, title: 'Minimum Cost to Connect All Points', difficulty: 'Medium' },
+      { id: 787, title: 'Cheapest Flights Within K Stops', difficulty: 'Medium' },
+      { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' },
+      { id: 399, title: 'Evaluate Division', difficulty: 'Medium' }
+    ],
+    '1-D Dynamic Programming': [
       { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
-      { id: 746, title: 'Min Cost Climbing Stairs', difficulty: 'Easy' },
       { id: 198, title: 'House Robber', difficulty: 'Medium' },
       { id: 213, title: 'House Robber II', difficulty: 'Medium' },
       { id: 5, title: 'Longest Palindromic Substring', difficulty: 'Medium' },
       { id: 647, title: 'Palindromic Substrings', difficulty: 'Medium' },
       { id: 91, title: 'Decode Ways', difficulty: 'Medium' },
+      { id: 55, title: 'Jump Game', difficulty: 'Medium' },
       { id: 322, title: 'Coin Change', difficulty: 'Medium' },
       { id: 152, title: 'Maximum Product Subarray', difficulty: 'Medium' },
       { id: 139, title: 'Word Break', difficulty: 'Medium' },
       { id: 300, title: 'Longest Increasing Subsequence', difficulty: 'Medium' },
-      { id: 416, title: 'Partition Equal Subset Sum', difficulty: 'Medium' },
-      { id: 115, title: 'Distinct Subsequences', difficulty: 'Hard' }
+      { id: 416, title: 'Partition Equal Subset Sum', difficulty: 'Medium' }
+    ],
+    '2-D Dynamic Programming': [
+      { id: 62, title: 'Unique Paths', difficulty: 'Medium' },
+      { id: 1143, title: 'Longest Common Subsequence', difficulty: 'Medium' },
+      { id: 309, title: 'Best Time to Buy and Sell Stock with Cooldown', difficulty: 'Medium' },
+      { id: 518, title: 'Coin Change II', difficulty: 'Medium' },
+      { id: 494, title: 'Target Sum', difficulty: 'Medium' },
+      { id: 97, title: 'Interleaving String', difficulty: 'Medium' },
+      { id: 115, title: 'Distinct Subsequences', difficulty: 'Hard' },
+      { id: 72, title: 'Edit Distance', difficulty: 'Hard' },
+      { id: 312, title: 'Burst Balloons', difficulty: 'Hard' },
+      { id: 10, title: 'Regular Expression Matching', difficulty: 'Hard' },
+      { id: 44, title: 'Wildcard Matching', difficulty: 'Hard' }
     ],
     'Greedy': [
       { id: 53, title: 'Maximum Subarray', difficulty: 'Medium' },
@@ -1685,6 +1715,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 134, title: 'Gas Station', difficulty: 'Medium' },
       { id: 846, title: 'Hand of Straights', difficulty: 'Medium' },
       { id: 1899, title: 'Merge Triplets to Form Target Triplet', difficulty: 'Medium' },
+      { id: 763, title: 'Partition Labels', difficulty: 'Medium' },
       { id: 678, title: 'Valid Parenthesis String', difficulty: 'Medium' }
     ],
     'Intervals': [
@@ -1693,7 +1724,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 435, title: 'Non-overlapping Intervals', difficulty: 'Medium' },
       { id: 252, title: 'Meeting Rooms', difficulty: 'Easy' },
       { id: 253, title: 'Meeting Rooms II', difficulty: 'Medium' },
-      { id: 1851, title: 'Minimum Interval to Include Each Query', difficulty: 'Hard' }
+      { id: 452, title: 'Minimum Number of Arrows to Burst Balloons', difficulty: 'Medium' }
     ],
     'Math & Geometry': [
       { id: 48, title: 'Rotate Image', difficulty: 'Medium' },
@@ -1706,11 +1737,13 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       { id: 2013, title: 'Detect Squares', difficulty: 'Medium' }
     ],
     'Bit Manipulation': [
+      { id: 136, title: 'Single Number', difficulty: 'Easy' },
       { id: 191, title: 'Number of 1 Bits', difficulty: 'Easy' },
       { id: 338, title: 'Counting Bits', difficulty: 'Easy' },
       { id: 190, title: 'Reverse Bits', difficulty: 'Easy' },
       { id: 268, title: 'Missing Number', difficulty: 'Easy' },
-      { id: 371, title: 'Sum of Two Integers', difficulty: 'Medium' }
+      { id: 371, title: 'Sum of Two Integers', difficulty: 'Medium' },
+      { id: 7, title: 'Reverse Integer', difficulty: 'Medium' }
     ]
   };
 
@@ -1770,6 +1803,113 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
       .replace(/`/g, '')
       .replace(/\s+/g, ' ')
       .trim();
+  };
+
+  // Add state for selected question at the top of the TechnicalAssessment component
+  const [selectedQuestion, setSelectedQuestion] = useState<{ id: number; title: string; difficulty: string } | null>(null);
+
+  // Add the questions data structure
+  const LEETCODE_QUESTIONS = {
+    'Array': [
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
+      { id: 169, title: 'Majority Element', difficulty: 'Easy' },
+      { id: 75, title: 'Sort Colors', difficulty: 'Medium' },
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
+      { id: 53, title: 'Maximum Subarray', difficulty: 'Medium' },
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
+      { id: 57, title: 'Insert Interval', difficulty: 'Medium' },
+      { id: 15, title: '3Sum', difficulty: 'Medium' },
+      { id: 54, title: 'Spiral Matrix', difficulty: 'Medium' },
+      { id: 42, title: 'Trapping Rain Water', difficulty: 'Hard' },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard' }
+    ],
+    'Binary': [
+      { id: 67, title: 'Add Binary', difficulty: 'Easy' }
+    ],
+    'Binary Search': [
+      { id: 278, title: 'First Bad Version', difficulty: 'Easy' },
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium' },
+      { id: 310, title: 'Minimum Height Trees', difficulty: 'Medium' }
+    ],
+    'Binary Tree': [
+      { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy' },
+      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy' },
+      { id: 100, title: 'Same Tree', difficulty: 'Easy' },
+      { id: 572, title: 'Subtree of Another Tree', difficulty: 'Easy' },
+      { id: 235, title: 'Lowest Common Ancestor of a Binary Search Tree', difficulty: 'Easy' },
+      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
+      { id: 98, title: 'Validate Binary Search Tree', difficulty: 'Medium' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' }
+    ],
+    'Dynamic Programming': [
+      { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
+      { id: 198, title: 'House Robber', difficulty: 'Medium' },
+      { id: 213, title: 'House Robber II', difficulty: 'Medium' },
+      { id: 5, title: 'Longest Palindromic Substring', difficulty: 'Medium' },
+      { id: 647, title: 'Palindromic Substrings', difficulty: 'Medium' }
+    ],
+    'Graph': [
+      { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
+      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
+      { id: 417, title: 'Pacific Atlantic Water Flow', difficulty: 'Medium' },
+      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
+      { id: 261, title: 'Graph Valid Tree', difficulty: 'Medium' },
+      { id: 323, title: 'Number of Connected Components in an Undirected Graph', difficulty: 'Medium' },
+      { id: 127, title: 'Word Ladder', difficulty: 'Hard' },
+      { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' },
+      { id: 332, title: 'Reconstruct Itinerary', difficulty: 'Hard' },
+      { id: 787, title: 'Cheapest Flights Within K Stops', difficulty: 'Medium' }
+    ],
+    'Hash Table': [
+      { id: 1, title: 'Two Sum', difficulty: 'Easy' }
+    ],
+    'Heap': [
+      { id: 295, title: 'Find Median from Data Stream', difficulty: 'Hard' },
+      { id: 355, title: 'Design Twitter', difficulty: 'Medium' },
+      { id: 621, title: 'Task Scheduler', difficulty: 'Medium' },
+      { id: 973, title: 'K Closest Points to Origin', difficulty: 'Medium' }
+    ],
+    'Linked List': [
+      { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
+      { id: 21, title: 'Merge Two Sorted Lists', difficulty: 'Easy' },
+      { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
+      { id: 143, title: 'Reorder List', difficulty: 'Medium' },
+      { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' }
+    ],
+    'Matrix': [
+      { id: 73, title: 'Set Matrix Zeroes', difficulty: 'Medium' }
+    ],
+    'Recursion': [
+      { id: 46, title: 'Permutations', difficulty: 'Medium' },
+      { id: 78, title: 'Subsets', difficulty: 'Medium' },
+      { id: 17, title: 'Letter Combinations of a Phone Number', difficulty: 'Medium' }
+    ],
+    'Stack': [
+      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy' },
+      { id: 155, title: 'Min Stack', difficulty: 'Medium' },
+      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium' },
+      { id: 22, title: 'Generate Parentheses', difficulty: 'Medium' },
+      { id: 739, title: 'Daily Temperatures', difficulty: 'Medium' },
+      { id: 853, title: 'Car Fleet', difficulty: 'Medium' },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard' }
+    ],
+    'String': [
+      { id: 3, title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium' },
+      { id: 424, title: 'Longest Repeating Character Replacement', difficulty: 'Medium' },
+      { id: 76, title: 'Minimum Window Substring', difficulty: 'Hard' },
+      { id: 242, title: 'Valid Anagram', difficulty: 'Easy' },
+      { id: 49, title: 'Group Anagrams', difficulty: 'Medium' },
+      { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' },
+      { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' },
+      { id: 224, title: 'Basic Calculator', difficulty: 'Hard' }
+    ],
+    'Trie': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' }
+    ]
   };
 
   return (
@@ -1876,7 +2016,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                         {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.title}
                       </h3>
                       <p className="text-sm text-zinc-400 mt-1">
-                        Select a category to practice
+                        Select a category and question to practice
                       </p>
                     </div>
                     <Button
@@ -1884,6 +2024,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                       onClick={() => {
                         setSelectedPreset('');
                         setSelectedCategory('');
+                        setSelectedQuestion(null);
                       }}
                       className="text-zinc-400 hover:text-zinc-100"
                     >
@@ -1895,7 +2036,10 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                     {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.categories.map((category) => (
                       <div
                         key={category.name}
-                        onClick={() => setSelectedCategory(category.name)}
+                        onClick={() => {
+                          setSelectedCategory(category.name);
+                          setSelectedQuestion(null);
+                        }}
                         className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
                           selectedCategory === category.name
                             ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
@@ -2033,6 +2177,83 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Questions List for Selected Category */}
+              {selectedCategory && (
+                <div className="mt-8">
+                  <h4 className="text-lg font-semibold text-zinc-100 mb-4">
+                    Select a Question from {selectedCategory}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {(() => {
+                      // Get problems based on the selected preset
+                      const problems = (() => {
+                        switch (selectedPreset) {
+                          case 'blind75':
+                            return BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS];
+                          case 'neetcode150':
+                            return NEETCODE_150_PROBLEMS[selectedCategory as keyof typeof NEETCODE_150_PROBLEMS];
+                          case 'grind75':
+                            return GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS];
+                          default:
+                            return [];
+                        }
+                      })();
+
+                      return problems?.map((question) => (
+                        <div
+                          key={question.id}
+                          onClick={() => setSelectedQuestion(question)}
+                          className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
+                            selectedQuestion?.id === question.id
+                              ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
+                              : 'bg-zinc-800/30 border-zinc-700/50 hover:border-green-500/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-zinc-300 font-medium">#{question.id}</span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              question.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                              question.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {question.difficulty}
+                            </span>
+                          </div>
+                          <h5 className={`font-medium ${
+                            selectedQuestion?.id === question.id ? 'text-green-400' : 'text-zinc-200'
+                          }`}>
+                            {question.title}
+                          </h5>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  {/* Start Practice Button */}
+                  {selectedQuestion && (
+                    <div className="mt-8 flex justify-center">
+                      <Button
+                        onClick={getNextQuestion}
+                        disabled={isLoading}
+                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg rounded-xl flex items-center gap-3"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Loading Question...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-5 w-5" />
+                            Start Practicing #{selectedQuestion.id}: {selectedQuestion.title}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
