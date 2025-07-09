@@ -8,6 +8,69 @@ import { ProgressService } from "@/lib/progress";
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
+// Language-specific function templates
+const languageTemplates = {
+  javascript: "function solution(params) {\n  // Implementation\n}",
+  python: "def solution(params):\n    # Implementation\n    pass",
+  java: "public class Solution {\n    public Type solution(params) {\n        // Implementation\n    }\n}",
+  cpp: "class Solution {\npublic:\n    Type solution(params) {\n        // Implementation\n    }\n};",
+  typescript: "function solution(params): ReturnType {\n  // Implementation\n}",
+  go: "func solution(params Type) ReturnType {\n    // Implementation\n}",
+  rust: "impl Solution {\n    pub fn solution(params: Type) -> ReturnType {\n        // Implementation\n    }\n}",
+  csharp: "public class Solution {\n    public Type Solution(params) {\n        // Implementation\n    }\n}"
+};
+
+// Clean up problem text formatting
+const cleanProblemText = (text: string) => {
+  // Split into sections
+  const sections = text.split('\n').map(line => line.trim());
+  
+  // Find the core problem description
+  let description = '';
+  let foundStart = false;
+  
+  for (const line of sections) {
+    // Skip until we find the actual problem description
+    if (!foundStart) {
+      if (line.includes('Given') || line.includes('You are given')) {
+        foundStart = true;
+        description = line;
+        continue;
+      } else if (!line.startsWith('#') && !line.startsWith('**Difficulty:') && line.length > 0) {
+        // Also accept lines that don't start with markdown and aren't empty
+        foundStart = true;
+        description = line;
+        continue;
+      } else {
+        continue;
+      }
+    }
+    
+    // Stop when we hit examples, constraints, or follow-up
+    if (line.startsWith('Example') ||
+        line.startsWith('Input:') ||
+        line.startsWith('Output:') ||
+        line.startsWith('Constraints:') ||
+        line.startsWith('Follow-up:') ||
+        line.startsWith('Note:')) {
+      break;
+    }
+    
+    // Add non-empty lines to our description
+    if (line.length > 0) {
+      description += ' ' + line;
+    }
+  }
+
+  // Clean up any remaining markdown and normalize whitespace
+  return description
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/`/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 // Generate a technical interview question
 export async function POST(req: Request) {
   try {
@@ -24,7 +87,9 @@ export async function POST(req: Request) {
       leetcodeNumber,
       preset,
       category,
-      prompt: customPrompt 
+      prompt: customPrompt,
+      generateSolutions,
+      language = 'javascript' // Default to JavaScript if not specified
     } = await req.json();
 
     // Use Gemini 2.0 Flash with low temperature to reduce hallucination
@@ -39,7 +104,40 @@ export async function POST(req: Request) {
 
     let prompt;
 
-    if (customPrompt) {
+    if (generateSolutions) {
+      // If we're generating solutions, use a different prompt
+      prompt = `You are an expert software engineer providing multiple solution approaches for this LeetCode problem:
+
+${customPrompt}
+
+Generate exactly 3 different solution approaches, from brute force to optimal. For each approach, provide:
+1. A clear description of the approach and algorithm
+2. Precise time and space complexity with explanation
+3. Complete, runnable code implementation in ${language}
+4. Key insights and trade-offs of this approach
+
+Use this template for the ${language} solution:
+${languageTemplates[language as keyof typeof languageTemplates]}
+
+Return ONLY a JSON array in this exact format (no other text):
+[
+  {
+    "approach": "Detailed description of approach and algorithm",
+    "timeComplexity": "e.g. O(n) no explanation",
+    "spaceComplexity": "e.g. O(1) no explanation",
+    "code": "Complete, runnable code in ${language}",
+    "insights": "Key insights and trade-offs"
+  }
+]
+
+Requirements:
+- Each solution must be complete and runnable
+- Code must be in ${language} and follow its best practices
+- Include detailed complexity analysis
+- Solutions should progress from simplest to most optimal
+- No markdown, no extra text, just the JSON array
+- Follow the language template structure provided above`;
+    } else if (customPrompt) {
       // If a custom prompt is provided (for preset/category selection), use it with enhancements
       prompt = `You are an expert technical interviewer with deep knowledge of LeetCode problems.
 
@@ -194,38 +292,105 @@ Output: example output
 Now select the optimal problem for a ${difficulty} ${role} interview at ${company}:`;
     }
 
-    // Generate the question
+    // Generate the response
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    let question = response.text();
+    let responseText = response.text();
 
-    // Check for no matching problem response
-    if (question.includes("NO_MATCHING_PROBLEM_FOUND")) {
-      throw new Error("Could not find a matching problem in the selected category. Please try a different category.");
+    if (generateSolutions) {
+      // For solutions, try to extract and validate the JSON
+      try {
+        // Clean up the response text
+        responseText = responseText.trim();
+        // Remove any markdown code blocks
+        responseText = responseText.replace(/```json\s*|\s*```/g, '');
+        // Ensure it starts with [ and ends with ]
+        if (!responseText.startsWith('[') || !responseText.endsWith(']')) {
+          throw new Error('Invalid solution format');
+        }
+        // Parse the JSON to validate it
+        const solutions = JSON.parse(responseText);
+        if (!Array.isArray(solutions) || solutions.length !== 3) {
+          throw new Error('Expected exactly 3 solutions');
+        }
+        // Validate each solution has required fields
+        solutions.forEach((solution, index) => {
+          if (!solution.approach || !solution.timeComplexity || !solution.spaceComplexity || !solution.code || !solution.insights) {
+            throw new Error(`Solution ${index + 1} is missing required fields`);
+          }
+        });
+        // Return the validated solutions
+        return NextResponse.json({
+          success: true,
+          question: responseText
+        });
+      } catch (error) {
+        console.error('Error parsing solutions:', error);
+        throw new Error('Failed to generate valid solutions. Please try again.');
+      }
+    } else {
+      // For problem generation, use existing validation
+      let question = responseText;
+
+      // Check for no matching problem response
+      if (question.includes("NO_MATCHING_PROBLEM_FOUND")) {
+        throw new Error("Could not find a matching problem in the selected category. Please try a different category.");
+      }
+
+      // Validate that the response looks like a real LeetCode problem
+      const validationChecks = [
+        question.includes("# ") || question.includes("Problem "), // Has problem number/title
+        question.includes("**Difficulty:**"), // Has difficulty
+        question.includes("**Example"), // Has examples
+        question.includes("**Constraints:**"), // Has constraints
+        question.length > 200 // Reasonable length for a real problem
+      ];
+
+      if (!validationChecks.every(check => check)) {
+        throw new Error("Generated response does not match LeetCode problem format. Please try again.");
+      }
+
+      // Extract just the main problem description
+      const lines = question.split('\n').map(line => line.trim());
+      const mainDescription = [];
+      let foundStart = false;
+
+      for (const line of lines) {
+        // Skip metadata and empty lines until we find the main description
+        if (!foundStart) {
+          if (line.length > 0 && 
+              !line.includes('Difficulty:') &&
+              !line.includes('Problem:') &&
+              !line.match(/^\d+\./)) {
+            foundStart = true;
+          } else {
+            continue;
+          }
+        }
+        // Stop when we hit examples or constraints
+        if (line.startsWith('Example') ||
+            line.startsWith('Constraints:') ||
+            line.startsWith('Follow')) {
+          break;
+        }
+        // Add non-empty lines to our description
+        if (line.length > 0) {
+          mainDescription.push(line);
+        }
+      }
+
+      const cleanedQuestion = mainDescription
+        .join('\n\n')
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/`/g, '')
+        .trim();
+
+      return NextResponse.json({
+        success: true,
+        question: cleanedQuestion
+      });
     }
-
-    // Validate that the response looks like a real LeetCode problem
-    const validationChecks = [
-      question.includes("# ") || question.includes("Problem "), // Has problem number/title
-      question.includes("**Difficulty:**"), // Has difficulty
-      question.includes("**Example"), // Has examples
-      question.includes("**Constraints:**"), // Has constraints
-      question.length > 200 // Reasonable length for a real problem
-    ];
-
-    if (!validationChecks.every(check => check)) {
-      throw new Error("Generated response does not match LeetCode problem format. Please try again.");
-    }
-
-    // No validation needed for preset mode since we're using predefined problems
-    if (preset && category) {
-      // The question is already validated since it comes from our predefined list
-    }
-
-    return NextResponse.json({
-      success: true,
-      question 
-    });
   } catch (error) {
     console.error('Error generating question:', error);
     return NextResponse.json(
@@ -251,7 +416,8 @@ export async function PUT(req: Request) {
       role, 
       difficulty, 
       question, 
-      code, 
+      code,
+      language = 'javascript', // Default to JavaScript if not specified
       explanation 
     } = await req.json();
 
@@ -265,186 +431,120 @@ export async function PUT(req: Request) {
       }
     });
 
-    // Enhanced prompt for comprehensive code analysis
-    const analysisPrompt = `
-You are a senior technical interviewer for ${company} conducting a ${role} interview. 
-The candidate solved this ${difficulty} difficulty problem that was specifically selected for this role and company:
+    // Language-specific best practices
+    const languageBestPractices = {
+      javascript: `
+- Use of modern ES6+ features when appropriate
+- Proper variable declarations (const/let)
+- Clear function and variable naming
+- Efficient use of built-in methods
+- Proper error handling`,
+      python: `
+- Use of Pythonic idioms (list comprehensions, generators)
+- PEP 8 style guide compliance
+- Clear function and variable naming
+- Efficient use of built-in methods
+- Proper error handling`,
+      java: `
+- Object-oriented principles
+- Clear class and method organization
+- Proper exception handling
+- Efficient collection usage
+- Clean code practices`,
+      cpp: `
+- Memory management best practices
+- STL usage when appropriate
+- Clear class and function design
+- Exception safety
+- Efficient algorithm implementation`,
+      typescript: `
+- Strong type definitions
+- Interface and type usage
+- Modern ES6+ features
+- Proper error handling
+- Clean code practices`,
+      go: `
+- Idiomatic Go patterns
+- Error handling patterns
+- Proper package organization
+- Efficient concurrency
+- Clean code practices`,
+      rust: `
+- Memory safety practices
+- Proper error handling
+- Trait implementation
+- Efficient algorithms
+- Clean code practices`,
+      csharp: `
+- C# conventions and patterns
+- LINQ usage when appropriate
+- Exception handling
+- Clean code practices
+- Efficient implementation`
+    };
 
-**Problem:**
+    const prompt = `You are an expert code reviewer analyzing a ${language} solution to this LeetCode problem:
+
 ${question}
 
-**Candidate's Code Solution:**
-\`\`\`
+The submitted solution is:
+
 ${code}
-\`\`\`
 
-**Candidate's Explanation:**
-"${explanation}"
+The candidate's explanation is:
 
-**Evaluation Criteria:**
+${explanation}
 
-1. **Code Quality (40% weight):**
-   - Correctness and edge case handling
-   - Time and space complexity optimality
-   - Code readability and structure
-   - Best practices for the language used
-   - Handling of constraints and requirements
+Analyze the solution for:
+1. Correctness - Does it solve the problem and handle edge cases?
+2. Time & Space Complexity - Is it optimal?
+3. Code Quality - Following these ${language} best practices:
+${languageBestPractices[language as keyof typeof languageBestPractices]}
 
-2. **Problem-Solving Approach (30% weight):**
-   - Choice of algorithm/data structure
-   - Understanding of the problem requirements
-   - Consideration of trade-offs
-   - Optimization opportunities identified
-
-3. **Communication & Explanation (30% weight):**
-   - Clarity of thought process
-   - Technical depth of explanation
-   - Ability to explain complexity
-   - Confidence and understanding demonstrated
-
-**Company-Specific Standards for ${company}:**
-- Code should meet production-quality standards
-- Solutions should be scalable and maintainable
-- Explanation should demonstrate deep technical understanding
-- Consider real-world implications and edge cases
-
-**Role-Specific Expectations for ${role}:**
-- Solutions should reflect the technical level expected for this position
-- Code style should align with industry standards for this role
-- Explanation should demonstrate appropriate depth of knowledge
-
-**Required Analysis:**
-1. A score for the code (0-100) based on correctness, efficiency, readability, and best practices
-2. A score for the explanation (0-100) based on clarity, technical depth, and understanding
-3. Overall score (0-100)
-4. 2-3 specific strengths 
-5. 2-3 specific areas for improvement
-6. Detailed feedback on the code
-7. Detailed feedback on the explanation
-
-Format your response as valid JSON with the following structure:
+Provide your analysis in this JSON format (no other text):
 {
-  "codeScore": number,
-  "explanationScore": number,
-  "overallScore": number,
-  "strengths": string[],
-  "improvementAreas": string[],
-  "codeFeedback": string,
-  "explanationFeedback": string
-}
-`;
+  "isCorrect": boolean,
+  "correctnessAnalysis": "Detailed analysis of solution correctness",
+  "timeComplexity": "Big O notation with explanation",
+  "spaceComplexity": "Big O notation with explanation",
+  "codeQuality": "Analysis of code quality and best practices",
+  "suggestedImprovements": "Specific suggestions for improvement"
+}`;
 
-    // Generate the analysis
-    const result = await model.generateContent(analysisPrompt);
+    // Generate the response
+    const result = await model.generateContent(prompt);
     const response = await result.response;
-    let analysisText = response.text();
-    
-    // Sometimes Gemini might wrap the JSON in markdown code blocks or add extra text
-    // Try to extract just the JSON part
-    const jsonRegex = /```json\s*([\s\S]*?)\s*```|(\{[\s\S]*\})/;
-    const match = analysisText.match(jsonRegex);
-    if (match) {
-      analysisText = match[1] || match[2];
-    }
-    
-    // Parse the JSON response
+    let responseText = response.text();
+
     try {
-      const analysis = JSON.parse(analysisText);
+      // Clean up the response text
+      responseText = responseText.trim();
+      // Remove any markdown code blocks
+      responseText = responseText.replace(/```json\s*|\s*```/g, '');
+      // Parse the JSON to validate it
+      const analysis = JSON.parse(responseText);
       
-      // Ensure all expected fields are available
-      const validatedAnalysis = {
-        codeScore: analysis.codeScore || 0,
-        explanationScore: analysis.explanationScore || 0,
-        overallScore: analysis.overallScore || 0,
-        strengths: Array.isArray(analysis.strengths) ? analysis.strengths : ["Good effort"],
-        improvementAreas: Array.isArray(analysis.improvementAreas) ? analysis.improvementAreas : ["Practice more"],
-        codeFeedback: analysis.codeFeedback || "No specific code feedback available.",
-        explanationFeedback: analysis.explanationFeedback || "No specific explanation feedback available."
-      };
-
-      // Track progress using PracticeSession
-      try {
-        const user = await prisma.user.findUnique({
-          where: { email: session.user.email! },
-          select: { id: true }
-        });
-        
-        if (!user) {
-          throw new Error('User not found');
-        }
-
-        // Get current stats first
-        const currentStats = await prisma.userStats.findUnique({
-          where: { userId: user.id },
-          select: { bestTechnicalScore: true }
-        });
-
-        // Create the practice session
-        const practiceSession = await prisma.practiceSession.create({
-          data: {
-            userId: user.id,
-            type: 'technical',
-            score: validatedAnalysis.overallScore,
-            duration: 0,
-            improvements: validatedAnalysis.improvementAreas,
-            completed: true
-          }
-        });
-
-        // Update user stats
-        await prisma.userStats.upsert({
-          where: { userId: user.id },
-          create: {
-            userId: user.id,
-            bestTechnicalScore: validatedAnalysis.overallScore,
-            lastScore: validatedAnalysis.overallScore,
-            totalSessions: 1,
-            recentSessions: [{ 
-              id: practiceSession.id,
-              type: 'technical',
-              score: validatedAnalysis.overallScore,
-              date: new Date()
-            }]
-          },
-          update: {
-            bestTechnicalScore: currentStats?.bestTechnicalScore 
-              ? Math.max(validatedAnalysis.overallScore, currentStats.bestTechnicalScore)
-              : validatedAnalysis.overallScore,
-            lastScore: validatedAnalysis.overallScore,
-            totalSessions: { increment: 1 },
-            recentSessions: {
-              push: {
-                id: practiceSession.id,
-                type: 'technical',
-                score: validatedAnalysis.overallScore,
-                date: new Date()
-              }
-            }
-          }
-        });
-
-      } catch (progressError) {
-        console.error('Error tracking progress:', progressError);
-        // Return error response but include the analysis
-        return NextResponse.json({
-          ...validatedAnalysis,
-          error: 'Failed to save progress, but analysis completed successfully'
-        });
+      // Validate required fields
+      if (!analysis.isCorrect || !analysis.correctnessAnalysis || !analysis.timeComplexity || 
+          !analysis.spaceComplexity || !analysis.codeQuality || !analysis.suggestedImprovements) {
+        throw new Error('Analysis response missing required fields');
       }
-      
-      console.log("Analysis response validated:", validatedAnalysis);
-      return NextResponse.json(validatedAnalysis);
-    } catch (parseError) {
-      console.error('Error parsing JSON from Gemini:', parseError);
-      return NextResponse.json(
-        { error: 'Failed to parse analysis result' },
-        { status: 500 }
-      );
+
+      return NextResponse.json({
+        success: true,
+        analysis
+      });
+    } catch (error) {
+      console.error('Error parsing analysis:', error);
+      throw new Error('Failed to generate valid analysis. Please try again.');
     }
   } catch (error) {
     console.error('Error analyzing solution:', error);
     return NextResponse.json(
-      { error: 'Failed to analyze solution' },
+      { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to analyze solution'
+      },
       { status: 500 }
     );
   }

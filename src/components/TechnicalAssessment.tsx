@@ -378,6 +378,15 @@ function parseLeetCodeProblem(problemText: string) {
   };
 }
 
+// Add this component near the top, after imports
+const ProblemStatement = ({ text }: { text: string }) => {
+  return (
+    <div className="space-y-2">
+      <p className="text-lg leading-relaxed text-slate-100">{text}</p>
+    </div>
+  );
+};
+
 export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState('');
@@ -1707,24 +1716,53 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
 
   // Function to clean up problem text formatting
   const cleanProblemText = (text: string) => {
-    return text
-      // Remove markdown headers
-      .replace(/^#\s+/, '')
-      // Remove markdown bold
+    // Split into sections
+    const sections = text.split('\n').map(line => line.trim());
+    
+    // Find the core problem description
+    let description = '';
+    let foundStart = false;
+    
+    for (const line of sections) {
+      // Skip until we find the actual problem description
+      if (!foundStart) {
+        if (line.includes('Given') || line.includes('You are given')) {
+          foundStart = true;
+          description = line;
+          continue;
+        } else if (!line.startsWith('#') && !line.startsWith('**Difficulty:') && line.length > 0) {
+          // Also accept lines that don't start with markdown and aren't empty
+          foundStart = true;
+          description = line;
+          continue;
+        } else {
+          continue;
+        }
+      }
+      
+      // Stop when we hit examples, constraints, or follow-up
+      if (line.startsWith('Example') ||
+          line.startsWith('Input:') ||
+          line.startsWith('Output:') ||
+          line.startsWith('Constraints:') ||
+          line.startsWith('Follow-up:') ||
+          line.startsWith('Note:')) {
+        break;
+      }
+      
+      // Add non-empty lines to our description
+      if (line.length > 0) {
+        description += ' ' + line;
+      }
+    }
+
+    // Clean up any remaining markdown and normalize whitespace
+    return description
       .replace(/\*\*/g, '')
-      // Clean up difficulty
-      .replace(/Difficulty:\s+/, 'Difficulty: ')
-      // Clean up examples
-      .replace(/Example \d+:/g, 'Example:')
-      // Clean up constraints
-      .replace(/Constraints:/g, 'Constraints:')
-      // Clean up code blocks
+      .replace(/\*/g, '')
       .replace(/`/g, '')
-      // Fix newlines
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line)
-      .join('\n\n');
+      .replace(/\s+/g, ' ')
+      .trim();
   };
 
   return (
