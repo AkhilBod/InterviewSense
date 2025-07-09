@@ -852,18 +852,31 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
         audioUrl
       };
 
-      // Store in localStorage
-      const existingSolutions = JSON.parse(localStorage.getItem("technicalAssessmentSolutions") || "[]");
-      existingSolutions.push(solutionData);
-      localStorage.setItem("technicalAssessmentSolutions", JSON.stringify(existingSolutions));
-
-      // Get next question (same logic as skip but with success message)
-      await handleSkip();
-      
-      toast({
-        title: "Solution Saved",
-        description: "Your solution has been saved and we've moved to the next problem.",
+      // Get analysis of current solution
+      const response = await fetch('/api/technical-assessment', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company,
+          role,
+          difficulty,
+          question,
+          code,
+          explanation: thoughtProcess
+        }),
       });
+
+      const analysisData = await response.json();
+      
+      // Store result and redirect to results page
+      localStorage.setItem("technicalAssessmentResult", JSON.stringify({
+        ...analysisData,
+        currentProblem: solutionData
+      }));
+
+      // Navigate to results page
+      router.push('/technical-assessment/results');
+      
     } catch (error) {
       console.error('Error saving solution:', error);
       toast({

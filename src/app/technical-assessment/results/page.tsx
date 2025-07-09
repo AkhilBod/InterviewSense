@@ -169,9 +169,16 @@ export default function TechnicalAssessmentResultsPage() {
     const loadResults = async () => {
       setIsLoading(true);
       try {
-        // First try to get the assessment data from localStorage
+        // First check for already analyzed results
+        const analyzed = localStorage.getItem("technicalAssessmentResult");
+        if (analyzed) {
+          setResult(JSON.parse(analyzed));
+          setIsLoading(false);
+          return;
+        }
+
+        // If no analyzed results, check for raw assessment data
         const assessmentDataStr = localStorage.getItem("technicalAssessmentData");
-        
         if (!assessmentDataStr) {
           // If no data found, show sample data
           toast({ title: "No assessment data found", description: "Using sample data.", variant: "destructive" });
@@ -204,18 +211,8 @@ export default function TechnicalAssessmentResultsPage() {
           return;
         }
 
-        // Parse the assessment data
+        // Parse the assessment data and analyze it
         const assessmentData = JSON.parse(assessmentDataStr);
-        
-        // Check if we already have analyzed results
-        const analyzed = localStorage.getItem("technicalAssessmentResult");
-        if (analyzed) {
-          setResult(JSON.parse(analyzed));
-          setIsLoading(false);
-          return;
-        }
-        
-        // If we have data but no analysis yet, send to Gemini for analysis
         const question = assessmentData.questions[0];
         
         toast({ 
@@ -244,40 +241,34 @@ export default function TechnicalAssessmentResultsPage() {
           
           const analysis = await response.json();
           
-          // Log the received analysis for debugging
-          console.log("Analysis received from API:", analysis);
-          
-          // Create the full result object with proper type checking
+          // Create the full result object
           const fullResult: TechnicalAssessmentResult = {
             company: assessmentData.company,
             role: assessmentData.role,
             date: new Date(assessmentData.date).toLocaleDateString(),
             difficulty: assessmentData.difficulty,
-            overallScore: typeof analysis.overallScore === 'number' ? analysis.overallScore : 0,
-            strengths: Array.isArray(analysis.strengths) ? analysis.strengths : ["Good effort"],
-            improvementAreas: Array.isArray(analysis.improvementAreas) ? analysis.improvementAreas : ["Practice more"],
-            codeFeedback: typeof analysis.codeFeedback === 'string' ? analysis.codeFeedback : "No specific code feedback available.",
-            explanationFeedback: typeof analysis.explanationFeedback === 'string' ? analysis.explanationFeedback : "No specific explanation feedback available.",
+            overallScore: analysis.overallScore || 0,
+            strengths: analysis.strengths || ["Good effort"],
+            improvementAreas: analysis.improvementAreas || ["Practice more"],
+            codeFeedback: analysis.codeFeedback || "No specific code feedback available.",
+            explanationFeedback: analysis.explanationFeedback || "No specific explanation feedback available.",
             questions: [{
               id: 1,
               leetCodeTitle: question.leetCodeTitle,
               prompt: question.prompt,
               code: question.code,
-              codeLanguage: "javascript", // Could be improved with language detection
-              codeScore: typeof analysis.codeScore === 'number' ? analysis.codeScore : 0,
+              codeLanguage: "javascript",
+              codeScore: analysis.codeScore || 0,
               explanation: question.explanation,
-              explanationScore: typeof analysis.explanationScore === 'number' ? analysis.explanationScore : 0,
+              explanationScore: analysis.explanationScore || 0,
               audioUrl: question.audioUrl,
-              feedback: `Code: ${typeof analysis.codeFeedback === 'string' ? analysis.codeFeedback : "No feedback"} | Explanation: ${typeof analysis.explanationFeedback === 'string' ? analysis.explanationFeedback : "No feedback"}`
+              feedback: `Code: ${analysis.codeFeedback || "No feedback"} | Explanation: ${analysis.explanationFeedback || "No feedback"}`
             }]
           };
           
           // Store the results and set state
           localStorage.setItem("technicalAssessmentResult", JSON.stringify(fullResult));
-          
-          // Clear the raw assessment data to avoid conflicts on future assessments
           localStorage.removeItem("technicalAssessmentData");
-          
           setResult(fullResult);
           
         } catch (analysisError) {
@@ -315,7 +306,6 @@ export default function TechnicalAssessmentResultsPage() {
           
           setResult(partialResult);
         }
-        
       } catch (error) {
         console.error('Error loading assessment data:', error);
         toast({ 
@@ -324,7 +314,7 @@ export default function TechnicalAssessmentResultsPage() {
           variant: "destructive" 
         });
         
-        // Set sample data as fallback with comprehensive feedback
+        // Set sample data as fallback
         setResult({
           company: "Sample Corp",
           role: "Software Engineer",
@@ -333,20 +323,20 @@ export default function TechnicalAssessmentResultsPage() {
           overallScore: 78,
           strengths: ["Efficient code", "Clear explanation"],
           improvementAreas: ["Edge case handling", "Code comments"],
-          codeFeedback: "Your code solution is efficient with a time complexity of O(n) which is optimal for this problem. The hash map approach allows for constant-time lookups. However, you could improve by adding comments to explain your approach and handling edge cases like empty arrays or no valid solution. Also, consider adding a return statement for when no solution is found rather than implicitly returning undefined.",
-          explanationFeedback: "Your explanation of using a hash map demonstrates good understanding of data structures and algorithm complexity. To improve, explicitly mention the time and space complexity analysis. Also discuss how you handle edge cases and why your approach is better than alternatives like the naive O(n²) solution using nested loops.",
+          codeFeedback: "Your code solution is efficient...",
+          explanationFeedback: "Your explanation demonstrates good understanding...",
           questions: [
             {
               id: 1,
               leetCodeTitle: "Two Sum",
-              prompt: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
-              code: "function twoSum(nums, target) {\n  const map = {};\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map[complement] !== undefined) {\n      return [map[complement], i];\n    }\n    map[nums[i]] = i;\n  }\n}",
+              prompt: "Given an array of integers...",
+              code: "function twoSum(nums, target) {...}",
               codeLanguage: "javascript",
               codeScore: 85,
-              explanation: "I used a hash map to store each number as a key and its index as the value. For each number, I calculate the complement (target - current number) and check if it already exists in the hash map. If it does, I've found the pair that adds up to the target, and I return their indices.",
+              explanation: "I used a hash map to store...",
               explanationScore: 80,
               audioUrl: null,
-              feedback: "Efficient solution using a hash map with O(n) time complexity. Consider adding edge case handling and improving variable naming for better readability."
+              feedback: "Efficient solution using a hash map..."
             }
           ]
         });

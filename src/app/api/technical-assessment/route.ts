@@ -361,48 +361,75 @@ Format your response as valid JSON with the following structure:
         codeFeedback: analysis.codeFeedback || "No specific code feedback available.",
         explanationFeedback: analysis.explanationFeedback || "No specific explanation feedback available."
       };
-      
-      // Track progress for technical interview completion
+
+      // Track progress using PracticeSession
       try {
         const user = await prisma.user.findUnique({
           where: { email: session.user.email! },
           select: { id: true }
         });
         
-        if (user) {
-          // Check for recent duplicate sessions (within 30 seconds) to prevent duplicates
-          const recentSession = await prisma.interviewSession.findFirst({
-            where: {
-              userId: user.id,
-              type: 'technical',
-              completedAt: {
-                gte: new Date(Date.now() - 30000) // 30 seconds ago
-              }
-            },
-            orderBy: { completedAt: 'desc' }
-          });
-          
-          if (!recentSession) {
-            await ProgressService.updateInterviewProgress(user.id, {
+        if (!user) {
+          throw new Error('User not found');
+        }
+
+        // Get current stats first
+        const currentStats = await prisma.userStats.findUnique({
+          where: { userId: user.id },
+          select: { bestTechnicalScore: true }
+        });
+
+        // Create the practice session
+        const practiceSession = await prisma.practiceSession.create({
+          data: {
+            userId: user.id,
+            type: 'technical',
+            score: validatedAnalysis.overallScore,
+            duration: 0,
+            improvements: validatedAnalysis.improvementAreas,
+            completed: true
+          }
+        });
+
+        // Update user stats
+        await prisma.userStats.upsert({
+          where: { userId: user.id },
+          create: {
+            userId: user.id,
+            bestTechnicalScore: validatedAnalysis.overallScore,
+            lastScore: validatedAnalysis.overallScore,
+            totalSessions: 1,
+            recentSessions: [{ 
+              id: practiceSession.id,
               type: 'technical',
               score: validatedAnalysis.overallScore,
-              duration: 0, // Could be tracked if needed
-              metrics: {
-                codeScore: validatedAnalysis.codeScore,
-                explanationScore: validatedAnalysis.explanationScore,
-                difficulty: difficulty,
-                company: company,
-                role: role
+              date: new Date()
+            }]
+          },
+          update: {
+            bestTechnicalScore: currentStats?.bestTechnicalScore 
+              ? Math.max(validatedAnalysis.overallScore, currentStats.bestTechnicalScore)
+              : validatedAnalysis.overallScore,
+            lastScore: validatedAnalysis.overallScore,
+            totalSessions: { increment: 1 },
+            recentSessions: {
+              push: {
+                id: practiceSession.id,
+                type: 'technical',
+                score: validatedAnalysis.overallScore,
+                date: new Date()
               }
-            });
-            console.log('🎯 Progress tracked for technical interview');
-          } else {
-            console.log('⚠️ Duplicate technical interview session prevented');
+            }
           }
-        }
+        });
+
       } catch (progressError) {
         console.error('Error tracking progress:', progressError);
-        // Don't fail the main request if progress tracking fails
+        // Return error response but include the analysis
+        return NextResponse.json({
+          ...validatedAnalysis,
+          error: 'Failed to save progress, but analysis completed successfully'
+        });
       }
       
       console.log("Analysis response validated:", validatedAnalysis);
