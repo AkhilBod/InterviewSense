@@ -872,13 +872,19 @@ public class Solution {
   // Modify handleSubmit to set initial question number
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (isLoading) return;
+
     try {
+      setIsLoading(true);
+      setQuestion('');
+      setSolutions([]);
+      setSolutionsGenerated(false);
+
+      let problemId = '';
+      let problemTitle = '';
+      let problemDifficulty = '';
       let prompt = '';
-      let problemId: string | undefined;
-      let problemTitle: string | undefined;
-      let problemDifficulty: string | undefined;
-      
+
       if (problemMode === 'ai') {
         // For AI mode, get a random problem from our collections
         const allCollections = [BLIND75_PROBLEMS, NEETCODE_150_PROBLEMS, GRIND75_PROBLEMS];
@@ -894,43 +900,13 @@ public class Solution {
       } else if (problemMode === 'specific') {
         problemId = leetcodeNumber;
       } else if (problemMode === 'preset') {
-        const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
-        if (!preset) {
-          throw new Error('Please select a preset');
-        }
-        
-        if (!selectedCategory) {
-          throw new Error('Please select a category');
-        }
-        
-        const category = preset.categories.find(c => c.name === selectedCategory);
-        if (!category) {
-          throw new Error('Invalid category selected');
+        if (!selectedQuestion) {
+          throw new Error('Please select a problem');
         }
 
-        // Get problems based on the selected preset
-        const problems = (() => {
-          switch (selectedPreset) {
-            case 'blind75':
-              return BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS];
-            case 'neetcode150':
-              return NEETCODE_150_PROBLEMS[selectedCategory as keyof typeof NEETCODE_150_PROBLEMS];
-            case 'grind75':
-              return GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS];
-            default:
-              return [];
-          }
-        })() || [];
-        
-        if (problems.length === 0) {
-          throw new Error(`No problems available for ${selectedCategory} category yet.`);
-        }
-
-        // Get the first problem in this category
-        const firstProblem = problems[0];
-        problemId = firstProblem.id.toString();
-        problemTitle = firstProblem.title;
-        problemDifficulty = firstProblem.difficulty;
+        problemId = selectedQuestion.id.toString();
+        problemTitle = selectedQuestion.title;
+        problemDifficulty = selectedQuestion.difficulty;
       }
 
       if (!problemId) {
@@ -949,43 +925,47 @@ Return the EXACT problem as it appears on LeetCode with:
 
 DO NOT modify or generate a new problem. Return the exact LeetCode problem #${problemId}.`;
 
-      const response: Response = await fetch('/api/technical-assessment', {
+      const response = await fetch('/api/technical-assessment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          prompt,
-          useCustomNumber: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          company,
+          role,
+          difficulty,
+          useCustomNumber: problemMode === 'specific' || problemMode === 'preset',
           leetcodeNumber: problemId,
-          preset: selectedPreset || undefined,
-          category: selectedCategory || undefined
+          preset: selectedPreset,
+          category: selectedCategory,
+          prompt
         }),
       });
-      
-      const data: { success: boolean; question: string; error?: string } = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch problem');
+
+      const data = await response.json();
+
+      if (data.success) {
+        setQuestion(data.question);
+        toast({
+          title: "Problem Loaded",
+          description: `Problem #${problemId}${problemTitle ? `: ${problemTitle}` : ''} is ready.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to generate question. Please try again.",
+          variant: "destructive",
+        });
       }
-      
-      setQuestion(data.question);
-      
-      // Extract and save the initial question number
-      const initialNumber = parseLeetCodeProblem(data.question).number;
-      setCurrentLeetCodeNumber(initialNumber);
-      
-      toast({
-        title: "Started Practice Session",
-        description: `Beginning with problem #${initialNumber}`,
-      });
     } catch (error) {
-      console.error('Error fetching question:', error);
+      console.error('Error getting question:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to fetch problem',
-        variant: "destructive"
+        description: error instanceof Error ? error.message : "Failed to generate question. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -2205,7 +2185,56 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                       return problems?.map((question) => (
                         <div
                           key={question.id}
-                          onClick={() => setSelectedQuestion(question)}
+                          onClick={async () => {
+                            setSelectedQuestion(question);
+                            // Immediately trigger question generation for the selected problem
+                            try {
+                              setIsLoading(true);
+                              const response = await fetch('/api/technical-assessment', {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  useCustomNumber: true,
+                                  leetcodeNumber: question.id,
+                                  preset: selectedPreset,
+                                  category: selectedCategory,
+                                  prompt: `Get LeetCode problem #${question.id} (${question.title}).
+
+Return the EXACT problem as it appears on LeetCode with:
+1. Problem number and title
+2. Difficulty (${question.difficulty})
+3. Full description
+4. Examples
+5. Constraints
+
+DO NOT modify or generate a new problem. Return the exact LeetCode problem #${question.id}.`
+                                }),
+                              });
+
+                              const data = await response.json();
+
+                              if (data.success) {
+                                setQuestion(data.question);
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: data.error || "Failed to load question. Please try again.",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Error loading question:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to load question. Please try again.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsLoading(false);
+                            }
+                          }}
                           className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
                             selectedQuestion?.id === question.id
                               ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
@@ -2231,29 +2260,6 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                       ));
                     })()}
                   </div>
-
-                  {/* Start Practice Button */}
-                  {selectedQuestion && (
-                    <div className="mt-8 flex justify-center">
-                      <Button
-                        onClick={getNextQuestion}
-                        disabled={isLoading}
-                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg rounded-xl flex items-center gap-3"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            Loading Question...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-5 w-5" />
-                            Start Practicing #{selectedQuestion.id}: {selectedQuestion.title}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
