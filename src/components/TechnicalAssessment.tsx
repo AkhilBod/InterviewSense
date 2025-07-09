@@ -884,7 +884,22 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${ne
       // Store result and redirect to results page
       localStorage.setItem("technicalAssessmentResult", JSON.stringify({
         ...analysisData,
-        currentProblem: solutionData
+        company,
+        role,
+        date: new Date().toISOString(),
+        difficulty,
+        questions: [{
+          id: 1,
+          leetCodeTitle: question ? parseLeetCodeProblem(question).title : "Technical Question",
+          prompt: question,
+          code,
+          codeLanguage: language,
+          codeScore: analysisData.codeScore || 0,
+          explanation: thoughtProcess,
+          explanationScore: analysisData.explanationScore || 0,
+          audioUrl,
+          feedback: `Code: ${analysisData.codeFeedback || "No feedback"} | Explanation: ${analysisData.explanationFeedback || "No feedback"}`
+        }]
       }));
 
       toast({
@@ -1690,6 +1705,28 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
     ]
   };
 
+  // Function to clean up problem text formatting
+  const cleanProblemText = (text: string) => {
+    return text
+      // Remove markdown headers
+      .replace(/^#\s+/, '')
+      // Remove markdown bold
+      .replace(/\*\*/g, '')
+      // Clean up difficulty
+      .replace(/Difficulty:\s+/, 'Difficulty: ')
+      // Clean up examples
+      .replace(/Example \d+:/g, 'Example:')
+      // Clean up constraints
+      .replace(/Constraints:/g, 'Constraints:')
+      // Clean up code blocks
+      .replace(/`/g, '')
+      // Fix newlines
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line)
+      .join('\n\n');
+  };
+
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
       {/* Header Section */}
@@ -2150,10 +2187,10 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                     return (
                       <div className="space-y-6 pb-40">
                         {/* Problem Description */}
-                        <div className="space-y-4">
-                          <p className="text-zinc-300 leading-relaxed text-base">
-                            {leetcodeProblem.description}
-                          </p>
+                        <div className="bg-slate-800 rounded-lg p-6 space-y-4">
+                          <div className="text-lg font-semibold text-slate-100">
+                            {question ? cleanProblemText(question) : "Loading problem..."}
+                          </div>
                         </div>
 
                         {/* Examples */}
