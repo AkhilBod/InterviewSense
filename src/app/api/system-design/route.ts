@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContentWithRetry, getFallbackResponse } from '@/lib/gemini-utils';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -10,15 +11,6 @@ interface SystemDesignRequest {
 }
 
 async function generateSystemDesignTest(data: SystemDesignRequest) {
-  const model = genAI.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      temperature: 0.9,  // Higher temperature for more variety
-      topP: 0.95,
-      topK: 50
-    }
-  });
-
   // Add timestamp and random element to ensure different questions each time
   const timestamp = Date.now();
   const randomSeed = Math.floor(Math.random() * 1000);
@@ -80,9 +72,20 @@ Return ONLY a valid JSON object with this exact structure:
   }
 }`;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+  const text = await generateContentWithRetry(
+    prompt,
+    {
+      model: "gemini-2.0-flash",
+      temperature: 0.9,
+      topP: 0.95,
+      topK: 50
+    },
+    {
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 8000
+    }
+  );
 
   try {
     // Clean the response text
@@ -252,15 +255,6 @@ Return ONLY a valid JSON object with this exact structure:
 }
 
 async function analyzeSystemDesign(problem: any, responses: any) {
-  const model = genAI.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      temperature: 0.3,  // Lower temperature for more consistent analysis
-      topP: 0.8,
-      topK: 40
-    }
-  });
-
   const prompt = `
 You are an expert system design interviewer. Analyze the following system design interview performance:
 
@@ -310,13 +304,24 @@ Rate based on:
 Provide constructive feedback focused on interview performance improvement.
 `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+  const analysisText = await generateContentWithRetry(
+    prompt,
+    {
+      model: "gemini-2.0-flash",
+      temperature: 0.7,
+      topP: 0.9,
+      topK: 40
+    },
+    {
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 8000
+    }
+  );
 
   try {
     // Extract JSON from the response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No JSON found in response');
     }

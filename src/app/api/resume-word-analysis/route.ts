@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     console.log("File converted to base64. Size:", Math.round(base64File.length / 1024), "KB");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const textPromptPart = {
       text: `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
