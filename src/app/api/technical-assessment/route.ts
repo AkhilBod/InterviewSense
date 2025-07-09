@@ -30,18 +30,25 @@ const cleanProblemText = (text: string) => {
   let foundStart = false;
   
   for (const line of sections) {
+    // Skip metadata lines
+    if (line.startsWith('#') || 
+        line.startsWith('**Difficulty:') || 
+        line.startsWith('Difficulty:') ||
+        line.startsWith('Problem') ||
+        line === '') {
+      continue;
+    }
+    
     // Skip until we find the actual problem description
     if (!foundStart) {
       if (line.includes('Given') || line.includes('You are given')) {
         foundStart = true;
         description = line;
         continue;
-      } else if (!line.startsWith('#') && !line.startsWith('**Difficulty:') && line.length > 0) {
-        // Also accept lines that don't start with markdown and aren't empty
+      } else if (line.length > 0) {
+        // Accept any non-empty line that's not metadata
         foundStart = true;
         description = line;
-        continue;
-      } else {
         continue;
       }
     }
