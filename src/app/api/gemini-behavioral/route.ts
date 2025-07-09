@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { generateContentWithRetry, getFallbackResponse } from '@/lib/gemini-utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,19 +15,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: false,
         error: 'API key not configured',
-        response: "Sample answer: Focus on a specific situation where you demonstrated the relevant skill. Use the STAR method (Situation, Task, Action, Result) to structure your response, and highlight what you learned from the experience."
+        response: getFallbackResponse('behavioral')
       })
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
     // Combine system prompt and user prompt if system prompt is provided
     const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt
 
-    const result = await model.generateContent(fullPrompt)
-    const response = await result.response
-    const solution = response.text()
+    const solution = await generateContentWithRetry(
+      fullPrompt,
+      {
+        model: "gemini-2.0-flash",
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 40
+      },
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 8000
+      }
+    )
 
     return NextResponse.json({ 
       success: true,
@@ -40,8 +48,8 @@ export async function POST(request: NextRequest) {
     // Return a fallback solution instead of an error
     return NextResponse.json({ 
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      response: "Sample answer: Focus on a specific situation where you demonstrated the relevant skill. Use the STAR method (Situation, Task, Action, Result) to structure your response, and highlight what you learned from the experience."
+      error: error instanceof Error ? error.message : 'Service temporarily unavailable',
+      response: getFallbackResponse('behavioral')
     })
   }
 }

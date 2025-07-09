@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const textPromptPart = {
             text: `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume (which is attached as a file) with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
@@ -151,7 +151,7 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
             return NextResponse.json(errorResponse, { status: 500 });
         }
 
-        const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+        const analysisText = response.candidates[0].content.parts.map((part: any) => part.text).join("");
         
         if (!analysisText) {
             console.log("Empty analysis text from Gemini.");
@@ -546,7 +546,7 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
         throw new Error("Failed to generate word analysis");
     }
 
-    const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+    const analysisText = response.candidates[0].content.parts.map((part: any) => part.text).join("");
     
     if (!analysisText) {
         throw new Error("Empty word analysis text");

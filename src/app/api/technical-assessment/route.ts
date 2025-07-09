@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProgressService } from "@/lib/progress";
+import { generateContentWithRetry, getFallbackResponse } from '@/lib/gemini-utils';
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -98,16 +99,6 @@ export async function POST(req: Request) {
       generateSolutions,
       language = 'javascript' // Default to JavaScript if not specified
     } = await req.json();
-
-    // Use Gemini 2.0 Flash with low temperature to reduce hallucination
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.8,
-        topK: 40,
-      }
-    });
 
     let prompt;
 
@@ -300,9 +291,20 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
     }
 
     // Generate the response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let responseText = response.text();
+    let responseText = await generateContentWithRetry(
+      prompt,
+      {
+        model: "gemini-2.0-flash",
+        temperature: 0.2,
+        topP: 0.8,
+        topK: 40
+      },
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 8000
+      }
+    );
 
     if (generateSolutions) {
       // For solutions, try to extract and validate the JSON
@@ -403,7 +405,8 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
     return NextResponse.json(
       { 
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate question'
+        error: error instanceof Error ? error.message : 'Service temporarily unavailable - please try again',
+        question: getFallbackResponse('technical')
       },
       { status: 500 }
     );
@@ -427,16 +430,6 @@ export async function PUT(req: Request) {
       language = 'javascript', // Default to JavaScript if not specified
       explanation 
     } = await req.json();
-
-    // Use Gemini 2.0 Flash with very low temperature for consistent analysis
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.1,
-        topP: 0.7,
-        topK: 30,
-      }
-    });
 
     // Language-specific best practices
     const languageBestPractices = {
@@ -519,9 +512,20 @@ Provide your analysis in this JSON format (no other text):
 }`;
 
     // Generate the response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let responseText = response.text();
+    let responseText = await generateContentWithRetry(
+      prompt,
+      {
+        model: "gemini-2.0-flash",
+        temperature: 0.1,
+        topP: 0.7,
+        topK: 30
+      },
+      {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 8000
+      }
+    );
 
     try {
       // Clean up the response text
@@ -541,10 +545,10 @@ Provide your analysis in this JSON format (no other text):
         success: true,
         overallScore: analysis.isCorrect ? 85 : 45, // Base score on correctness
         strengths: analysis.codeQuality ? 
-          analysis.codeQuality.split('.').filter(s => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
+          analysis.codeQuality.split('.').filter((s: string) => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
           ["Code submitted successfully"],
         improvementAreas: analysis.suggestedImprovements ? 
-          analysis.suggestedImprovements.split('.').filter(s => s.trim()).slice(0, 3) :
+          analysis.suggestedImprovements.split('.').filter((s: string) => s.trim()).slice(0, 3) :
           ["Consider reviewing the solution"],
         codeFeedback: analysis.correctnessAnalysis || "Solution analyzed",
         explanationFeedback: `Time Complexity: ${analysis.timeComplexity || "Not analyzed"}. Space Complexity: ${analysis.spaceComplexity || "Not analyzed"}`,
@@ -562,9 +566,9 @@ Provide your analysis in this JSON format (no other text):
         success: true,
         overallScore: 50,
         strengths: ["Code submitted successfully"],
-        improvementAreas: ["Consider reviewing and optimizing the solution"],
-        codeFeedback: "Unable to analyze code automatically. Please review manually.",
-        explanationFeedback: "Unable to analyze explanation automatically.",
+        improvementAreas: ["Service temporarily overloaded - analysis unavailable"],
+        codeFeedback: getFallbackResponse('technical'),
+        explanationFeedback: "Analysis temporarily unavailable - please try again",
         codeScore: 50,
         explanationScore: 50
       });
@@ -574,12 +578,12 @@ Provide your analysis in this JSON format (no other text):
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to analyze solution',
+        error: error instanceof Error ? error.message : 'Service temporarily unavailable',
         overallScore: 50,
         strengths: ["Code submitted successfully"],
-        improvementAreas: ["Unable to analyze automatically. Please review your solution."],
-        codeFeedback: "Analysis failed - please try again later",
-        explanationFeedback: "Analysis failed - please try again later",
+        improvementAreas: ["Service temporarily overloaded - please try again in a moment"],
+        codeFeedback: getFallbackResponse('technical'),
+        explanationFeedback: "Analysis temporarily unavailable - please try again",
         codeScore: 50,
         explanationScore: 50
       },
