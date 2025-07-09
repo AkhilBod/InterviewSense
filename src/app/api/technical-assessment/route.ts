@@ -16,7 +16,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { company, role, difficulty, useCustomNumber, leetcodeNumber } = await req.json();
+    const { 
+      company, 
+      role, 
+      difficulty, 
+      useCustomNumber, 
+      leetcodeNumber,
+      preset,
+      category,
+      prompt: customPrompt 
+    } = await req.json();
 
     // Use Gemini 2.0 Flash with low temperature to reduce hallucination
     const model = genAI.getGenerativeModel({ 
@@ -30,8 +39,45 @@ export async function POST(req: Request) {
 
     let prompt;
 
-    if (useCustomNumber && leetcodeNumber) {
-      // Enhanced prompt for specific LeetCode question retrieval
+    if (customPrompt) {
+      // If a custom prompt is provided (for preset/category selection), use it with enhancements
+      prompt = `You are an expert technical interviewer with deep knowledge of LeetCode problems.
+
+${customPrompt}
+
+**Output Format Requirements:**
+Format the problem EXACTLY like this:
+
+# Problem Number. Problem Title
+
+**Difficulty:** Easy/Medium/Hard
+
+Complete problem description in clear paragraph form
+
+**Example 1:**
+Input: example input
+Output: example output
+Explanation: detailed explanation
+
+**Example 2:**
+Input: example input
+Output: example output
+
+**Constraints:**
+• First constraint
+• Second constraint
+• Third constraint
+
+**Follow-up:** optimization question if applicable
+
+**Critical Instructions:**
+- Ensure the problem matches the specified category and collection style
+- Include clear examples with explanations
+- Provide relevant constraints
+- Add appropriate follow-up questions
+- Maintain consistent formatting`;
+    } else if (useCustomNumber && leetcodeNumber) {
+      // Existing specific problem number prompt
       prompt = `Retrieve the exact LeetCode problem #${leetcodeNumber} from the complete database of 3000+ LeetCode problems.
 
 **Critical Requirements:**
@@ -73,7 +119,7 @@ Output: example output
 
 Retrieve LeetCode problem #${leetcodeNumber}:`;
     } else {
-      // Enhanced prompt for generating better targeted questions from the full LeetCode database
+      // Existing general problem generation prompt
       prompt = `You are an expert technical interview conductor with access to the complete LeetCode database of 3000+ problems. Your task is to select the MOST APPROPRIATE problem for this specific interview scenario.
 
 **Interview Context:**
@@ -151,13 +197,42 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
     // Generate the question
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const question = response.text();
+    let question = response.text();
 
-    return NextResponse.json({ question });
+    // Check for no matching problem response
+    if (question.includes("NO_MATCHING_PROBLEM_FOUND")) {
+      throw new Error("Could not find a matching problem in the selected category. Please try a different category.");
+    }
+
+    // Validate that the response looks like a real LeetCode problem
+    const validationChecks = [
+      question.includes("# ") || question.includes("Problem "), // Has problem number/title
+      question.includes("**Difficulty:**"), // Has difficulty
+      question.includes("**Example"), // Has examples
+      question.includes("**Constraints:**"), // Has constraints
+      question.length > 200 // Reasonable length for a real problem
+    ];
+
+    if (!validationChecks.every(check => check)) {
+      throw new Error("Generated response does not match LeetCode problem format. Please try again.");
+    }
+
+    // No validation needed for preset mode since we're using predefined problems
+    if (preset && category) {
+      // The question is already validated since it comes from our predefined list
+    }
+
+    return NextResponse.json({
+      success: true,
+      question 
+    });
   } catch (error) {
     console.error('Error generating question:', error);
     return NextResponse.json(
-      { error: 'Failed to generate question' },
+      { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate question'
+      },
       { status: 500 }
     );
   }

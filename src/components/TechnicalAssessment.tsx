@@ -59,6 +59,107 @@ const TECH_JOB_TITLES = [
   { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' }
 ];
 
+// Add type definition for category
+interface PresetCategory {
+  name: string;
+  count: number;
+  icon: string;
+}
+
+interface LeetCodePreset {
+  id: string;
+  title: string;
+  description: string;
+  totalProblems: number;
+  categories: PresetCategory[];
+  difficulty: string;
+  estimatedHours: number;
+  icon: string;
+}
+
+const LEETCODE_PRESETS: LeetCodePreset[] = [
+  {
+    id: 'blind75',
+    title: 'Blind 75',
+    description: 'Essential 75 questions for tech interviews',
+    totalProblems: 75,
+    categories: [
+      { name: 'Arrays & Hashing', count: 8, icon: '📦' },
+      { name: 'Two Pointers', count: 3, icon: '👉' },
+      { name: 'Sliding Window', count: 4, icon: '🔍' },
+      { name: 'Stack', count: 1, icon: '📚' },
+      { name: 'Binary Search', count: 2, icon: '🎯' },
+      { name: 'Linked List', count: 6, icon: '⛓️' },
+      { name: 'Trees', count: 11, icon: '🌳' },
+      { name: 'Tries', count: 3, icon: '📝' },
+      { name: 'Heap / Priority Queue', count: 1, icon: '⚡' },
+      { name: 'Backtracking', count: 2, icon: '↩️' },
+      { name: 'Graphs', count: 7, icon: '🕸️' },
+      { name: 'Dynamic Programming', count: 11, icon: '🧮' },
+      { name: 'Greedy', count: 2, icon: '💡' },
+      { name: 'Intervals', count: 5, icon: '⏱️' },
+      { name: 'Matrix', count: 3, icon: '🔲' },
+      { name: 'Bit Manipulation', count: 5, icon: '🔢' }
+    ],
+    difficulty: 'Mixed',
+    estimatedHours: 40,
+    icon: '👨‍💻'
+  },
+  {
+    id: 'neetcode150',
+    title: 'NeetCode 150',
+    description: 'Extended collection of must-solve problems',
+    totalProblems: 150,
+    categories: [
+      { name: 'Arrays & Hashing', count: 8, icon: '📦' },
+      { name: 'Two Pointers', count: 4, icon: '👉' },
+      { name: 'Sliding Window', count: 6, icon: '🔍' },
+      { name: 'Stack', count: 7, icon: '📚' },
+      { name: 'Binary Search', count: 6, icon: '🎯' },
+      { name: 'Linked List', count: 8, icon: '⛓️' },
+      { name: 'Trees', count: 15, icon: '🌳' },
+      { name: 'Tries', count: 3, icon: '📝' },
+      { name: 'Heap / Priority Queue', count: 7, icon: '⚡' },
+      { name: 'Backtracking', count: 8, icon: '↩️' },
+      { name: 'Graphs', count: 13, icon: '🕸️' },
+      { name: 'Dynamic Programming', count: 13, icon: '🧮' },
+      { name: 'Greedy', count: 7, icon: '💡' },
+      { name: 'Intervals', count: 6, icon: '⏱️' },
+      { name: 'Math & Geometry', count: 8, icon: '📐' },
+      { name: 'Bit Manipulation', count: 5, icon: '🔢' }
+    ],
+    difficulty: 'Mixed',
+    estimatedHours: 75,
+    icon: '🎯'
+  },
+  {
+    id: 'grind75',
+    title: 'Grind 75',
+    description: 'Structured study plan for coding interviews',
+    totalProblems: 75,
+    categories: [
+      { name: 'Arrays & Hashing', count: 11, icon: '📦' },
+      { name: 'Stack', count: 7, icon: '📚' },
+      { name: 'Linked List', count: 5, icon: '⛓️' },
+      { name: 'String', count: 8, icon: '📝' },
+      { name: 'Binary Tree', count: 9, icon: '🌳' },
+      { name: 'Binary Search', count: 5, icon: '🎯' },
+      { name: 'Graph', count: 10, icon: '🕸️' },
+      { name: 'Binary Search Tree', count: 3, icon: '🔍' },
+      { name: 'Hash Table', count: 1, icon: '📊' },
+      { name: 'Dynamic Programming', count: 5, icon: '🧮' },
+      { name: 'Binary', count: 1, icon: '0️⃣' },
+      { name: 'Heap', count: 4, icon: '⚡' },
+      { name: 'Trie', count: 2, icon: '📚' },
+      { name: 'Recursion', count: 3, icon: '🔄' },
+      { name: 'Matrix', count: 1, icon: '🔲' }
+    ],
+    difficulty: 'Mixed',
+    estimatedHours: 45,
+    icon: '💪'
+  }
+];
+
 // Helper function to clean markdown formatting from text
 function cleanMarkdownText(text: string): string {
   return text
@@ -292,12 +393,30 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const { data: session } = useSession();
   const router = useRouter();
   
-  // Add state for LeetCode question number functionality
-  const [leetcodeNumber, setLeetcodeNumber] = useState('');
-  const [useCustomNumber, setUseCustomNumber] = useState(false);
+  // Add state for question progression
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(3); // Default to 3 questions
+  const [questions, setQuestions] = useState<Array<{
+    question: string;
+    code: string;
+    thoughtProcess: string;
+    audioUrl: string | null;
+    completed: boolean;
+    skipped: boolean;
+  }>>([]);
+  const [questionsGenerated, setQuestionsGenerated] = useState(false);
+  
+  // Add state for problem selection mode
+  const [problemMode, setProblemMode] = useState<'ai' | 'specific' | 'preset'>('ai');
+  const [selectedPreset, setSelectedPreset] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   
   // Add state for microphone permission guide
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
+  
+  // Add state for LeetCode question number functionality
+  const [leetcodeNumber, setLeetcodeNumber] = useState('');
+  const [useCustomNumber, setUseCustomNumber] = useState(false);
   
   // Add state for active tab
   const [activeTab, setActiveTab] = useState('problem');
@@ -574,27 +693,448 @@ public class Solution {
     });
   };
 
+  // Add state for tracking current LeetCode number
+  const [currentLeetCodeNumber, setCurrentLeetCodeNumber] = useState<number | null>(null);
+
+  const handleSkip = async () => {
+    try {
+      setLoading(true);
+      
+      if (problemMode === 'preset') {
+        const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
+        if (!preset) {
+          throw new Error('Please select a preset');
+        }
+        
+        // Get the current category from the question if not selected
+        if (!selectedCategory && question) {
+          const currentProblem = parseLeetCodeProblem(question);
+          // Find which category contains this problem
+          for (const [category, problems] of Object.entries(BLIND75_PROBLEMS)) {
+            if (problems.some(p => p.id === currentProblem.number)) {
+              setSelectedCategory(category);
+              break;
+            }
+          }
+        }
+
+        // Get problems for this category and preset only
+        if (!selectedCategory) {
+          throw new Error('Please select a category to continue');
+        }
+        
+        let problems: { id: number; title: string; difficulty: string; }[] = [];
+        
+        switch (selectedPreset) {
+          case 'blind75':
+            problems = BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS] || [];
+            break;
+          case 'neetcode150':
+            problems = NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS] || [];
+            break;
+          case 'grind75':
+            problems = GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS] || [];
+            break;
+        }
+        
+        if (problems.length === 0) {
+          throw new Error(`No problems available for ${selectedCategory} category in ${preset.title}.`);
+        }
+
+        // Find current problem index
+        const currentNumber = currentLeetCodeNumber || 
+          (question ? parseLeetCodeProblem(question).number : null);
+        
+        const currentIndex = problems.findIndex(p => p.id === currentNumber);
+        
+        if (currentIndex === -1 || currentIndex === problems.length - 1) {
+          throw new Error(`No more problems available in ${selectedCategory} category for ${preset.title}.`);
+        }
+
+        // Get next problem in this category
+        const nextProblem = problems[currentIndex + 1];
+        
+        // Use Gemini just to fetch the full problem content
+        const prompt = `Get LeetCode problem #${nextProblem.id} (${nextProblem.title}).
+
+Return the EXACT problem as it appears on LeetCode with:
+1. Problem number and title
+2. Difficulty (${nextProblem.difficulty})
+3. Full description
+4. Examples
+5. Constraints
+
+DO NOT modify or generate a new problem. Return the exact LeetCode problem #${nextProblem.id}.`;
+
+        const response: Response = await fetch('/api/technical-assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            prompt,
+            useCustomNumber: true,
+            leetcodeNumber: nextProblem.id.toString(),
+            preset: selectedPreset,
+            category: selectedCategory
+          }),
+        });
+        
+        const data: { success: boolean; question: string; error?: string } = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to fetch next problem');
+        }
+
+        // Update the current question
+        setQuestion(data.question);
+        
+        // Extract and save the new question number
+        const newNumber = parseLeetCodeProblem(data.question).number;
+        setCurrentLeetCodeNumber(newNumber);
+        
+        // Reset the form for the new question
+        setCode(languageTemplates[language]);
+        setThoughtProcess('');
+        setAudioUrl(null);
+        
+        // Reset solutions
+        setSolutions([]);
+        setSolutionsGenerated(false);
+        setSolutionsLoading(false);
+        setActiveTab('problem');
+        
+        window.scrollTo(0, 0);
+        
+        toast({
+          title: `Next ${selectedCategory} Problem`,
+          description: `Problem ${currentIndex + 2}/${problems.length}: #${newNumber} (${nextProblem.title})`,
+        });
+      } else {
+        // For AI mode, get another random problem from the same category
+        const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+        handleSubmit(fakeEvent);
+      }
+    } catch (error) {
+      console.error('Error getting next question:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to get next question',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = async () => {
+    if (!code || !thoughtProcess) {
+      toast({
+        title: "Incomplete Solution",
+        description: "Please provide both code and explanation before continuing.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Save current solution first
+      const currentNumber = currentLeetCodeNumber || 
+        (question ? parseLeetCodeProblem(question).number : null);
+        
+      const solutionData = {
+        id: currentNumber,
+        leetCodeTitle: question ? parseLeetCodeProblem(question).title : "Technical Question",
+        prompt: question,
+        code,
+        codeLanguage: language,
+        explanation: thoughtProcess,
+        audioUrl
+      };
+
+      // Store in localStorage
+      const existingSolutions = JSON.parse(localStorage.getItem("technicalAssessmentSolutions") || "[]");
+      existingSolutions.push(solutionData);
+      localStorage.setItem("technicalAssessmentSolutions", JSON.stringify(existingSolutions));
+
+      // Get next question (same logic as skip but with success message)
+      await handleSkip();
+      
+      toast({
+        title: "Solution Saved",
+        description: "Your solution has been saved and we've moved to the next problem.",
+      });
+    } catch (error) {
+      console.error('Error saving solution:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your solution. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Modify handleSubmit to set initial question number
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('/api/technical-assessment', {
+      let prompt = '';
+      let problemId: string | undefined;
+      let problemTitle: string | undefined;
+      let problemDifficulty: string | undefined;
+      
+      if (problemMode === 'ai') {
+        // For AI mode, get a random problem from our collections
+        const allCollections = [BLIND75_PROBLEMS, NEETCODE150_PROBLEMS, GRIND75_PROBLEMS];
+        const randomCollection = allCollections[Math.floor(Math.random() * allCollections.length)];
+        const categories = Object.keys(randomCollection);
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        const problems = randomCollection[randomCategory as keyof typeof randomCollection];
+        const randomProblem = problems[Math.floor(Math.random() * problems.length)];
+        
+        problemId = randomProblem.id.toString();
+        problemTitle = randomProblem.title;
+        problemDifficulty = randomProblem.difficulty;
+      } else if (problemMode === 'specific') {
+        problemId = leetcodeNumber;
+      } else if (problemMode === 'preset') {
+        const preset = LEETCODE_PRESETS.find(p => p.id === selectedPreset);
+        if (!preset) {
+          throw new Error('Please select a preset');
+        }
+        
+        if (!selectedCategory) {
+          throw new Error('Please select a category');
+        }
+        
+        const category = preset.categories.find(c => c.name === selectedCategory);
+        if (!category) {
+          throw new Error('Invalid category selected');
+        }
+
+        // Get problems based on the selected preset
+        const problems = (() => {
+          switch (selectedPreset) {
+            case 'blind75':
+              return BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS];
+            case 'neetcode150':
+              return NEETCODE150_PROBLEMS[selectedCategory as keyof typeof NEETCODE150_PROBLEMS];
+            case 'grind75':
+              return GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS];
+            default:
+              return [];
+          }
+        })() || [];
+        
+        if (problems.length === 0) {
+          throw new Error(`No problems available for ${selectedCategory} category yet.`);
+        }
+
+        // Get the first problem in this category
+        const firstProblem = problems[0];
+        problemId = firstProblem.id.toString();
+        problemTitle = firstProblem.title;
+        problemDifficulty = firstProblem.difficulty;
+      }
+
+      if (!problemId) {
+        throw new Error('No problem selected');
+      }
+
+      // Now we use Gemini just to fetch the full problem content
+      prompt = `Get LeetCode problem #${problemId}${problemTitle ? ` (${problemTitle})` : ''}.
+
+Return the EXACT problem as it appears on LeetCode with:
+1. Problem number and title
+2. Difficulty${problemDifficulty ? ` (${problemDifficulty})` : ''}
+3. Full description
+4. Examples
+5. Constraints
+
+DO NOT modify or generate a new problem. Return the exact LeetCode problem #${problemId}.`;
+
+      const response: Response = await fetch('/api/technical-assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          company, 
-          role, 
-          difficulty,
-          useCustomNumber,
-          leetcodeNumber: useCustomNumber ? leetcodeNumber : undefined
+          prompt,
+          useCustomNumber: true,
+          leetcodeNumber: problemId,
+          preset: selectedPreset || undefined,
+          category: selectedCategory || undefined
         }),
       });
-      const data = await response.json();
+      
+      const data: { success: boolean; question: string; error?: string } = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch problem');
+      }
+      
       setQuestion(data.question);
+      
+      // Extract and save the initial question number
+      const initialNumber = parseLeetCodeProblem(data.question).number;
+      setCurrentLeetCodeNumber(initialNumber);
+      
+      toast({
+        title: "Started Practice Session",
+        description: `Beginning with problem #${initialNumber}`,
+      });
     } catch (error) {
       console.error('Error fetching question:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to fetch problem',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to handle completing a question and moving to next
+  // Handled by the async handleNext function above
+
+  // Function to handle final submission
+  const handleFinalSubmission = () => {
+    const completedQuestions = questions.filter(q => q.completed).length;
+    const skippedQuestions = questions.filter(q => q.skipped).length;
+    
+    const technicalAssessmentData = {
+      company,
+      role,
+      date: new Date().toISOString(),
+      difficulty,
+      questions: questions.map((q, idx) => ({
+        id: idx + 1,
+        leetCodeTitle: q.question ? parseLeetCodeProblem(q.question).title : `Technical Question ${idx + 1}`,
+        prompt: q.question,
+        code: q.code || '',
+        codeLanguage: language,
+        explanation: q.thoughtProcess || '',
+        audioUrl: q.audioUrl,
+        status: q.completed ? 'completed' : 'skipped'
+      }))
+    };
+    
+    try {
+      localStorage.removeItem("technicalAssessmentResult");
+      localStorage.setItem("technicalAssessmentData", JSON.stringify(technicalAssessmentData));
+      
+      toast({
+        title: "Assessment Completed",
+        description: `Completed ${completedQuestions} questions, skipped ${skippedQuestions} questions.`,
+      });
+      
+      if (onComplete) {
+        onComplete();
+      } else {
+        router.push('/technical-assessment/results');
+      }
+    } catch (error) {
+      console.error("Error saving assessment data:", error);
+      toast({
+        title: "Error submitting assessment",
+        description: "There was an error saving your solutions. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Add function to handle saving current progress
+  const saveCurrentProgress = () => {
+    if (questions[currentQuestionIndex]) {
+      const updatedQuestions = [...questions];
+      updatedQuestions[currentQuestionIndex] = {
+        ...updatedQuestions[currentQuestionIndex],
+        code,
+        thoughtProcess,
+        audioUrl
+      };
+      setQuestions(updatedQuestions);
+    }
+  };
+
+  // Add function to load saved progress
+  const loadSavedProgress = () => {
+    const currentQuestionData = questions[currentQuestionIndex];
+    if (currentQuestionData) {
+      setCode(currentQuestionData.code || languageTemplates[language]);
+      setThoughtProcess(currentQuestionData.thoughtProcess || '');
+      setAudioUrl(currentQuestionData.audioUrl);
+    }
+  };
+
+  // Add function to handle navigation
+  const navigateToQuestion = (direction: 'next' | 'skip') => {
+    if (direction === 'next') {
+      saveCurrentProgress();
+    }
+    
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex < totalQuestions) {
+      setCurrentQuestionIndex(nextIndex);
+      setQuestion(questions[nextIndex].question);
+      if (direction === 'skip') {
+        // Reset fields for skipped question
+        setCode(languageTemplates[language]);
+        setThoughtProcess('');
+        setAudioUrl(null);
+      } else {
+        loadSavedProgress();
+      }
+      
+      // Reset solutions when changing questions
+      setSolutions([]);
+      setSolutionsGenerated(false);
+      setSolutionsLoading(false);
+      setActiveTab('problem');
+      
+      window.scrollTo(0, 0);
+    } else {
+      // All questions completed, prepare final submission
+      const technicalAssessmentData = {
+        company,
+        role,
+        date: new Date().toISOString(),
+        difficulty,
+        questions: questions.map((q, idx) => ({
+          id: idx + 1,
+          leetCodeTitle: q.question ? parseLeetCodeProblem(q.question).title : `Technical Question ${idx + 1}`,
+          prompt: q.question,
+          code: q.code,
+          codeLanguage: language,
+          explanation: q.thoughtProcess,
+          audioUrl: q.audioUrl
+        }))
+      };
+      
+      try {
+        localStorage.removeItem("technicalAssessmentResult");
+        localStorage.setItem("technicalAssessmentData", JSON.stringify(technicalAssessmentData));
+        
+        toast({
+          title: "Assessment completed",
+          description: "Your solutions have been submitted for analysis."
+        });
+        
+        if (onComplete) {
+          onComplete();
+        } else {
+          router.push('/technical-assessment/results');
+        }
+      } catch (error) {
+        console.error("Error saving assessment data:", error);
+        toast({
+          title: "Error submitting solutions",
+          description: "There was an error saving your solutions. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -805,6 +1345,320 @@ public class Solution {
     }
   };
 
+  // Add Grind 75 problems mapping
+  const GRIND75_PROBLEMS = {
+    'Arrays & Hashing': [
+      { id: 1, title: 'Two Sum', difficulty: 'Easy', time: 15 },
+      { id: 121, title: 'Best Time to Buy and Sell Stock', difficulty: 'Easy', time: 20 },
+      { id: 169, title: 'Majority Element', difficulty: 'Easy', time: 20 },
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy', time: 15 },
+      { id: 57, title: 'Insert Interval', difficulty: 'Medium', time: 25 },
+      { id: 15, title: '3Sum', difficulty: 'Medium', time: 30 },
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium', time: 30 },
+      { id: 39, title: 'Combination Sum', difficulty: 'Medium', time: 30 },
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium', time: 30 },
+      { id: 75, title: 'Sort Colors', difficulty: 'Medium', time: 25 },
+      { id: 11, title: 'Container With Most Water', difficulty: 'Medium', time: 35 }
+    ],
+    'Stack': [
+      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy', time: 20 },
+      { id: 232, title: 'Implement Queue using Stacks', difficulty: 'Easy', time: 20 },
+      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium', time: 30 },
+      { id: 155, title: 'Min Stack', difficulty: 'Medium', time: 20 },
+      { id: 42, title: 'Trapping Rain Water', difficulty: 'Hard', time: 35 },
+      { id: 224, title: 'Basic Calculator', difficulty: 'Hard', time: 40 },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard', time: 35 }
+    ],
+    'Binary Tree': [
+      { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy', time: 15 },
+      { id: 110, title: 'Balanced Binary Tree', difficulty: 'Easy', time: 15 },
+      { id: 543, title: 'Diameter of Binary Tree', difficulty: 'Easy', time: 30 },
+      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy', time: 15 },
+      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium', time: 20 },
+      { id: 236, title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', time: 25 },
+      { id: 199, title: 'Binary Tree Right Side View', difficulty: 'Medium', time: 20 },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium', time: 25 },
+      { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard', time: 40 }
+    ],
+    'Binary Search': [
+      { id: 704, title: 'Binary Search', difficulty: 'Easy', time: 15 },
+      { id: 278, title: 'First Bad Version', difficulty: 'Easy', time: 20 },
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium', time: 30 },
+      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium', time: 35 },
+      { id: 1235, title: 'Maximum Profit in Job Scheduling', difficulty: 'Hard', time: 45 }
+    ]
+  };
+
+  // Add Blind 75 problems mapping
+  const BLIND75_PROBLEMS = {
+    'Arrays & Hashing': [
+      { id: 1, title: 'Two Sum', difficulty: 'Easy' },
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
+      { id: 242, title: 'Valid Anagram', difficulty: 'Easy' },
+      { id: 49, title: 'Group Anagrams', difficulty: 'Medium' },
+      { id: 347, title: 'Top K Frequent Elements', difficulty: 'Medium' },
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
+      { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' },
+      { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' }
+    ],
+    'Two Pointers': [
+      { id: 125, title: 'Valid Palindrome', difficulty: 'Easy' },
+      { id: 15, title: '3Sum', difficulty: 'Medium' },
+      { id: 11, title: 'Container With Most Water', difficulty: 'Medium' }
+    ],
+    'Sliding Window': [
+      { id: 121, title: 'Best Time to Buy and Sell Stock', difficulty: 'Easy' },
+      { id: 3, title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium' },
+      { id: 424, title: 'Longest Repeating Character Replacement', difficulty: 'Medium' },
+      { id: 76, title: 'Minimum Window Substring', difficulty: 'Hard' }
+    ],
+    'Stack': [
+      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy' }
+    ],
+    'Binary Search': [
+      { id: 153, title: 'Find Minimum in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' }
+    ],
+    'Linked List': [
+      { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
+      { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
+      { id: 21, title: 'Merge Two Sorted Lists', difficulty: 'Easy' },
+      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' },
+      { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' },
+      { id: 143, title: 'Reorder List', difficulty: 'Medium' }
+    ],
+    'Trees': [
+      { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy' },
+      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy' },
+      { id: 100, title: 'Same Tree', difficulty: 'Easy' },
+      { id: 572, title: 'Subtree of Another Tree', difficulty: 'Easy' },
+      { id: 235, title: 'Lowest Common Ancestor of a Binary Search Tree', difficulty: 'Medium' },
+      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
+      { id: 98, title: 'Validate Binary Search Tree', difficulty: 'Medium' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' },
+      { id: 124, title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard' },
+      { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' }
+    ],
+    'Tries': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
+      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
+    ],
+    'Heap / Priority Queue': [
+      { id: 295, title: 'Find Median from Data Stream', difficulty: 'Hard' }
+    ],
+    'Backtracking': [
+      { id: 39, title: 'Combination Sum', difficulty: 'Medium' },
+      { id: 79, title: 'Word Search', difficulty: 'Medium' }
+    ],
+    'Graphs': [
+      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
+      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
+      { id: 417, title: 'Pacific Atlantic Water Flow', difficulty: 'Medium' },
+      { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
+      { id: 261, title: 'Graph Valid Tree', difficulty: 'Medium' },
+      { id: 323, title: 'Number of Connected Components in an Undirected Graph', difficulty: 'Medium' },
+      { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' }
+    ],
+    'Dynamic Programming': [
+      { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
+      { id: 322, title: 'Coin Change', difficulty: 'Medium' },
+      { id: 300, title: 'Longest Increasing Subsequence', difficulty: 'Medium' },
+      { id: 139, title: 'Word Break', difficulty: 'Medium' },
+      { id: 377, title: 'Combination Sum IV', difficulty: 'Medium' },
+      { id: 198, title: 'House Robber', difficulty: 'Medium' },
+      { id: 213, title: 'House Robber II', difficulty: 'Medium' },
+      { id: 91, title: 'Decode Ways', difficulty: 'Medium' },
+      { id: 62, title: 'Unique Paths', difficulty: 'Medium' },
+      { id: 152, title: 'Maximum Product Subarray', difficulty: 'Medium' },
+      { id: 1143, title: 'Longest Common Subsequence', difficulty: 'Medium' }
+    ],
+    'Greedy': [
+      { id: 53, title: 'Maximum Subarray', difficulty: 'Medium' },
+      { id: 55, title: 'Jump Game', difficulty: 'Medium' }
+    ],
+    'Intervals': [
+      { id: 252, title: 'Meeting Rooms', difficulty: 'Easy' },
+      { id: 253, title: 'Meeting Rooms II', difficulty: 'Medium' },
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
+      { id: 57, title: 'Insert Interval', difficulty: 'Medium' },
+      { id: 435, title: 'Non-overlapping Intervals', difficulty: 'Medium' }
+    ],
+    'Matrix': [
+      { id: 73, title: 'Set Matrix Zeroes', difficulty: 'Medium' },
+      { id: 54, title: 'Spiral Matrix', difficulty: 'Medium' },
+      { id: 48, title: 'Rotate Image', difficulty: 'Medium' }
+    ],
+    'Bit Manipulation': [
+      { id: 268, title: 'Missing Number', difficulty: 'Easy' },
+      { id: 190, title: 'Reverse Bits', difficulty: 'Easy' },
+      { id: 191, title: 'Number of 1 Bits', difficulty: 'Easy' },
+      { id: 338, title: 'Counting Bits', difficulty: 'Easy' },
+      { id: 371, title: 'Sum of Two Integers', difficulty: 'Medium' }
+    ]
+  };
+
+  // Add NeetCode 150 problems mapping
+  const NEETCODE150_PROBLEMS = {
+    'Arrays & Hashing': [
+      { id: 217, title: 'Contains Duplicate', difficulty: 'Easy' },
+      { id: 242, title: 'Valid Anagram', difficulty: 'Easy' },
+      { id: 1, title: 'Two Sum', difficulty: 'Easy' },
+      { id: 49, title: 'Group Anagrams', difficulty: 'Medium' },
+      { id: 347, title: 'Top K Frequent Elements', difficulty: 'Medium' },
+      { id: 238, title: 'Product of Array Except Self', difficulty: 'Medium' },
+      { id: 271, title: 'Encode and Decode Strings', difficulty: 'Medium' },
+      { id: 128, title: 'Longest Consecutive Sequence', difficulty: 'Medium' }
+    ],
+    'Two Pointers': [
+      { id: 125, title: 'Valid Palindrome', difficulty: 'Easy' },
+      { id: 167, title: 'Two Sum II', difficulty: 'Medium' },
+      { id: 15, title: '3Sum', difficulty: 'Medium' },
+      { id: 11, title: 'Container With Most Water', difficulty: 'Medium' }
+    ],
+    'Sliding Window': [
+      { id: 121, title: 'Best Time to Buy and Sell Stock', difficulty: 'Easy' },
+      { id: 3, title: 'Longest Substring Without Repeating Characters', difficulty: 'Medium' },
+      { id: 424, title: 'Longest Repeating Character Replacement', difficulty: 'Medium' },
+      { id: 567, title: 'Permutation in String', difficulty: 'Medium' },
+      { id: 76, title: 'Minimum Window Substring', difficulty: 'Hard' },
+      { id: 239, title: 'Sliding Window Maximum', difficulty: 'Hard' }
+    ],
+    'Stack': [
+      { id: 20, title: 'Valid Parentheses', difficulty: 'Easy' },
+      { id: 155, title: 'Min Stack', difficulty: 'Medium' },
+      { id: 150, title: 'Evaluate Reverse Polish Notation', difficulty: 'Medium' },
+      { id: 22, title: 'Generate Parentheses', difficulty: 'Medium' },
+      { id: 739, title: 'Daily Temperatures', difficulty: 'Medium' },
+      { id: 853, title: 'Car Fleet', difficulty: 'Medium' },
+      { id: 84, title: 'Largest Rectangle in Histogram', difficulty: 'Hard' }
+    ],
+    'Binary Search': [
+      { id: 704, title: 'Binary Search', difficulty: 'Easy' },
+      { id: 74, title: 'Search a 2D Matrix', difficulty: 'Medium' },
+      { id: 875, title: 'Koko Eating Bananas', difficulty: 'Medium' },
+      { id: 33, title: 'Search in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 153, title: 'Find Minimum in Rotated Sorted Array', difficulty: 'Medium' },
+      { id: 981, title: 'Time Based Key-Value Store', difficulty: 'Medium' }
+    ],
+    'Linked List': [
+      { id: 206, title: 'Reverse Linked List', difficulty: 'Easy' },
+      { id: 21, title: 'Merge Two Sorted Lists', difficulty: 'Easy' },
+      { id: 141, title: 'Linked List Cycle', difficulty: 'Easy' },
+      { id: 23, title: 'Merge k Sorted Lists', difficulty: 'Hard' },
+      { id: 19, title: 'Remove Nth Node From End of List', difficulty: 'Medium' },
+      { id: 138, title: 'Copy List with Random Pointer', difficulty: 'Medium' },
+      { id: 2, title: 'Add Two Numbers', difficulty: 'Medium' },
+      { id: 143, title: 'Reorder List', difficulty: 'Medium' }
+    ],
+    'Trees': [
+      { id: 226, title: 'Invert Binary Tree', difficulty: 'Easy' },
+      { id: 104, title: 'Maximum Depth of Binary Tree', difficulty: 'Easy' },
+      { id: 543, title: 'Diameter of Binary Tree', difficulty: 'Easy' },
+      { id: 110, title: 'Balanced Binary Tree', difficulty: 'Easy' },
+      { id: 100, title: 'Same Tree', difficulty: 'Easy' },
+      { id: 572, title: 'Subtree of Another Tree', difficulty: 'Easy' },
+      { id: 235, title: 'Lowest Common Ancestor of a BST', difficulty: 'Medium' },
+      { id: 102, title: 'Binary Tree Level Order Traversal', difficulty: 'Medium' },
+      { id: 199, title: 'Binary Tree Right Side View', difficulty: 'Medium' },
+      { id: 1448, title: 'Count Good Nodes in Binary Tree', difficulty: 'Medium' },
+      { id: 98, title: 'Validate Binary Search Tree', difficulty: 'Medium' },
+      { id: 230, title: 'Kth Smallest Element in a BST', difficulty: 'Medium' },
+      { id: 105, title: 'Construct Binary Tree from Preorder and Inorder Traversal', difficulty: 'Medium' },
+      { id: 124, title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard' },
+      { id: 297, title: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' }
+    ],
+    'Tries': [
+      { id: 208, title: 'Implement Trie (Prefix Tree)', difficulty: 'Medium' },
+      { id: 211, title: 'Design Add and Search Words Data Structure', difficulty: 'Medium' },
+      { id: 212, title: 'Word Search II', difficulty: 'Hard' }
+    ],
+    'Heap / Priority Queue': [
+      { id: 703, title: 'Kth Largest Element in a Stream', difficulty: 'Easy' },
+      { id: 1046, title: 'Last Stone Weight', difficulty: 'Easy' },
+      { id: 973, title: 'K Closest Points to Origin', difficulty: 'Medium' },
+      { id: 215, title: 'Kth Largest Element in an Array', difficulty: 'Medium' },
+      { id: 621, title: 'Task Scheduler', difficulty: 'Medium' },
+      { id: 355, title: 'Design Twitter', difficulty: 'Medium' },
+      { id: 295, title: 'Find Median from Data Stream', difficulty: 'Hard' }
+    ],
+    'Backtracking': [
+      { id: 78, title: 'Subsets', difficulty: 'Medium' },
+      { id: 39, title: 'Combination Sum', difficulty: 'Medium' },
+      { id: 46, title: 'Permutations', difficulty: 'Medium' },
+      { id: 90, title: 'Subsets II', difficulty: 'Medium' },
+      { id: 40, title: 'Combination Sum II', difficulty: 'Medium' },
+      { id: 79, title: 'Word Search', difficulty: 'Medium' },
+      { id: 131, title: 'Palindrome Partitioning', difficulty: 'Medium' },
+      { id: 51, title: 'N-Queens', difficulty: 'Hard' }
+    ],
+    'Graphs': [
+      { id: 200, title: 'Number of Islands', difficulty: 'Medium' },
+      { id: 133, title: 'Clone Graph', difficulty: 'Medium' },
+      { id: 695, title: 'Max Area of Island', difficulty: 'Medium' },
+      { id: 417, title: 'Pacific Atlantic Water Flow', difficulty: 'Medium' },
+      { id: 130, title: 'Surrounded Regions', difficulty: 'Medium' },
+      { id: 994, title: 'Rotting Oranges', difficulty: 'Medium' },
+      { id: 286, title: 'Walls and Gates', difficulty: 'Medium' },
+      { id: 207, title: 'Course Schedule', difficulty: 'Medium' },
+      { id: 210, title: 'Course Schedule II', difficulty: 'Medium' },
+      { id: 684, title: 'Redundant Connection', difficulty: 'Medium' },
+      { id: 323, title: 'Number of Connected Components', difficulty: 'Medium' },
+      { id: 261, title: 'Graph Valid Tree', difficulty: 'Medium' },
+      { id: 269, title: 'Alien Dictionary', difficulty: 'Hard' }
+    ],
+    'Dynamic Programming': [
+      { id: 70, title: 'Climbing Stairs', difficulty: 'Easy' },
+      { id: 746, title: 'Min Cost Climbing Stairs', difficulty: 'Easy' },
+      { id: 198, title: 'House Robber', difficulty: 'Medium' },
+      { id: 213, title: 'House Robber II', difficulty: 'Medium' },
+      { id: 5, title: 'Longest Palindromic Substring', difficulty: 'Medium' },
+      { id: 647, title: 'Palindromic Substrings', difficulty: 'Medium' },
+      { id: 91, title: 'Decode Ways', difficulty: 'Medium' },
+      { id: 322, title: 'Coin Change', difficulty: 'Medium' },
+      { id: 152, title: 'Maximum Product Subarray', difficulty: 'Medium' },
+      { id: 139, title: 'Word Break', difficulty: 'Medium' },
+      { id: 300, title: 'Longest Increasing Subsequence', difficulty: 'Medium' },
+      { id: 416, title: 'Partition Equal Subset Sum', difficulty: 'Medium' },
+      { id: 115, title: 'Distinct Subsequences', difficulty: 'Hard' }
+    ],
+    'Greedy': [
+      { id: 53, title: 'Maximum Subarray', difficulty: 'Medium' },
+      { id: 55, title: 'Jump Game', difficulty: 'Medium' },
+      { id: 45, title: 'Jump Game II', difficulty: 'Medium' },
+      { id: 134, title: 'Gas Station', difficulty: 'Medium' },
+      { id: 846, title: 'Hand of Straights', difficulty: 'Medium' },
+      { id: 1899, title: 'Merge Triplets to Form Target Triplet', difficulty: 'Medium' },
+      { id: 678, title: 'Valid Parenthesis String', difficulty: 'Medium' }
+    ],
+    'Intervals': [
+      { id: 57, title: 'Insert Interval', difficulty: 'Medium' },
+      { id: 56, title: 'Merge Intervals', difficulty: 'Medium' },
+      { id: 435, title: 'Non-overlapping Intervals', difficulty: 'Medium' },
+      { id: 252, title: 'Meeting Rooms', difficulty: 'Easy' },
+      { id: 253, title: 'Meeting Rooms II', difficulty: 'Medium' },
+      { id: 1851, title: 'Minimum Interval to Include Each Query', difficulty: 'Hard' }
+    ],
+    'Math & Geometry': [
+      { id: 48, title: 'Rotate Image', difficulty: 'Medium' },
+      { id: 54, title: 'Spiral Matrix', difficulty: 'Medium' },
+      { id: 73, title: 'Set Matrix Zeroes', difficulty: 'Medium' },
+      { id: 202, title: 'Happy Number', difficulty: 'Easy' },
+      { id: 66, title: 'Plus One', difficulty: 'Easy' },
+      { id: 50, title: 'Pow(x, n)', difficulty: 'Medium' },
+      { id: 43, title: 'Multiply Strings', difficulty: 'Medium' },
+      { id: 2013, title: 'Detect Squares', difficulty: 'Medium' }
+    ],
+    'Bit Manipulation': [
+      { id: 191, title: 'Number of 1 Bits', difficulty: 'Easy' },
+      { id: 338, title: 'Counting Bits', difficulty: 'Easy' },
+      { id: 190, title: 'Reverse Bits', difficulty: 'Easy' },
+      { id: 268, title: 'Missing Number', difficulty: 'Easy' },
+      { id: 371, title: 'Sum of Two Integers', difficulty: 'Medium' }
+    ]
+  };
+
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
       {/* Header Section */}
@@ -819,55 +1673,263 @@ public class Solution {
 
       <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-green-900/20 border border-green-500/20 backdrop-blur-sm shadow-2xl shadow-green-500/10">
         <CardContent className="p-6 sm:p-8 space-y-6">
-          <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20 backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-3 h-12 rounded-full transition-colors duration-300 ${useCustomNumber ? 'bg-gradient-to-b from-green-500 to-green-600' : 'bg-gradient-to-b from-green-500 to-green-600'}`}></div>
+          {/* Problem Selection Mode */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div 
+              onClick={() => setProblemMode('ai')}
+              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
+                problemMode === 'ai' 
+                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  problemMode === 'ai' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                }`}>
+                  <Zap className={`w-5 h-5 ${problemMode === 'ai' ? 'text-green-400' : 'text-zinc-400'}`} />
+                </div>
                 <div>
-                  <Label htmlFor="useCustomNumber" className="font-semibold cursor-pointer block mb-2 text-lg text-green-300">
-                    {useCustomNumber ? 'Specific Problem Selection' : 'AI-Powered Problem Selection'}
-                  </Label>
-                  <p className="text-sm text-zinc-400 leading-relaxed max-w-md">
-                    {useCustomNumber 
-                      ? 'Get any specific problem from the 3000+ LeetCode database by number' 
-                      : 'AI selects optimal problem from 3000+ questions based on company, role, and difficulty'}
+                  <h3 className={`font-semibold ${problemMode === 'ai' ? 'text-green-400' : 'text-zinc-300'}`}>
+                    AI Generator
+                  </h3>
+                  <p className="text-sm text-zinc-400">
+                    Smart problem selection
                   </p>
                 </div>
               </div>
-              <Switch
-                id="useCustomNumber"
-                checked={useCustomNumber}
-                onCheckedChange={setUseCustomNumber}
-                className="data-[state=checked]:bg-green-600"
-              />
+            </div>
+            
+            <div 
+              onClick={() => setProblemMode('specific')}
+              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
+                problemMode === 'specific' 
+                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  problemMode === 'specific' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                }`}>
+                  <Target className={`w-5 h-5 ${problemMode === 'specific' ? 'text-green-400' : 'text-zinc-400'}`} />
+                </div>
+                <div>
+                  <h3 className={`font-semibold ${problemMode === 'specific' ? 'text-green-400' : 'text-zinc-300'}`}>
+                    Specific Problem
+                  </h3>
+                  <p className="text-sm text-zinc-400">
+                    Choose by number
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div 
+              onClick={() => setProblemMode('preset')}
+              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
+                problemMode === 'preset' 
+                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  problemMode === 'preset' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                }`}>
+                  <BookOpen className={`w-5 h-5 ${problemMode === 'preset' ? 'text-green-400' : 'text-zinc-400'}`} />
+                </div>
+                <div>
+                  <h3 className={`font-semibold ${problemMode === 'preset' ? 'text-green-400' : 'text-zinc-300'}`}>
+                    Popular Presets
+                  </h3>
+                  <p className="text-sm text-zinc-400">
+                    Curated collections
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {useCustomNumber ? (
-              <div className="space-y-4 group">
-                <Label htmlFor="leetcodeNumber" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  LeetCode Question Number
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="leetcodeNumber"
-                    value={leetcodeNumber}
-                    onChange={(e) => setLeetcodeNumber(e.target.value)}
-                    placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
-                    required
-                    type="number"
-                    min="1"
-                    max="3000"
-                    className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
-                  />
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          {/* Preset Selection */}
+          {problemMode === 'preset' && (
+            <div className="space-y-6 mt-6">
+              {/* Selected Preset Details */}
+              {selectedPreset && (
+                <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-6 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-zinc-100">
+                        {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.title}
+                      </h3>
+                      <p className="text-sm text-zinc-400 mt-1">
+                        Select a category to practice
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedPreset('');
+                        setSelectedCategory('');
+                      }}
+                      className="text-zinc-400 hover:text-zinc-100"
+                    >
+                      Change Preset
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.categories.map((category) => (
+                      <div
+                        key={category.name}
+                        onClick={() => setSelectedCategory(category.name)}
+                        className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
+                          selectedCategory === category.name
+                            ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
+                            : 'bg-zinc-800/30 border-zinc-700/50 hover:border-green-500/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
+                            selectedCategory === category.name ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                          }`}>
+                            {category.icon}
+                          </div>
+                          <div>
+                            <h4 className={`font-medium ${
+                              selectedCategory === category.name ? 'text-green-400' : 'text-zinc-200'
+                            }`}>
+                              {category.name}
+                            </h4>
+                            <p className="text-sm text-zinc-400">
+                              {category.count} problems
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
-              </div>
-            ) : (
+              )}
+
+              {/* Preset Cards Grid */}
+              {!selectedPreset && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {LEETCODE_PRESETS.map((preset) => (
+                    <div
+                      key={preset.id}
+                      onClick={() => setSelectedPreset(preset.id)}
+                      className={`cursor-pointer rounded-xl p-6 border transition-all duration-300 hover:scale-[1.02] ${
+                        selectedPreset === preset.id
+                          ? 'bg-gradient-to-br from-green-600/20 via-green-500/10 to-green-400/5 border-green-500/50 shadow-lg shadow-green-500/10'
+                          : 'bg-gradient-to-br from-zinc-800/50 via-zinc-800/30 to-zinc-800/10 border-zinc-700/50 hover:border-green-500/30'
+                      }`}
+                    >
+                      <div className="flex flex-col h-full">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className={`text-lg font-bold mb-1 ${
+                              selectedPreset === preset.id ? 'text-green-400' : 'text-zinc-100'
+                            }`}>
+                              {preset.title}
+                            </h3>
+                            <p className="text-sm text-zinc-400">
+                              {preset.description}
+                            </p>
+                          </div>
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 ${
+                            selectedPreset === preset.id 
+                              ? 'bg-green-500/10 border-green-500/50 text-green-400' 
+                              : 'bg-zinc-800 border-zinc-600 text-zinc-400'
+                          }`}>
+                            {preset.icon}
+                          </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700/30">
+                            <div className="text-2xl font-bold text-zinc-100 mb-1">
+                              {preset.totalProblems}
+                            </div>
+                            <div className="text-xs text-zinc-400">Problems</div>
+                          </div>
+                          <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700/30">
+                            <div className="text-2xl font-bold text-zinc-100 mb-1">
+                              {preset.estimatedHours}h
+                            </div>
+                            <div className="text-xs text-zinc-400">Est. Time</div>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-auto">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm text-zinc-400">Progress</div>
+                            <div className="text-sm font-medium text-zinc-300">0%</div>
+                          </div>
+                          <div className="h-2 bg-zinc-700/50 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full w-0 rounded-full transition-all duration-300 ${
+                                selectedPreset === preset.id 
+                                  ? 'bg-gradient-to-r from-green-500 to-green-400' 
+                                  : 'bg-zinc-600'
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Categories */}
+                        <div className="mt-4">
+                          <div className="flex flex-wrap gap-2">
+                            {preset.categories.slice(0, 3).map((category, idx) => (
+                              <span 
+                                key={idx}
+                                className={`text-xs px-2 py-1 rounded-full border flex items-center gap-1 ${
+                                  selectedPreset === preset.id
+                                    ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                                    : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                                }`}
+                              >
+                                <span>{category.icon}</span>
+                                <span>{category.name}</span>
+                              </span>
+                            ))}
+                            {preset.categories.length > 3 && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
+                                +{preset.categories.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Difficulty Indicator */}
+                        <div className="mt-4 flex items-center gap-2">
+                          <div className="text-xs text-zinc-400">Difficulty:</div>
+                          <div className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            preset.difficulty.includes('Hard') 
+                              ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                              : preset.difficulty.includes('Medium')
+                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                                : 'bg-green-500/20 text-green-400 border border-green-500/40'
+                          }`}>
+                            {preset.difficulty}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AI Generator Form */}
+          {problemMode === 'ai' && (
+            <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20 backdrop-blur-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Existing AI form fields */}
                 <div className="space-y-4 group">
                   <Label htmlFor="company" className="text-green-300 text-sm font-medium flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -879,9 +1941,8 @@ public class Solution {
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="e.g., Google, Meta, Apple"
-                      required={!useCustomNumber}
-                      disabled={useCustomNumber}
-                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500 disabled:opacity-50"
+                      required={problemMode === 'ai'}
+                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
                     />
                     <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
@@ -946,18 +2007,55 @@ public class Solution {
                   </div>
                 </div>
               </div>
-            )}
-            <div className="pt-4">
-              <Button 
-                type="submit" 
-                disabled={loading}
-                className="w-full h-14 bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-500 hover:via-green-400 hover:to-green-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-green-400/20"
-              >
-                {loading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
-                <span>{useCustomNumber ? 'Get Specific Problem' : 'Generate AI Problem'}</span>
-              </Button>
             </div>
-          </form>
+          )}
+
+          {/* Specific Problem Form */}
+          {problemMode === 'specific' && (
+            <div className="space-y-4 group">
+              <Label htmlFor="leetcodeNumber" className="text-green-300 text-sm font-medium flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                LeetCode Question Number
+              </Label>
+              <div className="relative">
+                <Input
+                  id="leetcodeNumber"
+                  value={leetcodeNumber}
+                  onChange={(e) => setLeetcodeNumber(e.target.value)}
+                  placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
+                  required={problemMode === 'specific'}
+                  type="number"
+                  min="1"
+                  max="3000"
+                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
+                />
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+              <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
+            </div>
+          )}
+
+          <div className="pt-4">
+            <Button 
+              type="submit"
+              onClick={handleSubmit}
+              disabled={loading || (problemMode === 'preset' && (!selectedPreset || !selectedCategory))}
+              className="w-full h-14 bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-500 hover:via-green-400 hover:to-green-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-green-400/20"
+            >
+              {loading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
+              <span>
+                {problemMode === 'ai' && 'Generate AI Problem'}
+                {problemMode === 'specific' && 'Get Specific Problem'}
+                {problemMode === 'preset' && (
+                  selectedPreset && selectedCategory 
+                    ? `Start ${selectedCategory} Practice from ${LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.title}` 
+                    : selectedPreset
+                      ? 'Select a Category to Start'
+                      : 'Select a Preset to Start'
+                )}
+              </span>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -1430,85 +2528,26 @@ public class Solution {
               
               {/* Submit Section - Always visible at bottom */}
               <div className="pt-4 border-t border-slate-600/50 flex-shrink-0">
-                <Button 
-                  onClick={() => {
-                    if (!code) {
-                      toast({
-                        title: "Missing code solution",
-                        description: "Please provide your code solution before submitting.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                    
-                    if (!thoughtProcess) {
-                      toast({
-                        title: "Missing explanation",
-                        description: "Please provide an explanation for your solution before submitting.",
-                        variant: "destructive"
-                      });
-                      return;
-                    }
-                    
-                    // Store necessary data in localStorage for results page
-                    const technicalAssessmentData = {
-                      company,
-                      role,
-                      date: new Date().toISOString(),
-                      difficulty,
-                      questions: [{
-                        id: 1,
-                        leetCodeTitle: question ? parseLeetCodeProblem(question).title : "Technical Question",
-                        prompt: question,
-                        code,
-                        codeLanguage: language,
-                        explanation: thoughtProcess,
-                        audioUrl: audioUrl
-                      }]
-                    };
-                    
-                    try {
-                      // First clear any previous results to avoid confusion
-                      localStorage.removeItem("technicalAssessmentResult");
-                      
-                      // Then save the new assessment data
-                      localStorage.setItem("technicalAssessmentData", JSON.stringify(technicalAssessmentData));
-                      
-                      toast({
-                        title: "Solution submitted",
-                        description: "Your solution has been submitted for analysis."
-                      });
-                      
-                      if (onComplete) {
-                        onComplete();
-                      } else {
-                        router.push('/technical-assessment/results');
-                      }
-                    } catch (error) {
-                      console.error("Error saving assessment data:", error);
-                      toast({
-                        title: "Error submitting solution",
-                        description: "There was an error saving your solution. Please try again.",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                  disabled={!code || !thoughtProcess}
-                  className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 w-full h-12 text-base font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {!code || !thoughtProcess ? (
-                    <>
-                      <span className="hidden sm:inline">Complete Code & Explanation to Submit</span>
-                      <span className="sm:hidden">Complete & Submit</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="hidden sm:inline">Submit Solution for Analysis</span>
-                      <span className="sm:hidden">Submit Solution</span>
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-4">
+                  {/* Skip button */}
+                  <Button 
+                    variant="outline"
+                    onClick={handleSkip}
+                    className="flex-1 h-12 text-base font-semibold border-slate-600 hover:bg-slate-700"
+                  >
+                    Skip Question
+                  </Button>
+                  
+                  {/* Submit/Next button */}
+                  <Button 
+                    onClick={handleNext}
+                    disabled={!code || !thoughtProcess}
+                    className="flex-1 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircle className="h-5 w-5" />
+                    <span>Submit & Continue</span>
+                  </Button>
+                </div>
                 
                 {(!code || !thoughtProcess) && (
                   <div className="mt-3 text-center">
