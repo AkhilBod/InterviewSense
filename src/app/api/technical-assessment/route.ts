@@ -483,32 +483,56 @@ export async function PUT(req: Request) {
 - Efficient implementation`
     };
 
-    const prompt = `You are an expert code reviewer analyzing a ${language} solution to this LeetCode problem:
+    const prompt = `You are an expert technical interviewer evaluating a ${language} solution to this coding problem:
 
+PROBLEM:
 ${question}
 
-The submitted solution is:
-
+CANDIDATE'S CODE:
 ${code}
 
-The candidate's explanation is:
-
+CANDIDATE'S EXPLANATION:
 ${explanation}
 
-Analyze the solution for:
-1. Correctness - Does it solve the problem and handle edge cases?
-2. Time & Space Complexity - Is it optimal?
-3. Code Quality - Following these ${language} best practices:
+Conduct a comprehensive technical interview evaluation covering:
+
+1. SOLUTION CORRECTNESS:
+   - Does the code solve the stated problem correctly?
+   - Are all edge cases properly handled?
+   - Are there any logical errors or bugs?
+
+2. ALGORITHM EFFICIENCY:
+   - What is the actual time complexity? Provide Big O notation with detailed reasoning
+   - What is the space complexity? Include auxiliary space analysis
+   - Is this the optimal approach or are there better solutions?
+
+3. CODE QUALITY & ${language.toUpperCase()} BEST PRACTICES:
 ${languageBestPractices[language as keyof typeof languageBestPractices]}
+
+4. EXPLANATION QUALITY EVALUATION:
+   - Does the candidate demonstrate understanding of their approach?
+   - Do they correctly identify time/space complexity?
+   - Can they articulate the algorithm logic clearly?
+   - Do they mention edge cases and why their solution handles them?
+   - Is their technical communication clear and accurate?
+
+5. INTERVIEW READINESS:
+   - Would this solution pass a technical interview at a top tech company?
+   - What specific areas need improvement for interview success?
 
 Provide your analysis in this JSON format (no other text):
 {
   "isCorrect": boolean,
-  "correctnessAnalysis": "Detailed analysis of solution correctness",
-  "timeComplexity": "Big O notation with explanation",
-  "spaceComplexity": "Big O notation with explanation",
-  "codeQuality": "Analysis of code quality and best practices",
-  "suggestedImprovements": "Specific suggestions for improvement"
+  "correctnessAnalysis": "Detailed analysis of whether the code solves the problem correctly, including edge case handling",
+  "timeComplexity": "Actual Big O time complexity with step-by-step reasoning (e.g., 'O(n) because we iterate through the array once, and each HashMap operation is O(1)')",
+  "spaceComplexity": "Actual Big O space complexity with explanation of what data structures contribute to space usage",
+  "codeQuality": "Analysis of code readability, structure, variable naming, and adherence to ${language} best practices",
+  "explanationQuality": "Detailed evaluation of how well the candidate explained their solution, including accuracy of complexity analysis and clarity of communication",
+  "codeScore": "Numerical score (0-100) for the code quality and correctness, considering algorithm efficiency, implementation quality, edge case handling, and adherence to best practices",
+  "explanationScore": "Numerical score (0-100) for the quality of the candidate's explanation, based on accuracy, clarity, completeness, and technical communication",
+  "interviewFeedback": "Specific feedback on what this candidate did well and what they need to improve for technical interviews",
+  "strengths": ["Specific things the candidate did well", "Each strength should be concrete and actionable", "Maximum 3 items"],
+  "improvementAreas": ["Specific areas needing improvement", "Each should be actionable and interview-focused", "Maximum 3 items"]
 }`;
 
     // Generate the response
@@ -527,6 +551,12 @@ Provide your analysis in this JSON format (no other text):
       }
     );
 
+    // Debug: Log the raw response from Gemini before any processing
+    console.log('=== RAW GEMINI RESPONSE ===');
+    console.log('Raw response text:', responseText);
+    console.log('Response length:', responseText.length);
+    console.log('=== END RAW RESPONSE ===');
+
     try {
       // Clean up the response text
       responseText = responseText.trim();
@@ -534,6 +564,14 @@ Provide your analysis in this JSON format (no other text):
       responseText = responseText.replace(/```json\s*|\s*```/g, '');
       // Parse the JSON to validate it
       const analysis = JSON.parse(responseText);
+      
+      // Debug: Log the parsed analysis to see what Gemini actually returned
+      console.log('=== DEBUGGING GEMINI SCORES ===');
+      console.log('Full analysis object:', JSON.stringify(analysis, null, 2));
+      console.log('codeScore value:', analysis.codeScore, '(type:', typeof analysis.codeScore, ')');
+      console.log('explanationScore value:', analysis.explanationScore, '(type:', typeof analysis.explanationScore, ')');
+      console.log('isCorrect value:', analysis.isCorrect, '(type:', typeof analysis.isCorrect, ')');
+      console.log('=== END DEBUG ===');
       
       // Validate required fields
       if (!analysis.isCorrect && analysis.isCorrect !== false) {
@@ -543,17 +581,19 @@ Provide your analysis in this JSON format (no other text):
       // Transform the API response to match frontend expectations
       const transformedResponse = {
         success: true,
-        overallScore: analysis.isCorrect ? 85 : 45, // Base score on correctness
-        strengths: analysis.codeQuality ? 
+        overallScore: analysis.isCorrect ? 0 : 0, // Base score on correctness
+        strengths: analysis.strengths || (analysis.codeQuality ? 
           analysis.codeQuality.split('.').filter((s: string) => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
-          ["Code submitted successfully"],
-        improvementAreas: analysis.suggestedImprovements ? 
+          ["Code submitted successfully"]),
+        improvementAreas: analysis.improvementAreas || (analysis.suggestedImprovements ? 
           analysis.suggestedImprovements.split('.').filter((s: string) => s.trim()).slice(0, 3) :
-          ["Consider reviewing the solution"],
+          ["Consider reviewing the solution"]),
         codeFeedback: analysis.correctnessAnalysis || "Solution analyzed",
-        explanationFeedback: `Time Complexity: ${analysis.timeComplexity || "Not analyzed"}. Space Complexity: ${analysis.spaceComplexity || "Not analyzed"}`,
-        codeScore: analysis.isCorrect ? 80 : 40,
-        explanationScore: 75, // Default score
+        explanationFeedback: analysis.explanationQuality || 
+          `Time Complexity: ${analysis.timeComplexity || "Not analyzed"}. Space Complexity: ${analysis.spaceComplexity || "Not analyzed"}`,
+        interviewFeedback: analysis.interviewFeedback || "Interview feedback not available",
+        codeScore: parseFloat(analysis.codeScore) || (analysis.isCorrect ? 80 : 40), // Parse as number with fallback
+        explanationScore: parseFloat(analysis.explanationScore) || 67, // Parse as number with fallback
         analysis: analysis // Keep original analysis for detailed view
       };
 

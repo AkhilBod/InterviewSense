@@ -700,12 +700,6 @@ export default function TechnicalAssessmentResultsPage() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-end border-t border-slate-700 pt-4">
-                  <Button variant="outline" size="sm" className="gap-2 border-slate-700 text-slate-300 hover:bg-slate-800">
-                    <RefreshCw className="h-4 w-4" />
-                    Get More Feedback
-                  </Button>
-                </CardFooter>
               </Card>
 
             </div>
