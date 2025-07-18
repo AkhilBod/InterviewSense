@@ -23,8 +23,8 @@ By participating in this project, you agree to abide by our Code of Conduct:
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/your-username/interview-sense.git
-   cd interview-sense
+   git clone https://github.com/your-username/InterviewSense.git
+   cd InterviewSense
    ```
 
 2. **Install dependencies**

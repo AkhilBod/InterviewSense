@@ -10,7 +10,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?logo=prisma)](https://www.prisma.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Live Demo](https://interviewsense.com) • [Documentation](docs/) • [Report Bug](https://github.com/yourusername/interview-sense/issues) • [Request Feature](https://github.com/yourusername/interview-sense/issues)
+[Live Demo](https://interviewsense.com) • [Documentation](docs/) • [Report Bug](https://github.com/AkhilBod/InterviewSense/issues) • [Request Feature](https://github.com/AkhilBod/InterviewSense/issues)
 
 </div>
 
@@ -159,7 +159,7 @@ graph TB
 
 ### One-Click Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/interview-sense)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AkhilBod/InterviewSense)
 
 ### Prerequisites
 
@@ -173,8 +173,8 @@ Before you begin, ensure you have:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/interview-sense.git
-   cd interview-sense
+   git clone https://github.com/AkhilBod/InterviewSense.git
+   cd InterviewSense
    ```
 
 2. **Install dependencies**
@@ -548,7 +548,7 @@ NODE_ENV=                       # Environment (development/production)
 
 1. **One-Click Deploy**
    
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/interview-sense)
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AkhilBod/InterviewSense)
 
 2. **Manual Deployment**
    ```bash
@@ -714,8 +714,8 @@ We welcome contributions from the community! InterviewSense is built by develope
 
 ### 🌟 Ways to Contribute
 
-- 🐛 **Report Bugs**: Found an issue? [Open a bug report](https://github.com/yourusername/interview-sense/issues/new?template=bug_report.md)
-- ✨ **Feature Requests**: Have an idea? [Suggest a feature](https://github.com/yourusername/interview-sense/issues/new?template=feature_request.md)
+- 🐛 **Report Bugs**: Found an issue? [Open a bug report](https://github.com/AkhilBod/InterviewSense/issues/new?template=bug_report.md)
+- ✨ **Feature Requests**: Have an idea? [Suggest a feature](https://github.com/AkhilBod/InterviewSense/issues/new?template=feature_request.md)
 - 💻 **Code Contributions**: Submit pull requests for bug fixes or new features
 - 📖 **Documentation**: Help improve our docs, guides, and examples
 - 🌍 **Translations**: Add support for more languages
@@ -726,8 +726,8 @@ We welcome contributions from the community! InterviewSense is built by develope
 1. **Fork & Clone**
    ```bash
    # Fork the repo on GitHub, then:
-   git clone https://github.com/your-username/interview-sense.git
-   cd interview-sense
+   git clone https://github.com/your-username/InterviewSense.git
+   cd InterviewSense
    ```
 
 2. **Setup Development Environment**
@@ -829,7 +829,7 @@ Contributors are recognized in our:
 
 ### 💬 Community
 
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/interview-sense/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/AkhilBod/InterviewSense/discussions)
 - **Discord**: [Join our community](https://discord.gg/interview-sense) (coming soon)
 - **Twitter**: [@InterviewSense](https://twitter.com/interview-sense) (coming soon)
 
@@ -845,8 +845,8 @@ New to the project? Look for issues labeled:
 ### 🆘 Getting Help
 
 - **📖 Documentation**: Check our [comprehensive docs](docs/)
-- **❓ GitHub Discussions**: [Community Q&A](https://github.com/yourusername/interview-sense/discussions)
-- **🐛 Bug Reports**: [Report issues](https://github.com/yourusername/interview-sense/issues)
+- **❓ GitHub Discussions**: [Community Q&A](https://github.com/AkhilBod/InterviewSense/discussions)
+- **🐛 Bug Reports**: [Report issues](https://github.com/AkhilBod/InterviewSense/issues)
 - **💬 Discord**: [Join our community](https://discord.gg/interview-sense) (coming soon)
 
 ### 📧 Contact
