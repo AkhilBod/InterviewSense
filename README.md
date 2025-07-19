@@ -10,7 +10,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?logo=prisma)](https://www.prisma.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Live Demo](interviewsense.org) • [Documentation](docs/) • [Report Bug](https://github.com/AkhilBod/InterviewSense/issues) • [Request Feature](https://github.com/AkhilBod/InterviewSense/issues)
+[Live Demo]([interviewsense.org](https://www.interviewsense.org/)) • [Documentation](docs/) • [Report Bug](https://github.com/AkhilBod/InterviewSense/issues) • [Request Feature](https://github.com/AkhilBod/InterviewSense/issues)
 
 </div>
 
