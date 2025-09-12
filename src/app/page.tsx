@@ -82,7 +82,7 @@ const faqStructuredData = {
       "name": "Can I practice coding interviews for specific companies?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes! Our platform includes company-specific coding challenges and behavioral questions used by top tech companies. Practice with real interview questions from Google, Meta, Amazon, Microsoft, and hundreds of other tech companies offering CS internships."
+        "text": "Yes! Our platform includes company-specific coding challenges and behavioral questions used by top tech companies. Practice with real interview questions from Google, Meta, Amazon, Microsoft, and 10k+ other tech companies offering CS internships."
       }
     },
     {
@@ -1064,18 +1064,18 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-blue-300 font-medium">Join hundreds of developers already practicing</span>
+              <span className="text-sm text-blue-300 font-medium">Join 10k+ developers already practicing</span>
             </div>
             
             <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto">
-              Join thousands of developers who've already landed their dream jobs. 
+              Join 10k+ developers who've already landed their dream jobs. 
               <span className="text-blue-400 font-semibold"> Start practicing in under 30 seconds.</span>
             </p>
 
             {/* Social proof stats */}
             <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-10 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">100+</div>
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1">10k+</div>
                 <div className="text-sm text-zinc-400">Active Users</div>
               </div>
               <div className="text-center">
@@ -1228,7 +1228,7 @@ export default function Home() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
               <div className="max-w-xl text-center md:text-left">
                 <p className="text-sm sm:text-base text-zinc-400 mb-0">
-                  Join thousands of professionals who have transformed their interview skills with InterviewSense.
+                  Join 10k+ professionals who have transformed their interview skills with InterviewSense.
                 </p>
               </div>
               <Button
@@ -1252,14 +1252,14 @@ export default function Home() {
               Join CS Students Landing Internships at Top Companies
             </h2>
             <p className="text-base text-zinc-400 max-w-3xl mx-auto">
-              Our platform has helped hundreds of computer science students secure internships at Google, Meta, Amazon, Microsoft, and other leading tech companies.
+              Our platform has helped 10k+ computer science students secure internships at Google, Meta, Amazon, Microsoft, and other leading tech companies.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
             {/* Stats Cards */}
             <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-2xl p-6 text-center backdrop-blur-sm">
-              <div className="text-3xl font-bold text-blue-400 mb-2">500+</div>
+              <div className="text-3xl font-bold text-blue-400 mb-2">10k+</div>
               <div className="text-zinc-300 font-medium mb-1">CS Students Helped</div>
               <div className="text-sm text-zinc-500">Successfully prepared for tech internships</div>
             </div>
@@ -1293,7 +1293,7 @@ export default function Home() {
               Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <p className="text-xs text-zinc-500 mt-4">
-              No signup required • Free forever • Join thousands of CS students
+              No signup required • Free forever • Join 10k+ CS students
             </p>
           </div>
         </div>
