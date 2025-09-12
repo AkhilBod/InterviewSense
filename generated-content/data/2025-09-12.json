@@ -1,0 +1,3511 @@
+{
+  "generatedAt": "2025-09-12T04:46:38.769Z",
+  "source": "SimplifyJobs/Summer2026-Internships",
+  "totalInternships": 500,
+  "openInternships": 464,
+  "closedInternships": 36,
+  "companies": 178,
+  "locations": 214,
+  "internships": [
+    {
+      "slug": "meta-research-scientist-intern-3d-scene-reconstruction-generative-ai-phd-bellevue-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - 3D Scene Reconstruction / Generative AI - PhD",
+      "location": "Bellevue, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "eventual-software-engineer-intern-sf",
+      "company": "Eventual",
+      "role": "Software Engineer – Intern",
+      "location": "SF",
+      "isClosed": true
+    },
+    {
+      "slug": "manulife-financial-winter-co-op-data-science-masters-toronto-on-canada",
+      "company": "Manulife Financial",
+      "role": "Winter Co-op - Data Science - Masters",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-rd-co-op-iowa",
+      "company": "Emerson Electric",
+      "role": "R&D Co-Op",
+      "location": "Iowa",
+      "isClosed": false
+    },
+    {
+      "slug": "vermeer-it-security-analyst-intern-newton-ia",
+      "company": "Vermeer",
+      "role": "IT Security Analyst Intern",
+      "location": "Newton, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "cae-engineering-co-op-binghamton-ny",
+      "company": "CAE",
+      "role": "Engineering Co-op",
+      "location": "Binghamton, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "optiver-quantitative-developer-intern-austin-tx",
+      "company": "Optiver",
+      "role": "Quantitative Developer Intern",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "intact-security-analyst-internship-montreal-qc-canada-laval-qc-canada-longueuil-qc-canada",
+      "company": "Intact",
+      "role": "Security Analyst Internship",
+      "location": "Montreal, QC, Canada, Laval, QC, Canada, Longueuil, QC, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "onsemi-it-digital-transformation-office-intern-scottsdale-az",
+      "company": "onsemi",
+      "role": "IT Digital Transformation Office Intern",
+      "location": "Scottsdale, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-2026-future-talent-program-co-op-data-science-or-aiml-cambridge-ma",
+      "company": "Merck",
+      "role": "2026 Future Talent Program – Co-op - Data Science or AI/ML",
+      "location": "Cambridge, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-future-talent-program-intern-clinical-data-management-early-development-north-wales-pa-linden-",
+      "company": "Merck",
+      "role": "Future Talent Program – Intern - Clinical Data Management - Early Development",
+      "location": "North Wales, PA, Linden, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-houston-tx",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Houston, TX",
+      "isClosed": true
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-lombard-il",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Lombard, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-portage-mi",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Portage, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-holly-springs-nc",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Holly Springs, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-holly-springs-nc",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Holly Springs, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-houston-tx",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Houston, TX",
+      "isClosed": true
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-fayetteville-ga",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Fayetteville, GA",
+      "isClosed": true
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-fayetteville-ga",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Fayetteville, GA",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-thousand-oaks-ca",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Thousand Oaks, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "seer-interactive-ai-intern-philadelphia-pa",
+      "company": "Seer Interactive",
+      "role": "AI Intern",
+      "location": "Philadelphia, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "csx-engineering-track-testing-internship-jacksonville-fl",
+      "company": "CSX",
+      "role": "Engineering Track Testing Internship",
+      "location": "Jacksonville, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "skyworks-ai-summer-intern-hillsboro-or",
+      "company": "Skyworks",
+      "role": "AI-Summer Intern",
+      "location": "Hillsboro, OR",
+      "isClosed": false
+    },
+    {
+      "slug": "bioagilytix-intern-information-technology-support-durham-nc",
+      "company": "BioAgilytix",
+      "role": "Intern – Information Technology Support",
+      "location": "Durham, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "nextera-energy-it-nuclear-digital-transformation-developer-college-intern-jupiter-fl",
+      "company": "NextEra Energy",
+      "role": "IT Nuclear Digital Transformation Developer – College Intern",
+      "location": "Jupiter, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "nextera-energy-it-power-delivery-analyst-college-intern-jupiter-fl",
+      "company": "NextEra Energy",
+      "role": "IT Power Delivery Analyst – College Intern",
+      "location": "Jupiter, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "nextera-energy-it-enterprise-data-program-analyst-college-intern-palm-beach-gardens-fl",
+      "company": "NextEra Energy",
+      "role": "IT Enterprise Data Program Analyst – College Intern",
+      "location": "Palm Beach Gardens, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "nextera-energy-it-data-scientist-college-intern-idea-palm-beach-gardens-fl",
+      "company": "NextEra Energy",
+      "role": "IT Data Scientist – College Intern - Idea",
+      "location": "Palm Beach Gardens, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "hntb-strategic-technology-intern-tampa-fl-tallahassee-fl",
+      "company": "HNTB",
+      "role": "Strategic Technology Intern",
+      "location": "Tampa, FL, Tallahassee, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-software-development-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Software Development Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "xcel-energy-it-technical-intern-amarillo-tx",
+      "company": "Xcel Energy",
+      "role": "IT Technical Intern",
+      "location": "Amarillo, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "hewlett-packard-hp-technology-innovation-organization-hardware-engineering-internship-corvallis-or",
+      "company": "Hewlett Packard (HP)",
+      "role": "Technology & Innovation Organization Hardware Engineering Internship",
+      "location": "Corvallis, OR",
+      "isClosed": false
+    },
+    {
+      "slug": "xcel-energy-ai-intern-minneapolis-mn-denver-co",
+      "company": "Xcel Energy",
+      "role": "AI Intern",
+      "location": "Minneapolis, MN, Denver, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "city-of-baltimore-financial-data-analyst-intern-telecommunications-baltimore-md",
+      "company": "City of Baltimore",
+      "role": "Financial Data Analyst – Intern - Telecommunications",
+      "location": "Baltimore, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "ipg-dxtra-graduate-analytics-intern-nyc",
+      "company": "IPG DXTRA",
+      "role": "Graduate Analytics Intern",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "avertium-service-delivery-intern-knoxville-tn",
+      "company": "Avertium",
+      "role": "Service Delivery Intern",
+      "location": "Knoxville, TN",
+      "isClosed": false
+    },
+    {
+      "slug": "golin-graduate-analytics-intern-nyc",
+      "company": "Golin",
+      "role": "Graduate Analytics Intern",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "qorvo-software-engineer-intern-richardson-tx",
+      "company": "Qorvo",
+      "role": "Software Engineer Intern",
+      "location": "Richardson, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "dell-technologies-dell-csg-software-engineering-intern-austin-tx",
+      "company": "Dell Technologies",
+      "role": "Dell CSG Software Engineering Intern",
+      "location": "Austin, TX",
+      "isClosed": true
+    },
+    {
+      "slug": "thrivent-associate-software-engineer-intern-minnesota",
+      "company": "Thrivent",
+      "role": "Associate Software Engineer Intern",
+      "location": "Minnesota",
+      "isClosed": false
+    },
+    {
+      "slug": "curriculum-associates-co-op-software-engineer-billerica-ma-greensboro-nc",
+      "company": "Curriculum Associates",
+      "role": "Co-op Software Engineer",
+      "location": "Billerica, MA, Greensboro, NC",
+      "isClosed": true
+    },
+    {
+      "slug": "dell-technologies-dell-isg-hardware-engineering-graduate-intern-round-rock-tx-westborough-ma",
+      "company": "Dell Technologies",
+      "role": "Dell ISG Hardware Engineering Graduate Intern",
+      "location": "Round Rock, TX, Westborough, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "dell-technologies-dell-csg-hardware-engineering-intern-austin-tx",
+      "company": "Dell Technologies",
+      "role": "Dell CSG Hardware Engineering Intern",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "berkshire-hathaway-energy-intern-gas-control-columbia-sc",
+      "company": "Berkshire Hathaway Energy",
+      "role": "Intern – Gas Control",
+      "location": "Columbia, SC",
+      "isClosed": false
+    },
+    {
+      "slug": "mohawk-applications-development-intern-georgia",
+      "company": "Mohawk",
+      "role": "Applications Development Intern",
+      "location": "Georgia",
+      "isClosed": false
+    },
+    {
+      "slug": "aviva-co-op-student-enterprise-data-services-markham-on-canada",
+      "company": "Aviva",
+      "role": "Co-op Student - Enterprise Data Services",
+      "location": "Markham, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "cognitiv-machine-learning-research-scientist-intern-san-mateo-ca",
+      "company": "Cognitiv",
+      "role": "Machine Learning Research Scientist Intern",
+      "location": "San Mateo, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "waystar-data-analyst-internship-louisville-ky-duluth-ga-atlanta-ga-lehi-ut",
+      "company": "Waystar",
+      "role": "Data Analyst Internship",
+      "location": "Louisville, KY, Duluth, GA, Atlanta, GA, Lehi, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "tiktok-research-scientist-intern-tiktok-recommendation-large-recommender-models-phd-san-jose-ca",
+      "company": "TikTok",
+      "role": "Research Scientist Intern - Tiktok Recommendation-Large Recommender Models - PhD",
+      "location": "San Jose, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "tiktok-data-scientist-intern-tiktok-live-data-science-san-jose-ca",
+      "company": "TikTok",
+      "role": "Data Scientist Intern - Tiktok LIVE-Data Science",
+      "location": "San Jose, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-nashville-tn",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Nashville, TN",
+      "isClosed": false
+    },
+    {
+      "slug": "nokia-pipeline-rr-bell-labs-solutions-research-intern-naperville-il-dallas-tx-berkeley-heights-nj-su",
+      "company": "Nokia",
+      "role": "Pipeline RR: Bell Labs Solutions Research Intern",
+      "location": "Naperville, IL, Dallas, TX, Berkeley Heights, NJ, Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "verizon-communications-institute-of-technology-product-engineering-co-op-berkeley-heights-nj",
+      "company": "Verizon Communications",
+      "role": "Institute of Technology Product Engineering Co-op",
+      "location": "Berkeley Heights, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "american-bureau-of-shipping-digital-intern-spring-tx",
+      "company": "American Bureau of Shipping",
+      "role": "Digital Intern",
+      "location": "Spring, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "bank-of-montreal-quantitative-analyst-co-opinternship-data-science-toronto-on-canada",
+      "company": "Bank of Montreal",
+      "role": "Quantitative Analyst – Co-op/Internship - Data Science",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "vega-americas-it-co-op-mason-oh",
+      "company": "VEGA Americas",
+      "role": "IT Co-Op",
+      "location": "Mason, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "american-express-campus-associate-spring-internship-program-2026-software-engineer-technology-nyc",
+      "company": "American Express",
+      "role": "Campus Associate Spring Internship Program - 2026 Software Engineer - Technology",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-multimodal-generative-ai-and-robotics-phd-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Multimodal Generative AI and Robotics - PhD",
+      "location": "Redmond, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-systems-spring-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Systems Spring",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "verizon-communications-network-security-co-op-irving-tx",
+      "company": "Verizon Communications",
+      "role": "Network Security Co-op",
+      "location": "Irving, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "rtx-software-engineering-intern-cedar-rapids-ia",
+      "company": "RTX",
+      "role": "Software Engineering Intern",
+      "location": "Cedar Rapids, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "verizon-communications-institute-of-technology-network-security-co-op-somerset-county-nj",
+      "company": "Verizon Communications",
+      "role": "Institute of Technology Network Security Co-op",
+      "location": "Somerset County, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "badger-meter-software-engineering-intern-milwaukee-wi",
+      "company": "Badger Meter",
+      "role": "Software Engineering Intern",
+      "location": "Milwaukee, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "activision-blizzard-2026-summer-internships-software-engineering-santa-monica-ca-sherman-oaks-la",
+      "company": "Activision-Blizzard",
+      "role": "2026 Summer Internships - Software Engineering",
+      "location": "Santa Monica, CA, Sherman Oaks, LA",
+      "isClosed": false
+    },
+    {
+      "slug": "ciena-automation-tools-developer-co-op-ottawa-on-canada",
+      "company": "Ciena",
+      "role": "Automation Tools Developer Co-op",
+      "location": "Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "fidelity-investments-quantitative-research-intern-fixed-income-team-boston-ma-merrimack-nh",
+      "company": "Fidelity Investments",
+      "role": "Quantitative Research Intern-Fixed Income Team",
+      "location": "Boston, MA, Merrimack, NH",
+      "isClosed": false
+    },
+    {
+      "slug": "rtx-software-engineering-intern-lenexa-ks",
+      "company": "RTX",
+      "role": "Software Engineering intern",
+      "location": "Lenexa, KS",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-software-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Software",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "baird-internship-it-data-analytics-year-round-madison-wi-milwaukee-wi",
+      "company": "Baird",
+      "role": "Internship - IT Data & Analytics - Year-Round",
+      "location": "Madison, WI, Milwaukee, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-tulsa-ok",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Tulsa, OK",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-firmware-test-co-op-iowa",
+      "company": "Emerson Electric",
+      "role": "Firmware Test Co-Op",
+      "location": "Iowa",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-thousand-oaks-ca",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Thousand Oaks, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-lombard-il",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Lombard, IL",
+      "isClosed": true
+    },
+    {
+      "slug": "td-securities-summer-analyst-software-engineer-nyc",
+      "company": "TD Securities",
+      "role": "Summer Analyst - Software Engineer",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-field-eng-intern-fall-river-ma",
+      "company": "L3Harris Technologies",
+      "role": "Field Eng Intern",
+      "location": "Fall River, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "activision-blizzard-summer-internships-desktop-it-sherman-oaks-la",
+      "company": "Activision-Blizzard",
+      "role": "Summer Internships - Desktop IT",
+      "location": "Sherman Oaks, LA",
+      "isClosed": false
+    },
+    {
+      "slug": "applied-materials-2025-fall-embedded-firmware-co-op-rochester-ny",
+      "company": "Applied Materials",
+      "role": "2025 Fall Embedded Firmware Co-Op",
+      "location": "Rochester, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-software-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Software",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "activision-blizzard-summer-internships-cyber-security-sherman-oaks-la",
+      "company": "Activision-Blizzard",
+      "role": "Summer Internships - Cyber Security",
+      "location": "Sherman Oaks, LA",
+      "isClosed": false
+    },
+    {
+      "slug": "johnson-johnson-engineering-property-services-co-op-edison-nj",
+      "company": "Johnson & Johnson",
+      "role": "Engineering & Property Services Co-Op",
+      "location": "Edison, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "hitachi-software-analyst-intern-toronto-on-canada",
+      "company": "Hitachi",
+      "role": "Software Analyst Intern",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-nashville-tn",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Nashville, TN",
+      "isClosed": false
+    },
+    {
+      "slug": "thescore-machine-learning-engineer-coop-toronto-on-canada",
+      "company": "theScore",
+      "role": "Machine Learning Engineer – Coop",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-software-spring-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Software Spring",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "thescore-software-developer-coop-sportsbook-toronto-on-canada",
+      "company": "theScore",
+      "role": "Software Developer – Coop - Sportsbook",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-software-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Software",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-spring-2026-intern-tulsa-ok",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Spring 2026 Intern",
+      "location": "Tulsa, OK",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-palm-bay-fl",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Palm Bay, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-portage-mi",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Portage, MI",
+      "isClosed": true
+    },
+    {
+      "slug": "labcorp-intern-enterprise-systems-monitoring-durham-nc",
+      "company": "LabCorp",
+      "role": "Intern – Enterprise Systems Monitoring",
+      "location": "Durham, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "labcorp-intern-software-development-burlington-nc",
+      "company": "LabCorp",
+      "role": "Intern – Software Development",
+      "location": "Burlington, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "nationwide-threat-analysis-internship-columbus-oh",
+      "company": "Nationwide",
+      "role": "Threat Analysis Internship",
+      "location": "Columbus, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineering-intern-c-philadelphia-pa",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineering Intern C",
+      "location": "Philadelphia, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "super-data-analyst-intern-remote-in-canada",
+      "company": "Super",
+      "role": "Data Analyst Intern",
+      "location": "Remote in Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "marvell-physical-design-engineer-intern-morrisville-nc",
+      "company": "Marvell",
+      "role": "Physical Design Engineer Intern",
+      "location": "Morrisville, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "allegion-firmware-intern-golden-co",
+      "company": "Allegion",
+      "role": "Firmware Intern",
+      "location": "Golden, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "brunswick-software-engineer-intern-oshkosh-wi",
+      "company": "Brunswick",
+      "role": "Software Engineer Intern",
+      "location": "Oshkosh, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "baird-internship-software-developer-madison-wi-milwaukee-wi",
+      "company": "Baird",
+      "role": "Internship - Software Developer",
+      "location": "Madison, WI, Milwaukee, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "veeam-software-integrations-software-developer-intern-georgia",
+      "company": "Veeam Software",
+      "role": "Integrations Software Developer Intern",
+      "location": "Georgia",
+      "isClosed": false
+    },
+    {
+      "slug": "wellmark-data-analytics-governance-internship-des-moines-ia",
+      "company": "Wellmark",
+      "role": "Data Analytics & Governance Internship",
+      "location": "Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "everest-2026-information-technology-internship-program-middlesex-nj",
+      "company": "Everest",
+      "role": "2026 Information Technology Internship Program",
+      "location": "Middlesex, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "servicenow-machine-learning-engineer-intern-santa-clara-ca",
+      "company": "ServiceNow",
+      "role": "Machine Learning Engineer Intern",
+      "location": "Santa Clara, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "us-venture-data-science-intern-breakthrough-green-bay-wi",
+      "company": "U.S. Venture",
+      "role": "Data Science Intern - Breakthrough",
+      "location": "Green Bay, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-waveguide-design-phd-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Waveguide Design - PhD",
+      "location": "Redmond, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "wellmark-software-engineer-internship-des-moines-ia",
+      "company": "Wellmark",
+      "role": "Software Engineer Internship",
+      "location": "Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "hmh-it-intern-houston-tx",
+      "company": "HMH",
+      "role": "IT Intern",
+      "location": "Houston, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "borgwarner-engineering-intern-1-auburn-hills-mi",
+      "company": "BorgWarner",
+      "role": "Engineering Intern-1",
+      "location": "Auburn Hills, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "cigna-group-accredo-product-summer-intern-st-louis-mo",
+      "company": "Cigna Group",
+      "role": "Accredo Product – Summer Intern",
+      "location": "St. Louis, MO",
+      "isClosed": false
+    },
+    {
+      "slug": "cesiumastro-embedded-software-engineering-internship-austin-tx",
+      "company": "CesiumAstro",
+      "role": "Embedded Software Engineering Internship",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-human-assisted-ai-and-explainable-ai-intern-sunnyvale-ca",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Human-Assisted AI and Explainable AI – Intern",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-product-engineering-internship-edinburgh-uk",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Product Engineering – Internship",
+      "location": "Edinburgh, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-product-management-intern-southfield-mi",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Product Management Intern",
+      "location": "Southfield, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "corebridge-financial-2025-corebridge-summer-internship-program-data-houston-tx",
+      "company": "Corebridge Financial",
+      "role": "2025 Corebridge Summer Internship Program - Data",
+      "location": "Houston, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "apex-analytix-data-application-developer-intern-greensboro-nc",
+      "company": "APEX Analytix",
+      "role": "Data Application Developer Intern",
+      "location": "Greensboro, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "thermo-fisher-scientific-quality-specialist-data-analysis-sr-intern-logan-ut",
+      "company": "Thermo Fisher Scientific",
+      "role": "Quality Specialist – Data Analysis Sr. Intern",
+      "location": "Logan, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "compeer-financial-data-analytics-intern-eau-claire-wi-rochester-mn-river-falls-wi-lakeville-mn-manka",
+      "company": "Compeer Financial",
+      "role": "Data Analytics Intern",
+      "location": "Eau Claire, WI, Rochester, MN, River Falls, WI, Lakeville, MN, Mankato, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "huntington-ingalls-industries-college-summer-intern-info-tech-biloxi-ms",
+      "company": "Huntington Ingalls Industries",
+      "role": "College Summer Intern - Info Tech",
+      "location": "Biloxi, MS",
+      "isClosed": false
+    },
+    {
+      "slug": "huntington-ingalls-industries-college-summer-intern-production-control-biloxi-ms",
+      "company": "Huntington Ingalls Industries",
+      "role": "College Summer Intern-Production Control",
+      "location": "Biloxi, MS",
+      "isClosed": false
+    },
+    {
+      "slug": "thrivent-it-application-engineer-intern-investments-minneapolis-mn",
+      "company": "Thrivent",
+      "role": "IT Application Engineer Intern - Investments",
+      "location": "Minneapolis, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "thrivent-data-analyst-intern-investments-minneapolis-mn",
+      "company": "Thrivent",
+      "role": "Data Analyst Intern - Investments",
+      "location": "Minneapolis, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-foundation-models-for-autonomous-driving-intern-sunnyvale-ca",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Foundation Models for Autonomous Driving – Intern",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-calibration-process-optimization-intern-southfield-mi",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Calibration Process Optimization Intern",
+      "location": "Southfield, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-foundation-models-for-autonomous-driving-research-intern-sunnyvale-ca",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Foundation Models for Autonomous Driving – Research Intern",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "rtx-2026-intern-raytheon-software-systems-engineer-arlington-va",
+      "company": "RTX",
+      "role": "2026 Intern - Raytheon Software Systems Engineer",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "rtx-intern-software-systems-engineer-arlington-va",
+      "company": "RTX",
+      "role": "Intern Software Systems Engineer",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "adobe-intern-associate-product-manager-lehi-ut",
+      "company": "Adobe",
+      "role": "Intern - Associate Product Manager",
+      "location": "Lehi, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "adobe-2026-intern-product-marketing-manager-lehi-ut",
+      "company": "Adobe",
+      "role": "2026 Intern - Product Marketing Manager",
+      "location": "Lehi, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "crowe-data-analytics-developer-intern-chicago-il",
+      "company": "Crowe",
+      "role": "Data Analytics Developer Intern",
+      "location": "Chicago, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-future-talent-program-co-op-technology-design-customer-interface-linden-nj",
+      "company": "Merck",
+      "role": "Future Talent Program – Co-Op - Technology Design & Customer Interface",
+      "location": "Linden, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "mastercontrol-data-engineer-intern-salt-lake-city-ut",
+      "company": "MasterControl",
+      "role": "Data Engineer Intern",
+      "location": "Salt Lake City, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "lockheed-martin-software-engineering-intern-orlando-fl",
+      "company": "Lockheed Martin",
+      "role": "Software Engineering Intern",
+      "location": "Orlando, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-mobile-applications-ios-intern-niles-il",
+      "company": "Shure",
+      "role": "Mobile Applications (iOS) Intern",
+      "location": "Niles, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-cloud-applications-development-intern-niles-il",
+      "company": "Shure",
+      "role": "Cloud Applications Development Intern",
+      "location": "Niles, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-software-engineering-intern-niles-il",
+      "company": "Shure",
+      "role": "Software Engineering Intern",
+      "location": "Niles, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-mobile-applications-android-intern-niles-il",
+      "company": "Shure",
+      "role": "Mobile Applications (Android) Intern",
+      "location": "Niles, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-embedded-software-development-intern-niles-il",
+      "company": "Shure",
+      "role": "Embedded Software Development Intern",
+      "location": "Niles, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "salesforce-salesforce-ai-research-palo-alto-ca",
+      "company": "Salesforce",
+      "role": "Salesforce AI Research",
+      "location": "Palo Alto, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-natural-language-processing-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern (Natural Language Processing)",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-ai-engineering-intern-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI Engineering Intern",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-simulation-optimization-and-reinforcement-learning-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern (Simulation Optimization and Reinforcement Learning)",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-quantitative-research-data-science-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern (Quantitative Research & Data Science)",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-graphs-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern (Graphs)",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "nelnet-intern-ai-enablement-lincoln-ne",
+      "company": "Nelnet",
+      "role": "Intern - AI Enablement",
+      "location": "Lincoln, NE",
+      "isClosed": false
+    },
+    {
+      "slug": "nxp-semiconductors-aiml-asic-design-and-implementation-automation-intern-san-diego-ca",
+      "company": "NXP Semiconductors",
+      "role": "AI/ML ASIC Design and Implementation Automation Intern",
+      "location": "San Diego, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "t-rowe-price-quantitative-investing-baltimore-md",
+      "company": "T. Rowe Price",
+      "role": "Quantitative Investing",
+      "location": "Baltimore, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-it-intern-data-science-west-des-moines-ia",
+      "company": "American Equity",
+      "role": "IT Intern, Data Science",
+      "location": "West Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-embedded-software-engineer-san-diego-ca",
+      "company": "Wind River",
+      "role": "Embedded Software Engineer",
+      "location": "San Diego, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "cobank-software-engineer-intern-denver-co",
+      "company": "CoBank",
+      "role": "Software Engineer Intern",
+      "location": "Denver, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "texas-instruments-software-engineering-intern-dallas-tx",
+      "company": "Texas Instruments",
+      "role": "Software Engineering Intern",
+      "location": "Dallas, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "continental-intern-it-operations-year-round-fort-mill-sc",
+      "company": "Continental",
+      "role": "Intern – IT Operations - Year-Round",
+      "location": "Fort Mill, SC",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-software-development-internship-edinburgh-uk",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Software Development Internship",
+      "location": "Edinburgh, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-automated-driving-intern-simulation-at-scale-for-rl-sunnyvale-ca",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Automated Driving Intern - Simulation at Scale for RL",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "us-venture-software-engineer-intern-igen-appleton-wi",
+      "company": "U.S. Venture",
+      "role": "Software Engineer Intern - Igen",
+      "location": "Appleton, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "mondelez-international-research-development-product-internship-birmingham-uk",
+      "company": "Mondelez International",
+      "role": "Research & Development Product Internship",
+      "location": "Birmingham, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "aecom-asset-management-intern-burnaby-bc-canada",
+      "company": "AECOM",
+      "role": "Asset Management Intern",
+      "location": "Burnaby, BC, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-management-undergraduate-internship-coralville-ia-providence-ri-columb",
+      "company": "Citizens Financial Group",
+      "role": "Data Management Undergraduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-software-engineer-internship-norwood-ma-phoenix-az",
+      "company": "Citizens Financial Group",
+      "role": "Software Engineer Internship",
+      "location": "Norwood, MA, Phoenix, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-network-engineer-internship-providence-ri-norwood-ma-phoenix-az",
+      "company": "Citizens Financial Group",
+      "role": "Network Engineer Internship",
+      "location": "Providence, RI, Norwood, MA, Phoenix, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "rtx-software-engineering-intern-east-windsor-ct",
+      "company": "RTX",
+      "role": "Software Engineering Intern",
+      "location": "East Windsor, CT",
+      "isClosed": false
+    },
+    {
+      "slug": "american-express-campus-graduate-summer-internship-program-2026-product-development-us-consumer-serv",
+      "company": "American Express",
+      "role": "Campus Graduate Summer Internship Program - 2026 Product Development - US Consumer Services",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-test-engineering-intern-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Test Engineering Intern",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-applied-ai-intern-deep-learning-sunnyvale-ca",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Applied AI Intern - Deep Learning",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-human-computer-interaction-phd-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Human Computer Interaction - PhD",
+      "location": "Redmond, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "rockwell-automation-co-op-embedded-software-engineer-mayfield-heights-oh",
+      "company": "Rockwell Automation",
+      "role": "Co-op – Embedded Software Engineer",
+      "location": "Mayfield Heights, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "marmon-holdings-product-managementmarketing-intern-charlotte-nc",
+      "company": "Marmon Holdings",
+      "role": "Product Management/Marketing Intern",
+      "location": "Charlotte, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "american-financial-group-data-engineering-visualization-intern-cincinnati-oh",
+      "company": "American Financial Group",
+      "role": "Data Engineering & Visualization Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "marmon-holdings-product-managementmarketing-intern-louisville-ky",
+      "company": "Marmon Holdings",
+      "role": "Product Management/Marketing Intern",
+      "location": "Louisville, KY",
+      "isClosed": false
+    },
+    {
+      "slug": "interactive-brokers-software-developer-summer-internship-greenwich-ct",
+      "company": "Interactive Brokers",
+      "role": "Software Developer Summer Internship",
+      "location": "Greenwich, CT",
+      "isClosed": false
+    },
+    {
+      "slug": "national-information-solutions-cooperative-nisc-intern-applications-data-analyst-bismarck-nd-lake-st",
+      "company": "National Information Solutions Cooperative (NISC)",
+      "role": "Intern – Applications & Data Analyst",
+      "location": "Bismarck, ND, Lake St Louis, MO, Cedar Rapids, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-2026-future-talent-program-co-op-data-scientist-causal-network-cambridge-ma",
+      "company": "Merck",
+      "role": "2026 Future Talent Program – Co-op - Data Scientist - Causal Network",
+      "location": "Cambridge, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "national-information-solutions-cooperative-nisc-intern-applications-data-analyst-bismarck-nd-lake-st",
+      "company": "National Information Solutions Cooperative (NISC)",
+      "role": "Intern – Applications & Data Analyst",
+      "location": "Bismarck, ND, Lake St Louis, MO, Cedar Rapids, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-2026-future-talent-program-intern-data-analytics-and-insights-linden-nj",
+      "company": "Merck",
+      "role": "2026 Future Talent Program – Intern - Data Analytics and Insights",
+      "location": "Linden, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "ramp-applied-scientist-intern-nyc",
+      "company": "Ramp",
+      "role": "Applied Scientist Intern",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "skyworks-product-engineer-intern-austin-tx",
+      "company": "Skyworks",
+      "role": "Product Engineer Intern",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "reframe-systems-software-engineer-full-stack-robotics-intern-andover-ma",
+      "company": "Reframe Systems",
+      "role": "Software Engineer – Full Stack Robotics Intern",
+      "location": "Andover, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "entegris-data-scientist-co-op-montgomery-il",
+      "company": "Entegris",
+      "role": "Data Scientist Co-Op",
+      "location": "Montgomery, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "marvell-application-engineering-intern-santa-clara-ca",
+      "company": "Marvell",
+      "role": "Application Engineering Intern",
+      "location": "Santa Clara, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "marvell-application-engineer-intern-santa-clara-ca",
+      "company": "Marvell",
+      "role": "Application Engineer Intern",
+      "location": "Santa Clara, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "grant-thornton-audit-it-assurance-intern-dallas-tx",
+      "company": "Grant Thornton",
+      "role": "Audit IT Assurance Intern",
+      "location": "Dallas, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "csx-communications-signals-ptc-internship-jacksonville-fl",
+      "company": "CSX",
+      "role": "Communications & Signals PTC Internship",
+      "location": "Jacksonville, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "walmart-intern-cybersecurity-bentonville-ar",
+      "company": "Walmart",
+      "role": "Intern: Cybersecurity",
+      "location": "Bentonville, AR",
+      "isClosed": false
+    },
+    {
+      "slug": "ge-aerospace-ge-aerospace-research-aicomputer-vision-fellow-internship-schenectady-ny",
+      "company": "GE Aerospace",
+      "role": "GE Aerospace Research – AI/Computer Vision Fellow Internship",
+      "location": "Schenectady, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-aftermarket-product-management-intern-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Aftermarket Product Management Intern",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-scene-understanding-and-genai-for-autonomous-driving-research-intern-su",
+      "company": "Robert Bosch Venture Capital",
+      "role": "Scene Understanding and GenAI for Autonomous Driving – Research Intern",
+      "location": "Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "ciena-hardware-design-co-op-ottawa-on-canada",
+      "company": "Ciena",
+      "role": "Hardware Design Co-Op",
+      "location": "Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "point72-internship-data-engineer-proprietary-research-nyc",
+      "company": "Point72",
+      "role": "Internship - Data Engineer - Proprietary Research",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "marvell-hardware-design-engineer-intern-irvine-ca",
+      "company": "Marvell",
+      "role": "Hardware Design Engineer Intern",
+      "location": "Irvine, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-science-undergraduate-internship-coralville-ia-providence-ri-columbus-",
+      "company": "Citizens Financial Group",
+      "role": "Data Science Undergraduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-engineering-intern-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Software Engineering Intern",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-firmware-engineering-intern-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Firmware Engineering Intern",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "us-venture-software-development-intern-us-autoforce-appleton-wi",
+      "company": "U.S. Venture",
+      "role": "Software Development Intern - U.S. Autoforce",
+      "location": "Appleton, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "university-of-maryland-medical-system-ms-it-helpdesk-specialist-intern-columbia-md",
+      "company": "University of Maryland Medical System",
+      "role": "MS IT Helpdesk Specialist Intern",
+      "location": "Columbia, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "us-venture-information-security-intern-appleton-wi",
+      "company": "U.S. Venture",
+      "role": "Information Security Intern",
+      "location": "Appleton, WI",
+      "isClosed": false
+    },
+    {
+      "slug": "huntsman-it-infrastructure-internship-the-woodlands-tx",
+      "company": "Huntsman",
+      "role": "IT – Infrastructure Internship",
+      "location": "The Woodlands, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-business-insights-graduate-internship-coralville-ia-providence-ri-columbus-",
+      "company": "Citizens Financial Group",
+      "role": "Business Insights Graduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "viavi-solutions-hardwareelectricaloptical-engineering-intern-indianapolis-in",
+      "company": "Viavi Solutions",
+      "role": "Hardware/Electrical/Optical Engineering Intern",
+      "location": "Indianapolis, IN",
+      "isClosed": false
+    },
+    {
+      "slug": "3m-internship-2026-phd-research-development-intern-austin-tx-woodbury-mn",
+      "company": "3M",
+      "role": "Internship – 2026 PhD Research & Development Intern",
+      "location": "Austin, TX, Woodbury, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-product-management-co-op-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Product Management Co-op",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-hardware-design-intern-austin-tx",
+      "company": "Emerson Electric",
+      "role": "Hardware Design Intern",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-engineer-internship-providence-ri-norwood-ma-phoenix-az",
+      "company": "Citizens Financial Group",
+      "role": "Data Engineer Internship",
+      "location": "Providence, RI, Norwood, MA, Phoenix, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "mackenzie-investments-winter-cybersecurity-services-intern-winnipeg-mb-canada-toronto-on-canada",
+      "company": "Mackenzie Investments",
+      "role": "Winter – Cybersecurity Services Intern",
+      "location": "Winnipeg, MB, Canada, Toronto, ON, Canada",
+      "isClosed": true
+    },
+    {
+      "slug": "seagate-technology-product-delivery-and-experience-intern-pde-shakopee-mn-longmont-co",
+      "company": "Seagate Technology",
+      "role": "Product Delivery and Experience Intern - Pde",
+      "location": "Shakopee, MN, Longmont, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-holly-springs-nc",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Holly Springs, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-cyber-security-intern-colorado-springs-co",
+      "company": "General Dynamics Mission Systems",
+      "role": "Cyber Security – Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "3m-internship-2026-undergraduate-and-masters-research-development-intern-austin-tx-woodbury-mn",
+      "company": "3M",
+      "role": "Internship – 2026 Undergraduate and Master's Research & Development Intern",
+      "location": "Austin, TX, Woodbury, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "hewlett-packard-enterprise-data-science-intern-fort-collins-co",
+      "company": "Hewlett Packard Enterprise",
+      "role": "Data Science Intern",
+      "location": "Fort Collins, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "berkshire-hathaway-energy-renewable-development-intern-gis-des-moines-ia",
+      "company": "Berkshire Hathaway Energy",
+      "role": "Renewable Development – Intern - GIS",
+      "location": "Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "national-information-solutions-cooperative-nisc-intern-technical-support-help-desk-cedar-rapids-ia",
+      "company": "National Information Solutions Cooperative (NISC)",
+      "role": "Intern – Technical Support - Help Desk",
+      "location": "Cedar Rapids, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-trader-internship-nyc",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Trader Internship",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-cybersecurity-engineering-intern-shakopee-mn",
+      "company": "Emerson Electric",
+      "role": "Cybersecurity Engineering Intern",
+      "location": "Shakopee, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-houston-tx",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Houston, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "motorola-software-engineer-intern-hoffman-estates-il",
+      "company": "Motorola",
+      "role": "Software Engineer Intern",
+      "location": "Hoffman Estates, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-software-engineering-intern-dedham-ma",
+      "company": "General Dynamics Mission Systems",
+      "role": "Software Engineering Intern",
+      "location": "Dedham, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "fidelity-investments-quantitative-research-intern-systematic-fixed-income-strategies-team-boston-ma",
+      "company": "Fidelity Investments",
+      "role": "Quantitative Research Intern-Systematic Fixed Income Strategies Team",
+      "location": "Boston, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-it-engineer-intern-santa-rosa-ca",
+      "company": "Keysight Technologies",
+      "role": "IT Engineer Intern",
+      "location": "Santa Rosa, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-data-engineer-intern-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Data Engineer Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-software-development-co-op-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Software Development Co-Op",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-systems-engineer-intern-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Systems Engineer Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-informatics-internshipco-op-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Informatics Internship/Co-Op",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-information-security-intern-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Information Security Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "medpace-inc-network-engineer-intern-spring-2026-cincinnati-oh",
+      "company": "Medpace, Inc.",
+      "role": "Network Engineer Intern-Spring 2026",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "grant-thornton-audit-it-assurance-intern-houston-tx",
+      "company": "Grant Thornton",
+      "role": "Audit IT Assurance Intern",
+      "location": "Houston, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-analytics-undergraduate-internship-coralville-ia-providence-ri-columbu",
+      "company": "Citizens Financial Group",
+      "role": "Data Analytics Undergraduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "fm-global-cyber-co-op-providence-ri",
+      "company": "FM Global",
+      "role": "Cyber Co-Op",
+      "location": "Providence, RI",
+      "isClosed": true
+    },
+    {
+      "slug": "marvell-software-design-intern-santa-clara-ca",
+      "company": "Marvell",
+      "role": "Software Design Intern",
+      "location": "Santa Clara, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-software-engineer-intern-grimes-ia",
+      "company": "W.R. Berkley",
+      "role": "Software Engineer Intern",
+      "location": "Grimes, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "bytedance-software-engineer-intern-applied-machine-learning-ml-system-san-jose-ca",
+      "company": "ByteDance",
+      "role": "Software Engineer Intern - Applied Machine Learning - ML System",
+      "location": "San Jose, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "activision-blizzard-information-security-intern-sherman-oaks-la",
+      "company": "Activision-Blizzard",
+      "role": "Information Security Intern",
+      "location": "Sherman Oaks, LA",
+      "isClosed": false
+    },
+    {
+      "slug": "cotiviti-intern-generative-ai-research-engineer-remote-in-usa",
+      "company": "Cotiviti",
+      "role": "Intern – Generative AI Research Engineer",
+      "location": "Remote in USA",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-summer-2026-university-internship-pipeline-reston-va",
+      "company": "Peraton",
+      "role": "Summer 2026 University Internship Pipeline",
+      "location": "Reston, VA",
+      "isClosed": true
+    },
+    {
+      "slug": "meta-research-scientist-intern-non-linear-optics-phd-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Non-Linear Optics - PhD",
+      "location": "Redmond, WA",
+      "isClosed": true
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-cybersecurity-systems-engineer-intern-scottsdale-az",
+      "company": "General Dynamics Mission Systems",
+      "role": "Cybersecurity Systems Engineer Intern",
+      "location": "Scottsdale, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "kitware-computer-vision-software-development-internship-clifton-park-ny",
+      "company": "Kitware",
+      "role": "Computer Vision Software Development Internship",
+      "location": "Clifton Park, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-data-scientist-intern-sparks-nv",
+      "company": "Sierra Nevada Coporation",
+      "role": "Data Scientist Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-software-engineer-intern-sparks-nv",
+      "company": "Sierra Nevada Coporation",
+      "role": "Software Engineer Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-it-support-technician-intern-lone-tree-co",
+      "company": "Sierra Nevada Coporation",
+      "role": "IT Support Technician Intern",
+      "location": "Lone Tree, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-cybersecurity-engineer-intern-sparks-nv",
+      "company": "Sierra Nevada Coporation",
+      "role": "Cybersecurity Engineer Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "wellington-management-technology-undergraduate-summer-internship-boston-ma",
+      "company": "Wellington Management",
+      "role": "Technology Undergraduate Summer Internship",
+      "location": "Boston, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-technical-systems-administrator-intern-lone-tree-co",
+      "company": "Sierra Nevada Coporation",
+      "role": "Technical Systems Administrator Intern",
+      "location": "Lone Tree, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-data-scientist-intern-lone-tree-co",
+      "company": "Sierra Nevada Coporation",
+      "role": "Data Scientist Intern",
+      "location": "Lone Tree, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-cybersecurity-engineer-intern-lone-tree-co",
+      "company": "Sierra Nevada Coporation",
+      "role": "Cybersecurity Engineer Intern",
+      "location": "Lone Tree, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-it-support-technician-intern-sparks-nv",
+      "company": "Sierra Nevada Coporation",
+      "role": "IT Support Technician Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-technical-systems-administrator-intern-sparks-nv",
+      "company": "Sierra Nevada Coporation",
+      "role": "Technical Systems Administrator Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "sierra-nevada-coporation-software-engineer-intern-lone-tree-co",
+      "company": "Sierra Nevada Coporation",
+      "role": "Software Engineer Intern",
+      "location": "Lone Tree, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-systematic-trading-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Systematic Trading Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-systematic-trading-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Systematic Trading Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "ciena-hardware-design-and-verification-co-op-pcba-ottawa-on-canada",
+      "company": "Ciena",
+      "role": "Hardware – Design and Verification Co-op - Pcba",
+      "location": "Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "air-liquide-summer-internship-newark-de",
+      "company": "Air Liquide",
+      "role": "Summer Internship",
+      "location": "Newark, DE",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-software-engineer-intern-frederick-md-waynesboro-pa",
+      "company": "Oshkosh",
+      "role": "Software Engineer Intern",
+      "location": "Frederick, MD, Waynesboro, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "nokia-engineering-lab-technician-co-opintern-ottawa-on-canada",
+      "company": "Nokia",
+      "role": "Engineering Lab Technician Co-op/Intern",
+      "location": "Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "seagate-technology-data-analyst-summer-2026-intern-bloomington-mn-shakopee-mn-longmont-co",
+      "company": "Seagate Technology",
+      "role": "Data Analyst Summer 2026 Intern",
+      "location": "Bloomington, MN, Shakopee, MN, Longmont, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "saab-co-op-systems-east-syracuse-ny",
+      "company": "Saab",
+      "role": "Co-Op – Systems",
+      "location": "East Syracuse, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "rf-smart-software-developer-intern-sdet-jacksonville-fl",
+      "company": "RF-SMART",
+      "role": "Software Developer – Intern - Sdet",
+      "location": "Jacksonville, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "nokia-software-developertester-co-opintern-ottawa-on-canada",
+      "company": "Nokia",
+      "role": "Software Developertester Co-op/Intern",
+      "location": "Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "gsa-capital-quantitative-researcher-intern-london-uk-nyc",
+      "company": "GSA Capital",
+      "role": "Quantitative Researcher – Intern",
+      "location": "London, UK, NYC",
+      "isClosed": true
+    },
+    {
+      "slug": "legrand-na-firmware-intern-carlsbad-ca",
+      "company": "Legrand NA",
+      "role": "Firmware Intern",
+      "location": "Carlsbad, CA",
+      "isClosed": true
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-graphs-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern - Graphs",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "stonex-group-intern-emerging-markets-sales-and-trading-nyc",
+      "company": "StoneX Group",
+      "role": "Intern – Emerging Markets Sales and Trading",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "steel-dynamics-computer-engineering-internship-fort-wayne-in",
+      "company": "Steel Dynamics",
+      "role": "Computer Engineering Internship",
+      "location": "Fort Wayne, IN",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-it-intern-information-security-des-moines-ia",
+      "company": "American Equity",
+      "role": "IT Intern – Information Security",
+      "location": "Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "robert-bosch-venture-capital-it-intern-vernon-hills-il",
+      "company": "Robert Bosch Venture Capital",
+      "role": "IT Intern",
+      "location": "Vernon Hills, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-engineering-co-op-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Software Engineering Co-op",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "millerknoll-information-security-intern-holland-mi",
+      "company": "MillerKnoll",
+      "role": "Information Security Intern",
+      "location": "Holland, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-it-intern-sap-development-west-des-moines-ia",
+      "company": "American Equity",
+      "role": "IT Intern – SAP Development",
+      "location": "West Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "stonex-group-intern-municipal-sales-trading-nyc",
+      "company": "StoneX Group",
+      "role": "Intern – Municipal Sales & Trading",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-lynchburg-va",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Lynchburg, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-engineering-co-op-iowa",
+      "company": "Emerson Electric",
+      "role": "Software Engineering Co-Op",
+      "location": "Iowa",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-lynchburg-va",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Lynchburg, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-data-science-intern-blacksburg-va-reston-va-west-lafayette-in",
+      "company": "Peraton",
+      "role": "Data Science Intern",
+      "location": "Blacksburg, VA, Reston, VA, West Lafayette, IN",
+      "isClosed": true
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-automation-engineer-intern-west-des-moines-ia",
+      "company": "American Equity",
+      "role": "Automation Engineer Intern",
+      "location": "West Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-software-engineer-intern-blacksburg-va-reston-va-west-lafayette-in",
+      "company": "Peraton",
+      "role": "Software Engineer Intern",
+      "location": "Blacksburg, VA, Reston, VA, West Lafayette, IN",
+      "isClosed": true
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-simulation-optimization-and-reinforcement-learning-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern - Simulation Optimization and Reinforcement Learning",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-data-science-intern-chesterfield-mo",
+      "company": "W.R. Berkley",
+      "role": "Data Science Intern",
+      "location": "Chesterfield, MO",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-lombard-il",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Lombard, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-data-engineer-intern-grimes-ia",
+      "company": "W.R. Berkley",
+      "role": "Data Engineer Intern",
+      "location": "Grimes, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "ernst-young-intern-assurance-technology-risk-careers-houston-tx-dallas-tx",
+      "company": "Ernst & Young",
+      "role": "Intern - Assurance - Technology Risk - Careers",
+      "location": "Houston, TX, Dallas, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-rd-software-engineering-intern-colorado-springs-co",
+      "company": "Keysight Technologies",
+      "role": "R&D Software Engineering Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-robot-foundation-models-phd-burlingame-ca-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Robot Foundation Models - PhD",
+      "location": "Burlingame, CA, Redmond, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-it-intern-solutions-architecture-west-des-moines-ia",
+      "company": "American Equity",
+      "role": "IT Intern – Solutions Architecture",
+      "location": "West Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "stonex-group-intern-fixed-income-sales-trading-nyc",
+      "company": "StoneX Group",
+      "role": "Intern – Fixed Income Sales & Trading",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-network-engineer-intern-colorado-springs-co",
+      "company": "General Dynamics Mission Systems",
+      "role": "Network Engineer – Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-ai-core-machine-learning-phd-nyc-bellevue-wa-sunnyvale-ca",
+      "company": "Meta",
+      "role": "Research Scientist Intern - AI Core Machine Learning - PhD",
+      "location": "NYC, Bellevue, WA, Sunnyvale, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-development-intern-houston-tx-round-rock-tx",
+      "company": "Emerson Electric",
+      "role": "Software Development Intern",
+      "location": "Houston, TX, Round Rock, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "meta-research-scientist-intern-tracking-sensor-fusion-phd-redmond-wa",
+      "company": "Meta",
+      "role": "Research Scientist Intern - Tracking & Sensor Fusion - PhD",
+      "location": "Redmond, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "caci-software-engineering-intern-sarasota-fl",
+      "company": "CACI",
+      "role": "Software Engineering Intern",
+      "location": "Sarasota, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "american-equity-it-intern-digital-platforms-west-des-moines-ia",
+      "company": "American Equity",
+      "role": "IT Intern – Digital Platforms",
+      "location": "West Des Moines, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-sw-engineering-intern-javac-manassas-va",
+      "company": "General Dynamics Mission Systems",
+      "role": "SW Engineering – Intern - Java/C++",
+      "location": "Manassas, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-intern-engineer-software-engineering-bloomington-mn",
+      "company": "General Dynamics Mission Systems",
+      "role": "Intern Engineer - Software Engineering",
+      "location": "Bloomington, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-natural-language-processing-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern - Natural Language Processing",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-ai-engineering-intern-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI Engineering Intern",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "kla-software-engineering-intern-ann-arbor-mi",
+      "company": "KLA",
+      "role": "Software Engineering Intern",
+      "location": "Ann Arbor, MI",
+      "isClosed": true
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-quantitative-research-data-science-santa-monica-ca",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern - Quantitative Research & Data Science",
+      "location": "Santa Monica, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "twg-global-aiml-scientist-intern-london-uk",
+      "company": "TWG Global",
+      "role": "AI/ML Scientist Intern",
+      "location": "London, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "waymo-2026-summer-intern-machine-learning-infra-foundations-mountain-view-ca",
+      "company": "Waymo",
+      "role": "2026 Summer Intern - Machine Learning Infra Foundations",
+      "location": "Mountain View, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-part-time-business-information-technology-intern-remote-in-usa",
+      "company": "Peraton",
+      "role": "Part-time Business Information Technology Intern",
+      "location": "Remote in USA",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-fall-2026-co-op-engineer-blacksburg-va-reston-va",
+      "company": "Peraton",
+      "role": "Fall 2026 Co-Op Engineer",
+      "location": "Blacksburg, VA, Reston, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "autodesk-intern-software-developer-remote-in-canada",
+      "company": "Autodesk",
+      "role": "Intern – Software Developer",
+      "location": "Remote in Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-data-scientist-intern-digital-technology-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Data Scientist Intern - Digital Technology",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-rd-software-internship-colorado-springs-co",
+      "company": "Keysight Technologies",
+      "role": "R&D Software Internship",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-manufacturing-data-analytics-intern-chambersburg-pa",
+      "company": "Oshkosh",
+      "role": "Manufacturing Data Analytics Intern",
+      "location": "Chambersburg, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "wind-river-engineering-intern-kanata-ottawa-on-canada",
+      "company": "Wind River",
+      "role": "Engineering Intern",
+      "location": "Kanata, Ottawa, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-supply-chain-intern-data-analytics-santa-rosa-ca",
+      "company": "Keysight Technologies",
+      "role": "Supply Chain Intern - Data Analytics",
+      "location": "Santa Rosa, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-it-engineer-intern-colorado-springs-co",
+      "company": "Keysight Technologies",
+      "role": "IT Engineer Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-strategy-developer-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Strategy Developer Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-trader-internship-chicago-il",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Trader Internship",
+      "location": "Chicago, IL",
+      "isClosed": true
+    },
+    {
+      "slug": "avis-budget-group-accelerate-data-analytics-intern-parsippany-troy-hills-nj",
+      "company": "Avis Budget Group",
+      "role": "Accelerate Data Analytics Intern",
+      "location": "Parsippany-Troy Hills, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-rd-software-engineering-internship-austin-tx",
+      "company": "Keysight Technologies",
+      "role": "R&D Software Engineering Internship",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-lynchburg-va",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Lynchburg, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "avis-budget-group-accelerate-transformation-engineer-intern-parsippany-troy-hills-nj",
+      "company": "Avis Budget Group",
+      "role": "Accelerate Transformation Engineer Intern",
+      "location": "Parsippany-Troy Hills, NJ",
+      "isClosed": false
+    },
+    {
+      "slug": "cohere-software-engineer-intern-london-uk-toronto-on-canada-sf-nyc",
+      "company": "Cohere",
+      "role": "Software Engineer Intern",
+      "location": "London, UK, Toronto, ON, Canada, SF, NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-lynchburg-va",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Lynchburg, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-lynchburg-va",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern",
+      "location": "Lynchburg, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-crm-digital-technology-intern-salesforce-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "CRM Digital Technology Intern - Salesforce",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-trading-system-engineering-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Trading System Engineering Internship",
+      "location": "Ardmore, PA",
+      "isClosed": true
+    },
+    {
+      "slug": "marvell-hardware-design-engineer-intern-santa-clara-ca",
+      "company": "Marvell",
+      "role": "Hardware Design Engineer Intern",
+      "location": "Santa Clara, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-systematic-trading-internship-philadelphia-pa-nyc",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Systematic Trading Internship",
+      "location": "Philadelphia, PA, NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-data-engineer-intern-seattle-wa",
+      "company": "Atlassian",
+      "role": "Data Engineer Intern",
+      "location": "Seattle, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-data-science-intern-seattle-wa",
+      "company": "Atlassian",
+      "role": "Data Science Intern",
+      "location": "Seattle, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-hardware-service-desk-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Hardware Service Desk Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-information-technology-solutions-innovation-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Information Technology Solutions & Innovation Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-security-engineer-intern-british-columbia-canada",
+      "company": "Atlassian",
+      "role": "Security Engineer Intern",
+      "location": "British Columbia, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-rotational-cybersecurity-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Rotational Cybersecurity Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-machine-learning-intern-sf",
+      "company": "Atlassian",
+      "role": "Machine Learning Intern",
+      "location": "SF",
+      "isClosed": false
+    },
+    {
+      "slug": "lenovo-ai-performance-engineer-intern-morrisville-nc",
+      "company": "Lenovo",
+      "role": "AI Performance Engineer Intern",
+      "location": "Morrisville, NC",
+      "isClosed": true
+    },
+    {
+      "slug": "western-southern-financial-group-software-development-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Software Development Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-information-technology-intern-regulatory-remediation-team-cincinnat",
+      "company": "Western & Southern Financial Group",
+      "role": "Information Technology Intern - Regulatory & Remediation Team",
+      "location": "Cincinnati, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-software-engineer-intern-seattle-wa-sf",
+      "company": "Atlassian",
+      "role": "Software Engineer Intern",
+      "location": "Seattle, WA, SF",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-software-engineer-intern-british-columbia-canada",
+      "company": "Atlassian",
+      "role": "Software Engineer Intern",
+      "location": "British Columbia, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-data-science-intern-british-columbia-canada",
+      "company": "Atlassian",
+      "role": "Data Science Intern",
+      "location": "British Columbia, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "atlassian-security-engineer-intern-seattle-wa",
+      "company": "Atlassian",
+      "role": "Security Engineer Intern",
+      "location": "Seattle, WA",
+      "isClosed": false
+    },
+    {
+      "slug": "blue-cross-and-blue-shield-of-kansas-rpa-engineering-developer-intern-wichita-ks-topeka-ks",
+      "company": "Blue Cross and Blue Shield of Kansas",
+      "role": "RPA Engineering Developer Intern",
+      "location": "Wichita, KS, Topeka, KS",
+      "isClosed": false
+    },
+    {
+      "slug": "covar-machine-learning-internship-durham-nc",
+      "company": "CoVar",
+      "role": "Machine Learning Internship",
+      "location": "Durham, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "xcel-energy-data-designdraft-intern-denver-co",
+      "company": "Xcel Energy",
+      "role": "Data Design/Draft Intern",
+      "location": "Denver, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "mks-instruments-software-firmware-engineering-undergraduate-co-op-intern-rochester-ny",
+      "company": "MKS Instruments",
+      "role": "Software / Firmware Engineering Undergraduate Co-op Intern",
+      "location": "Rochester, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "mks-instruments-software-engineering-undergraduate-co-op-rochester-ny",
+      "company": "MKS Instruments",
+      "role": "Software Engineering Undergraduate Co-op",
+      "location": "Rochester, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "mks-instruments-software-engineering-undergraduate-co-op-rochester-ny",
+      "company": "MKS Instruments",
+      "role": "Software Engineering Undergraduate Co-op",
+      "location": "Rochester, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "ava-labs-summer-2026-internship-brooklyn-ny",
+      "company": "Ava Labs",
+      "role": "Summer 2026 Internship",
+      "location": "Brooklyn, NY",
+      "isClosed": false
+    },
+    {
+      "slug": "tenstorrent-low-level-software-developer-internpey-toronto-on-canada",
+      "company": "Tenstorrent",
+      "role": "Low-Level Software Developer Intern/PEY",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "reality-defender-computer-vision-intern-nyc",
+      "company": "Reality Defender",
+      "role": "Computer Vision Intern",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-houston-tx",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Houston, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-proof-of-concept-software-development-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Proof of Concept Software Development Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-ciopx-ai-development-intern-olathe-ks",
+      "company": "Panasonic Avionics",
+      "role": "CI/Opx AI Development Intern",
+      "location": "Olathe, KS",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-intern-it-hazelwood-mo",
+      "company": "Panasonic Avionics",
+      "role": "Intern – IT",
+      "location": "Hazelwood, MO",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-intern-digital-connectivity-hazelwood-mo",
+      "company": "Panasonic Avionics",
+      "role": "Intern – Digital Connectivity",
+      "location": "Hazelwood, MO",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-digital-transformation-intern-sparks-nv",
+      "company": "Panasonic Avionics",
+      "role": "Digital Transformation Intern",
+      "location": "Sparks, NV",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-security-risk-intern-olathe-ks",
+      "company": "Panasonic Avionics",
+      "role": "Security & Risk Intern",
+      "location": "Olathe, KS",
+      "isClosed": false
+    },
+    {
+      "slug": "panasonic-avionics-digital-transformation-group-intern-olathe-ks",
+      "company": "Panasonic Avionics",
+      "role": "Digital Transformation Group Intern",
+      "location": "Olathe, KS",
+      "isClosed": false
+    },
+    {
+      "slug": "nissan-purchasing-intern-summer-2026-franklin-tn",
+      "company": "Nissan",
+      "role": "Purchasing Intern-Summer 2026",
+      "location": "Franklin, TN",
+      "isClosed": false
+    },
+    {
+      "slug": "boston-consulting-group-bcg-platinion-it-architecture-intern-dallas-tx-nyc",
+      "company": "Boston Consulting Group",
+      "role": "BCG Platinion IT Architecture Intern",
+      "location": "Dallas, TX, NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "fm-global-cyber-specialist-co-op-providence-ri",
+      "company": "FM Global",
+      "role": "Cyber Specialist Co-Op",
+      "location": "Providence, RI",
+      "isClosed": false
+    },
+    {
+      "slug": "boston-consulting-group-bcg-platinion-cybersecurity-intern-dallas-tx-nyc",
+      "company": "Boston Consulting Group",
+      "role": "BCG Platinion Cybersecurity Intern",
+      "location": "Dallas, TX, NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "fm-global-identity-services-co-op-providence-ri",
+      "company": "FM Global",
+      "role": "Identity Services Co-Op",
+      "location": "Providence, RI",
+      "isClosed": true
+    },
+    {
+      "slug": "fm-global-software-engineering-co-op-providence-ri",
+      "company": "FM Global",
+      "role": "Software Engineering Co-Op",
+      "location": "Providence, RI",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-embedded-software-development-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Embedded Software Development Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-product-management-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Product Management Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-automated-test-engineering-intern-software-morton-grove-il",
+      "company": "Shure",
+      "role": "Automated Test Engineering Intern - Software",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-cloud-applications-development-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Cloud Applications Development Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-application-software-engineering-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Application Software Engineering Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-mobile-applications-intern-ios-remote-in-usa-morton-grove-il",
+      "company": "Shure",
+      "role": "Mobile Applications – Intern - IOS",
+      "location": "Remote in USA, Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-automated-test-engineering-intern-hardware-morton-grove-il",
+      "company": "Shure",
+      "role": "Automated Test Engineering Intern - Hardware",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-applied-research-science-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Applied Research Science Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-data-engineer-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Data Engineer Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-application-system-development-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Application System Development Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-product-security-analyst-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Product Security Analyst Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-software-engineering-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Software Engineering Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "mackenzie-investments-data-science-department-intern-toronto-on-canada",
+      "company": "Mackenzie Investments",
+      "role": "Data Science Department Intern",
+      "location": "Toronto, ON, Canada",
+      "isClosed": true
+    },
+    {
+      "slug": "str-analytics-summer-internship-burlington-ma",
+      "company": "STR",
+      "role": "Analytics Summer Internship",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-analytics-and-command-control-mission-engineer-summer-internship-c2-carlsbad-ca",
+      "company": "STR",
+      "role": "Analytics and Command & Control – Mission Engineer Summer Internship - C2",
+      "location": "Carlsbad, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-intelligence-summer-internship-arlington-va",
+      "company": "STR",
+      "role": "Intelligence Summer Internship",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-advanced-technologies-intern-frederick-md",
+      "company": "Oshkosh",
+      "role": "Advanced Technologies Intern",
+      "location": "Frederick, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "str-machine-learning-computer-vision-msphd-summer-internship-melbourne-fl",
+      "company": "STR",
+      "role": "Machine Learning Computer Vision MS/PhD Summer Internship",
+      "location": "Melbourne, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "str-intelligence-summer-internship-melbourne-fl",
+      "company": "STR",
+      "role": "Intelligence Summer Internship",
+      "location": "Melbourne, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "blackhawk-network-holdings-product-management-intern-pleasanton-ca",
+      "company": "Blackhawk Network Holdings",
+      "role": "Product Management Intern",
+      "location": "Pleasanton, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-analytics-summer-internship-arlington-va",
+      "company": "STR",
+      "role": "Analytics Summer Internship",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "blackhawk-network-holdings-technology-intern-pleasanton-ca",
+      "company": "Blackhawk Network Holdings",
+      "role": "Technology Intern",
+      "location": "Pleasanton, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-intelligence-summer-internship-burlington-ma",
+      "company": "STR",
+      "role": "Intelligence Summer Internship",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-machine-learning-computer-vision-msphd-summer-internship-burlington-ma",
+      "company": "STR",
+      "role": "Machine Learning Computer Vision MS/PhD Summer Internship",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "symbotic-intern-bot-controls-burlington-ma",
+      "company": "Symbotic",
+      "role": "Intern-Bot Controls",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-machine-learning-computer-vision-msphd-summer-internship-arlington-va",
+      "company": "STR",
+      "role": "Machine Learning Computer Vision MS/PhD Summer Internship",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-fayetteville-ga",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Fayetteville, GA",
+      "isClosed": false
+    },
+    {
+      "slug": "intuit-product-manager-intern-rotational-product-management-program-mountain-view-ca",
+      "company": "Intuit",
+      "role": "Product Manager Intern - Rotational Product Management Program",
+      "location": "Mountain View, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "nelnet-2026-summer-intern-it-software-engineer-netweb-madison-wi-centennial-co",
+      "company": "Nelnet",
+      "role": "2026 Summer Intern - IT Software Engineer - .Net/Web",
+      "location": "Madison, WI, Centennial, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "visa-staff-research-scientist-intern-austin-tx",
+      "company": "Visa",
+      "role": "Staff Research Scientist – Intern",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-portage-mi",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Portage, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-thousand-oaks-ca",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Thousand Oaks, CA",
+      "isClosed": true
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-holly-springs-nc",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Holly Springs, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-lombard-il",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Lombard, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-fayetteville-ga",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Fayetteville, GA",
+      "isClosed": true
+    },
+    {
+      "slug": "susquehanna-international-group-sig-machine-learning-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Machine Learning Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "thescore-ios-developer-coop-toronto-on-canada",
+      "company": "theScore",
+      "role": "IOS Developer – Coop",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "nexstar-it-intern-pt-nyc",
+      "company": "Nexstar",
+      "role": "IT Intern – PT",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "nexstar-it-intern-nyc",
+      "company": "Nexstar",
+      "role": "IT Intern",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "lennox-international-ai-engineering-intern-richardson-tx",
+      "company": "Lennox International",
+      "role": "AI Engineering Intern",
+      "location": "Richardson, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "daifuku-it-co-opintern-petoskey-mi-novi-mi-gahanna-oh",
+      "company": "Daifuku",
+      "role": "IT Co-Op/Intern",
+      "location": "Petoskey, MI, Novi, MI, Gahanna, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "stonex-group-intern-institutional-equity-sales-trading-nyc",
+      "company": "StoneX Group",
+      "role": "Intern – Institutional Equity Sales & Trading",
+      "location": "NYC",
+      "isClosed": true
+    },
+    {
+      "slug": "emerson-electric-product-management-engineering-intern-shakopee-mn-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Product Management Engineering Intern",
+      "location": "Shakopee, MN, Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "western-southern-financial-group-business-intelligence-intern-cincinnati-oh",
+      "company": "Western & Southern Financial Group",
+      "role": "Business Intelligence Intern",
+      "location": "Cincinnati, OH",
+      "isClosed": true
+    },
+    {
+      "slug": "citizens-financial-group-data-science-graduate-internship-coralville-ia-providence-ri-columbus-oh-no",
+      "company": "Citizens Financial Group",
+      "role": "Data Science Graduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-analytics-graduate-internship-coralville-ia-providence-ri-columbus-oh-",
+      "company": "Citizens Financial Group",
+      "role": "Data Analytics Graduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "ge-healthcare-product-management-intern-salt-lake-city-ut",
+      "company": "GE Healthcare",
+      "role": "Product Management Intern",
+      "location": "Salt Lake City, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "lennox-international-ai-engineering-intern-richardson-tx",
+      "company": "Lennox International",
+      "role": "AI Engineering Intern",
+      "location": "Richardson, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "ge-healthcare-software-engineering-intern-summer-2026-salt-lake-city-ut",
+      "company": "GE Healthcare",
+      "role": "Software Engineering Intern Summer 2026",
+      "location": "Salt Lake City, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "ge-healthcare-data-analytics-intern-salt-lake-city-ut",
+      "company": "GE Healthcare",
+      "role": "Data Analytics Intern",
+      "location": "Salt Lake City, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-rd-software-engineering-internship-calabasas-ca",
+      "company": "Keysight Technologies",
+      "role": "R&D Software Engineering Internship",
+      "location": "Calabasas, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "lennox-international-ai-engineering-intern-richardson-tx",
+      "company": "Lennox International",
+      "role": "AI Engineering Intern",
+      "location": "Richardson, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "wgu-intern-technical-salt-lake-city-ut",
+      "company": "WGU",
+      "role": "Intern – Technical",
+      "location": "Salt Lake City, UT",
+      "isClosed": false
+    },
+    {
+      "slug": "citizens-financial-group-data-management-graduate-internship-coralville-ia-providence-ri-columbus-oh",
+      "company": "Citizens Financial Group",
+      "role": "Data Management Graduate Internship",
+      "location": "Coralville, IA, Providence, RI, Columbus, OH, Norwood, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "steel-dynamics-sales-data-analytics-internship-columbus-ms",
+      "company": "Steel Dynamics",
+      "role": "Sales Data Analytics Internship",
+      "location": "Columbus, MS",
+      "isClosed": true
+    },
+    {
+      "slug": "oshkosh-engineering-intern-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Engineering Intern",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-dt-erp-and-aftermarket-intern-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Dt – ERP and Aftermarket Intern",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "gsa-capital-software-developer-intern-london-uk",
+      "company": "GSA Capital",
+      "role": "Software Developer – Intern",
+      "location": "London, UK",
+      "isClosed": true
+    },
+    {
+      "slug": "entegris-supply-chain-data-management-co-op-bedford-ma",
+      "company": "Entegris",
+      "role": "Supply Chain Data Management Co-Op",
+      "location": "Bedford, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-product-management-intern-frederick-md-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Product Management Intern",
+      "location": "Frederick, MD, Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-data-scientist-intern-digital-technology-hagerstown-md",
+      "company": "Oshkosh",
+      "role": "Data Scientist Intern - Digital Technology",
+      "location": "Hagerstown, MD",
+      "isClosed": false
+    },
+    {
+      "slug": "charles-schwab-technology-and-data-analytics-internal-audit-internship-austin-tx-westlake-tx",
+      "company": "Charles Schwab",
+      "role": "Technology and Data Analytics Internal Audit Internship",
+      "location": "Austin, TX, Westlake, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-marketing-data-science-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Marketing Data Science Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-data-driven-sustainability-intern-morton-grove-il",
+      "company": "Shure",
+      "role": "Data Driven Sustainability Intern",
+      "location": "Morton Grove, IL",
+      "isClosed": true
+    },
+    {
+      "slug": "keysight-technologies-intern-tech-i-santa-rosa-ca",
+      "company": "Keysight Technologies",
+      "role": "Intern Tech I",
+      "location": "Santa Rosa, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "keysight-technologies-asic-rd-test-development-dft-engineer-intern-colorado-springs-co",
+      "company": "Keysight Technologies",
+      "role": "ASIC R&D Test Development / DFT Engineer Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "peraton-systems-engineer-intern-blacksburg-va-reston-va-west-lafayette-in",
+      "company": "Peraton",
+      "role": "Systems Engineer Intern",
+      "location": "Blacksburg, VA, Reston, VA, West Lafayette, IN",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-software-intern-engineer-burke-va",
+      "company": "General Dynamics Mission Systems",
+      "role": "Software Intern Engineer",
+      "location": "Burke, VA",
+      "isClosed": true
+    },
+    {
+      "slug": "susquehanna-international-group-sig-machine-learning-internship-nyc",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Machine Learning Internship",
+      "location": "NYC",
+      "isClosed": true
+    },
+    {
+      "slug": "thescore-football-data-scientist-sports-modeling-toronto-on-canada",
+      "company": "theScore",
+      "role": "Football Data Scientist - Sports Modeling",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "ing-internship-trading-risk-management-nyc",
+      "company": "ING",
+      "role": "Internship-Trading Risk Management",
+      "location": "NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "shure-mobile-applications-intern-android-morton-grove-il",
+      "company": "Shure",
+      "role": "Mobile Applications – Intern - Android",
+      "location": "Morton Grove, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-software-engineering-intern-whitsett-nc",
+      "company": "General Dynamics Mission Systems",
+      "role": "Software Engineering Intern",
+      "location": "Whitsett, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "general-dynamics-mission-systems-software-engineer-intern-colorado-springs-co",
+      "company": "General Dynamics Mission Systems",
+      "role": "Software Engineer – Intern",
+      "location": "Colorado Springs, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "entegris-product-marketing-co-op-chandler-az",
+      "company": "Entegris",
+      "role": "Product Marketing Co-Op",
+      "location": "Chandler, AZ",
+      "isClosed": false
+    },
+    {
+      "slug": "cotiviti-intern-generative-ai-developer-austin-tx",
+      "company": "Cotiviti",
+      "role": "Intern – Generative AI Developer",
+      "location": "Austin, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-research-internship-philadelphia-pa-nyc",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Research Internship",
+      "location": "Philadelphia, PA, NYC",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-research-internship-philadelphia-pa-nyc",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Research Internship",
+      "location": "Philadelphia, PA, NYC",
+      "isClosed": true
+    },
+    {
+      "slug": "cobank-software-engineer-intern-greenwood-village-co",
+      "company": "CoBank",
+      "role": "Software Engineer Intern",
+      "location": "Greenwood Village, CO",
+      "isClosed": true
+    },
+    {
+      "slug": "rovisys-co-op-summer-2026-twinsburg-oh",
+      "company": "RoviSys",
+      "role": "Co-op – Summer 2026",
+      "location": "Twinsburg, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-research-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Research Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-research-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Research Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "rovisys-co-op-spring-2026-portage-mi",
+      "company": "RoviSys",
+      "role": "Co-op – Spring 2026",
+      "location": "Portage, MI",
+      "isClosed": true
+    },
+    {
+      "slug": "cognitiv-machine-learning-research-scientist-intern-san-mateo-ca",
+      "company": "Cognitiv",
+      "role": "Machine Learning Research Scientist Intern",
+      "location": "San Mateo, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "dayton-freight-lines-software-developer-intern-dayton-oh",
+      "company": "Dayton Freight Lines",
+      "role": "Software Developer Intern",
+      "location": "Dayton, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "wex-intern-software-engineer-portland-me",
+      "company": "Wex",
+      "role": "Intern – Software Engineer",
+      "location": "Portland, ME",
+      "isClosed": false
+    },
+    {
+      "slug": "autodesk-ml-intern-stagiaire-ml-montreal-qc-canada",
+      "company": "Autodesk",
+      "role": "ML Intern – Stagiaire ML",
+      "location": "Montreal, QC, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "caci-network-engineering-intern-fairfax-va-manassas-va-arlington-va-reston-va",
+      "company": "CACI",
+      "role": "Network Engineering Intern",
+      "location": "Fairfax, VA, Manassas, VA, Arlington, VA, Reston, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "autodesk-intern-software-developer-toronto-on-canada",
+      "company": "Autodesk",
+      "role": "Intern – Software Developer",
+      "location": "Toronto, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "magna-it-co-op-student-winter-term-brampton-on-canada",
+      "company": "Magna",
+      "role": "IT Co-Op Student - Winter Term",
+      "location": "Brampton, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "str-sensors-summer-internship-burlington-ma",
+      "company": "STR",
+      "role": "Sensors Summer Internship",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-ai-intern-wilmington-de",
+      "company": "W.R. Berkley",
+      "role": "AI Intern",
+      "location": "Wilmington, DE",
+      "isClosed": false
+    },
+    {
+      "slug": "str-sensors-summer-internship-arlington-va",
+      "company": "STR",
+      "role": "Sensors Summer Internship",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "bristol-myers-squibb-portfolio-insights-and-data-innovation-internship-tampa-fl",
+      "company": "Bristol Myers Squibb",
+      "role": "Portfolio Insights and Data Innovation Internship",
+      "location": "Tampa, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "dominion-energy-intern-servicenow-support-development-richmond-va",
+      "company": "Dominion Energy",
+      "role": "Intern – Servicenow Support & Development",
+      "location": "Richmond, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "merck-2026-future-talent-program-intern-bioanalytical-data-science-north-wales-pa",
+      "company": "Merck",
+      "role": "2026 Future Talent Program – Intern - Bioanalytical Data Science",
+      "location": "North Wales, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "tiktok-product-operations-project-intern-global-monetization-product-london-uk",
+      "company": "TikTok",
+      "role": "Product Operations Project Intern - Global Monetization Product",
+      "location": "London, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "millerknoll-mlai-engineer-intern-holland-mi",
+      "company": "MillerKnoll",
+      "role": "ML/AI Engineer Intern",
+      "location": "Holland, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "cms-energy-internco-op-data-scientist-jackson-mi",
+      "company": "CMS Energy",
+      "role": "Intern/Co-Op-Data Scientist",
+      "location": "Jackson, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "str-cyber-summer-internship-arlington-va",
+      "company": "STR",
+      "role": "Cyber Summer Internship",
+      "location": "Arlington, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-engineering-co-op-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Software Engineering Co-op",
+      "location": "Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-software-engineering-co-op-june-dec-eden-prairie-mn",
+      "company": "Emerson Electric",
+      "role": "Software Engineering Co-op - June-Dec",
+      "location": "Eden Prairie, MN",
+      "isClosed": false
+    },
+    {
+      "slug": "waymo-2026-summer-intern-msphd-software-engineering-behavior-test-mountain-view-ca",
+      "company": "Waymo",
+      "role": "2026 Summer Intern - MS/PhD - Software Engineering - Behavior Test",
+      "location": "Mountain View, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "emerson-electric-graduate-software-engineering-intern-round-rock-tx",
+      "company": "Emerson Electric",
+      "role": "Graduate Software Engineering Intern",
+      "location": "Round Rock, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-level-c-plano-tx",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern Level C",
+      "location": "Plano, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "cai-data-analyst-intern-remote-in-usa",
+      "company": "CAI",
+      "role": "Data Analyst Intern",
+      "location": "Remote in USA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-cyber-summer-internship-burlington-ma",
+      "company": "STR",
+      "role": "Cyber Summer Internship",
+      "location": "Burlington, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "str-cyber-summer-internship-melbourne-fl",
+      "company": "STR",
+      "role": "Cyber Summer Internship",
+      "location": "Melbourne, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-level-c-richardson-tx",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern Level C",
+      "location": "Richardson, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "l3harris-technologies-software-engineer-intern-level-c-plano-tx",
+      "company": "L3Harris Technologies",
+      "role": "Software Engineer Intern Level C",
+      "location": "Plano, TX",
+      "isClosed": false
+    },
+    {
+      "slug": "cai-data-analyst-intern-remote-in-usa",
+      "company": "CAI",
+      "role": "Data Analyst Intern",
+      "location": "Remote in USA",
+      "isClosed": true
+    },
+    {
+      "slug": "onsemi-application-engineer-intern-rhode-island",
+      "company": "onsemi",
+      "role": "Application Engineer Intern",
+      "location": "Rhode Island",
+      "isClosed": false
+    },
+    {
+      "slug": "oshkosh-autonomy-intern-wixom-mi",
+      "company": "Oshkosh",
+      "role": "Autonomy Intern",
+      "location": "Wixom, MI",
+      "isClosed": false
+    },
+    {
+      "slug": "lexisnexis-risk-solutions-data-analytics-intern-insurance-alpharetta-ga",
+      "company": "LexisNexis Risk Solutions",
+      "role": "Data Analytics Intern-Insurance",
+      "location": "Alpharetta, GA",
+      "isClosed": false
+    },
+    {
+      "slug": "reframe-systems-software-engineer-andover-ma",
+      "company": "Reframe Systems",
+      "role": "Software Engineer",
+      "location": "Andover, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "marsh-mclennan-data-analytics-summer-internship-newcastle-upon-tyne-uk",
+      "company": "Marsh & McLennan",
+      "role": "Data & Analytics Summer Internship",
+      "location": "Newcastle upon Tyne, UK",
+      "isClosed": false
+    },
+    {
+      "slug": "lexisnexis-risk-solutions-product-management-intern-alpharetta-ga",
+      "company": "LexisNexis Risk Solutions",
+      "role": "Product Management Intern",
+      "location": "Alpharetta, GA",
+      "isClosed": false
+    },
+    {
+      "slug": "hudl-software-engineering-intern-lincoln-ne",
+      "company": "Hudl",
+      "role": "Software Engineering Intern",
+      "location": "Lincoln, NE",
+      "isClosed": false
+    },
+    {
+      "slug": "marvell-application-engineering-intern-westlake-village-ca",
+      "company": "Marvell",
+      "role": "Application Engineering Intern",
+      "location": "Westlake Village, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "qorvo-database-administrator-intern-greensboro-nc",
+      "company": "Qorvo",
+      "role": "Database Administrator Intern",
+      "location": "Greensboro, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "rf-smart-software-support-engineer-internship-highlands-ranch-co",
+      "company": "RF-SMART",
+      "role": "Software Support Engineer Internship",
+      "location": "Highlands Ranch, CO",
+      "isClosed": false
+    },
+    {
+      "slug": "navy-federal-intern-year-round-technical-risk-analyst-winchester-va-pensacola-fl-vienna-va",
+      "company": "Navy Federal",
+      "role": "Intern – Year Round - Technical Risk Analyst",
+      "location": "Winchester, VA, Pensacola, FL, Vienna, VA",
+      "isClosed": false
+    },
+    {
+      "slug": "mackenzie-investments-investment-management-fi-platform-intern-greater-toronto-area-on-canada",
+      "company": "Mackenzie Investments",
+      "role": "Investment Management – FI-Platform Intern",
+      "location": "Greater Toronto Area, ON, Canada",
+      "isClosed": false
+    },
+    {
+      "slug": "dayton-freight-lines-software-developer-intern-dayton-oh",
+      "company": "Dayton Freight Lines",
+      "role": "Software Developer Intern",
+      "location": "Dayton, OH",
+      "isClosed": false
+    },
+    {
+      "slug": "susquehanna-international-group-sig-quantitative-trader-internship-ardmore-pa",
+      "company": "Susquehanna International Group (SIG)",
+      "role": "Quantitative Trader Internship",
+      "location": "Ardmore, PA",
+      "isClosed": false
+    },
+    {
+      "slug": "quanta-services-innovation-intern-denver-co",
+      "company": "Quanta Services",
+      "role": "Innovation Intern",
+      "location": "Denver, CO",
+      "isClosed": true
+    },
+    {
+      "slug": "keycorp-summer-2026-keys-technology-operations-services-internship-technology-track-san-diego-ca",
+      "company": "KeyCorp",
+      "role": "Summer 2026 Key's Technology – Operations & Services Internship - Technology Track",
+      "location": "San Diego, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "qorvo-dps-packaging-engineering-intern-apopka-fl",
+      "company": "Qorvo",
+      "role": "DPS Packaging Engineering Intern",
+      "location": "Apopka, FL",
+      "isClosed": false
+    },
+    {
+      "slug": "str-sensors-summer-internship-san-diego-ca",
+      "company": "STR",
+      "role": "Sensors Summer Internship",
+      "location": "San Diego, CA",
+      "isClosed": false
+    },
+    {
+      "slug": "qorvo-packaging-engineering-intern-greensboro-nc",
+      "company": "Qorvo",
+      "role": "Packaging Engineering Intern",
+      "location": "Greensboro, NC",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-intern-enterprise-architecture-grimes-ia",
+      "company": "W.R. Berkley",
+      "role": "Intern – Enterprise Architecture",
+      "location": "Grimes, IA",
+      "isClosed": false
+    },
+    {
+      "slug": "suno-software-engineering-internship-cambridge-ma",
+      "company": "Suno",
+      "role": "Software Engineering Internship",
+      "location": "Cambridge, MA",
+      "isClosed": false
+    },
+    {
+      "slug": "varian-software-engineering-co-op-hoffman-estates-il",
+      "company": "Varian",
+      "role": "Software Engineering Co-op",
+      "location": "Hoffman Estates, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "cme-group-software-engineering-internship-chicago-il",
+      "company": "CME Group",
+      "role": "Software Engineering Internship",
+      "location": "Chicago, IL",
+      "isClosed": false
+    },
+    {
+      "slug": "wr-berkley-quantitative-analyst-intern-manassas-va",
+      "company": "W.R. Berkley",
+      "role": "Quantitative Analyst Intern",
+      "location": "Manassas, VA",
+      "isClosed": false
+    }
+  ]
+}
