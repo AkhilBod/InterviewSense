@@ -1601,17 +1601,35 @@ function InterviewPage() {
       }
     } catch (error) {
       console.error('Transcription error:', error);
+      let errorTitle = "Transcription failed";
       let errorMessage = "There was an error transcribing your audio.";
       
-      // Extract more specific error message if available
+      // Handle specific error types
       if (error instanceof Error) {
-        errorMessage += " Error: " + error.message;
+        if (error.message === "QUOTA_EXCEEDED") {
+          errorTitle = "Daily Transcription Limit Reached";
+          errorMessage = "You've used up your daily transcription quota. You can either:\n• Type your answer below\n• Try again tomorrow\n• Upgrade your API plan for more quota";
+        } else if (error.message === "SERVICE_UNAVAILABLE") {
+          errorTitle = "Transcription Service Unavailable";
+          errorMessage = "The AI transcription service is temporarily down. Please type your answer instead.";
+        } else {
+          const message = error.message.toLowerCase();
+          if (message.includes('quota') || message.includes('limit')) {
+            errorTitle = "API Quota Exceeded";
+            errorMessage = "You've reached the daily transcription limit. Please type your answer instead or try again tomorrow.";
+          } else if (message.includes('generativelanguage') || message.includes('googleapis')) {
+            errorTitle = "Service Temporarily Unavailable";
+            errorMessage = "The transcription service is currently unavailable. Please type your answer instead.";
+          } else {
+            errorMessage += " Error: " + error.message;
+          }
+        }
       }
       
       setInterviewPhase('feedback');
       toast({
-        title: "Transcription failed",
-        description: errorMessage + " Please try again or type your answer.",
+        title: errorTitle,
+        description: errorMessage + " You can type your answer below.",
         variant: "destructive"
       });
     } finally {

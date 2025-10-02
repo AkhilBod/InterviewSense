@@ -426,11 +426,27 @@ export default function StartPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-600/50 text-zinc-300"
+                        className={`w-full flex items-center justify-center text-sm ${formData.resume 
+                          ? "bg-gradient-to-r from-zinc-600/30 to-zinc-700/30 hover:from-zinc-600/40 hover:to-zinc-700/40 border-2 border-zinc-400/70 hover:border-zinc-300/90 text-zinc-200 hover:text-zinc-100 transition-all duration-300 shadow-lg shadow-zinc-500/25 hover:shadow-zinc-500/35 h-12 px-4"
+                          : "bg-gradient-to-r from-zinc-600/10 to-zinc-700/10 hover:from-zinc-600/20 hover:to-zinc-700/20 border-2 border-zinc-500/30 hover:border-zinc-400/50 text-zinc-300 hover:text-zinc-200 transition-all duration-300 shadow-lg shadow-zinc-500/10 hover:shadow-zinc-500/20 h-12 px-4"
+                        }`}
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {formData.resume ? "Change File" : "Upload Resume"}
+                        {formData.resume ? (
+                          <>
+                            <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">
+                              {formData.resume.name.length > 25
+                                ? `${formData.resume.name.substring(0, 25)}...`
+                                : formData.resume.name}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            <span>Upload Resume</span>
+                          </>
+                        )}
                       </Button>
                       <input
                         ref={fileInputRef}
@@ -439,14 +455,6 @@ export default function StartPage() {
                         onChange={handleResumeUpload}
                         className="hidden"
                       />
-                      {formData.resume && (
-                        <span className="text-sm text-zinc-400 flex items-center">
-                          <FileText className="h-3 w-3 mr-1" />
-                          {formData.resume.name.length > 20
-                            ? `${formData.resume.name.substring(0, 20)}...`
-                            : formData.resume.name}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
