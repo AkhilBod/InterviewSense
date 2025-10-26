@@ -9,17 +9,30 @@ interface EmailOptions {
 export async function sendEmail({ to, subject, html }: EmailOptions) {
   try {
     // Get mail configuration from environment variables
+    // Try multiple possible names for password (Vercel might store it differently)
     const host = process.env.EMAIL_SERVER_HOST;
     const port = Number(process.env.EMAIL_SERVER_PORT);
     const user = process.env.EMAIL_SERVER_USER;
-    const pass = process.env.EMAIL_SERVER_PASSWORD;
+    const pass = process.env.EMAIL_SERVER_PASSWORD || 
+                 process.env.EMAIL_PASSWORD ||
+                 process.env.SMTP_PASSWORD;
     const from = process.env.EMAIL_FROM;
     
-    console.log('[EMAIL] Configuration check:', {
+    console.log('[EMAIL] Checking environment variables:', {
+      EMAIL_SERVER_HOST: !!process.env.EMAIL_SERVER_HOST,
+      EMAIL_SERVER_PORT: !!process.env.EMAIL_SERVER_PORT,
+      EMAIL_SERVER_USER: !!process.env.EMAIL_SERVER_USER,
+      EMAIL_SERVER_PASSWORD: !!process.env.EMAIL_SERVER_PASSWORD,
+      EMAIL_PASSWORD: !!process.env.EMAIL_PASSWORD,
+      SMTP_PASSWORD: !!process.env.SMTP_PASSWORD,
+      EMAIL_FROM: !!process.env.EMAIL_FROM,
+    });
+    
+    console.log('[EMAIL] Configuration summary:', {
       host: host ? `${host.substring(0, 10)}...` : 'MISSING',
-      port,
+      port: port || 'MISSING',
       user: user ? `${user.substring(0, 5)}...` : 'MISSING',
-      pass: pass ? '***' : 'MISSING',
+      pass: pass ? `[PASSWORD SET - length: ${pass.length}]` : 'MISSING',
       from: from ? from : 'MISSING',
     });
     
@@ -30,7 +43,7 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
         port: !!port,
         user: !!user,
         pass: !!pass,
-        from: !!from
+        from: !!from,
       });
       throw new Error('Email configuration incomplete. Check environment variables.');
     }
