@@ -61,8 +61,13 @@ export async function GET(request: Request) {
       where: { token: token }
     });
     
-    // Send welcome email to the newly verified user
-    await sendWelcomeEmail(user.email, user.name || 'there');
+    // Send welcome email to the newly verified user (non-fatal if it fails)
+    try {
+      await sendWelcomeEmail(user.email, user.name || 'there');
+    } catch (emailError) {
+      console.error('Welcome email failed (non-fatal):', emailError);
+      // Continue - verification is complete
+    }
 
     // Redirect to login page with auto-login parameters
     const redirectUrl = `${process.env.NEXTAUTH_URL}/login?success=email-verified&autoLogin=true&email=${encodeURIComponent(user.email)}`;
