@@ -15,25 +15,27 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
     const pass = process.env.EMAIL_SERVER_PASSWORD;
     const from = process.env.EMAIL_FROM;
     
+    console.log('[EMAIL] Configuration check:', {
+      host: host ? `${host.substring(0, 10)}...` : 'MISSING',
+      port,
+      user: user ? `${user.substring(0, 5)}...` : 'MISSING',
+      pass: pass ? '***' : 'MISSING',
+      from: from ? from : 'MISSING',
+    });
+    
     // Validate required email configuration
     if (!host || !port || !user || !pass || !from) {
-      console.error('Missing email configuration:', { 
-        hostProvided: !!host, 
-        portProvided: !!port, 
-        userProvided: !!user, 
-        passProvided: !!pass,
-        fromProvided: !!from
+      console.error('[EMAIL] Missing email configuration:', { 
+        host: !!host,
+        port: !!port,
+        user: !!user,
+        pass: !!pass,
+        from: !!from
       });
       throw new Error('Email configuration incomplete. Check environment variables.');
     }
     
-    console.log('Creating transporter with:', {
-      host,
-      port,
-      user,
-      from,
-      secure: true,
-    });
+    console.log('[EMAIL] Creating transporter with host:', host, 'port:', port);
     
     // Create the nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -53,10 +55,21 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
       html,
     });
 
-    console.log('Email sent:', info.messageId);
+    console.log('[EMAIL] Email sent successfully:', {
+      to,
+      messageId: info.messageId,
+      response: info.response
+    });
     return info;
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('[EMAIL] Failed to send email:', {
+      to,
+      subject,
+      error: error instanceof Error ? error.message : String(error),
+      code: (error as any).code,
+      command: (error as any).command,
+      responseCode: (error as any).responseCode
+    });
     throw error;
   }
 }
