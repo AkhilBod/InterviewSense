@@ -41,31 +41,21 @@ export async function POST(req: NextRequest) {
 
     const normalizedEmail = email.toLowerCase();
 
-    // Check if user already exists and is verified
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { 
-        email: normalizedEmail,
-        emailVerified: { not: null } // Only consider verified users
-      },
+      where: { email: normalizedEmail },
     });
 
-    if (existingUser) {
+    // If user exists and is verified, reject
+    if (existingUser && existingUser.emailVerified) {
       return NextResponse.json(
         { message: 'User with this email already exists' },
         { status: 400 }
       );
     }
 
-    // Check for unverified user
-    const unverifiedUser = await prisma.user.findUnique({
-      where: { 
-        email: normalizedEmail,
-        emailVerified: null
-      },
-    });
-
     // If there's an unverified user, delete it to allow re-registration
-    if (unverifiedUser) {
+    if (existingUser && !existingUser.emailVerified) {
       // Delete any existing verification tokens first
       await prisma.verificationToken.deleteMany({
         where: { identifier: normalizedEmail }
@@ -73,7 +63,7 @@ export async function POST(req: NextRequest) {
       
       // Then delete the user
       await prisma.user.delete({
-        where: { id: unverifiedUser.id }
+        where: { id: existingUser.id }
       });
     }
 
@@ -103,8 +93,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send verification email
-    await sendVerificationEmail(normalizedEmail, verificationToken);
+    // Send verification email - don't let email errors fail signup
+    try {
+      await sendVerificationEmail(normalizedEmail, verificationToken);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Log but don't fail - user is already created
+    }
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
@@ -115,6 +110,10 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Signup error:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error code:', (error as any).code);
+    }
     return NextResponse.json(
       { message: 'Error creating user' },
       { status: 500 }
