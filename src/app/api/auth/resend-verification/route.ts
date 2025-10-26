@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { email } = result.data;
+    console.log('[RESEND] Attempt for:', email);
     
     // Check if the user exists and is not verified
     const user = await prisma.user.findUnique({
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
     });
     
     if (!user) {
+      console.log('[RESEND] User not found:', email);
       // Don't reveal if the email exists or not for security
       return NextResponse.json(
         { message: 'If your email is registered, a verification link has been sent.' },
@@ -40,12 +42,14 @@ export async function POST(req: NextRequest) {
     }
     
     if (user.emailVerified) {
+      console.log('[RESEND] Email already verified:', email);
       return NextResponse.json(
         { message: 'Your email is already verified. Please login.' },
         { status: 400 }
       );
     }
     
+    console.log('[RESEND] Deleting old tokens for:', email);
     // Delete any existing verification tokens for this user
     await prisma.verificationToken.deleteMany({
       where: { identifier: email }
@@ -54,8 +58,10 @@ export async function POST(req: NextRequest) {
     // Generate a new token
     const verificationToken = nanoid(32);
     const tokenExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    console.log('[RESEND] Generated new token');
     
     // Create a new verification token
+    console.log('[RESEND] Creating token');
     await prisma.verificationToken.create({
       data: {
         identifier: email,
@@ -63,16 +69,28 @@ export async function POST(req: NextRequest) {
         expires: tokenExpiration
       }
     });
+    console.log('[RESEND] Token created');
     
     // Send a new verification email
-    await sendVerificationEmail(email, verificationToken);
+    console.log('[RESEND] Sending email');
+    try {
+      await sendVerificationEmail(email, verificationToken);
+      console.log('[RESEND] Email sent successfully');
+    } catch (emailError) {
+      console.error('[RESEND] Email send failed:', emailError);
+      throw emailError;
+    }
     
     return NextResponse.json(
       { message: 'Verification email sent successfully' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Resend verification error:', error);
+    console.error('[RESEND] ERROR:', error);
+    if (error instanceof Error) {
+      console.error('[RESEND] Message:', error.message);
+      console.error('[RESEND] Code:', (error as any).code);
+    }
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
