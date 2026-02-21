@@ -266,11 +266,11 @@ export default function Home() {
               <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
             </div>
 
-            {/* Desktop Auth Buttons - Made bigger and more prominent */}
+            {/* Desktop Navigation and Auth Buttons */}
             <div className="hidden md:flex items-center gap-6">
               {status === 'authenticated' ? (
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   size="lg"
                   className="px-5 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
@@ -278,15 +278,15 @@ export default function Home() {
                 </Button>
               ) : (
                 <>
-                  <Button 
-                    asChild 
-                    variant="ghost" 
+                  <Button
+                    asChild
+                    variant="ghost"
                     size="lg"
                     className="px-6 py-3 text-lg font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full transition-all duration-300"
                   >
                     <Link href="/login">Sign In</Link>
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleGetStartedClick}
                     size="sm"
                     className="px-6 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
@@ -329,7 +329,7 @@ export default function Home() {
                   <div className="flex flex-col h-full">
                     <div className="bg-zinc-950 px-6 py-4 flex justify-between items-center border-b border-zinc-800">
                       <div className="flex items-center gap-3">
-                        <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={40} height={40} className="object-contain" />
+                        <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
                         <span className="font-bold text-lg text-white hidden sm:block">InterviewSense</span>
                       </div>
                       <button 
@@ -1020,7 +1020,7 @@ export default function Home() {
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                  <CountUpOnView end={49} duration={1000} className="inline-block" />/5
+                  <CountUpOnView end={5} duration={1000} className="inline-block" />/5
                 </div>
                 <div className="text-sm text-zinc-400">User Rating</div>
               </div>
@@ -1115,7 +1115,7 @@ export default function Home() {
                   className="w-full px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <button className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
-                  Join Waitlist
+                  Join Email List
                 </button>
               </div>
               <p className="text-zinc-500 text-xs mt-3 text-left">
@@ -1144,11 +1144,8 @@ export default function Home() {
 
           {/* Footer Links and Copyright */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 text-sm">
-            <Link href="/privacy" className="text-zinc-500 hover:text-zinc-300 transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 transition-colors">
-              Terms & Conditions
+            <Link href="/contact" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Feedback
             </Link>
           </div>
 

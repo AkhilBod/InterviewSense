@@ -124,7 +124,7 @@ function BehavioralResults() {
     <ProtectedRoute>
       <div className="h-screen bg-zinc-900 text-white overflow-hidden">
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-zinc-950/80 border-b border-zinc-800/50">
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
@@ -134,8 +134,8 @@ function BehavioralResults() {
                 </Link>
               </Button>
               <Link href="/" className="flex items-center gap-2">
-                <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={40} height={40} className="object-contain" />
-                <span className="font-semibold text-white">InterviewSense</span>
+                <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
+                <span className="font-bold text-xl text-white">InterviewSense</span>
               </Link>
             </div>
             <UserAccountDropdown />
