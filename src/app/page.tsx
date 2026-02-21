@@ -213,12 +213,12 @@ export default function Home() {
         >
           <StarryBackground />
           {/* Center phrase + loading bar below it */}
-          <div className="flex flex-col items-center gap-8 px-4 relative z-10">
+          <div className="flex flex-col items-center gap-5 sm:gap-8 px-4 py-8 relative z-10">
             {/* Percentage right above text */}
             <span className="text-white text-sm font-sans tracking-[0.3em]">
               {loadingProgress}
             </span>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white text-center leading-tight font-playfair">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white text-center leading-tight font-playfair">
               It&apos;s Time to Reimagine<br />
               the Way You Interview
             </h1>
@@ -1070,27 +1070,27 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Testimonial Card 1 - Databricks (Orange) */}
+              {/* Testimonial Card 1 - Databricks Orange */}
               <div className="bg-[#FF6B35] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[450px]">
                 <p className="text-2xl lg:text-3xl font-normal text-black leading-relaxed mb-12">
-                  "You just have to use it and you will see, you will just feel it."
+                  "Really cool to be able to practice everuthing in one platform."
                 </p>
                 <div className="text-black text-sm">
-                  <span className="font-medium">Ali Ghodsi</span>
+                  <span className="font-medium">Alex R</span>
                   <span className="mx-1.5">·</span>
-                  <span className="opacity-80">CEO, Databricks</span>
+                  <span className="opacity-80">Intern, Databricks</span>
                 </div>
               </div>
 
-              {/* Testimonial Card 2 - Stripe (Purple) */}
+              {/* Testimonial Card 2 - Stripe Purple */}
               <div className="bg-[#635BFF] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[400px]">
                 <p className="text-2xl lg:text-3xl font-normal text-white leading-relaxed mb-12">
-                  "Our speed is intense and InterviewSense helps us be action biased."
+                  "Was getting zero Interviews, now my total comp is two twenty thousand."
                 </p>
                 <div className="text-white text-sm">
-                  <span className="font-medium">Patrick Collison</span>
+                  <span className="font-medium">Amir K</span>
                   <span className="mx-1.5">·</span>
-                  <span className="opacity-90">CEO, Stripe</span>
+                  <span className="opacity-90">Product Manager, Stripe</span>
                 </div>
               </div>
             </div>
