@@ -5,9 +5,9 @@ import path from 'path'
 import { notFound } from 'next/navigation'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate static params for build time generation
@@ -231,7 +231,8 @@ function extractPostedDays(content: string): string {
 
 // Generate metadata for each page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const pageData = getPageData(params.slug)
+  const { slug } = await params
+  const pageData = getPageData(slug)
 
   if (!pageData) {
     return {
@@ -243,8 +244,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return generateSEOMetadata(pageData)
 }
 
-export default function OpportunityPage({ params }: PageProps) {
-  const pageData = getPageData(params.slug)
+export default async function OpportunityPage({ params }: PageProps) {
+  const { slug } = await params
+  const pageData = getPageData(slug)
 
   if (!pageData) {
     notFound()
@@ -256,7 +258,7 @@ export default function OpportunityPage({ params }: PageProps) {
   ]
 
   return (
-    <ProgrammaticSEOTemplate 
+    <ProgrammaticSEOTemplate
       data={pageData}
       questions={questions}
       relatedPages={relatedPages}

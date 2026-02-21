@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, Code, Brain, Building2, Users, Target, CheckCircle2, Star, Clock, TrendingUp } from 'lucide-react'
+import { ArrowRight, Code, Brain, Clock, BadgeCheck, CheckCircle2, Target } from 'lucide-react'
+import FlipQuestionCard from './FlipQuestionCard'
 
 interface PageData {
   type: string;
@@ -27,78 +27,117 @@ interface TemplateProps {
   relatedPages: PageData[];
 }
 
-// AI-generated question samples (this would be expanded with real AI generation)
+// Get questions for page
 const getQuestionsForPage = (data: PageData) => {
   const technicalQuestions: Record<string, any[]> = {
     'data-structures': [
-      { question: "Implement a binary search tree with insert, delete, and search operations", difficulty: "Medium", topic: "Trees", type: "technical" },
-      { question: "Design a hash table that handles collisions using chaining", difficulty: "Medium", topic: "Hash Tables", type: "technical" },
-      { question: "Reverse a linked list iteratively and recursively", difficulty: "Easy", topic: "Linked Lists", type: "technical" }
+      { question: "Two Sum - Given an array of integers and a target, return indices of the two numbers that add up to target", difficulty: "Easy", topic: "Arrays & Hashing", type: "technical", company: "Google", acceptance: "48.5%", frequency: "Very High" },
+      { question: "Valid Parentheses - Determine if the input string has valid bracket pairs", difficulty: "Easy", topic: "Stack", type: "technical", company: "Amazon", acceptance: "40.2%", frequency: "High" },
+      { question: "Merge Two Sorted Lists - Merge two sorted linked lists into one sorted list", difficulty: "Easy", topic: "Linked Lists", type: "technical", company: "Meta", acceptance: "61.8%", frequency: "High" },
+      { question: "Clone Graph - Create a deep copy of an undirected graph", difficulty: "Medium", topic: "Graphs", type: "technical", company: "Meta", acceptance: "43.2%", frequency: "High" },
+      { question: "LRU Cache - Design a data structure for Least Recently Used cache", difficulty: "Medium", topic: "Design", type: "technical", company: "Amazon", acceptance: "38.5%", frequency: "Very High" },
+      { question: "Binary Tree Vertical Order Traversal - Return vertical order traversal of nodes", difficulty: "Medium", topic: "Trees", type: "technical", company: "Meta", acceptance: "45.9%", frequency: "High" }
     ],
     'algorithms': [
-      { question: "Find the maximum subarray sum (Kadane's algorithm)", difficulty: "Medium", topic: "Dynamic Programming", type: "technical" },
-      { question: "Implement merge sort and analyze its time complexity", difficulty: "Medium", topic: "Sorting", type: "technical" },
-      { question: "Solve the coin change problem using dynamic programming", difficulty: "Medium", topic: "Dynamic Programming", type: "technical" }
+      { question: "Longest Substring Without Repeating Characters - Find the length of the longest substring without repeating characters", difficulty: "Medium", topic: "Sliding Window", type: "technical", company: "Amazon", acceptance: "33.8%", frequency: "Very High" },
+      { question: "Best Time to Buy and Sell Stock - Find the maximum profit from buying and selling one share of stock", difficulty: "Easy", topic: "Greedy", type: "technical", company: "Microsoft", acceptance: "51.7%", frequency: "High" },
+      { question: "Product of Array Except Self - Return an array where each element is the product of all other elements", difficulty: "Medium", topic: "Arrays", type: "technical", company: "Meta", acceptance: "64.5%", frequency: "High" },
+      { question: "Rotate Image - Rotate an N x N matrix by 90 degrees clockwise in-place", difficulty: "Medium", topic: "Arrays", type: "technical", company: "Amazon", acceptance: "65.3%", frequency: "High" },
+      { question: "K Closest Points to Origin - Find K points closest to origin using Manhattan distance", difficulty: "Medium", topic: "Heap", type: "technical", company: "Meta", acceptance: "66.1%", frequency: "Very High" },
+      { question: "Merge Intervals - Merge all overlapping intervals", difficulty: "Medium", topic: "Intervals", type: "technical", company: "Amazon", acceptance: "45.9%", frequency: "Very High" }
     ],
     'system-design': [
-      { question: "Design a URL shortener like bit.ly", difficulty: "Medium", topic: "System Architecture", type: "technical" },
-      { question: "Design a chat application like WhatsApp", difficulty: "Hard", topic: "Real-time Systems", type: "technical" },
-      { question: "Design a caching system for a web application", difficulty: "Medium", topic: "Caching", type: "technical" }
+      { question: "Design TinyURL - Design a URL shortening service like bit.ly", difficulty: "Medium", topic: "System Design", type: "technical", company: "Amazon", frequency: "Very High" },
+      { question: "Design Rate Limiter - Implement an API rate limiting system", difficulty: "Medium", topic: "System Design", type: "technical", company: "Stripe", frequency: "High" },
+      { question: "Design Web Crawler - Design a distributed web crawling system", difficulty: "Hard", topic: "System Design", type: "technical", company: "Google", frequency: "Medium" }
     ],
     'javascript': [
-      { question: "Implement a debounce function in JavaScript", difficulty: "Medium", topic: "JavaScript Fundamentals", type: "technical" },
-      { question: "Create a custom Promise implementation", difficulty: "Hard", topic: "Async Programming", type: "technical" },
-      { question: "Build a simple event emitter class", difficulty: "Medium", topic: "Object-Oriented Programming", type: "technical" }
+      { question: "Implement Debounce - Create a debounce function that delays execution", difficulty: "Medium", topic: "JavaScript", type: "technical", company: "Airbnb", acceptance: "52.3%", frequency: "High" },
+      { question: "Deep Clone Object - Implement a function to deep clone a JavaScript object", difficulty: "Medium", topic: "JavaScript", type: "technical", company: "Uber", acceptance: "45.1%", frequency: "Medium" },
+      { question: "Event Emitter - Build a simple pub/sub event emitter class", difficulty: "Medium", topic: "OOP", type: "technical", company: "Netflix", acceptance: "58.9%", frequency: "Medium" }
     ],
     'web-development': [
-      { question: "Implement infinite scrolling in React", difficulty: "Medium", topic: "React", type: "technical" },
-      { question: "Create a responsive CSS grid layout", difficulty: "Easy", topic: "CSS", type: "technical" },
-      { question: "Build a REST API with proper error handling", difficulty: "Medium", topic: "Backend Development", type: "technical" }
+      { question: "Implement Virtual DOM Diffing - Create a basic virtual DOM reconciliation algorithm", difficulty: "Hard", topic: "React Internals", type: "technical", company: "Meta", acceptance: "38.4%", frequency: "Medium" },
+      { question: "Build Autocomplete - Implement a search autocomplete with debouncing", difficulty: "Medium", topic: "React", type: "technical", company: "Google", acceptance: "55.2%", frequency: "High" },
+      { question: "Infinite Scroll - Implement infinite scrolling with virtualization", difficulty: "Medium", topic: "Performance", type: "technical", company: "Pinterest", acceptance: "47.6%", frequency: "High" }
     ]
   };
 
   const behavioralQuestions = [
-    { 
-      question: "Tell me about a time when you had to work with a difficult team member", 
-      difficulty: "Medium", 
-      topic: "Teamwork", 
+    {
+      question: "Tell me about a time when you had to work with a difficult team member",
+      difficulty: "Medium",
+      topic: "Teamwork",
       type: "behavioral",
-      solution: "**Situation:** During my CS capstone project, I was paired with a teammate who rarely attended meetings and didn't complete assigned tasks on time. **Task:** I needed to ensure our group project (a web application) stayed on track while maintaining team harmony. **Action:** I first approached them privately to understand if they were facing personal challenges. I discovered they were struggling with the React framework we chose. Instead of escalating to the professor, I offered to pair-program with them and created a shared study schedule. I also redistributed some tasks to better match everyone's strengths. **Result:** Our teammate became more engaged, contributed meaningfully to the project, and we delivered a successful application. I learned that apparent 'difficult' behavior often stems from underlying challenges, and proactive communication can resolve most team conflicts."
+      company: "Google",
+      frequency: "High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> During my CS capstone project, I was paired with a teammate who rarely attended meetings and didn't complete assigned tasks on time. <br/><br/><strong class='text-green-400'>Task:</strong> I needed to ensure our group project (a web application) stayed on track while maintaining team harmony. <br/><br/><strong class='text-purple-400'>Action:</strong> I first approached them privately to understand if they were facing personal challenges. I discovered they were struggling with the React framework we chose. Instead of escalating to the professor, I offered to pair-program with them and created a shared study schedule. I also redistributed some tasks to better match everyone's strengths. <br/><br/><strong class='text-orange-400'>Result:</strong> Our teammate became more engaged, contributed meaningfully to the project, and we delivered a successful application. I learned that apparent 'difficult' behavior often stems from underlying challenges, and proactive communication can resolve most team conflicts."
     },
-    { 
-      question: "Describe a challenging project you worked on and how you overcame obstacles", 
-      difficulty: "Medium", 
-      topic: "Problem Solving", 
+    {
+      question: "Describe a challenging project you worked on and how you overcame obstacles",
+      difficulty: "Medium",
+      topic: "Problem Solving",
       type: "behavioral",
-      solution: "**Situation:** For my internship application portfolio, I decided to build a real-time chat application using technologies I'd never used before - Node.js, Socket.io, and MongoDB. **Task:** I had 3 weeks to complete it while managing coursework and a part-time job. **Action:** I broke the project into smaller milestones: basic server setup, user authentication, real-time messaging, and UI polish. When I got stuck on implementing WebSocket connections, I systematically researched documentation, watched tutorials, and posted specific questions on Stack Overflow. I also reached out to a senior student who had experience with similar projects. **Result:** I successfully completed the application, which helped me land my internship. The experience taught me how to learn new technologies quickly and the importance of asking for help when needed. I now use this same methodical approach for tackling unfamiliar technical challenges."
+      company: "Amazon",
+      frequency: "High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> For my internship application portfolio, I decided to build a real-time chat application using technologies I'd never used before - Node.js, Socket.io, and MongoDB. <br/><br/><strong class='text-green-400'>Task:</strong> I had 3 weeks to complete it while managing coursework and a part-time job. <br/><br/><strong class='text-purple-400'>Action:</strong> I broke the project into smaller milestones: basic server setup, user authentication, real-time messaging, and UI polish. When I got stuck on implementing WebSocket connections, I systematically researched documentation, watched tutorials, and posted specific questions on Stack Overflow. I also reached out to a senior student who had experience with similar projects. <br/><br/><strong class='text-orange-400'>Result:</strong> I successfully completed the application, which helped me land my internship. The experience taught me how to learn new technologies quickly and the importance of asking for help when needed. I now use this same methodical approach for tackling unfamiliar technical challenges."
     },
-    { 
-      question: "How do you handle tight deadlines and pressure?", 
-      difficulty: "Medium", 
-      topic: "Time Management", 
+    {
+      question: "How do you handle tight deadlines and pressure?",
+      difficulty: "Medium",
+      topic: "Time Management",
       type: "behavioral",
-      solution: "**Situation:** During finals week last semester, I had three major coding assignments due within 48 hours, plus two exams to study for. **Task:** I needed to manage my time effectively to complete everything without compromising quality. **Action:** I started by listing all tasks and estimating time for each. I prioritized based on due dates and complexity, then created a detailed schedule with specific time blocks. I eliminated distractions by working in the library, used the Pomodoro Technique for focused coding sessions, and took strategic breaks to avoid burnout. When I realized one assignment was taking longer than expected, I reached out to the TA for clarification rather than spending hours debugging alone. **Result:** I completed all assignments on time and performed well on my exams. This experience taught me the importance of planning, prioritization, and knowing when to seek help. I now proactively manage my schedule to avoid such situations, but I'm confident in my ability to perform under pressure when necessary."
+      company: "Meta",
+      frequency: "Very High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> During finals week last semester, I had three major coding assignments due within 48 hours, plus two exams to study for. <br/><br/><strong class='text-green-400'>Task:</strong> I needed to manage my time effectively to complete everything without compromising quality. <br/><br/><strong class='text-purple-400'>Action:</strong> I started by listing all tasks and estimating time for each. I prioritized based on due dates and complexity, then created a detailed schedule with specific time blocks. I eliminated distractions by working in the library, used the Pomodoro Technique for focused coding sessions, and took strategic breaks to avoid burnout. When I realized one assignment was taking longer than expected, I reached out to the TA for clarification rather than spending hours debugging alone. <br/><br/><strong class='text-orange-400'>Result:</strong> I completed all assignments on time and performed well on my exams. This experience taught me the importance of planning, prioritization, and knowing when to seek help. I now proactively manage my schedule to avoid such situations, but I'm confident in my ability to perform under pressure when necessary."
+    },
+    {
+      question: "Tell me about a time you disagreed with a decision and how you handled it",
+      difficulty: "Medium",
+      topic: "Leadership Principles",
+      type: "behavioral",
+      company: "Amazon",
+      frequency: "Very High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> In a software engineering group project, our team lead decided to use a NoSQL database for our e-commerce application without discussing alternatives. <br/><br/><strong class='text-green-400'>Task:</strong> I believed a relational database would be more suitable given our need for complex transactions and data relationships. <br/><br/><strong class='text-purple-400'>Action:</strong> I scheduled a one-on-one meeting with the team lead and presented my concerns with specific examples of transaction requirements. I created a comparison document showing pros and cons of both approaches. I focused on the project's success rather than being right, and suggested we prototype both approaches with a small feature. <br/><br/><strong class='text-orange-400'>Result:</strong> After the prototype, the team agreed that a relational database better suited our needs. The team lead appreciated my data-driven approach and collaborative attitude. This taught me the importance of respectful disagreement and backing opinions with evidence."
+    },
+    {
+      question: "Describe a time when you had to learn something quickly to complete a project",
+      difficulty: "Medium",
+      topic: "Learning & Growth",
+      type: "behavioral",
+      company: "Meta",
+      frequency: "High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> Two weeks before our mobile app project demo, our React Native developer had to leave the team due to personal reasons. <br/><br/><strong class='text-green-400'>Task:</strong> As the team's web developer with no mobile experience, I needed to take over the mobile frontend to ensure we met our deadline. <br/><br/><strong class='text-purple-400'>Action:</strong> I immediately created a learning plan: spent 2 days on React Native fundamentals through documentation and tutorials, then dove into our existing codebase. I set up daily check-ins with a friend who had mobile dev experience, and focused on understanding patterns rather than memorizing syntax. I prioritized completing existing features over adding new ones. <br/><br/><strong class='text-orange-400'>Result:</strong> We successfully demoed on time with all core features working. The professor praised our adaptability. I learned that strong fundamentals in one framework translate well to others, and that focused, deliberate learning beats panic-studying. This experience gave me confidence to tackle new technologies in future roles."
+    },
+    {
+      question: "Give an example of when you had to make a difficult trade-off decision",
+      difficulty: "Medium",
+      topic: "Customer Obsession",
+      type: "behavioral",
+      company: "Amazon",
+      frequency: "High",
+      solution: "<strong class='text-blue-400'>Situation:</strong> While building a course registration web app, we had one week left and two major features incomplete: an advanced search filter and email notifications for course openings. <br/><br/><strong class='text-green-400'>Task:</strong> I needed to decide which feature to prioritize, as we only had time to properly implement one. <br/><br/><strong class='text-purple-400'>Action:</strong> I analyzed user feedback from our beta testers and found that 80% of users mentioned wanting notifications, while only 30% mentioned search filters. I presented data to the team showing that notifications would provide more value. I also proposed a simpler basic search that we could implement in 2 days, allowing us to deliver both features in limited form. <br/><br/><strong class='text-orange-400'>Result:</strong> We implemented full notification functionality and basic search. User satisfaction scores in our final presentation were 4.5/5. This taught me to make data-driven decisions focused on user needs, and to look for creative solutions that don't require choosing between extremes."
     }
   ];
 
-  // Get relevant technical questions based on page content
-  let relevantTechnical = [];
-  if (data.skill && data.skill.slug && technicalQuestions[data.skill.slug]) {
-    relevantTechnical = technicalQuestions[data.skill.slug];
-  } else if (data.role?.skills && Array.isArray(data.role.skills)) {
-    const primarySkill = data.role.skills[0].toLowerCase().replace(/[^a-z]/g, '-');
-    relevantTechnical = technicalQuestions[primarySkill] || technicalQuestions['algorithms'];
-  } else {
-    relevantTechnical = technicalQuestions['algorithms'];
-  }
+  // Get all questions and shuffle
+  const allTechQuestions = Object.values(technicalQuestions).flat();
+  const shuffledTech = shuffleArray(allTechQuestions);
+  const shuffledBehavioral = shuffleArray(behavioralQuestions);
 
-  // Select 3 technical and 3 behavioral questions
+  const relevantTechnical = shuffledTech;
+  const relevantBehavioral = shuffledBehavioral;
+
+  // Select top 5 questions total (3 technical, 2 behavioral for balanced split)
   const selectedTechnical = relevantTechnical.slice(0, 3);
-  const selectedBehavioral = behavioralQuestions.slice(0, 3);
+  const selectedBehavioral = relevantBehavioral.slice(0, 2);
 
-  // Combine and shuffle
-  const allQuestions = [...selectedTechnical, ...selectedBehavioral];
-  return shuffleArray(allQuestions);
+  // Return as separate arrays for 50/50 display
+  return {
+    technical: selectedTechnical,
+    behavioral: selectedBehavioral,
+    all: [...selectedTechnical, ...selectedBehavioral]
+  };
 };
 
 export function generateMetadata(data: PageData): Metadata {
@@ -119,358 +158,212 @@ export function generateMetadata(data: PageData): Metadata {
 }
 
 export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: TemplateProps) {
+  // Handle both old format (array) and new format (object with technical/behavioral)
+  const questionsData = Array.isArray(questions) ? { technical: [], behavioral: [], all: questions } : questions;
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
     "name": `InterviewSense - ${data.title}`,
     "description": data.description,
     "url": `https://www.interviewsense.org/internships/${data.slug}`,
-    "teaches": questions.map(q => q.topic),
+    "teaches": questionsData.all.map(q => q.topic),
     "educationalLevel": "undergraduate",
     "courseMode": "online"
   };
 
   return (
     <>
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      
-      <div className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+
+      <div className="min-h-screen text-white" style={{ background: 'linear-gradient(to bottom, #050d1a, #0a1628, #0d2044)' }}>
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-b from-slate-900 to-slate-800 relative">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_50%)]"></div>
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Breadcrumb */}
-              <nav className="text-sm text-zinc-400 mb-6">
-                <Link href="/internships" className="hover:text-blue-400">CS Internships</Link>
-                {data.company && (
-                  <>
-                    <span className="mx-2">→</span>
-                    <Link href="/signup" className="hover:text-blue-400">
+        <section className="pt-24 pb-16 px-4 relative border-b" style={{ borderColor: 'rgba(29,100,255,0.15)' }}>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(24,119,242,0.1),transparent_70%)]"></div>
+          <div className="container mx-auto max-w-6xl relative z-10">
+            {/* Back Button */}
+            <Link
+              href="/opportunities"
+              className="inline-flex items-center gap-2 mb-12 text-sm hover:opacity-80 transition-opacity"
+              style={{ color: 'rgba(255,255,255,0.7)' }}
+            >
+              <ArrowRight className="h-4 w-4 rotate-180" />
+              Back to Opportunities
+            </Link>
+
+            {/* Company Profile Header - Left Aligned */}
+            {data.company && (
+              <div className="flex items-start gap-6">
+                {/* Large Logo */}
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={`https://img.logo.dev/${data.company.slug}.com?token=pk_Qc_me_jVR_W-pQM8CWOeAw`}
+                    alt={`${data.company.name} logo`}
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-contain"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(29,100,255,0.3)',
+                      padding: '16px',
+                      boxShadow: '0 0 30px rgba(29,100,255,0.2)'
+                    }}
+                  />
+                </div>
+
+                {/* Company Info */}
+                <div className="flex-1 pt-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl md:text-4xl font-bold text-white" style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                      letterSpacing: '-0.02em'
+                    }}>
                       {data.company.name}
-                    </Link>
-                  </>
-                )}
-                <span className="mx-2">→</span>
-                <span className="text-zinc-300">{data.title}</span>
-              </nav>
+                    </h1>
+                    <BadgeCheck className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0" style={{ color: '#1877f2' }} />
+                  </div>
+                  <p className="text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    {data.company.slug}.com
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tighter mb-6">
-                {data.company && (
-                  <span className="text-blue-500">{data.company.name}</span>
-                )}
-                {data.role && !data.company && (
-                  <span className="text-blue-500">{data.role.title}</span>
-                )}
-                {data.skill && (
-                  <span className="text-green-500"> {data.skill.name}</span>
-                )}
-                <br />
-                <span className="text-white">Interview Questions</span>
-              </h1>
-
-              <p className="text-xl text-zinc-400 mb-8 max-w-3xl mx-auto">
-                {data.description} Get AI-powered feedback and land your dream CS internship with targeted practice.
+        {/* Sample Questions Section - 50/50 Split */}
+        <section id="questions" className="py-16 px-4">
+          <div className="container mx-auto max-w-7xl">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">Interview Questions</h2>
+              <p className="text-lg max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Practice with real questions asked in interviews. Click any card to reveal the answer.
               </p>
-              
-              {/* Apply Buttons for Internship Listings */}
-
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Button
-                  asChild
-                  size="lg"
-                  className="text-base px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg shadow-lg font-semibold"
-                >
-                  <Link href="/signup">
-                    Practice These Programming Questions <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="text-base px-8 py-4 border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-lg"
-                >
-                  <Link href="#questions">View Sample Questions</Link>
-                </Button>
-              </div>
-
-              {/* Key Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">{questions.length}+</div>
-                  <div className="text-sm text-zinc-400">Practice Questions</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">95%</div>
-                  <div className="text-sm text-zinc-400">Success Rate</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">AI</div>
-                  <div className="text-sm text-zinc-400">Powered Feedback</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">Free</div>
-                  <div className="text-sm text-zinc-400">To Get Started</div>
-                </div>
-              </div>
             </div>
-          </div>
-        </section>
 
-        {/* Company/Role Info Section */}
-        {(data.company || data.role) && (
-          <section className="py-16 bg-zinc-900">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {data.company && (
-                    <Card className="bg-zinc-800/50 border-zinc-700/50">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <Building2 className="h-8 w-8 text-blue-500" />
-                          <h3 className="text-2xl font-bold text-white">{data.company.name}</h3>
-                        </div>
-                        <div className="space-y-3 text-zinc-300">
-                          {data.company.tier && <p><span className="text-zinc-400">Tier:</span> {data.company.tier}</p>}
-                          {data.company.locations && <p><span className="text-zinc-400">Locations:</span> {data.company.locations.join(', ')}</p>}
-                          {data.company.hiring_seasons && <p><span className="text-zinc-400">Hiring Seasons:</span> {data.company.hiring_seasons.join(', ')}</p>}
-                          {data.company.difficulty && <p><span className="text-zinc-400">Interview Difficulty:</span> {data.company.difficulty}</p>}
-                          {data.company.focus_areas && <p><span className="text-zinc-400">Focus Areas:</span> {data.company.focus_areas.join(', ')}</p>}
-                          {data.company.typical_questions && <p><span className="text-zinc-400">Question Count:</span> {data.company.typical_questions}+</p>}
-                        </div>
-                      </CardContent>
-                    </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              {/* Technical Questions - Left Side (50%) */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Code className="h-6 w-6" style={{ color: '#1877f2' }} />
+                  <h3 className="text-2xl font-bold text-white">Technical Questions</h3>
+                </div>
+                <div className="space-y-6">
+                  {questionsData.technical.length > 0 ? (
+                    questionsData.technical.map((question, index) => (
+                      <FlipQuestionCard key={index} question={question} companyName={data.company?.name} />
+                    ))
+                  ) : (
+                    <div className="p-6 text-center" style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(29,100,255,0.2)',
+                      borderRadius: '16px'
+                    }}>
+                      <p style={{ color: 'rgba(255,255,255,0.6)' }}>Sign up to access technical questions</p>
+                    </div>
                   )}
+                </div>
+              </div>
 
-                  {data.role && (
-                    <Card className="bg-zinc-800/50 border-zinc-700/50">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <Code className="h-8 w-8 text-green-500" />
-                          <h3 className="text-2xl font-bold text-white">{data.role.title}</h3>
-                        </div>
-                        <div className="space-y-3 text-zinc-300">
-                          <p>{data.role.description}</p>
-                          {data.role.skills && Array.isArray(data.role.skills) && (
-                            <p><span className="text-zinc-400">Key Skills:</span> {data.role.skills.join(', ')}</p>
-                          )}
-                          {data.role.difficulty && <p><span className="text-zinc-400">Difficulty Level:</span> {data.role.difficulty}</p>}
-                        </div>
-                      </CardContent>
-                    </Card>
+              {/* Behavioral Questions - Right Side (50%) */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Brain className="h-6 w-6" style={{ color: '#1877f2' }} />
+                  <h3 className="text-2xl font-bold text-white">Behavioral Questions</h3>
+                </div>
+                <div className="space-y-6">
+                  {questionsData.behavioral.length > 0 ? (
+                    questionsData.behavioral.map((question, index) => (
+                      <FlipQuestionCard key={index} question={question} companyName={data.company?.name} />
+                    ))
+                  ) : (
+                    <div className="p-6 text-center" style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(29,100,255,0.2)',
+                      borderRadius: '16px'
+                    }}>
+                      <p style={{ color: 'rgba(255,255,255,0.6)' }}>Sign up to access behavioral questions</p>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
-          </section>
-        )}
 
-        {/* Sample Questions Section */}
-        <section id="questions" className="py-16 bg-zinc-950">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Sample Interview Questions
-                </h2>
-                <p className="text-zinc-400 max-w-2xl mx-auto">
-                  Practice with these real interview questions. Get detailed solutions and AI feedback when you sign up.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                {questions.map((question, index) => (
-                  <Card key={index} className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex gap-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            question.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
-                            question.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-red-500/20 text-red-400'
-                          }`}>
-                            {question.difficulty}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            question.type === 'behavioral' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
-                          }`}>
-                            {question.type === 'behavioral' ? 'Behavioral' : 'Technical'}
-                          </span>
-                        </div>
-                        <span className="text-xs text-zinc-500">{question.topic}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-white mb-3">
-                        {question.question}
-                      </h3>
-                      
-                      {/* Show solution for behavioral questions */}
-                      {question.type === 'behavioral' && question.solution && (
-                        <div className="mb-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-700/30">
-                          <h4 className="text-sm font-semibold text-purple-400 mb-2">Sample Answer (STAR Method):</h4>
-                          <p className="text-sm text-zinc-300 leading-relaxed">
-                            {question.solution}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {/* Show hint for technical questions */}
-                      {question.type === 'technical' && (
-                        <div className="mb-4 p-3 bg-blue-900/20 rounded-lg border border-blue-700/30">
-                          <p className="text-sm text-blue-300">
-                            💡 <strong>Approach:</strong> Consider time/space complexity, edge cases, and explain your thought process clearly.
-                          </p>
-                        </div>
-                      )}
-                      
-                      <Button
-                        asChild
-                        size="sm"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        <Link href="/signup">
-                          Practice This Question <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* CTA to see all questions */}
-              <div className="text-center">
-                <Button
-                  asChild
-                  size="lg"
-                  className="text-lg px-10 py-6 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-full shadow-lg"
-                >
-                  <Link href="/signup">
-                    Access All {data.company?.typical_questions || 200}+ Questions <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* Why Practice Here */}
-        <section className="py-16 bg-zinc-900">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Why Practice {data.company?.name || data.role?.title || 'These'} Questions Here?
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Brain className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">AI-Powered Feedback</h3>
-                    <p className="text-zinc-400">Get instant feedback on your code quality, time complexity, and communication skills with our advanced AI system.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Real Interview Questions</h3>
-                    <p className="text-zinc-400">Practice questions actually asked in recent interviews, updated regularly based on candidate reports.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Target className="h-6 w-6 text-purple-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Internship-Focused</h3>
-                    <p className="text-zinc-400">Content specifically tailored for internship and new grad positions, not senior-level expectations.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-6 w-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-2">Timed Practice</h3>
-                    <p className="text-zinc-400">Practice under realistic time constraints to simulate actual interview conditions and improve your speed.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Related Pages */}
         {relatedPages.length > 0 && (
-          <section className="py-16 bg-zinc-950">
-            <div className="container mx-auto px-4">
-              <div className="max-w-6xl mx-auto">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-white mb-4">Related Interview Prep</h2>
-                  <p className="text-zinc-400">Explore more interview questions and topics</p>
-                </div>
+          <section className="py-16 px-4">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-white mb-4">Related Interview Prep</h2>
+                <p className="text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>Explore more interview questions and topics</p>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {relatedPages.slice(0, 6).map((page, index) => (
-                    <Card key={index} className="bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800 transition-all duration-300">
-                      <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-white mb-2">{page.title}</h3>
-                        <p className="text-zinc-400 text-sm mb-4">{page.description}</p>
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-700"
-                        >
-                          <Link href="/signup">
-                            View Questions <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {relatedPages.slice(0, 6).map((page, index) => (
+                  <div key={index} className="p-6 transition-all duration-300 hover:scale-105" style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(29,100,255,0.2)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 className="text-lg font-bold text-white mb-2">{page.title}</h3>
+                    <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{page.description}</p>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="w-full text-white font-medium"
+                      style={{
+                        background: 'rgba(24,119,242,0.15)',
+                        color: '#1877f2',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <Link href="/signup">
+                        View Questions <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
         )}
 
         {/* Final CTA */}
-        <section className="py-16 bg-zinc-900">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Ready to Ace Your {data.company?.name || data.role?.title || 'CS'} Interview?
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <div className="text-center p-12" style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(29,100,255,0.2)',
+              borderRadius: '16px'
+            }}>
+              <h2 className="text-4xl font-bold text-white mb-4">
+                Ready to Ace Your Interview?
               </h2>
-              <p className="text-xl text-zinc-400 mb-8">
-                Join thousands of CS students who've already landed internships at top tech companies.
+              <p className="text-xl mb-8" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Join thousands of CS students landing internships at top tech companies.
               </p>
-              
+
               <Button
                 asChild
                 size="lg"
-                className="text-lg px-10 py-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full shadow-lg"
+                className="text-lg px-10 py-6 text-white font-semibold"
+                style={{
+                  background: '#1877f2',
+                  borderRadius: '12px'
+                }}
               >
                 <Link href="/signup">
-                  Start Practicing Now - It's Free <ArrowRight className="ml-2 h-5 w-5" />
+                  Start Practicing Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              
-              <p className="text-sm text-zinc-500 mt-4">
-                No credit card required • Join 10,000+ CS students
+
+              <p className="text-sm mt-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                No credit card required
               </p>
             </div>
           </div>
