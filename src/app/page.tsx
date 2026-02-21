@@ -409,24 +409,21 @@ export default function Home() {
         </nav>
 
         {/* Hero Content - Split Layout */}
-        <div className="flex-1 flex items-center relative z-10" style={{ padding: '0 80px', minHeight: '85vh' }}>
+        <div className="flex-1 flex items-center justify-center relative z-10 px-4 sm:px-8 md:px-12 lg:px-20 py-12 lg:py-0" style={{ minHeight: 'calc(100vh - 80px)' }}>
 
-          <div className="w-full relative z-10" style={{ display: 'grid', gridTemplateColumns: '1fr 0.8fr', gap: '60px', alignItems: 'center' }}>
+          <div className="w-full max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-12 lg:gap-16 items-center">
             {/* LEFT COLUMN - Text + CTA */}
-            <div>
-              <h1 style={{
-                fontSize: '72px',
-                fontWeight: 700,
-                lineHeight: 1.1,
-                marginBottom: '32px',
+            <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 w-full" style={{
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
-                letterSpacing: '-0.025em'
+                letterSpacing: '-0.025em',
+                lineHeight: 1.1
               }}>
                 <div style={{ color: 'white' }}>AI tool for</div>
-                <div style={{ color: '#4a9eff', minHeight: '90px' }}>
+                <div className="min-h-[60px] sm:min-h-[75px] lg:min-h-[90px] flex items-center justify-center lg:justify-start" style={{ color: '#4a9eff' }}>
                   <RotatingText
                     texts={['behavioral interviews', 'technical interviews', 'resume reviews', ]}
-                    mainClassName="px-0 bg-transparent text-blue-400 overflow-hidden justify-start"
+                    mainClassName="px-0 bg-transparent text-blue-400 overflow-hidden justify-center lg:justify-start w-full"
                     staggerFrom={"first"}
                     initial={{ y: "100%", opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -442,17 +439,17 @@ export default function Home() {
               {/* CTA Button */}
               <button
                 onClick={handleGetStartedClick}
+                className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5"
                 style={{
                   background: '#3b82f6',
                   color: 'white',
                   fontWeight: 500,
-                  padding: '14px 28px',
                   borderRadius: '8px',
-                  fontSize: '16px',
                   border: 'none',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '8px',
                   transition: 'all 0.2s',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
@@ -471,10 +468,70 @@ export default function Home() {
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
+
+              {/* Mobile Video - Shows below button on mobile */}
+              <div className="lg:hidden mt-10 w-full max-w-2xl mx-auto" style={{
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: '#111318',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.6)'
+              }}>
+                {/* Top Bar */}
+                <div style={{
+                  background: '#1a1d24',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  {/* Left - Dots */}
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }}></div>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e' }}></div>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }}></div>
+                  </div>
+                  {/* Center - URL */}
+                  <div style={{
+                    background: '#1e2027',
+                    borderRadius: '20px',
+                    padding: '4px 14px',
+                    fontSize: '12px',
+                    color: '#6b7280'
+                  }}>
+                    ● interviewsense.org
+                  </div>
+                  {/* Right - Live Demo */}
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>Live Demo</div>
+                </div>
+
+                {/* Video Content */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%',
+                  paddingBottom: '56.25%',
+                  background: '#0d0f14'
+                }}>
+                  <iframe
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      display: 'block'
+                    }}
+                    src="https://player.vimeo.com/video/1098880047?share=copy&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
+                    title="InterviewSense Demo"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
             </div>
 
-            {/* RIGHT COLUMN - Browser Mockup */}
-            <div style={{
+            {/* RIGHT COLUMN - Browser Mockup - Desktop Only */}
+            <div className="hidden lg:block" style={{
               borderRadius: '12px',
               overflow: 'hidden',
               background: '#111318',
