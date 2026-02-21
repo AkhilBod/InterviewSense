@@ -252,27 +252,47 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }} 
       />
       
-      <div className="flex flex-col min-h-screen text-white relative" style={{ background: 'transparent' }}>
-      <StarryBackground />
+      <div className="flex flex-col min-h-screen text-white relative" style={{ background: '#0a0e1a' }}>
+
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes spinReverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+
+        .spin-circle {
+          animation: spin 20s linear infinite;
+        }
+
+        .spin-circle-reverse {
+          animation: spinReverse 15s linear infinite;
+        }
+      `}</style>
 
       {/* Hero Section with Integrated Navigation */}
-      <section className="py-4 md:py-8 lg:min-h-screen flex flex-col relative" style={{ background: 'linear-gradient(to bottom, rgba(0,8,24,0.15), rgba(0,8,24,0.35))' }}>
+      <section className="flex flex-col relative" style={{ background: '#0a0e1a', minHeight: '100vh' }}>
+        <StarryBackground />
         {/* Navigation Bar */}
-        <nav className="w-full z-50 relative">
-          <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-            {/* Logo Section - Made smaller and more compact */}
-            <div className="flex items-center gap-4">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-2xl text-white hidden sm:block">InterviewSense</span>
+        <nav className="w-full z-50 relative" style={{ background: 'transparent', borderBottom: 'none' }}>
+          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+            {/* Logo Section */}
+            <div className="flex items-center gap-3">
+              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={40} height={40} className="object-contain" />
+              <span className="font-bold text-xl text-white hidden sm:block">InterviewSense</span>
             </div>
 
             {/* Desktop Navigation and Auth Buttons */}
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4">
               {status === 'authenticated' ? (
                 <Button
                   asChild
                   size="lg"
-                  className="px-5 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200"
                 >
                   <Link href="/dashboard">Go to Dashboard</Link>
                 </Button>
@@ -282,14 +302,14 @@ export default function Home() {
                     asChild
                     variant="ghost"
                     size="lg"
-                    className="px-6 py-3 text-lg font-medium text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-full transition-all duration-300"
+                    className="px-5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-all duration-200"
                   >
                     <Link href="/login">Sign In</Link>
                   </Button>
                   <Button
                     onClick={handleGetStartedClick}
                     size="sm"
-                    className="px-6 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                    className="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200"
                   >
                     Get Started Free
                   </Button>
@@ -325,9 +345,9 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black opacity-80" onClick={() => setMobileMenuOpen(false)}></div>
                 
                 {/* Menu Container */}
-                <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-zinc-950 border-l border-zinc-800 shadow-xl">
+                <div className="absolute inset-y-0 right-0 w-[80%] max-w-sm bg-zinc-950 shadow-xl">
                   <div className="flex flex-col h-full">
-                    <div className="bg-zinc-950 px-6 py-4 flex justify-between items-center border-b border-zinc-800">
+                    <div className="bg-zinc-950 px-6 py-4 flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
                         <span className="font-bold text-lg text-white hidden sm:block">InterviewSense</span>
@@ -346,7 +366,7 @@ export default function Home() {
                     <div className="flex-1 overflow-y-auto bg-zinc-950">
                     </div>
                     
-                    <div className="p-6 border-t border-zinc-800 bg-black">
+                    <div className="p-6 bg-black">
                       <h3 className="text-sm uppercase text-zinc-500 font-medium mb-4">Account</h3>
                       {status === 'authenticated' ? (
                         <Button 
@@ -363,7 +383,7 @@ export default function Home() {
                             asChild
                             variant="ghost"
                             size="lg"
-                            className="text-white hover:text-white hover:bg-zinc-800 flex-1 font-medium py-4 text-base rounded-lg border border-zinc-700"
+                            className="text-white hover:text-white hover:bg-zinc-800 flex-1 font-medium py-4 text-base rounded-lg"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             <Link href="/login">Login</Link>
@@ -388,75 +408,128 @@ export default function Home() {
           )}
         </nav>
 
-        {/* Hero Content */}
-        <div className="flex-1 flex items-center py-10 lg:py-14">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_50%)]"></div>
-          <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-[920px] mx-auto">
-              {/* Main Content - Stacked Layout */}
-              <div className="flex flex-col items-center text-center gap-6 lg:gap-7">
+        {/* Hero Content - Split Layout */}
+        <div className="flex-1 flex items-center relative z-10" style={{ padding: '0 80px', minHeight: '85vh' }}>
 
-                {/* Text Content - Centered and Large */}
-                <div className="w-full flex flex-col items-center gap-2">
-                  <h1 className="text-[32px] sm:text-[38px] md:text-[44px] lg:text-[50px] font-bold leading-[1.15] tracking-[-0.02em]">
-                    The AI analytics platform for
-                  </h1>
-
-                  {/* Mobile: Static text */}
-                  <div className="text-blue-500 font-bold block sm:hidden text-[32px] leading-[1.15]">
-                    interviews
-                  </div>
-
-                  {/* Desktop: Rotating text */}
-                  <div className="text-blue-500 font-bold hidden sm:block">
-                    <RotatingText
-                      texts={['resume reviews', 'behavioral interviews', 'technical interviews']}
-                      mainClassName="px-0 bg-transparent text-blue-400 overflow-hidden justify-center text-[38px] md:text-[44px] lg:text-[50px]"
-                      staggerFrom={"first"}
-                      initial={{ y: "100%", opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: "-100%", opacity: 0 }}
-                      staggerDuration={0}
-                      splitLevelClassName="overflow-hidden leading-[1.15]"
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                      rotationInterval={2500}
-                    />
-                  </div>
-
-                  <p className="text-[15px] sm:text-[16px] leading-[145%] text-zinc-400 max-w-[700px] mx-auto font-normal mt-2 sm:mt-3 px-4">
-                    AI-powered interview practice that helps you land your dream role faster
-                  </p>
-
-                  <div className="flex flex-row gap-2.5 sm:gap-3 justify-center items-center mt-4 sm:mt-5 px-4 sm:px-0">
-                    <button
-                      onClick={handleGetStartedClick}
-                      className="h-[42px] sm:h-[44px] px-4 sm:px-6 flex items-center justify-center text-[14px] sm:text-[15px] font-semibold leading-[135%] tracking-[-0.02px] bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 whitespace-nowrap"
-                    >
-                      Get started
-                    </button>
-                    <Link
-                      href="#features"
-                      className="h-[42px] sm:h-[44px] px-4 sm:px-6 flex items-center justify-center text-[14px] sm:text-[15px] font-semibold leading-[135%] tracking-[-0.02px] border-2 border-zinc-700 text-white hover:bg-zinc-800/50 rounded-lg transition-all duration-200 whitespace-nowrap"
-                    >
-                      Watch demo
-                    </Link>
-                  </div>
+          <div className="w-full relative z-10" style={{ display: 'grid', gridTemplateColumns: '1fr 0.8fr', gap: '60px', alignItems: 'center' }}>
+            {/* LEFT COLUMN - Text + CTA */}
+            <div>
+              <h1 style={{
+                fontSize: '72px',
+                fontWeight: 700,
+                lineHeight: 1.1,
+                marginBottom: '32px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                letterSpacing: '-0.025em'
+              }}>
+                <div style={{ color: 'white' }}>AI tool for</div>
+                <div style={{ color: '#4a9eff', minHeight: '90px' }}>
+                  <RotatingText
+                    texts={['behavioral interviews', 'technical interviews', 'resume reviews', ]}
+                    mainClassName="px-0 bg-transparent text-blue-400 overflow-hidden justify-start"
+                    staggerFrom={"first"}
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "-100%", opacity: 0 }}
+                    staggerDuration={0}
+                    splitLevelClassName="overflow-hidden"
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    rotationInterval={2500}
+                  />
                 </div>
+              </h1>
 
-                {/* Video - Centered Below Text - Raw */}
-                <div className="w-full max-w-[780px] mt-3 sm:mt-4 px-4 sm:px-0">
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl">
-                    <iframe
-                      className="w-full h-full"
-                      src="https://player.vimeo.com/video/1098880047?share=copy&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
-                      title="InterviewSense Demo"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
+              {/* CTA Button */}
+              <button
+                onClick={handleGetStartedClick}
+                style={{
+                  background: '#3b82f6',
+                  color: 'white',
+                  fontWeight: 500,
+                  padding: '14px 28px',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#2563eb'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#3b82f6'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                Start Practicing Free
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginLeft: '4px' }}>
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* RIGHT COLUMN - Browser Mockup */}
+            <div style={{
+              borderRadius: '12px',
+              overflow: 'hidden',
+              background: '#111318',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.6)'
+            }}>
+              {/* Top Bar */}
+              <div style={{
+                background: '#1a1d24',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                {/* Left - Dots */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }}></div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#febc2e' }}></div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }}></div>
                 </div>
+                {/* Center - URL */}
+                <div style={{
+                  background: '#1e2027',
+                  borderRadius: '20px',
+                  padding: '4px 14px',
+                  fontSize: '12px',
+                  color: '#6b7280'
+                }}>
+                  ● interviewsense.org
+                </div>
+                {/* Right - Live Demo */}
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>Live Demo</div>
+              </div>
 
+              {/* Video Content */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                paddingBottom: '56.25%',
+                background: '#0d0f14'
+              }}>
+                <iframe
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    display: 'block'
+                  }}
+                  src="https://player.vimeo.com/video/1098880047?share=copy&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
+                  title="InterviewSense Demo"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
@@ -464,7 +537,7 @@ export default function Home() {
       </section>
 
       {/* Company Logos Section */}
-      <section id="company-logos" className="py-12 bg-[#000818]/40 border-b border-zinc-800 relative z-[1]">
+      <section id="company-logos" className="py-12 relative z-[1]" style={{ background: '#0a0e1a' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <p className="text-sm text-zinc-400 font-medium">Practice with interview questions from top tech companies offering CS internships</p>
@@ -638,7 +711,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 lg:py-28 bg-[#000818]/40 relative z-[1]">
+      <section id="features" className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1400px] mx-auto">
             <div className="text-center mb-16 lg:mb-20">
@@ -648,7 +721,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Feature Card 1 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 hover:bg-zinc-900/60 hover:border-zinc-700/50 transition-all duration-500 flex flex-col">
+              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
                 <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
                   {/* Voice Analysis Mockup */}
                   <div className="w-full h-full p-4 flex flex-col">
@@ -694,11 +767,11 @@ export default function Home() {
               </div>
 
               {/* Feature Card 2 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 hover:bg-zinc-900/60 hover:border-zinc-700/50 transition-all duration-500 flex flex-col">
+              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
                 <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
                   {/* Code Editor Mockup */}
                   <div className="w-full h-full p-3 font-mono text-[9px]">
-                    <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-zinc-800">
+                    <div className="flex items-center gap-1.5 mb-3 pb-2">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
                         <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
@@ -715,7 +788,7 @@ export default function Home() {
                       <div className="flex"><span className="text-zinc-600 w-4">6</span><span className="text-purple-400 pl-9">return</span> <span className="text-zinc-400">[hashmap[complement], i]</span></div>
                       <div className="flex"><span className="text-zinc-600 w-4">7</span><span className="text-zinc-400 pl-6">hashmap[num] = i</span></div>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-zinc-800">
+                    <div className="mt-3 pt-2">
                       <div className="text-[9px]"><span className="text-green-400">✓ All test cases passed</span></div>
                     </div>
                   </div>
@@ -725,7 +798,7 @@ export default function Home() {
               </div>
 
               {/* Feature Card 3 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 hover:bg-zinc-900/60 hover:border-zinc-700/50 transition-all duration-500 flex flex-col">
+              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
                 <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
                   {/* STAR Method Mockup */}
                   <div className="w-full h-full p-4 flex flex-col">
@@ -755,7 +828,7 @@ export default function Home() {
               </div>
 
               {/* Feature Card 4 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 hover:bg-zinc-900/60 hover:border-zinc-700/50 transition-all duration-500 flex flex-col">
+              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
                 <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
                   {/* Resume Analysis Mockup */}
                   <div className="w-full h-full p-4 flex flex-col">
@@ -797,7 +870,7 @@ export default function Home() {
       </section>
 
       {/* Comparison Table Section */}
-      <section className="py-20 lg:py-28 bg-[#000818]/40 relative z-[1]">
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center mb-16">
@@ -805,11 +878,11 @@ export default function Home() {
               <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto">See what makes us different from traditional coding interview platforms.</p>
             </div>
 
-            <div className="bg-zinc-950/50 border border-zinc-800/50 rounded-2xl overflow-hidden">
+            <div className="bg-zinc-950/30 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto scrollbar-hide">
                 <table className="w-full min-w-[640px]">
                   <thead>
-                    <tr className="border-b border-zinc-800">
+                    <tr>
                       <th className="text-left py-5 px-6 text-zinc-400 font-medium text-sm">Feature</th>
                       <th className="text-center py-5 px-6">
                         <div className="flex items-center justify-center gap-2">
@@ -823,7 +896,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-zinc-800/50">
+                    <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm">Real-time Voice Analysis</td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -840,7 +913,7 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 mx-auto flex items-center justify-center">
@@ -850,7 +923,7 @@ export default function Home() {
                         </div>
                       </td>
                     </tr>
-                    <tr className="border-b border-zinc-800/50">
+                    <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm">Behavioral Interview Practice</td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -881,7 +954,7 @@ export default function Home() {
                         </div>
                       </td>
                     </tr>
-                    <tr className="border-b border-zinc-800/50">
+                    <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm">LeetCode-style Problems</td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -898,7 +971,7 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -908,7 +981,7 @@ export default function Home() {
                         </div>
                       </td>
                     </tr>
-                    <tr className="border-b border-zinc-800/50">
+                    <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm">Resume Analysis</td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -939,7 +1012,7 @@ export default function Home() {
                         </div>
                       </td>
                     </tr>
-                    <tr className="border-b border-zinc-800/50">
+                    <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm">AI-Powered Feedback</td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -949,10 +1022,10 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 mx-auto flex items-center justify-center">
@@ -986,7 +1059,7 @@ export default function Home() {
       </section>
 
       {/* Login Conversion Section - Hidden on mobile to reduce clutter */}
-      <section id="cta" className="hidden sm:block py-8 md:py-12 bg-[#000818]/40 relative overflow-hidden z-[1]">
+      <section id="cta" className="hidden sm:block py-8 md:py-12 relative overflow-hidden z-[1]" style={{ background: '#0a0e1a' }}>
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
@@ -994,7 +1067,7 @@ export default function Home() {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6">
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-blue-300 font-medium">Join 10k+ developers already practicing</span>
             </div>
@@ -1040,7 +1113,7 @@ export default function Home() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto text-base px-8 py-4 border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-full"
+                className="w-full sm:w-auto text-base px-8 py-4 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-full"
               >
                 <Link href="/login">Already have an account? Sign In</Link>
               </Button>
@@ -1066,7 +1139,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 lg:py-28 bg-[#000818]/40 relative z-[1]">
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1099,7 +1172,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 lg:py-20 border-t border-zinc-800/50 bg-black relative z-[1]">
+      <footer className="py-16 lg:py-20 relative z-[1]" style={{ background: '#0a0e1a' }}>
         <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-8">
@@ -1112,7 +1185,7 @@ export default function Home() {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="w-full px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-6 py-4 bg-zinc-900 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
                 <button className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
                   Join Email List
@@ -1128,7 +1201,7 @@ export default function Home() {
               <label className="flex items-start gap-3 text-left cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="mt-0.5 w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                  className="mt-0.5 w-4 h-4 rounded bg-zinc-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
                   defaultChecked
                 />
                 <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
