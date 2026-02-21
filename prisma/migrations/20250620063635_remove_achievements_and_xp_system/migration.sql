@@ -1,0 +1,2 @@
+-- AlreadyApplied
+-- This migration was already applied to the database 

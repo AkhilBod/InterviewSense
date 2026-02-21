@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  password            String?
+  image               String?
+  onboardingCompleted Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  creatorCode         String?
+  accounts            Account[]
+  passwordResetTokens PasswordResetToken[]
+  sessions            Session[]
+  verificationTokens  VerificationToken[]
+  
+  // New streamlined retention system
+  userStats           UserStats?
+  practiceSessions   PracticeSession[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [identifier], references: [email])
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expires   DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+// New streamlined retention stats system
+model UserStats {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Daily streak tracking
+  dailyStreak        Int      @default(0)
+  longestStreak      Int      @default(0)
+  lastActivityDate   DateTime?
+  
+  // Weekly goals
+  weeklyGoal         Int      @default(3)  // Target sessions per week
+  weeklyProgress     Int      @default(0)  // Current week progress
+  weeklyGoalsMet     Int      @default(0)  // Total weeks where goal was met
+  lastWeekReset      DateTime @default(now())
+  
+  // Best scores
+  bestInterviewScore    Float @default(0)
+  bestResumeScore       Float @default(0)
+  bestTechnicalScore    Float @default(0)
+  bestBehavioralScore   Float @default(0)
+  
+  // Quick stats (most recent and totals)
+  totalSessions      Int @default(0)
+  totalInterviews    Int @default(0)
+  totalResumeChecks  Int @default(0)
+  totalTimeMinutes   Int @default(0)
+  
+  // Recent performance
+  lastScore          Float @default(0)
+  averageScore       Float @default(0)
+  recentSessions     Json  @default("[]") // Array of last 10 sessions with basic info
+  
+  // Improvement tracking
+  scoreImprovement   Float @default(0) // Change from previous session
+  streakImprovement  Int   @default(0) // Change in streak
+  
+  // Quick insights
+  strongestArea      String? // "behavioral", "technical", "resume"
+  improvementArea    String? // Area needing most improvement
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([dailyStreak])
+  @@index([weeklyProgress])
+  @@index([bestInterviewScore])
+}
+
+// Simplified session tracking for stats
+model PracticeSession {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session basics
+  type     String // "behavioral", "technical", "resume", "system-design"
+  score    Float?
+  duration Int?   // in minutes
+  
+  // Quick metrics for stats
+  completed   Boolean  @default(true)
+  improvements Json?   // Key improvement areas identified
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId, createdAt])
+  @@index([type, score])
+}
