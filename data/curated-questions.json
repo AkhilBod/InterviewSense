@@ -1,0 +1,264 @@
+{
+  "questions": [
+    {
+      "id": "beh_001",
+      "type": "BEHAVIORAL",
+      "question": "Tell me about a time when you had to deal with a difficult team member. How did you handle it?",
+      "category": "Teamwork",
+      "difficulty": "medium",
+      "companies": ["Google", "Meta", "Microsoft"],
+      "tips": [
+        "Use the STAR method (Situation, Task, Action, Result)",
+        "Focus on your communication and conflict resolution skills",
+        "Show empathy and professional maturity"
+      ]
+    },
+    {
+      "id": "beh_002",
+      "type": "BEHAVIORAL",
+      "question": "Describe a situation where you had to meet a tight deadline. What did you do?",
+      "category": "Time Management",
+      "difficulty": "easy",
+      "companies": ["Amazon", "Apple", "Netflix"],
+      "tips": [
+        "Highlight your prioritization skills",
+        "Show how you stayed organized under pressure",
+        "Mention any trade-offs you had to make"
+      ]
+    },
+    {
+      "id": "beh_003",
+      "type": "BEHAVIORAL",
+      "question": "Give an example of a time you failed. What did you learn from it?",
+      "category": "Learning & Growth",
+      "difficulty": "medium",
+      "companies": ["Google", "Amazon", "Stripe"],
+      "tips": [
+        "Be honest but don't dwell on the failure",
+        "Focus more on what you learned",
+        "Show how you applied that learning later"
+      ]
+    },
+    {
+      "id": "beh_004",
+      "type": "BEHAVIORAL",
+      "question": "Tell me about a time when you had to convince someone to see things your way.",
+      "category": "Influence",
+      "difficulty": "medium",
+      "companies": ["Meta", "Salesforce", "Adobe"],
+      "tips": [
+        "Show your persuasion and negotiation skills",
+        "Demonstrate data-driven decision making",
+        "Highlight your ability to build consensus"
+      ]
+    },
+    {
+      "id": "beh_005",
+      "type": "BEHAVIORAL",
+      "question": "Describe a project you're most proud of. Why?",
+      "category": "Achievement",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Choose a project with measurable impact",
+        "Explain your specific contributions",
+        "Show passion and ownership"
+      ]
+    },
+    {
+      "id": "tech_001",
+      "type": "TECHNICAL",
+      "question": "Explain the difference between let, const, and var in JavaScript.",
+      "category": "JavaScript Fundamentals",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Discuss scope differences (block vs function)",
+        "Mention hoisting behavior",
+        "Explain when to use each one"
+      ]
+    },
+    {
+      "id": "tech_002",
+      "type": "TECHNICAL",
+      "question": "What is the difference between == and === in JavaScript?",
+      "category": "JavaScript Fundamentals",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Explain type coercion with ==",
+        "Show examples of unexpected behavior",
+        "Recommend using === for strict equality"
+      ]
+    },
+    {
+      "id": "tech_003",
+      "type": "TECHNICAL",
+      "question": "How does the event loop work in JavaScript?",
+      "category": "JavaScript Advanced",
+      "difficulty": "hard",
+      "companies": ["Google", "Meta", "Netflix"],
+      "tips": [
+        "Explain call stack, callback queue, and event loop",
+        "Mention microtasks vs macrotasks",
+        "Give examples with setTimeout and Promises"
+      ]
+    },
+    {
+      "id": "tech_004",
+      "type": "TECHNICAL",
+      "question": "What is a closure in JavaScript? Give an example.",
+      "category": "JavaScript Advanced",
+      "difficulty": "medium",
+      "companies": ["All companies"],
+      "tips": [
+        "Define closure as function + lexical environment",
+        "Show practical use case (data privacy, factory functions)",
+        "Explain scope chain"
+      ]
+    },
+    {
+      "id": "tech_005",
+      "type": "TECHNICAL",
+      "question": "Explain the difference between SQL and NoSQL databases.",
+      "category": "Databases",
+      "difficulty": "medium",
+      "companies": ["Amazon", "Google", "Meta"],
+      "tips": [
+        "Discuss structured vs unstructured data",
+        "Mention ACID vs BASE properties",
+        "Give use cases for each type"
+      ]
+    },
+    {
+      "id": "beh_006",
+      "type": "BEHAVIORAL",
+      "question": "Describe a time when you received negative feedback. How did you respond?",
+      "category": "Learning & Growth",
+      "difficulty": "medium",
+      "companies": ["Microsoft", "Google", "Amazon"],
+      "tips": [
+        "Show emotional intelligence and maturity",
+        "Focus on how you acted on the feedback",
+        "Demonstrate continuous improvement mindset"
+      ]
+    },
+    {
+      "id": "beh_007",
+      "type": "BEHAVIORAL",
+      "question": "Tell me about a time you had to make a decision without all the information you needed.",
+      "category": "Decision Making",
+      "difficulty": "hard",
+      "companies": ["Amazon", "Stripe", "Airbnb"],
+      "tips": [
+        "Show your analytical thinking process",
+        "Explain how you assessed risks",
+        "Mention how you gathered available information"
+      ]
+    },
+    {
+      "id": "tech_006",
+      "type": "TECHNICAL",
+      "question": "What is the difference between GET and POST requests?",
+      "category": "HTTP/APIs",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Explain idempotency",
+        "Discuss data transmission differences",
+        "Mention caching and security implications"
+      ]
+    },
+    {
+      "id": "tech_007",
+      "type": "TECHNICAL",
+      "question": "Explain RESTful API design principles.",
+      "category": "HTTP/APIs",
+      "difficulty": "medium",
+      "companies": ["All companies"],
+      "tips": [
+        "Mention HTTP methods and status codes",
+        "Discuss resource-based URLs",
+        "Explain statelessness"
+      ]
+    },
+    {
+      "id": "tech_008",
+      "type": "TECHNICAL",
+      "question": "What is the difference between authentication and authorization?",
+      "category": "Security",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Authentication = who you are (login)",
+        "Authorization = what you can do (permissions)",
+        "Give examples like JWT, OAuth"
+      ]
+    },
+    {
+      "id": "beh_008",
+      "type": "BEHAVIORAL",
+      "question": "Describe a situation where you had to learn a new technology quickly.",
+      "category": "Learning & Adaptability",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Show your learning strategy",
+        "Mention resources you used",
+        "Highlight how you applied it successfully"
+      ]
+    },
+    {
+      "id": "tech_009",
+      "type": "TECHNICAL",
+      "question": "What is the purpose of Git and how do you resolve merge conflicts?",
+      "category": "Version Control",
+      "difficulty": "medium",
+      "companies": ["All companies"],
+      "tips": [
+        "Explain version control benefits",
+        "Describe merge conflict resolution process",
+        "Mention best practices (small commits, frequent pulls)"
+      ]
+    },
+    {
+      "id": "tech_010",
+      "type": "TECHNICAL",
+      "question": "Explain the concept of Big O notation and why it matters.",
+      "category": "Algorithms",
+      "difficulty": "medium",
+      "companies": ["Google", "Meta", "Amazon"],
+      "tips": [
+        "Define time and space complexity",
+        "Give examples: O(1), O(n), O(log n), O(n²)",
+        "Explain why it matters for scalability"
+      ]
+    },
+    {
+      "id": "beh_009",
+      "type": "BEHAVIORAL",
+      "question": "Tell me about a time when you had to handle multiple priorities at once.",
+      "category": "Time Management",
+      "difficulty": "medium",
+      "companies": ["All companies"],
+      "tips": [
+        "Show your prioritization framework",
+        "Explain how you communicated with stakeholders",
+        "Demonstrate time management skills"
+      ]
+    },
+    {
+      "id": "beh_010",
+      "type": "BEHAVIORAL",
+      "question": "Describe a time when you went above and beyond what was expected.",
+      "category": "Initiative",
+      "difficulty": "easy",
+      "companies": ["All companies"],
+      "tips": [
+        "Show proactive problem-solving",
+        "Highlight the impact of your extra effort",
+        "Demonstrate ownership and commitment"
+      ]
+    }
+  ]
+}

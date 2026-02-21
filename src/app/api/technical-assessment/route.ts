@@ -1,12 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProgressService } from "@/lib/progress";
+import { hasEnoughCredits, deductCredits } from '@/lib/credits';
+import { FeatureType } from '@prisma/client';
 
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Initialize OpenAI API
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 // Language-specific function templates
 const languageTemplates = {
@@ -81,16 +83,37 @@ const cleanProblemText = (text: string) => {
 // Generate a technical interview question
 export async function POST(req: Request) {
   try {
+    // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { 
-      company, 
-      role, 
-      difficulty, 
-      useCustomNumber, 
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check credits
+    const creditCheck = await hasEnoughCredits(user.id, FeatureType.TECHNICAL_INTERVIEW);
+    if (!creditCheck.hasCredits) {
+      return NextResponse.json({
+        error: 'Insufficient credits',
+        message: `You need ${creditCheck.required} credits but only have ${creditCheck.available} remaining today.`,
+        creditsAvailable: creditCheck.available,
+        creditsRequired: creditCheck.required,
+      }, { status: 402 });
+    }
+
+    const {
+      company,
+      role,
+      difficulty,
+      useCustomNumber,
       leetcodeNumber,
       preset,
       category,
@@ -99,15 +122,7 @@ export async function POST(req: Request) {
       language = 'javascript' // Default to JavaScript if not specified
     } = await req.json();
 
-    // Use Gemini 2.0 Flash with low temperature to reduce hallucination
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.8,
-        topK: 40,
-      }
-    });
+    // Configuration removed - will be set per request
 
     let prompt;
 
@@ -300,9 +315,14 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
     }
 
     // Generate the response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let responseText = response.text();
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4.1',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.2,
+      max_tokens: 2048,
+    });
+
+    let responseText = completion.choices[0].message.content || '';
 
     if (generateSolutions) {
       // For solutions, try to extract and validate the JSON
@@ -326,10 +346,18 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
             throw new Error(`Solution ${index + 1} is missing required fields`);
           }
         });
+
+        // Deduct credits
+        const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+        if (!deduction.success) {
+          console.error('Failed to deduct credits:', deduction.error);
+        }
+
         // Return the validated solutions
         return NextResponse.json({
           success: true,
-          question: responseText
+          question: responseText,
+          creditsRemaining: deduction.remainingCredits
         });
       } catch (error) {
         console.error('Error parsing solutions:', error);
@@ -393,9 +421,16 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
         .replace(/`/g, '')
         .trim();
 
+      // Deduct credits
+      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+      if (!deduction.success) {
+        console.error('Failed to deduct credits:', deduction.error);
+      }
+
       return NextResponse.json({
         success: true,
-        question: cleanedQuestion
+        question: cleanedQuestion,
+        creditsRemaining: deduction.remainingCredits
       });
     }
   } catch (error) {
@@ -427,16 +462,6 @@ export async function PUT(req: Request) {
       language = 'javascript', // Default to JavaScript if not specified
       explanation 
     } = await req.json();
-
-    // Use Gemini 2.0 Flash with very low temperature for consistent analysis
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.1,
-        topP: 0.7,
-        topK: 30,
-      }
-    });
 
     // Language-specific best practices
     const languageBestPractices = {
@@ -519,9 +544,14 @@ Provide your analysis in this JSON format (no other text):
 }`;
 
     // Generate the response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let responseText = response.text();
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4.1',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+      max_tokens: 2048,
+    });
+
+    let responseText = completion.choices[0].message.content || '';
 
     try {
       // Clean up the response text

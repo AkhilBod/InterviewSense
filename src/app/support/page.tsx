@@ -336,7 +336,6 @@ export default function SupportPage() {
 
       {/* FAQ Section */}
       <section id="faq" className="py-16 md:py-20 bg-zinc-950 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.1),transparent_70%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">

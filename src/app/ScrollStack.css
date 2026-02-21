@@ -37,7 +37,7 @@
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   position: relative;
-  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.15);
   color: #fff;
   display: flex;

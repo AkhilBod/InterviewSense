@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 interface RoadmapRequest {
   currentRole: string;
@@ -75,7 +75,6 @@ interface RoadmapAnalysis {
 
 async function generateCareerRoadmap(data: RoadmapRequest): Promise<RoadmapAnalysis> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
 You are a senior career advisor and tech industry expert. Analyze this career roadmap request and provide comprehensive guidance.
@@ -172,10 +171,15 @@ Make sure all recommendations are:
 Provide only the JSON response without any additional text or formatting.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4096,
+    });
+
+    const text = completion.choices[0].message.content || '';
+
     // Extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {

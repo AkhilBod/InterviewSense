@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { hasEnoughCredits, deductCredits } from '@/lib/credits';
+import { FeatureType } from '@prisma/client';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 interface SystemDesignRequest {
   experienceLevel: string;
@@ -10,14 +15,6 @@ interface SystemDesignRequest {
 }
 
 async function generateSystemDesignTest(data: SystemDesignRequest) {
-  const model = genAI.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      temperature: 0.9,  // Higher temperature for more variety
-      topP: 0.95,
-      topK: 50
-    }
-  });
 
   // Add timestamp and random element to ensure different questions each time
   const timestamp = Date.now();
@@ -80,21 +77,26 @@ Return ONLY a valid JSON object with this exact structure:
   }
 }`;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4.1',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.9,
+    max_tokens: 4096,
+  });
+
+  const text = completion.choices[0].message.content || '';
 
   try {
     // Clean the response text
     let cleanedText = text.trim();
-    
+
     // Remove markdown code blocks if present
     cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-    
+
     // Find JSON object in the response
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('No JSON found in Gemini response:', text);
+      console.error('No JSON found in OpenAI response:', text);
       throw new Error('No JSON found in response');
     }
     
@@ -252,14 +254,6 @@ Return ONLY a valid JSON object with this exact structure:
 }
 
 async function analyzeSystemDesign(problem: any, responses: any) {
-  const model = genAI.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      temperature: 0.3,  // Lower temperature for more consistent analysis
-      topP: 0.8,
-      topK: 40
-    }
-  });
 
   const prompt = `
 You are an expert system design interviewer. Analyze the following system design interview performance:
@@ -310,9 +304,14 @@ Rate based on:
 Provide constructive feedback focused on interview performance improvement.
 `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4.1',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+    max_tokens: 3072,
+  });
+
+  const text = completion.choices[0].message.content || '';
 
   try {
     // Extract JSON from the response
@@ -374,14 +373,48 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a test generation request or analysis request
     if (requestData.experienceLevel && requestData.testDifficulty) {
-      // This is a test generation request
+      // This is a test generation request - check authentication and credits
+
+      // Check authentication
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.email) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Get user
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+      });
+
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      // Check credits
+      const creditCheck = await hasEnoughCredits(user.id, FeatureType.SYSTEM_DESIGN);
+      if (!creditCheck.hasCredits) {
+        return NextResponse.json({
+          error: 'Insufficient credits',
+          message: `You need ${creditCheck.required} credits but only have ${creditCheck.available} remaining today.`,
+          creditsAvailable: creditCheck.available,
+          creditsRequired: creditCheck.required,
+        }, { status: 402 });
+      }
+
       console.log('Generating system design test for:', requestData);
-      
+
       const systemDesignTest = await generateSystemDesignTest(requestData);
-      
+
+      // Deduct credits
+      const deduction = await deductCredits(user.id, FeatureType.SYSTEM_DESIGN, 1);
+      if (!deduction.success) {
+        console.error('Failed to deduct credits:', deduction.error);
+      }
+
       return NextResponse.json({
-        success: true, 
-        data: systemDesignTest 
+        success: true,
+        data: systemDesignTest,
+        creditsRemaining: deduction.remainingCredits
       });
     } else if (requestData.problem && requestData.responses) {
       // This is an analysis request

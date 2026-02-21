@@ -1,12 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProgressService } from "@/lib/progress";
 
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Initialize OpenAI API
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 // Generate behavioral interview questions
 export async function POST(req: Request) {
@@ -18,9 +18,6 @@ export async function POST(req: Request) {
 
     const { company, role, numberOfQuestions = 5 } = await req.json();
 
-    // Use Gemini 2.0 Flash
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     // Prompt for generating behavioral questions
     const prompt = `Generate ${numberOfQuestions} behavioral interview questions for a ${role} position at ${company}.
 The questions should be relevant to the role and company culture, focusing on past experiences and situations that demonstrate key competencies for the position.
@@ -29,23 +26,27 @@ Each question should be challenging but fair, and should help the interviewer un
 Return ONLY the array of questions with no additional text.`;
 
     // Generate the questions
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let questionsText = response.text();
-    
-    // Sometimes Gemini might wrap the JSON in markdown code blocks or add extra text
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.8,
+      max_tokens: 1024,
+    });
+
+    let questionsText = completion.choices[0].message.content || '';
+
     // Try to extract just the JSON part
     const jsonRegex = /```json\s*([\s\S]*?)\s*```|(\[[\s\S]*\])/;
     const match = questionsText.match(jsonRegex);
     if (match) {
       questionsText = match[1] || match[2];
     }
-    
+
     try {
       const questions = JSON.parse(questionsText);
       return NextResponse.json({ questions });
     } catch (parseError) {
-      console.error('Error parsing JSON from Gemini:', parseError);
+      console.error('Error parsing JSON from OpenAI:', parseError);
       return NextResponse.json(
         { error: 'Failed to parse questions result' },
         { status: 500 }
@@ -68,15 +69,12 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    const { 
-      company, 
-      role, 
+    const {
+      company,
+      role,
       questions,
-      answers 
+      answers
     } = await req.json();
-
-    // Use Gemini 2.0 Flash for faster analysis
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Prepare the Q&A pairs for analysis
     const qaPairs = questions.map((q: string, i: number) => `Question: ${q}\nAnswer: ${answers[i]}`).join('\n\n');
@@ -108,17 +106,22 @@ Format your response as valid JSON with the following structure:
 `;
 
     // Generate the analysis
-    const result = await model.generateContent(analysisPrompt);
-    const response = await result.response;
-    let analysisText = response.text();
-    
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: analysisPrompt }],
+      temperature: 0.5,
+      max_tokens: 2048,
+    });
+
+    let analysisText = completion.choices[0].message.content || '';
+
     // Try to extract just the JSON part
     const jsonRegex = /```json\s*([\s\S]*?)\s*```|(\{[\s\S]*\})/;
     const match = analysisText.match(jsonRegex);
     if (match) {
       analysisText = match[1] || match[2];
     }
-    
+
     try {
       const analysis = JSON.parse(analysisText);
       
@@ -257,7 +260,7 @@ Format your response as valid JSON with the following structure:
       
       return NextResponse.json(validatedAnalysis);
     } catch (parseError) {
-      console.error('Error parsing JSON from Gemini:', parseError);
+      console.error('Error parsing JSON from OpenAI:', parseError);
       return NextResponse.json(
         { error: 'Failed to parse analysis result' },
         { status: 500 }

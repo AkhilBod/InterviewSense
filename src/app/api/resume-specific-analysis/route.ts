@@ -1,17 +1,17 @@
 // API endpoint for specific resume analysis with severity highlighting
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
 export async function POST(req: Request) {
   console.log("=== Resume Specific Analysis API Started ===");
   try {
-    // Check if Gemini API key is available
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is not configured");
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not configured");
       return NextResponse.json({ error: "API configuration error. Please try again later." }, { status: 500 });
     }
 
@@ -66,10 +66,7 @@ export async function POST(req: Request) {
 
     console.log("File converted to base64. Size:", Math.round(base64File.length / 1024), "KB");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const textPromptPart = {
-      text: `You are an expert resume reviewer specializing in providing specific, actionable recommendations for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+    const textPrompt = `You are an expert resume reviewer specializing in providing specific, actionable recommendations for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
 Your task is to analyze the resume and provide EXACT, specific improvements categorized by importance and improvement type.
 
@@ -135,49 +132,45 @@ CATEGORIES:
 - drive: Add leadership, initiative, and proactive behavior examples
 - analytical: Include problem-solving, data analysis, strategic thinking examples
 
-Be extremely specific with the "original" text - use exact phrases from the resume. Provide detailed "improved" versions that are role-specific and quantified where possible.`
-    };
+Be extremely specific with the "original" text - use exact phrases from the resume. Provide detailed "improved" versions that are role-specific and quantified where possible.`;
 
-    const generationConfig = {
-      temperature: 0.7,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 4096,
-    };
+    // Prepare messages for OpenAI
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-    const safetySettings = [
-      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    ];
+    // Check if file is an image
+    const isImage = file.type.includes('image');
 
-    const parts = [
-      textPromptPart,
-      {
-        inlineData: {
-          mimeType: file.type,
-          data: base64File,
-        },
-      },
-    ];
-
-    console.log("Sending request to Gemini API...");
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts }],
-      generationConfig,
-      safetySettings,
-    });
-
-    console.log("Gemini API response received.");
-    const response = result.response;
-
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      console.log("No content in Gemini response");
-      return NextResponse.json({ error: "Failed to generate analysis. No content received from AI." }, { status: 500 });
+    if (isImage) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: textPrompt },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${file.type};base64,${base64File}`
+            }
+          }
+        ]
+      });
+    } else {
+      // For PDFs and documents
+      messages.push({
+        role: 'user',
+        content: `${textPrompt}\n\nNote: Resume file type is ${file.type}.`
+      });
     }
 
-    const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+    console.log("Sending request to OpenAI API...");
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages,
+      temperature: 0.7,
+      max_tokens: 4096,
+    });
+
+    console.log("OpenAI API response received.");
+    const analysisText = completion.choices[0].message.content;
     
     if (!analysisText) {
       console.log("Empty analysis text from Gemini");

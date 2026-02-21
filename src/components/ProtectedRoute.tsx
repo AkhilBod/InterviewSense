@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }, [session, status, router])
 
   if (status === 'loading') {
-    return <div>Loading...</div>
+    return <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center text-white">Loading...</div>
   }
 
   if (!session) {

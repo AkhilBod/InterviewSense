@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, Part } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { deductCredits, hasEnoughCredits } from "@/lib/credits";
+import { FeatureType } from "@prisma/client";
 
-// Ensure GEMINI_API_KEY is set in your environment variables
-const apiKey = process.env.GEMINI_API_KEY;
+// Ensure OPENAI_API_KEY is set in your environment variables
+const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
-    console.error("GEMINI_API_KEY is not set in environment variables.");
+    console.error("OPENAI_API_KEY is not set in environment variables.");
 }
-const genAI = new GoogleGenerativeAI(apiKey || "");
+const openai = new OpenAI({ apiKey: apiKey || "" });
 
 const SUPPORTED_RESUME_MIME_TYPES = [
     "application/pdf",
@@ -24,6 +26,26 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Get user ID
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        // Check if user has enough credits
+        const creditCheck = await hasEnoughCredits(user.id, FeatureType.COVER_LETTER);
+        if (!creditCheck.hasCredits) {
+            return NextResponse.json({
+                error: "Insufficient credits",
+                message: `You need ${creditCheck.required} credits but only have ${creditCheck.available} remaining today. Upgrade your plan for more credits.`,
+                creditsAvailable: creditCheck.available,
+                creditsRequired: creditCheck.required,
+            }, { status: 402 });
         }
 
         console.log("Parsing form data...");
@@ -183,62 +205,69 @@ Please read the attached resume file carefully and extract all relevant informat
 
 Now analyze the attached resume file and the job description above to create a professional cover letter for ${companyName} using the extracted information.`;
 
-        const modelParts: Part[] = [{ text: promptText }];
+        // Prepare messages for OpenAI
+        // gpt-4o supports both images AND PDFs (up to 100 pages, 32MB)
+        const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-        if (resumeBase64 && resumeMimeType) {
-            modelParts.unshift({ // Add resume at the beginning if it exists
-                inlineData: {
-                    mimeType: resumeMimeType,
-                    data: resumeBase64,
-                },
-            });
-        }
-
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-        const generationConfig = {
-            temperature: 0.75, // A bit of creativity but not too wild
-            topK: 30,
-            topP: 0.95,
-            maxOutputTokens: 2048, // Standard for cover letters
-        };
-
-        const safetySettings = [
-            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-        ];
-
-        console.log("Sending request to Gemini API with new prompt strategy...");
-
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: modelParts }],
-            generationConfig,
-            safetySettings
+        // gpt-4o can handle images, PDFs, and documents via base64
+        messages.push({
+            role: 'user',
+            content: [
+                { type: 'text', text: promptText },
+                {
+                    type: 'image_url',
+                    image_url: {
+                        url: `data:${resumeMimeType};base64,${resumeBase64}`
+                    }
+                }
+            ]
         });
 
-        const geminiResponse = result.response;
-        const generatedRawText = geminiResponse?.text() ?? null;
+        console.log("Sending request to OpenAI API with file upload...");
+
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o', // Supports PDFs + images
+            messages,
+            temperature: 0.75,
+            max_tokens: 2048,
+        });
+
+        const generatedRawText = completion.choices[0].message.content;
 
         if (!generatedRawText) {
-            console.log("No response text from Gemini. Prompt Feedback:", geminiResponse?.promptFeedback);
+            console.log("No response text from OpenAI.");
             let noResponseErrorMessage = "Failed to generate cover letter. The AI did not return any text.";
-            if (geminiResponse?.promptFeedback?.blockReason) {
-                noResponseErrorMessage += ` Reason: ${geminiResponse.promptFeedback.blockReason}`;
-            } else {
-                noResponseErrorMessage += " This could be due to content restrictions or internal processing issues.";
-            }
+            noResponseErrorMessage += " This could be due to content restrictions or internal processing issues.";
             const noResponseError = { error: noResponseErrorMessage };
             console.log("Error Response:", noResponseError);
             return NextResponse.json(noResponseError, { status: 500 });
         }
 
-        console.log("Received raw text from Gemini, length:", generatedRawText.length);
+        console.log("Received raw text from OpenAI, length:", generatedRawText.length);
+
+        // Deduct credits after successful generation
+        const deduction = await deductCredits(
+            user.id,
+            FeatureType.COVER_LETTER,
+            1,
+            {
+                companyName,
+                jobDescriptionLength: jobDescription.length,
+                resumeFileName: resumeFile.name,
+            }
+        );
+
+        if (!deduction.success) {
+            console.error("Failed to deduct credits:", deduction.error);
+            // Still return the cover letter but log the error
+        }
 
         // Return the generated cover letter directly since it's already complete
         console.log("=== Cover Letter Generation API Completed Successfully ===");
-        return NextResponse.json({ coverLetter: generatedRawText.trim() });
+        return NextResponse.json({
+            coverLetter: generatedRawText.trim(),
+            creditsRemaining: deduction.remainingCredits,
+        });
 
     } catch (error: any) {
         console.error("=== Cover Letter Generation API Error ===");
@@ -249,19 +278,13 @@ Now analyze the attached resume file and the job description above to create a p
             errorMessage += ` Server Error: ${error.message}`;
         }
 
-        // Check for specific Gemini API error structures
-        if (error.response && error.response.promptFeedback) { // Error from model.generateContent()
-            console.error("Gemini Prompt Feedback:", error.response.promptFeedback);
-            const blockReason = error.response.promptFeedback.blockReason;
-            const safetyRatings = error.response.promptFeedback.safetyRatings;
-            errorMessage += ` (AI processing issue: ${blockReason || 'Unknown reason'}. Safety Ratings: ${JSON.stringify(safetyRatings)})`;
-        } else if (error.status && error.details) { // Error from other GoogleGenerativeAI errors
-            console.error("Gemini API Error Status:", error.status, "Details:", error.details);
-            errorMessage += ` (AI API Error: ${error.details})`;
-        } else if (error.message && error.message.toLowerCase().includes("fetch")) {
+        // Check for specific OpenAI API error structures
+        if (error.message && error.message.toLowerCase().includes("fetch")) {
             errorMessage += " (A network issue or AI service unavailability may have occurred)";
-        } else if (error.message && error.message.toLowerCase().includes("api key not valid")) {
+        } else if (error.message && (error.message.toLowerCase().includes("api key") || error.message.toLowerCase().includes("authentication"))) {
             errorMessage = "Failed to generate cover letter: Invalid API Key. Please check server configuration.";
+        } else if (error.message && error.message.toLowerCase().includes("content_policy")) {
+            errorMessage += " (Content policy violation detected)";
         }
 
         const errorResponse = { error: errorMessage };

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
 interface WordImprovementSuggestion {
   original: string;
@@ -83,10 +83,7 @@ export async function POST(req: Request) {
 
     console.log("File converted to base64. Size:", Math.round(base64File.length / 1024), "KB");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const textPromptPart = {
-      text: `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+    const textPrompt = `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
 Your task is to analyze the resume and identify EXACT words, phrases, or sentences that should be improved, categorizing them by severity and improvement type.
 
@@ -145,49 +142,46 @@ CATEGORIES:
 - drive: Show initiative, leadership, proactive behavior, ownership
 - analytical: Demonstrate problem-solving, data analysis, strategic thinking
 
-Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`
-    };
+Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`;
 
-    const generationConfig = {
-      temperature: 0.3,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 4096,
-    };
+    // Prepare messages for OpenAI
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-    const safetySettings = [
-      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    ];
+    // Check if file is an image
+    const isImage = file.type.includes('image');
 
-    const parts = [
-      textPromptPart,
-      {
-        inlineData: {
-          mimeType: file.type,
-          data: base64File,
-        },
-      },
-    ];
-
-    console.log("Sending request to Gemini API for word analysis...");
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts }],
-      generationConfig,
-      safetySettings,
-    });
-
-    console.log("Received response from Gemini API");
-
-    const response = result.response;
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      console.error("No candidates in Gemini response");
-      return NextResponse.json({ error: "Failed to generate word analysis." }, { status: 500 });
+    if (isImage) {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: textPrompt },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${file.type};base64,${base64File}`
+            }
+          }
+        ]
+      });
+    } else {
+      // For PDFs and documents
+      messages.push({
+        role: 'user',
+        content: `${textPrompt}\n\nNote: Resume file type is ${file.type}.`
+      });
     }
 
-    const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
+    console.log("Sending request to OpenAI API for word analysis...");
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages,
+      temperature: 0.3,
+      max_tokens: 4096,
+    });
+
+    console.log("Received response from OpenAI API");
+
+    const analysisText = completion.choices[0].message.content;
     
     if (!analysisText) {
       console.error("Empty analysis text received");

@@ -2,7 +2,9 @@
 
 import type React from "react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +16,8 @@ import { toast } from "@/components/ui/use-toast"
 import StarryBackground from '@/components/StarryBackground'
 
 export default function FeedbackPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [name, setName] = useState("")
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
@@ -21,6 +25,16 @@ export default function FeedbackPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
+
+  // If user is logged in and viewing from dashboard, show contact in drawer instead
+  useEffect(() => {
+    if (session && typeof window !== 'undefined') {
+      const referrer = document.referrer
+      if (referrer && referrer.includes('/dashboard')) {
+        // User came from dashboard, they can stay here
+      }
+    }
+  }, [session])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

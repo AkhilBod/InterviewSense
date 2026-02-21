@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Account {
@@ -40,17 +41,24 @@ model User {
   emailVerified       DateTime?
   password            String?
   image               String?
-  onboardingCompleted Boolean              @default(false)
   createdAt           DateTime             @default(now())
   creatorCode         String?
+  dailyCreditLimit    Int                  @default(15)
+  dailyCredits        Int                  @default(15)
+  lastCreditReset     DateTime             @default(now())
+  stripeCustomerId    String?              @unique
   accounts            Account[]
+  featureUsage        FeatureUsage[]
   passwordResetTokens PasswordResetToken[]
+  practiceSessions    PracticeSession[]
+  savedQuestions      SavedQuestion[]      @relation("SavedQuestions")
   sessions            Session[]
-  verificationTokens  VerificationToken[]
-  
-  // New streamlined retention system
+  subscription        Subscription?
   userStats           UserStats?
-  practiceSessions   PracticeSession[]
+  verificationTokens  VerificationToken[]
+
+  @@index([stripeCustomerId])
+  @@index([lastCreditReset])
 }
 
 model VerificationToken {
@@ -74,73 +82,154 @@ model PasswordResetToken {
   @@index([token])
 }
 
-// New streamlined retention stats system
 model UserStats {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Daily streak tracking
-  dailyStreak        Int      @default(0)
-  longestStreak      Int      @default(0)
-  lastActivityDate   DateTime?
-  
-  // Weekly goals
-  weeklyGoal         Int      @default(3)  // Target sessions per week
-  weeklyProgress     Int      @default(0)  // Current week progress
-  weeklyGoalsMet     Int      @default(0)  // Total weeks where goal was met
-  lastWeekReset      DateTime @default(now())
-  
-  // Best scores
-  bestInterviewScore    Float @default(0)
-  bestResumeScore       Float @default(0)
-  bestTechnicalScore    Float @default(0)
-  bestBehavioralScore   Float @default(0)
-  
-  // Quick stats (most recent and totals)
-  totalSessions      Int @default(0)
-  totalInterviews    Int @default(0)
-  totalResumeChecks  Int @default(0)
-  totalTimeMinutes   Int @default(0)
-  
-  // Recent performance
-  lastScore          Float @default(0)
-  averageScore       Float @default(0)
-  recentSessions     Json  @default("[]") // Array of last 10 sessions with basic info
-  
-  // Improvement tracking
-  scoreImprovement   Float @default(0) // Change from previous session
-  streakImprovement  Int   @default(0) // Change in streak
-  
-  // Quick insights
-  strongestArea      String? // "behavioral", "technical", "resume"
-  improvementArea    String? // Area needing most improvement
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  dailyStreak         Int       @default(0)
+  longestStreak       Int       @default(0)
+  lastActivityDate    DateTime?
+  weeklyGoal          Int       @default(3)
+  weeklyProgress      Int       @default(0)
+  weeklyGoalsMet      Int       @default(0)
+  lastWeekReset       DateTime  @default(now())
+  bestInterviewScore  Float     @default(0)
+  bestResumeScore     Float     @default(0)
+  bestTechnicalScore  Float     @default(0)
+  bestBehavioralScore Float     @default(0)
+  totalSessions       Int       @default(0)
+  totalInterviews     Int       @default(0)
+  totalResumeChecks   Int       @default(0)
+  totalTimeMinutes    Int       @default(0)
+  lastScore           Float     @default(0)
+  averageScore        Float     @default(0)
+  recentSessions      Json      @default("[]")
+  scoreImprovement    Float     @default(0)
+  streakImprovement   Int       @default(0)
+  strongestArea       String?
+  improvementArea     String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([dailyStreak])
   @@index([weeklyProgress])
   @@index([bestInterviewScore])
 }
 
-// Simplified session tracking for stats
 model PracticeSession {
-  id       String @id @default(cuid())
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Session basics
-  type     String // "behavioral", "technical", "resume", "system-design"
-  score    Float?
-  duration Int?   // in minutes
-  
-  // Quick metrics for stats
-  completed   Boolean  @default(true)
-  improvements Json?   // Key improvement areas identified
-  
-  createdAt DateTime @default(now())
-  
+  id           String   @id @default(cuid())
+  userId       String
+  type         String
+  score        Float?
+  duration     Int?
+  completed    Boolean  @default(true)
+  improvements Json?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
   @@index([type, score])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  trialStart           DateTime?
+  trialEnd             DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+model PaymentHistory {
+  id              String           @id @default(cuid())
+  userId          String
+  stripeInvoiceId String           @unique
+  amount          Int
+  currency        String           @default("usd")
+  status          String
+  plan            SubscriptionPlan
+  createdAt       DateTime         @default(now())
+
+  @@index([userId])
+}
+
+model FeatureUsage {
+  id          String      @id @default(cuid())
+  userId      String
+  featureType FeatureType
+  creditsUsed Int
+  success     Boolean     @default(true)
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([featureType])
+}
+
+model SavedQuestion {
+  id           String       @id @default(cuid())
+  userId       String
+  questionId   String
+  questionText String
+  type         QuestionType
+  company      String?
+  difficulty   String?
+  category     String?
+  practiced    Boolean      @default(false)
+  completed    Boolean      @default(false)
+  notes        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation("SavedQuestions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+  @@index([userId, type])
+  @@index([userId, practiced])
+}
+
+enum SubscriptionPlan {
+  FREE
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+}
+
+enum FeatureType {
+  COVER_LETTER
+  RESUME_REVIEW
+  RESUME_ANALYSIS
+  TECHNICAL_INTERVIEW
+  BEHAVIORAL_PRACTICE
+  SYSTEM_DESIGN
+  PORTFOLIO_REVIEW
+  CAREER_ROADMAP
+}
+
+enum QuestionType {
+  BEHAVIORAL
+  TECHNICAL
 }

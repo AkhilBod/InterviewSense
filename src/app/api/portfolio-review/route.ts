@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 interface GitHubRepo {
   name: string;
@@ -52,7 +52,6 @@ async function fetchGitHubRepos(githubUrl: string): Promise<GitHubRepo[]> {
 }
 
 async function analyzePortfolioWithAI(data: PortfolioReviewData, repos: GitHubRepo[]) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const repoDetails = repos.map(repo => ({
     name: repo.name,
@@ -141,10 +140,15 @@ Make sure to analyze projects like InterviewSense, Orbit, Price2Produce, SafeWal
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 3072,
+    });
+
+    const text = completion.choices[0].message.content || '';
+
     // Clean up the response to extract JSON
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {

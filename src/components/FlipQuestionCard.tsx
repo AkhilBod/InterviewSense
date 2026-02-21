@@ -5,9 +5,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowRight, RotateCcw } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useToast } from '@/components/ui/use-toast'
 
 interface FlipQuestionCardProps {
   question: {
+    id?: string
     question: string
     difficulty: string
     topic: string
@@ -22,6 +25,54 @@ interface FlipQuestionCardProps {
 
 export default function FlipQuestionCard({ question, companyName }: FlipQuestionCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
+  const { data: session } = useSession()
+  const { toast } = useToast()
+
+  const saveQuestion = async () => {
+    // Store question in localStorage for post-login saving
+    if (typeof window !== 'undefined') {
+      const questionData = {
+        questionId: question.id || `${question.topic}-${question.question.substring(0, 20)}`,
+        questionText: question.question,
+        type: question.type === 'behavioral' ? 'BEHAVIORAL' : 'TECHNICAL',
+        company: companyName || question.company,
+        difficulty: question.difficulty,
+        category: question.topic,
+      }
+      localStorage.setItem('pendingQuestionSave', JSON.stringify(questionData))
+    }
+
+    if (!session) {
+      // If not logged in, they'll be redirected to signup
+      // The question will be saved after they log in
+      return
+    }
+
+    try {
+      // Auto-save the question to database
+      const response = await fetch('/api/questions/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: question.id || `${question.topic}-${question.question.substring(0, 20)}`,
+          questionText: question.question,
+          type: question.type === 'behavioral' ? 'BEHAVIORAL' : 'TECHNICAL',
+          company: companyName || question.company,
+          difficulty: question.difficulty,
+          category: question.topic,
+        }),
+      })
+
+      if (response.ok || response.status === 409) {
+        // 409 means already saved, which is fine
+        console.log('Question saved successfully')
+        // Clear from localStorage since it's now saved
+        localStorage.removeItem('pendingQuestionSave')
+      }
+    } catch (error) {
+      console.error('Error saving question:', error)
+    }
+  }
 
   const formatStarAnswer = (solution: string) => {
     // Remove ** markers and format nicely
@@ -109,6 +160,7 @@ export default function FlipQuestionCard({ question, companyName }: FlipQuestion
                   borderRadius: '12px',
                   padding: '14px 24px'
                 }}
+                onClick={saveQuestion}
               >
                 <Link href="/signup">
                   Practice This Question <ArrowRight className="ml-2 h-4 w-4" />
@@ -171,6 +223,7 @@ export default function FlipQuestionCard({ question, companyName }: FlipQuestion
                   borderRadius: '12px',
                   padding: '14px 24px'
                 }}
+                onClick={saveQuestion}
               >
                 <Link href="/signup">
                   Get Full Solution <ArrowRight className="ml-2 h-4 w-4" />

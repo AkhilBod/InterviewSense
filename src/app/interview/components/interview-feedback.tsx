@@ -298,7 +298,6 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative">
               <RefreshCw className="h-12 w-12 text-blue-500 animate-spin" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.3),transparent_70%)]"></div>
             </div>
             <p className="text-zinc-400">Our AI is analyzing your answer</p>
             <Progress value={30} className="w-full h-2 bg-zinc-700">

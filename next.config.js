@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
+    externalDir: true,
   },
   images: {
     unoptimized: true,
@@ -105,10 +105,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  async generateStaticParams() {
-    // This will be handled by the individual page components
-    return []
   },
   // Enable static exports for opportunities
   trailingSlash: true,

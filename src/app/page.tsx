@@ -26,7 +26,7 @@ const structuredData = {
   "operatingSystem": "Web Browser",
   "offers": {
     "@type": "Offer",
-    "price": "0",
+    "price": "25",
     "priceCurrency": "USD"
   },
   "author": {
@@ -98,10 +98,10 @@ const faqStructuredData = {
     },
     {
       "@type": "Question",
-      "name": "Do I need to pay for InterviewSense as a CS student?",
+      "name": "What plans does InterviewSense offer?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No! InterviewSense is completely free for all students. Access unlimited coding practice, behavioral interview prep, resume analysis, and AI feedback without any cost or subscription fees."
+        "text": "InterviewSense offers flexible subscription plans starting at $25/month or $199/year. All plans include access to unlimited coding practice, behavioral interview prep, resume analysis, and AI feedback with a 3-day free trial."
       }
     }
   ]
@@ -114,12 +114,13 @@ export default function Home() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [showLoading, setShowLoading] = useState(true)
   const [loadingFadeOut, setLoadingFadeOut] = useState(false)
+  const [subscriptionLoading, setSubscriptionLoading] = useState<string | null>(null)
 
   useEffect(() => {
     let progress = 0
     const interval = setInterval(() => {
-      // Accelerate towards end (1.25x slower)
-      const increment = progress < 70 ? Math.random() * 2.4 + 0.8 : Math.random() * 4 + 1.6
+      // 15% faster - increased increments
+      const increment = progress < 70 ? Math.random() * 2.76 + 0.92 : Math.random() * 4.6 + 1.84
       progress = Math.min(progress + increment, 100)
       setLoadingProgress(Math.round(progress))
       if (progress >= 100) {
@@ -131,7 +132,7 @@ export default function Home() {
           }, 800)
         }, 400)
       }
-    }, 63)
+    }, 54)
     return () => clearInterval(interval)
   }, [])
   
@@ -150,12 +151,56 @@ export default function Home() {
         const searchParams = new URLSearchParams(window.location.search)
         creatorCode = searchParams.get('code')
       }
-      
+
       if (creatorCode) {
         router.push(`/signup?code=${creatorCode}`)
       } else {
         router.push('/signup')
       }
+    }
+  }
+
+  const handleSubscribe = async (priceId: string | undefined, planName: string) => {
+    // Check if user is logged in
+    if (status !== 'authenticated') {
+      // Save the plan they selected to redirect after login
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('selectedPlan', planName)
+        sessionStorage.setItem('selectedPriceId', priceId || '')
+      }
+      router.push('/signup')
+      return
+    }
+
+    if (!priceId) {
+      alert('Price ID not configured. Please set environment variables.')
+      return
+    }
+
+    setSubscriptionLoading(planName)
+
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      })
+
+      const data = await res.json()
+
+      if (data.error) {
+        alert(data.error)
+        setSubscriptionLoading(null)
+        return
+      }
+
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to start checkout. Please try again.')
+      setSubscriptionLoading(null)
     }
   }
 
@@ -237,6 +282,7 @@ export default function Home() {
       <meta name="robots" content="index,follow,noarchive" />
       <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
       <link rel="canonical" href="https://www.interviewsense.org" />
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       
       {/* Structured Data for SEO */}
       <script 
@@ -265,6 +311,16 @@ export default function Home() {
           to { transform: rotate(0deg); }
         }
 
+        @keyframes wave1 {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(1.5); }
+        }
+
+        @keyframes wave2 {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.6); }
+        }
+
         .spin-circle {
           animation: spin 20s linear infinite;
         }
@@ -281,10 +337,10 @@ export default function Home() {
         <nav className="w-full z-50 relative" style={{ background: 'transparent', borderBottom: 'none' }}>
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             {/* Logo Section */}
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={40} height={40} className="object-contain" />
               <span className="font-bold text-xl text-white hidden sm:block">InterviewSense</span>
-            </div>
+            </Link>
 
             {/* Desktop Navigation and Auth Buttons */}
             <div className="hidden md:flex items-center gap-4">
@@ -311,7 +367,7 @@ export default function Home() {
                     size="sm"
                     className="px-5 py-2.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200"
                   >
-                    Get Started Free
+                    Get Started
                   </Button>
                 </>
               )}
@@ -415,7 +471,7 @@ export default function Home() {
             {/* LEFT COLUMN - Text + CTA */}
             <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 w-full" style={{
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
                 letterSpacing: '-0.025em',
                 lineHeight: 1.1
               }}>
@@ -452,7 +508,7 @@ export default function Home() {
                   justifyContent: 'center',
                   gap: '8px',
                   transition: 'all 0.2s',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
+                  fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#2563eb'
@@ -463,7 +519,7 @@ export default function Home() {
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                Start Practicing Free
+                Start Practicing
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginLeft: '4px' }}>
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -772,60 +828,40 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1400px] mx-auto">
             <div className="text-center mb-16 lg:mb-20">
-              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4">Four ways we help you ace interviews</h2>
-              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto">Everything you need to prepare for your dream role, powered by AI.</p>
+              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Four ways we help you ace interviews</h2>
+              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Everything you need to prepare for your dream role, powered by AI.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Feature Card 1 */}
               <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
-                  {/* Voice Analysis Mockup */}
-                  <div className="w-full h-full p-4 flex flex-col">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[10px] text-zinc-500">Recording...</div>
-                        <div className="text-xs text-zinc-300 font-medium">00:34</div>
-                      </div>
-                    </div>
-                    {/* Waveform */}
-                    <div className="flex-1 flex items-center gap-0.5 mb-3">
-                      {[...Array(30)].map((_, i) => {
-                        const height = Math.sin(i * 0.4) * 30 + Math.random() * 20 + 20;
-                        return (
-                          <div key={i} className="flex-1 bg-blue-500/30 rounded-full" style={{ height: `${height}%` }}></div>
-                        );
-                      })}
-                    </div>
-                    {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-zinc-800/50 rounded p-2">
-                        <div className="text-[9px] text-zinc-500 mb-0.5">Pace</div>
-                        <div className="text-[11px] font-semibold text-green-400">Good</div>
-                      </div>
-                      <div className="bg-zinc-800/50 rounded p-2">
-                        <div className="text-[9px] text-zinc-500 mb-0.5">Clarity</div>
-                        <div className="text-[11px] font-semibold text-green-400">92%</div>
-                      </div>
-                      <div className="bg-zinc-800/50 rounded p-2">
-                        <div className="text-[9px] text-zinc-500 mb-0.5">Filler</div>
-                        <div className="text-[11px] font-semibold text-yellow-400">3</div>
-                      </div>
+                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative flex items-center justify-center">
+                  {/* Voice Analysis Mockup - Speaking Agent Waveform */}
+                  <div className="w-full h-full p-6 flex items-center justify-center">
+                    <div className="flex items-center gap-1.5 h-20">
+                      {/* Animated waveform bars */}
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '30%', animation: 'wave1 0.8s ease-in-out infinite' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '50%', animation: 'wave2 0.8s ease-in-out infinite 0.1s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '70%', animation: 'wave1 0.8s ease-in-out infinite 0.2s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '45%', animation: 'wave2 0.8s ease-in-out infinite 0.3s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '85%', animation: 'wave1 0.8s ease-in-out infinite 0.4s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '60%', animation: 'wave2 0.8s ease-in-out infinite 0.5s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '40%', animation: 'wave1 0.8s ease-in-out infinite 0.6s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '75%', animation: 'wave2 0.8s ease-in-out infinite 0.7s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '55%', animation: 'wave1 0.8s ease-in-out infinite 0.8s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '35%', animation: 'wave2 0.8s ease-in-out infinite 0.9s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '65%', animation: 'wave1 0.8s ease-in-out infinite 1s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '50%', animation: 'wave2 0.8s ease-in-out infinite 1.1s' }}></div>
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-blue-400 mb-3">Real-time Voice Analysis</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1">Get instant feedback on pacing, filler words, and clarity during interviews.</p>
+                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Real-time Voice Analysis</h3>
+                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Get instant feedback on pacing, filler words, and clarity during interviews.</p>
               </div>
 
               {/* Feature Card 2 */}
               <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
+                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative">
                   {/* Code Editor Mockup */}
                   <div className="w-full h-full p-3 font-mono text-[9px]">
                     <div className="flex items-center gap-1.5 mb-3 pb-2">
@@ -850,13 +886,13 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-purple-400 mb-3">LeetCode-style Practice</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1">Practice coding problems with hints, solutions, and complexity analysis.</p>
+                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>LeetCode-style Practice</h3>
+                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Practice coding problems with hints, solutions, and complexity analysis.</p>
               </div>
 
               {/* Feature Card 3 */}
               <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
+                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative">
                   {/* STAR Method Mockup */}
                   <div className="w-full h-full p-4 flex flex-col">
                     <div className="text-[11px] font-semibold text-emerald-400 mb-3">STAR Framework</div>
@@ -880,315 +916,74 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-emerald-400 mb-3">Behavioral Coaching</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1">Master the STAR method with structured coaching and AI suggestions.</p>
+                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Behavioral Coaching</h3>
+                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Master the STAR method with structured coaching and AI suggestions.</p>
               </div>
 
               {/* Feature Card 4 */}
               <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl mb-5 overflow-hidden relative">
-                  {/* Resume Analysis Mockup */}
-                  <div className="w-full h-full p-4 flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-[11px] font-semibold text-amber-400">Resume Score</div>
-                      <div className="text-xl font-bold text-amber-400">87/100</div>
+                <div className="aspect-[4/3] bg-white rounded-xl mb-5 overflow-hidden relative p-2">
+                  {/* Resume Document Mockup - Zoomed Out */}
+                  <div className="w-full h-full bg-white text-black text-[6px] space-y-1">
+                    <div className="font-bold text-[8px]">JOHN DOE</div>
+                    <div className="text-zinc-600 text-[5px]">john.doe@email.com • (555) 123-4567 • linkedin.com/in/johndoe</div>
+                    <div className="h-px bg-zinc-300 my-0.5"></div>
+
+                    <div className="font-semibold text-[7px] mb-0.5">EXPERIENCE</div>
+                    <div className="relative mb-0.5">
+                      <div className="bg-blue-100 px-0.5 py-0.5 rounded">
+                        <div className="font-medium text-[6px]">Senior Developer</div>
+                        <div className="text-[5px] text-zinc-600">Tech Corp • San Francisco, CA • 2021-2023</div>
+                        <div className="text-[5px] mt-0.5 leading-tight space-y-0.5">
+                          <div>• Led development of microservices architecture</div>
+                          <div>• Reduced API response time by 40%</div>
+                          <div>• Mentored 3 junior developers</div>
+                        </div>
+                      </div>
+                      <div className="absolute -right-0.5 top-0 bg-blue-500 text-white px-0.5 rounded text-[5px]">
+                        ✓ Strong
+                      </div>
                     </div>
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 text-[10px] text-zinc-500">Format</div>
-                        <div className="flex-1 h-2 bg-zinc-800 rounded overflow-hidden">
-                          <div className="h-full bg-green-500" style={{ width: '92%' }}></div>
+
+                    <div className="relative mb-0.5">
+                      <div className="bg-yellow-50 px-0.5 py-0.5 rounded">
+                        <div className="font-medium text-[6px]">Junior Developer</div>
+                        <div className="text-[5px] text-zinc-600">StartupCo • Remote • 2019-2021</div>
+                        <div className="text-[5px] mt-0.5 leading-tight">
+                          <div>• Built web applications</div>
                         </div>
-                        <div className="text-[10px] text-green-400">92</div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 text-[10px] text-zinc-500">Keywords</div>
-                        <div className="flex-1 h-2 bg-zinc-800 rounded overflow-hidden">
-                          <div className="h-full bg-yellow-500" style={{ width: '78%' }}></div>
-                        </div>
-                        <div className="text-[10px] text-yellow-400">78</div>
+                      <div className="absolute -right-0.5 top-0 bg-yellow-500 text-white px-0.5 rounded text-[5px]">
+                        ! Weak
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 text-[10px] text-zinc-500">Impact</div>
-                        <div className="flex-1 h-2 bg-zinc-800 rounded overflow-hidden">
-                          <div className="h-full bg-green-500" style={{ width: '85%' }}></div>
-                        </div>
-                        <div className="text-[10px] text-green-400">85</div>
+                    </div>
+
+                    <div className="font-semibold text-[7px] mt-1 mb-0.5">EDUCATION</div>
+                    <div className="text-[5px]">
+                      <div className="font-medium text-[6px]">BS Computer Science</div>
+                      <div className="text-zinc-600">University of California • GPA: 3.8/4.0</div>
+                    </div>
+
+                    <div className="font-semibold text-[7px] mt-1 mb-0.5">SKILLS</div>
+                    <div className="flex flex-wrap gap-0.5">
+                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">React</span>
+                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">Node.js</span>
+                      <span className="bg-blue-100 px-1 py-0.5 rounded text-[5px]">Python</span>
+                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">AWS</span>
+                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">Docker</span>
+                    </div>
+
+                    <div className="font-semibold text-[7px] mt-1 mb-0.5">PROJECTS</div>
+                    <div className="text-[5px] leading-tight space-y-0.5">
+                      <div>
+                        <span className="font-medium text-[6px]">E-commerce Platform</span>
+                        <div className="text-zinc-600">Built full-stack application with 10k+ users</div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-amber-400 mb-3">Resume & Feedback</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1">Get automated resume scoring and detailed feedback to optimize your resume.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Table Section */}
-      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4">How we compare</h2>
-              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto">See what makes us different from traditional coding interview platforms.</p>
-            </div>
-
-            <div className="bg-zinc-950/30 rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto scrollbar-hide">
-                <table className="w-full min-w-[640px]">
-                  <thead>
-                    <tr>
-                      <th className="text-left py-5 px-6 text-zinc-400 font-medium text-sm">Feature</th>
-                      <th className="text-center py-5 px-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={24} height={24} className="object-contain" />
-                          <span className="text-white font-semibold text-sm">InterviewSense</span>
-                        </div>
-                      </th>
-                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm">LeetCode</th>
-                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm">Pramp</th>
-                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm">AlgoExpert</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">Real-time Voice Analysis</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">Behavioral Interview Practice</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">LeetCode-style Problems</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">Resume Analysis</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">AI-Powered Feedback</td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium">Partial</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-4 px-6 text-zinc-300 text-sm">Cost</td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="text-sm font-semibold text-green-400">Free</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="text-sm text-zinc-400">$35/mo</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="text-sm font-semibold text-green-400">Free</span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="text-sm text-zinc-400">$99/yr</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Login Conversion Section - Hidden on mobile to reduce clutter */}
-      <section id="cta" className="hidden sm:block py-8 md:py-12 relative overflow-hidden z-[1]" style={{ background: '#0a0e1a' }}>
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-blue-500/10 rounded-full px-4 py-2 mb-6">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-blue-300 font-medium">Join 10k+ developers already practicing</span>
-            </div>
-            
-            <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto">
-              Join 10k+ developers who've already landed their dream jobs. 
-              <span className="text-blue-400 font-semibold"> Start practicing in under 30 seconds.</span>
-            </p>
-
-            {/* Social proof stats */}
-            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-10 max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                  <CountUpOnView end={10000} duration={1500} className="inline-block" />
-                </div>
-                <div className="text-sm text-zinc-400">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                  <CountUpOnView end={89} duration={1200} className="inline-block" />%
-                </div>
-                <div className="text-sm text-zinc-400">Success Rate</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                  <CountUpOnView end={5} duration={1000} className="inline-block" />/5
-                </div>
-                <div className="text-sm text-zinc-400">User Rating</div>
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
-            <RevealOnView className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-              <Button
-                onClick={handleGetStartedClick}
-                size="lg"
-                className="w-full sm:w-auto text-base px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-full shadow-lg shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
-              >
-                Start Free Practice <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto text-base px-8 py-4 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-full"
-              >
-                <Link href="/login">Already have an account? Sign In</Link>
-              </Button>
-            </RevealOnView>
-
-            {/* Trust indicators */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-zinc-500">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <span>Free forever</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <span>No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <span>Start in 30 seconds</span>
+                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Resume & Feedback</h3>
+                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Get automated resume scoring and detailed feedback to optimize your resume.</p>
               </div>
             </div>
           </div>
@@ -1224,6 +1019,352 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1000px] mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-[42px] sm:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Choose Your Plan
+              </h2>
+              <p className="text-[17px] text-zinc-400">
+                Start your 3-day free trial today. Cancel anytime.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Monthly Plan */}
+              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-8 hover:border-zinc-600 transition-all">
+                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Monthly</h3>
+                <div className="flex items-baseline gap-2 mb-6">
+                  <span className="text-5xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$25</span>
+                  <span className="text-zinc-400">/month</span>
+                </div>
+
+                <button
+                  onClick={() => handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID, 'Monthly')}
+                  disabled={subscriptionLoading === 'Monthly'}
+                  className="w-full mb-6 bg-white text-black hover:bg-zinc-200 font-semibold py-4 text-lg rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  {subscriptionLoading === 'Monthly' ? 'Loading...' : 'Try 3-day trial'}
+                </button>
+
+                <ul className="space-y-3 text-zinc-300">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Access to all questions, problems, and quizzes</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Interview video guides</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Advanced filtering and question playlists</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>5% off all coaching services</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Annual Plan */}
+              <div className="bg-blue-600/10 border-2 border-blue-500 rounded-2xl p-8 relative hover:border-blue-400 transition-all shadow-lg">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-blue-600 rounded-full text-sm font-semibold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Best Value
+                </div>
+
+                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Annual</h3>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-5xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$199</span>
+                  <span className="text-zinc-400">/year</span>
+                </div>
+                <div className="text-green-400 text-sm font-semibold mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Save 33%</div>
+
+                <button
+                  onClick={() => handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID, 'Annual')}
+                  disabled={subscriptionLoading === 'Annual'}
+                  className="w-full mb-6 bg-blue-600 text-white hover:bg-blue-500 font-semibold py-4 text-lg rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  {subscriptionLoading === 'Annual' ? 'Loading...' : 'Try 3-day trial'}
+                </button>
+
+                <ul className="space-y-3 text-zinc-300">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Access to all questions, problems, and quizzes</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Interview video guides</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Advanced filtering and question playlists</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>15% off all coaching services</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Premium community with working professionals</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table Section */}
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>How we compare</h2>
+              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto">See what makes us different from traditional coding interview platforms.</p>
+            </div>
+
+            <div className="bg-zinc-950/30 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto scrollbar-hide">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr>
+                      <th className="text-left py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Feature</th>
+                      <th className="text-center py-5 px-6">
+                        <div className="flex items-center justify-center gap-2">
+                          <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={24} height={24} className="object-contain" />
+                          <span className="text-white font-semibold text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>InterviewSense</span>
+                        </div>
+                      </th>
+                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>LeetCode</th>
+                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Pramp</th>
+                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AlgoExpert</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Real-time Voice Analysis</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Behavioral Interview Practice</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>LeetCode-style Problems</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Resume Analysis</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AI-Powered Feedback</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Cost</td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm font-semibold text-blue-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$25/mo</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$35/mo</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm font-semibold text-green-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Free</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$99/yr</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/*CTA Section */}
+      <section id="cta" className="py-20 md:py-24 relative overflow-hidden z-[1]" style={{ background: '#0a0e1a' }}>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Join 10,000+ developers who've already landed their dream jobs.
+              <span className="text-blue-400 font-semibold"> Start practicing in under 30 seconds.</span>
+            </p>
+
+            {/* Social proof stats */}
+            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-10 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <CountUpOnView end={10000} duration={1500} className="inline-block" />
+                </div>
+                <div className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <CountUpOnView end={89} duration={1200} className="inline-block" />%
+                </div>
+                <div className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Success Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <CountUpOnView end={5} duration={1000} className="inline-block" />/5
+                </div>
+                <div className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>User Rating</div>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <RevealOnView className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                onClick={handleGetStartedClick}
+                size="lg"
+                className="w-full sm:w-auto text-base px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Start Practicing <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto text-base px-8 py-4 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-full"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                <Link href="/login">Already have an account? Sign In</Link>
+              </Button>
+            </RevealOnView>
           </div>
         </div>
       </section>

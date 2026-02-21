@@ -71,6 +71,7 @@ self.addEventListener('fetch', (event) => {
           });
         })
     );
+    return; // Important: return to prevent duplicate respondWith calls
   }
   
   // Cache other static resources with network first strategy
@@ -91,5 +92,6 @@ self.addEventListener('fetch', (event) => {
           return caches.match(event.request);
         })
     );
+    return; // Important: return to prevent duplicate respondWith calls
   }
 });

@@ -1898,7 +1898,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
     <div className="container mx-auto p-4 pt-8 space-y-6">
       {/* Header Section */}
       <div className="text-center mb-6 lg:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
           Ready for your technical challenge?
         </h1>
         <p className="text-zinc-400 text-sm sm:text-base">
@@ -1906,7 +1906,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
         </p>
       </div>
 
-      <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-green-900/20 border border-green-500/20 backdrop-blur-sm shadow-2xl shadow-green-500/10">
+      <Card className="bg-[#111827] border border-gray-800">
         <CardContent className="p-6 sm:p-8 space-y-6">
           {/* Problem Selection Mode */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1914,18 +1914,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
               onClick={() => setProblemMode('ai')}
               className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
                 problemMode === 'ai' 
-                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+                  ? 'bg-blue-600/20 border-blue-500/50 ' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'ai' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                  problemMode === 'ai' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
                 }`}>
-                  <Zap className={`w-5 h-5 ${problemMode === 'ai' ? 'text-green-400' : 'text-zinc-400'}`} />
+                  <Zap className={`w-5 h-5 ${problemMode === 'ai' ? 'text-blue-500' : 'text-zinc-400'}`} />
                 </div>
                 <div>
-                  <h3 className={`font-semibold ${problemMode === 'ai' ? 'text-green-400' : 'text-zinc-300'}`}>
+                  <h3 className={`font-semibold ${problemMode === 'ai' ? 'text-blue-500' : 'text-zinc-300'}`}>
                     AI Generator
                   </h3>
                   <p className="text-sm text-zinc-400">
@@ -1939,18 +1939,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
               onClick={() => setProblemMode('specific')}
               className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
                 problemMode === 'specific' 
-                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+                  ? 'bg-blue-600/20 border-blue-500/50 ' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'specific' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                  problemMode === 'specific' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
                 }`}>
-                  <Target className={`w-5 h-5 ${problemMode === 'specific' ? 'text-green-400' : 'text-zinc-400'}`} />
+                  <Target className={`w-5 h-5 ${problemMode === 'specific' ? 'text-blue-500' : 'text-zinc-400'}`} />
                 </div>
                 <div>
-                  <h3 className={`font-semibold ${problemMode === 'specific' ? 'text-green-400' : 'text-zinc-300'}`}>
+                  <h3 className={`font-semibold ${problemMode === 'specific' ? 'text-blue-500' : 'text-zinc-300'}`}>
                     Specific Problem
                   </h3>
                   <p className="text-sm text-zinc-400">
@@ -1964,18 +1964,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
               onClick={() => setProblemMode('preset')}
               className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
                 problemMode === 'preset' 
-                  ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/30'
+                  ? 'bg-blue-600/20 border-blue-500/50 ' 
+                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'preset' ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                  problemMode === 'preset' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
                 }`}>
-                  <BookOpen className={`w-5 h-5 ${problemMode === 'preset' ? 'text-green-400' : 'text-zinc-400'}`} />
+                  <BookOpen className={`w-5 h-5 ${problemMode === 'preset' ? 'text-blue-500' : 'text-zinc-400'}`} />
                 </div>
                 <div>
-                  <h3 className={`font-semibold ${problemMode === 'preset' ? 'text-green-400' : 'text-zinc-300'}`}>
+                  <h3 className={`font-semibold ${problemMode === 'preset' ? 'text-blue-500' : 'text-zinc-300'}`}>
                     Popular Presets
                   </h3>
                   <p className="text-sm text-zinc-400">
@@ -2024,19 +2024,19 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                         }}
                         className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
                           selectedCategory === category.name
-                            ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
-                            : 'bg-zinc-800/30 border-zinc-700/50 hover:border-green-500/30'
+                            ? 'bg-blue-600/20 border-blue-500/50 '
+                            : 'bg-zinc-800/30 border-zinc-700/50 hover:border-blue-500/30'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
-                            selectedCategory === category.name ? 'bg-green-500/20' : 'bg-zinc-700/50'
+                            selectedCategory === category.name ? 'bg-blue-500/20' : 'bg-zinc-700/50'
                           }`}>
                             {category.icon}
                           </div>
                           <div>
                             <h4 className={`font-medium ${
-                              selectedCategory === category.name ? 'text-green-400' : 'text-zinc-200'
+                              selectedCategory === category.name ? 'text-blue-500' : 'text-zinc-200'
                             }`}>
                               {category.name}
                             </h4>
@@ -2060,8 +2060,8 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                       onClick={() => setSelectedPreset(preset.id)}
                       className={`cursor-pointer rounded-xl p-6 border transition-all duration-300 hover:scale-[1.02] ${
                         selectedPreset === preset.id
-                          ? 'bg-gradient-to-br from-green-600/20 via-green-500/10 to-green-400/5 border-green-500/50 shadow-lg shadow-green-500/10'
-                          : 'bg-gradient-to-br from-zinc-800/50 via-zinc-800/30 to-zinc-800/10 border-zinc-700/50 hover:border-green-500/30'
+                          ? 'bg-[#111827] border-blue-500'
+                          : 'bg-[#111827] border-gray-800 hover:border-blue-500'
                       }`}
                     >
                       <div className="flex flex-col h-full">
@@ -2069,7 +2069,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h3 className={`text-lg font-bold mb-1 ${
-                              selectedPreset === preset.id ? 'text-green-400' : 'text-zinc-100'
+                              selectedPreset === preset.id ? 'text-blue-500' : 'text-zinc-100'
                             }`}>
                               {preset.title}
                             </h3>
@@ -2079,7 +2079,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                           </div>
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 ${
                             selectedPreset === preset.id 
-                              ? 'bg-green-500/10 border-green-500/50 text-green-400' 
+                              ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
                               : 'bg-zinc-800 border-zinc-600 text-zinc-400'
                           }`}>
                             {preset.icon}
@@ -2110,9 +2110,9 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                           </div>
                           <div className="h-2 bg-zinc-700/50 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full w-0 rounded-full transition-all duration-300 ${
-                                selectedPreset === preset.id 
-                                  ? 'bg-gradient-to-r from-green-500 to-green-400' 
+                              className={`h-full w-0 rounded-full transition-all duration-150 ${
+                                selectedPreset === preset.id
+                                  ? 'bg-blue-500'
                                   : 'bg-zinc-600'
                               }`}
                             />
@@ -2127,7 +2127,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                                 key={idx}
                                 className={`text-xs px-2 py-1 rounded-full border flex items-center gap-1 ${
                                   selectedPreset === preset.id
-                                    ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                                    ? 'bg-blue-500/10 border-blue-500/30 text-blue-500'
                                     : 'bg-zinc-800 border-zinc-700 text-zinc-400'
                                 }`}
                               >
@@ -2151,7 +2151,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
                               ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                               : preset.difficulty.includes('Medium')
                                 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
-                                : 'bg-green-500/20 text-green-400 border border-green-500/40'
+                                : 'bg-blue-500/20 text-blue-500 border border-blue-500/40'
                           }`}>
                             {preset.difficulty}
                           </div>
@@ -2239,14 +2239,14 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                           }}
                           className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
                             selectedQuestion?.id === question.id
-                              ? 'bg-green-600/20 border-green-500/50 shadow-lg shadow-green-500/10'
-                              : 'bg-zinc-800/30 border-zinc-700/50 hover:border-green-500/30'
+                              ? 'bg-blue-600/20 border-blue-500/50 '
+                              : 'bg-zinc-800/30 border-zinc-700/50 hover:border-blue-500/30'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-zinc-300 font-medium">#{question.id}</span>
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              question.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                              question.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500' :
                               question.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
                               'bg-red-500/20 text-red-400'
                             }`}>
@@ -2254,7 +2254,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                             </span>
                           </div>
                           <h5 className={`font-medium ${
-                            selectedQuestion?.id === question.id ? 'text-green-400' : 'text-zinc-200'
+                            selectedQuestion?.id === question.id ? 'text-blue-500' : 'text-zinc-200'
                           }`}>
                             {question.title}
                           </h5>
@@ -2269,12 +2269,12 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
 
           {/* AI Generator Form */}
           {problemMode === 'ai' && (
-            <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20 backdrop-blur-sm">
+            <div className="bg-[#111827] p-6 rounded-xl border border-gray-800">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Existing AI form fields */}
                 <div className="space-y-4 group">
                   <Label htmlFor="company" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                     Company
                   </Label>
                   <div className="relative">
@@ -2284,14 +2284,13 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="e.g., Google, Meta, Apple"
                       required={problemMode === 'ai'}
-                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
+                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 placeholder:text-zinc-500"
                     />
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                 </div>
                 <div className="space-y-4 group">
                   <Label htmlFor="role" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                     Role
                   </Label>
                   <div className="relative">
@@ -2306,7 +2305,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                       required={!useCustomNumber}
                       disabled={useCustomNumber}
                     >
-                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left disabled:opacity-50">
+                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left disabled:opacity-50">
                         <SelectValue placeholder="Select your role" className="text-left text-zinc-400" />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
@@ -2316,7 +2315,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                             <SelectItem 
                               key={job.id} 
                               value={job.title} 
-                              className="justify-start text-left data-[highlighted]:text-left hover:bg-green-500/10 focus:bg-green-500/20 transition-colors"
+                              className="justify-start text-left data-[highlighted]:text-left hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
                             >
                               <div className="flex flex-col items-start w-full text-left">
                                 <div className="font-medium text-left w-full text-white">{job.title}</div>
@@ -2334,18 +2333,17 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                           placeholder="Enter your job title..."
                           value={customRole}
                           onChange={(e) => setCustomRole(e.target.value)}
-                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 text-white placeholder:text-zinc-400"
+                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-zinc-400"
                           required
                         />
                       </div>
                     )}
                     
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                 </div>
                 <div className="space-y-4 group">
                   <Label htmlFor="difficulty" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                     Question Difficulty
                   </Label>
                   <div className="relative">
@@ -2355,16 +2353,15 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                       required={!useCustomNumber}
                       disabled={useCustomNumber}
                     >
-                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 disabled:opacity-50">
+                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 disabled:opacity-50">
                         <SelectValue placeholder="Select difficulty" className="text-zinc-400" />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                        <SelectItem value="easy" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Easy</SelectItem>
-                        <SelectItem value="medium" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Medium</SelectItem>
-                        <SelectItem value="hard" className="hover:bg-green-500/10 focus:bg-green-500/20 transition-colors">Hard</SelectItem>
+                        <SelectItem value="easy" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Easy</SelectItem>
+                        <SelectItem value="medium" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Medium</SelectItem>
+                        <SelectItem value="hard" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Hard</SelectItem>
                       </SelectContent>
                     </Select>
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   </div>
                 </div>
               </div>
@@ -2375,7 +2372,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
           {problemMode === 'specific' && (
             <div className="space-y-4 group">
               <Label htmlFor="leetcodeNumber" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                 LeetCode Question Number
               </Label>
               <div className="relative">
@@ -2388,9 +2385,9 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                   type="number"
                   min="1"
                   max="3000"
-                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-green-500/50 focus:border-green-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-green-500/10 text-zinc-100 placeholder:text-zinc-500"
+                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 placeholder:text-zinc-500"
                 />
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-green-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
               <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
             </div>
@@ -2401,7 +2398,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
               type="submit"
               onClick={handleSubmit}
               disabled={loading || (problemMode === 'preset' && (!selectedPreset || !selectedCategory))}
-              className="w-full h-14 bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-500 hover:via-green-400 hover:to-green-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-green-400/20"
+              className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
             >
               {loading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
               <span>
@@ -2436,7 +2433,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     (() => {
                       const leetcodeProblem = parseLeetCodeProblem(question);
-                      return leetcodeProblem.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
+                      return leetcodeProblem.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500 border border-blue-500/40' :
                         leetcodeProblem.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' :
                         'bg-red-500/20 text-red-400 border border-red-500/40';
                     })()
@@ -2460,14 +2457,14 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                 <TabsList className="w-full justify-start bg-zinc-800/50 border-b border-zinc-700 rounded-none h-12 p-1">
                   <TabsTrigger 
                     value="problem" 
-                    className="data-[state=active]:bg-green-600/20 data-[state=active]:text-green-300 data-[state=active]:border-green-500/50 flex items-center gap-2 h-10"
+                    className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-green-300 data-[state=active]:border-blue-500/50 flex items-center gap-2 h-10"
                   >
                     <BookOpen className="h-4 w-4" />
                     Problem
                   </TabsTrigger>
                   <TabsTrigger 
                     value="solutions" 
-                    className="data-[state=active]:bg-green-600/20 data-[state=active]:text-green-300 data-[state=active]:border-green-500/50 flex items-center gap-2 h-10"
+                    className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-green-300 data-[state=active]:border-blue-500/50 flex items-center gap-2 h-10"
                   >
                     <Lightbulb className="h-4 w-4" />
                     Solutions
@@ -2592,7 +2589,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                   <div className="space-y-6 pb-40">
                     <div className="flex items-center justify-between">
                       <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-green-400" />
+                        <Lightbulb className="h-5 w-5 text-blue-500" />
                         Solution Approaches
                       </h3>
                       <div className="text-sm text-zinc-400">
@@ -2603,18 +2600,18 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                     {solutionsLoading ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="text-center space-y-4">
-                          <Loader2 className="h-8 w-8 animate-spin text-green-400 mx-auto" />
+                          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
                           <p className="text-zinc-400">Generating optimal solutions with AI...</p>
                         </div>
                       </div>
                     ) : !solutionsGenerated ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="text-center space-y-4">
-                          <Zap className="h-8 w-8 text-green-400 mx-auto" />
+                          <Zap className="h-8 w-8 text-blue-500 mx-auto" />
                           <p className="text-zinc-400">Click "Generate Solutions" to see AI-powered approaches</p>
                           <Button 
                             onClick={generateSolutions}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-blue-600 hover:bg-green-700 text-white"
                           >
                             <Lightbulb className="h-4 w-4 mr-2" />
                             Generate Solutions
@@ -2628,7 +2625,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                solution.difficulty === 'Easy' ? 'bg-green-500/20 text-green-400' :
+                                solution.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500' :
                                 solution.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
                                 'bg-red-500/20 text-red-400'
                               }`}>
@@ -2650,7 +2647,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                             </div>
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               index === 0 ? 'bg-red-500/20 text-red-400' :
-                              index === 1 ? 'bg-green-500/20 text-green-400' :
+                              index === 1 ? 'bg-blue-500/20 text-blue-500' :
                               'bg-blue-500/20 text-blue-400'
                             }`}>
                               {index === 0 ? 'Brute Force' : index === 1 ? 'Optimal' : 'Alternative'}
@@ -2869,7 +2866,7 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
                     )}
                     {audioUrl && !isTranscribing && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-green-400">✓ <span className="hidden sm:inline">Recording saved</span><span className="sm:hidden">Saved</span></span>
+                        <span className="text-xs text-blue-500">✓ <span className="hidden sm:inline">Recording saved</span><span className="sm:hidden">Saved</span></span>
                       </div>
                     )}
                   </div>

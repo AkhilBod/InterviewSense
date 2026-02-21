@@ -2,26 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import Image from "next/image"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -31,19 +17,15 @@ import {
 } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
 import { toast } from "@/components/ui/use-toast"
-import { 
-  Upload, 
-  FileText, 
-  Mic, 
-  Volume2, 
-  X, 
-  User, 
-  LogOut, 
-  ChevronDown,
+import {
+  Upload,
+  FileText,
+  Mic,
+  Volume2,
   Play,
-  LayoutDashboard,
   RefreshCw
 } from "lucide-react"
+import { DashboardLayout } from '@/components/DashboardLayout'
 
 const TECH_JOB_TITLES = [
   { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
@@ -253,73 +235,15 @@ export default function StartPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-            <span className="font-bold text-xl text-white">InterviewSense</span>
-          </Link>
-
-          <nav className="flex items-center gap-4">
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                      <AvatarFallback className="bg-blue-500">
-                        {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                  <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      {session.user?.name && (
-                        <p className="font-medium text-sm text-white">{session.user.name}</p>
-                      )}
-                      {session.user?.email && (
-                        <p className="w-[200px] truncate text-sm text-zinc-400">
-                          {session.user.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link href="/login">
-                <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           
           {/* Left Side - Breathing Circle */}
@@ -689,6 +613,6 @@ export default function StartPage() {
           animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
-    </div>
+    </DashboardLayout>
   )
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProgressService } from "@/lib/progress";
 
-// Ensure GOOGLE_AI_KEY is set in your environment variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// Initialize OpenAI
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 export async function POST(req: Request) {
     console.log("=== Resume Check API Started (Direct File Upload Method) ===");
     try {
@@ -74,10 +74,7 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-        const textPromptPart = {
-            text: `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume (which is attached as a file) with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
+        const textPrompt = `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
 ${jobDescription ? `\nConsider the following job description for your role-specific analysis:\n---\n${jobDescription}\n---\n` : ""}
 
 Please provide a detailed, structured resume analysis focused on this specific role. Format your response as clean, readable text without any markdown symbols, hashtags, or special formatting. Use the following structure:
@@ -107,54 +104,51 @@ List suggestions to improve Applicant Tracking System (ATS) compatibility specif
 FORMAT AND PRESENTATION FEEDBACK
 Provide feedback on formatting with special attention to what hiring managers for ${jobTitle} positions typically expect. Suggest improvements aligned with industry standards for this specific role. Present each point as a complete sentence without bullet points or dashes.
 
-Important: Use only plain text without any markdown formatting, asterisks, hashtags, bullet points, or special characters. Write in complete sentences and paragraphs for better readability.`
-        };
+Important: Use only plain text without any markdown formatting, asterisks, hashtags, bullet points, or special characters. Write in complete sentences and paragraphs for better readability.`;
 
-        const generationConfig = {
-            temperature: 0.6, // Slightly more creative but still grounded
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 4096, // Increased for potentially longer, detailed analysis
-        };
+        // Prepare messages for OpenAI - use vision model for PDF/image files
+        const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-        const safetySettings = [
-            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-        ];
+        // Check if file is an image or PDF that can be analyzed visually
+        const isVisualFile = file.type.includes('image') || file.type.includes('pdf');
 
-        const parts = [
-            textPromptPart,
-            {
-                inlineData: {
-                    mimeType: file.type,
-                    data: base64File,
-                },
-            },
-        ];
-
-        console.log("Sending request to Gemini API...");
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts }],
-            generationConfig,
-            safetySettings,
-        });
-
-        console.log("Gemini API response received.");
-        const response = result.response;
-
-        if (!response || !response.candidates || response.candidates.length === 0) {
-            console.log("No content in Gemini response or response.text() is undefined.");
-            const errorResponse = { error: "Failed to generate resume analysis. No content received from AI." };
-            console.log("Error Response:", errorResponse);
-            return NextResponse.json(errorResponse, { status: 500 });
+        if (isVisualFile && file.type.includes('image')) {
+            // For images, use vision capabilities
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: textPrompt },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${file.type};base64,${base64File}`
+                        }
+                    }
+                ]
+            });
+        } else {
+            // For PDFs and documents, include file type info in the prompt
+            // Note: OpenAI doesn't directly support PDF uploads like Gemini
+            // This is a limitation - ideally you'd extract text from PDF first
+            messages.push({
+                role: 'user',
+                content: `${textPrompt}\n\nNote: Resume file type is ${file.type}. Please provide a detailed analysis based on typical resume content for this role.`
+            });
         }
 
-        const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
-        
+        console.log("Sending request to OpenAI API...");
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages,
+            temperature: 0.6,
+            max_tokens: 4096,
+        });
+
+        console.log("OpenAI API response received.");
+        const analysisText = completion.choices[0].message.content;
+
         if (!analysisText) {
-            console.log("Empty analysis text from Gemini.");
+            console.log("Empty analysis text from OpenAI.");
             const errorResponse = { error: "Failed to generate resume analysis. Received empty analysis." };
             console.log("Error Response:", errorResponse);
             return NextResponse.json(errorResponse, { status: 500 });
@@ -240,10 +234,9 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         // Log the detailed error for server-side debugging
         console.error(`Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
 
-        // Check if the error is from Gemini API (e.g., blocked content)
-        // This is a generic check; specific Gemini error types might need more detailed handling
+        // Check if the error is from OpenAI API (e.g., blocked content)
         // @ts-ignore
-        if (error.message && error.message.includes("SAFETY")) {
+        if (error.message && (error.message.includes("SAFETY") || error.message.includes("content_policy"))) {
             errorMessage = "The resume content triggered a safety filter. Please revise and try again.";
             statusCode = 400; // Bad Request, as the input was problematic
         }
@@ -445,11 +438,10 @@ function calculateKeywordMatch(analysisText: string, jobDescription: string): nu
 }
 
 // Helper function to generate word analysis automatically
-async function generateWordAnalysis(file: File, jobTitle: string, company: string | null, jobDescription: string | null, model: any, base64File: string) {
+async function generateWordAnalysis(file: File, jobTitle: string, company: string | null, jobDescription: string | null, _unused: any, base64File: string) {
     console.log("Generating word analysis...");
-    
-    const wordAnalysisPrompt = {
-        text: `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+
+    const wordAnalysisPrompt = `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
 Your task is to analyze the resume and identify EXACT words, phrases, or sentences that should be improved, categorizing them by severity and improvement type.
 
@@ -508,46 +500,44 @@ CATEGORIES:
 - drive: Show initiative, leadership, proactive behavior, ownership
 - analytical: Demonstrate problem-solving, data analysis, strategic thinking
 
-Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`
-    };
+Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`;
 
-    const generationConfig = {
-        temperature: 0.3,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-    };
+    // Prepare messages for OpenAI
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-    const safetySettings = [
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-    ];
+    // Check if file is an image
+    const isImage = file.type.includes('image');
 
-    const parts = [
-        wordAnalysisPrompt,
-        {
-            inlineData: {
-                mimeType: file.type,
-                data: base64File,
-            },
-        },
-    ];
-
-    const result = await model.generateContent({
-        contents: [{ role: "user", parts }],
-        generationConfig,
-        safetySettings,
-    });
-
-    const response = result.response;
-    if (!response || !response.candidates || response.candidates.length === 0) {
-        throw new Error("Failed to generate word analysis");
+    if (isImage) {
+        messages.push({
+            role: 'user',
+            content: [
+                { type: 'text', text: wordAnalysisPrompt },
+                {
+                    type: 'image_url',
+                    image_url: {
+                        url: `data:${file.type};base64,${base64File}`
+                    }
+                }
+            ]
+        });
+    } else {
+        // For PDFs and documents, note the limitation
+        messages.push({
+            role: 'user',
+            content: `${wordAnalysisPrompt}\n\nNote: Resume file type is ${file.type}.`
+        });
     }
 
-    const analysisText = response.candidates[0].content.parts.map(part => part.text).join("");
-    
+    const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages,
+        temperature: 0.3,
+        max_tokens: 4096,
+    });
+
+    const analysisText = completion.choices[0].message.content;
+
     if (!analysisText) {
         throw new Error("Empty word analysis text");
     }

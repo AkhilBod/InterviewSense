@@ -30,25 +30,16 @@ const TECH_JOB_TITLES = [
   { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' },
   { id: 'other', title: 'Other', description: 'Enter your own job title' }
 ];
-import { Upload, FileText, AlertCircle, MessageSquare, User, LogOut, ChevronLeft, Download, Share2, RefreshCw, Printer, CheckCircle, Brain, Target } from "lucide-react";
-import Image from 'next/image';
-import { useSession, signOut } from "next-auth/react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Upload, FileText, AlertCircle, MessageSquare, ChevronLeft, RefreshCw, CheckCircle, Brain } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
 import HighlightablePDFViewer from '@/components/HighlightablePDFViewer';
 import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
-import { WordImprovementSuggestion, WordAnalysisData } from '@/types/resume';
+import { WordAnalysisData } from '@/types/resume';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface ResumeAnalysisData {
   jobTitle: string;
@@ -240,7 +231,7 @@ export default function ResumeCheckerPage() {
 
   if (!session) {
     return (
-      <div className="flex min-h-screen bg-zinc-900 text-white items-center justify-center">
+      <div className="flex min-h-screen bg-[#0a0f1e] text-white items-center justify-center">
         <p>Please log in to access the resume checker.</p>
       </div>
     );
@@ -248,71 +239,15 @@ export default function ResumeCheckerPage() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen bg-zinc-900 text-white overflow-hidden">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || 'User'} />
-                        <AvatarFallback className="bg-blue-500">
-                          {session.user?.name?.charAt(0) || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        {session.user?.name && (
-                          <p className="font-medium text-sm text-white">{session.user.name}</p>
-                        )}
-                        {session.user?.email && (
-                          <p className="w-[200px] truncate text-sm text-zinc-400">
-                            {session.user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
-                </Link>
-              )}
-            </nav>
-          </div>
-        </header>
-
-        <div className="pt-16 px-4 h-full overflow-y-auto">
+      <DashboardLayout>
+        <div className="px-4 py-8 h-screen overflow-y-auto">
           {!showResults ? (
             // Resume Checker Form - Centered with Progress
             <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
               <div className="w-full max-w-2xl">
                 {/* Header Section */}
                 <div className="text-center mb-6 lg:mb-8">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent mb-3">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
                     Optimize your resume for success
                   </h1>
                   <p className="text-zinc-400 text-sm sm:text-base">
@@ -320,15 +255,15 @@ export default function ResumeCheckerPage() {
                   </p>
                 </div>
 
-                <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-purple-900/20 border border-purple-500/20 backdrop-blur-sm shadow-2xl shadow-purple-500/10">
+                <Card className="bg-[#111827] border border-gray-800">
                   <CardContent className="p-6 sm:p-8 space-y-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                       {/* Job Title and Resume Upload Row */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Job Title Section - Takes 2/3 of the space */}
                         <div className="md:col-span-2 group">
-                          <label className="text-purple-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                          <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                             Job Title
                           </label>
                           <div className="relative">
@@ -342,7 +277,7 @@ export default function ResumeCheckerPage() {
                               }}
                               required
                             >
-                              <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10">
+                              <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
                                 <SelectValue placeholder="Select your target role..." className="text-zinc-400" />
                               </SelectTrigger>
                               <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
@@ -350,11 +285,11 @@ export default function ResumeCheckerPage() {
                                   <SelectItem 
                                     key={job.id} 
                                     value={job.title}
-                                    className="hover:bg-purple-500/10 focus:bg-purple-500/20 transition-colors"
+                                    className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
                                   >
                                     <div>
                                       <div className="font-medium text-white">{job.title}</div>
-                                      <div className="text-sm text-purple-300/70">{job.description}</div>
+                                      <div className="text-sm text-blue-300/70">{job.description}</div>
                                     </div>
                                   </SelectItem>
                                 ))}
@@ -368,20 +303,19 @@ export default function ResumeCheckerPage() {
                                   placeholder="Enter your job title..."
                                   value={customJobTitle}
                                   onChange={(e) => setCustomJobTitle(e.target.value)}
-                                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 text-white placeholder:text-zinc-400"
+                                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-zinc-400"
                                   required
                                 />
                               </div>
                             )}
                             
-                            <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                           </div>
                         </div>
 
                         {/* Resume Upload Section - Takes 1/3 of the space */}
                         <div className="md:col-span-1 group">
-                          <label className="text-purple-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                          <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                             Resume
                           </label>
                           <div className="w-full">
@@ -389,9 +323,9 @@ export default function ResumeCheckerPage() {
                               type="button"
                               variant="outline"
                               size="sm"
-                              className={`w-full flex items-center justify-center text-sm ${resume 
-                                ? "bg-gradient-to-r from-purple-600/30 to-purple-700/30 hover:from-purple-600/40 hover:to-purple-700/40 border-2 border-purple-400/70 hover:border-purple-300/90 text-purple-200 hover:text-purple-100 transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/35 h-12 px-4"
-                                : "bg-gradient-to-r from-purple-600/10 to-purple-700/10 hover:from-purple-600/20 hover:to-purple-700/20 border-2 border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 transition-all duration-300 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 h-12 px-4"
+                              className={`w-full flex items-center justify-center text-sm ${resume
+                                ? "bg-blue-500/20 border border-blue-500 text-white transition-all duration-150 h-12 px-4"
+                                : "bg-zinc-900 border border-gray-800 hover:border-blue-500 text-gray-400 transition-all duration-150 h-12 px-4"
                               }`}
                               onClick={() =>
                                 document.getElementById("resume-upload")?.click()
@@ -426,8 +360,8 @@ export default function ResumeCheckerPage() {
                       </div>
 
                       <div className="space-y-3 group">
-                        <label className="text-purple-300 text-sm font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                        <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                           Company (Optional)
                         </label>
                         <div className="relative">
@@ -435,15 +369,15 @@ export default function ResumeCheckerPage() {
                             placeholder="e.g., Google, Meta, Apple"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
-                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10 placeholder:text-zinc-500"
+                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  placeholder:text-zinc-500"
                           />
-                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                       </div>
 
                       <div className="space-y-3 group">
-                        <label className="text-purple-300 text-sm font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                        <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                           Job Description (Optional)
                         </label>
                         <div className="relative">
@@ -451,9 +385,9 @@ export default function ResumeCheckerPage() {
                             placeholder="Paste the job description here for more targeted analysis..."
                             value={jobDescription}
                             onChange={(e) => setJobDescription(e.target.value)}
-                            className="min-h-[120px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-purple-500/50 focus:border-purple-500 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-purple-500/10 placeholder:text-zinc-500"
+                            className="min-h-[120px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 transition-all duration-300  placeholder:text-zinc-500"
                           />
-                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
                       </div>
 
@@ -467,7 +401,7 @@ export default function ResumeCheckerPage() {
                       <div className="pt-4">
                         <Button
                           type="submit"
-                          className="w-full h-14 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 hover:from-purple-500 hover:via-purple-400 hover:to-purple-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-purple-400/20"
+                          className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
                           disabled={isLoading || !resume || !jobTitle}
                         >
                           <Brain className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
@@ -621,7 +555,7 @@ export default function ResumeCheckerPage() {
                       {/* Resume Stats */}
                       <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
                         <CardHeader className="p-8">
-                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Resume Analytics</CardTitle>
+                          <CardTitle className="text-2xl font-bold text-white">Resume Analytics</CardTitle>
                           <CardDescription className="text-slate-400 text-lg">
                             Comprehensive analysis of your resume performance
                           </CardDescription>
@@ -888,13 +822,13 @@ export default function ResumeCheckerPage() {
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Resume Analysis Loading Modal */}
-      <ResumeAnalysisLoadingModal 
-        isOpen={isLoading}
-        onClose={() => setIsLoading(false)}
-      />
+
+        {/* Resume Analysis Loading Modal */}
+        <ResumeAnalysisLoadingModal
+          isOpen={isLoading}
+          onClose={() => setIsLoading(false)}
+        />
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }

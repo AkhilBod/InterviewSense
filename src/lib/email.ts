@@ -332,7 +332,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
             }
             
             .hero {
-              background: linear-gradient(135deg, #1a2642, #0f172a);
+              background: #0f172a;
               border-radius: 8px;
               padding: 32px 24px;
               margin-bottom: 32px;

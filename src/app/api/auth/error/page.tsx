@@ -127,7 +127,6 @@ function ErrorContent() {
       </header>
 
       <div className="flex-1 py-12 flex items-center justify-center relative">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_50%)]"></div>
         <div className="container px-4 max-w-md relative z-10">
           <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
             <CardHeader className="space-y-2 pt-8">

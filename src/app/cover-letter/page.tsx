@@ -6,12 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Copy, Check, FileText } from "lucide-react";
-import Image from 'next/image';
 import jsPDF from 'jspdf'; // Import jsPDF
 import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { UserAccountDropdown } from '@/components/UserAccountDropdown';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface CoverLetter {
   id: string;
@@ -252,24 +250,12 @@ export default function CoverLetterPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-zinc-900 text-white px-4 py-10 flex items-center justify-center">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              <UserAccountDropdown />
-            </nav>
-          </div>
-        </header>
-
-        <div className="w-full max-w-2xl mx-auto mt-16">
-          {/* Header Section */}
-          <div className="text-center mb-6 lg:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent mb-3">
+      <DashboardLayout>
+        <div className="p-8">
+          <div className="w-full max-w-4xl mx-auto">
+            {/* Header Section */}
+            <div className="text-center mb-6 lg:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
               Craft your perfect cover letter
             </h1>
             <p className="text-zinc-400 text-sm sm:text-base">
@@ -277,11 +263,11 @@ export default function CoverLetterPage() {
             </p>
           </div>
 
-          <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-orange-900/20 border border-orange-500/20 backdrop-blur-sm shadow-2xl shadow-orange-500/10">
+          <Card className="bg-[#111827] border border-gray-800">
             <CardContent className="p-6 sm:p-8 space-y-6">
               {isLoading ? (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 border-4 border-orange-600/20 border-t-orange-600 rounded-full animate-spin mx-auto mb-6"></div>
+                <div className="text-center py-16 bg-[#0a0f1e]">
+                  <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
                   <h3 className="text-xl font-semibold text-white mb-3">{loadingStep}</h3>
                   <p className="text-zinc-400">Please wait while we craft your perfect cover letter...</p>
                 </div>
@@ -293,8 +279,8 @@ export default function CoverLetterPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {/* Company Name Section - Takes 2/3 of the space */}
                       <div className="md:col-span-2 group">
-                        <label className="text-orange-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                          <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                        <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                           Company Name
                         </label>
                         <div className="relative">
@@ -302,17 +288,16 @@ export default function CoverLetterPage() {
                             placeholder="e.g., Google, Meta, Apple"
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
-                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-orange-500/50 focus:border-orange-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-500/10 text-lg placeholder:text-zinc-500"
+                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-lg placeholder:text-zinc-500"
                             required
                           />
-                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        </div>
+                          </div>
                       </div>
 
                       {/* Resume Upload Section - Takes 1/3 of the space */}
                       <div className="md:col-span-1 group">
-                        <label className="text-orange-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                          <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                        <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                           Resume
                         </label>
                         <div className="w-full">
@@ -320,9 +305,9 @@ export default function CoverLetterPage() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className={`w-full flex items-center justify-center text-sm ${resumeName 
-                              ? "bg-gradient-to-r from-orange-600/30 to-orange-700/30 hover:from-orange-600/40 hover:to-orange-700/40 border-2 border-orange-400/70 hover:border-orange-300/90 text-orange-200 hover:text-orange-100 transition-all duration-300 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/35 h-12 px-4"
-                              : "bg-gradient-to-r from-orange-600/10 to-orange-700/10 hover:from-orange-600/20 hover:to-orange-700/20 border-2 border-orange-500/30 hover:border-orange-400/50 text-orange-300 hover:text-orange-200 transition-all duration-300 shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 h-12 px-4"
+                            className={`w-full flex items-center justify-center text-sm ${resumeName
+                              ? "bg-blue-500/20 border border-blue-500 text-white transition-all duration-150 h-12 px-4"
+                              : "bg-zinc-900 border border-gray-800 hover:border-blue-500 text-gray-400 transition-all duration-150 h-12 px-4"
                             }`}
                             onClick={() => document.getElementById("resume-upload")?.click()}
                           >
@@ -356,8 +341,8 @@ export default function CoverLetterPage() {
 
                     {/* Job Description Section */}
                     <div className="space-y-3 group">
-                      <label className="text-orange-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Job Description
                       </label>
                       <div className="relative">
@@ -365,10 +350,9 @@ export default function CoverLetterPage() {
                           placeholder="Paste the complete job description here for the most targeted cover letter..."
                           value={jobDescription}
                           onChange={(e) => setJobDescription(e.target.value)}
-                          className="min-h-[250px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-orange-500/50 focus:border-orange-500 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-orange-500/10 placeholder:text-zinc-500"
+                          className="min-h-[250px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 transition-all duration-300  placeholder:text-zinc-500"
                           required
                         />
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-orange-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
@@ -382,7 +366,7 @@ export default function CoverLetterPage() {
                     <div className="pt-4">
                       <Button
                         type="submit"
-                        className="w-full h-14 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 hover:from-orange-500 hover:via-orange-400 hover:to-orange-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-orange-400/20"
+                        className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
                         disabled={isLoading || !resume || !jobDescription || !companyName}
                       >
                         <FileText className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
@@ -550,8 +534,9 @@ export default function CoverLetterPage() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }

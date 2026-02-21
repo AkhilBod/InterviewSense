@@ -179,10 +179,9 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen text-white" style={{ background: 'linear-gradient(to bottom, #050d1a, #0a1628, #0d2044)' }}>
+      <div className="min-h-screen bg-black text-white">
         {/* Hero Section */}
         <section className="pt-24 pb-16 px-4 relative border-b" style={{ borderColor: 'rgba(29,100,255,0.15)' }}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(24,119,242,0.1),transparent_70%)]"></div>
           <div className="container mx-auto max-w-6xl relative z-10">
             {/* Back Button */}
             <Link
@@ -216,14 +215,17 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                 <div className="flex-1 pt-2">
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl md:text-4xl font-bold text-white" style={{
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                      fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
                       letterSpacing: '-0.02em'
                     }}>
                       {data.company.name}
                     </h1>
                     <BadgeCheck className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0" style={{ color: '#1877f2' }} />
                   </div>
-                  <p className="text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <p className="text-sm md:text-base" style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontFamily: 'DM Sans, -apple-system, sans-serif'
+                  }}>
                     {data.company.slug}.com
                   </p>
                 </div>
@@ -236,8 +238,13 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
         <section id="questions" className="py-16 px-4">
           <div className="container mx-auto max-w-7xl">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Interview Questions</h2>
-              <p className="text-lg max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <h2 className="text-4xl font-bold text-white mb-4" style={{
+                fontFamily: 'Syne, -apple-system, sans-serif'
+              }}>Interview Questions</h2>
+              <p className="text-lg max-w-2xl mx-auto" style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontFamily: 'DM Sans, -apple-system, sans-serif'
+              }}>
                 Practice with real questions asked in interviews. Click any card to reveal the answer.
               </p>
             </div>
@@ -247,7 +254,9 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
               <div>
                 <div className="flex items-center gap-3 mb-6">
                   <Code className="h-6 w-6" style={{ color: '#1877f2' }} />
-                  <h3 className="text-2xl font-bold text-white">Technical Questions</h3>
+                  <h3 className="text-2xl font-bold text-white" style={{
+                    fontFamily: 'Syne, -apple-system, sans-serif'
+                  }}>Technical Questions</h3>
                 </div>
                 <div className="space-y-6">
                   {questionsData.technical.length > 0 ? (
@@ -270,7 +279,9 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
               <div>
                 <div className="flex items-center gap-3 mb-6">
                   <Brain className="h-6 w-6" style={{ color: '#1877f2' }} />
-                  <h3 className="text-2xl font-bold text-white">Behavioral Questions</h3>
+                  <h3 className="text-2xl font-bold text-white" style={{
+                    fontFamily: 'Syne, -apple-system, sans-serif'
+                  }}>Behavioral Questions</h3>
                 </div>
                 <div className="space-y-6">
                   {questionsData.behavioral.length > 0 ? (
@@ -299,8 +310,13 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
           <section className="py-16 px-4">
             <div className="container mx-auto max-w-6xl">
               <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-white mb-4">Related Interview Prep</h2>
-                <p className="text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>Explore more interview questions and topics</p>
+                <h2 className="text-4xl font-bold text-white mb-4" style={{
+                  fontFamily: 'Syne, -apple-system, sans-serif'
+                }}>Related Interview Prep</h2>
+                <p className="text-lg" style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontFamily: 'DM Sans, -apple-system, sans-serif'
+                }}>Explore more interview questions and topics</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -310,8 +326,13 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                     border: '1px solid rgba(29,100,255,0.2)',
                     borderRadius: '16px'
                   }}>
-                    <h3 className="text-lg font-bold text-white mb-2">{page.title}</h3>
-                    <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{page.description}</p>
+                    <h3 className="text-lg font-bold text-white mb-2" style={{
+                      fontFamily: 'Syne, -apple-system, sans-serif'
+                    }}>{page.title}</h3>
+                    <p className="text-sm mb-4" style={{
+                      color: 'rgba(255,255,255,0.6)',
+                      fontFamily: 'DM Sans, -apple-system, sans-serif'
+                    }}>{page.description}</p>
                     <Button
                       asChild
                       size="sm"
@@ -319,7 +340,8 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                       style={{
                         background: 'rgba(24,119,242,0.15)',
                         color: '#1877f2',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        fontFamily: 'Syne, -apple-system, sans-serif'
                       }}
                     >
                       <Link href="/signup">
@@ -341,10 +363,15 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
               border: '1px solid rgba(29,100,255,0.2)',
               borderRadius: '16px'
             }}>
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-white mb-4" style={{
+                fontFamily: 'Syne, -apple-system, sans-serif'
+              }}>
                 Ready to Ace Your Interview?
               </h2>
-              <p className="text-xl mb-8" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <p className="text-xl mb-8" style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontFamily: 'DM Sans, -apple-system, sans-serif'
+              }}>
                 Join thousands of CS students landing internships at top tech companies.
               </p>
 
@@ -354,7 +381,8 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                 className="text-lg px-10 py-6 text-white font-semibold"
                 style={{
                   background: '#1877f2',
-                  borderRadius: '12px'
+                  borderRadius: '12px',
+                  fontFamily: 'Syne, -apple-system, sans-serif'
                 }}
               >
                 <Link href="/signup">
@@ -362,7 +390,10 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                 </Link>
               </Button>
 
-              <p className="text-sm mt-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <p className="text-sm mt-6" style={{
+                color: 'rgba(255,255,255,0.5)',
+                fontFamily: 'DM Sans, -apple-system, sans-serif'
+              }}>
                 No credit card required
               </p>
             </div>

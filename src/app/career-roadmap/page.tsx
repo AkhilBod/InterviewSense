@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,13 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Target, 
-  MapPin, 
-  Calendar, 
-  TrendingUp, 
-  LogOut,
-  User,
+import {
+  Target,
+  MapPin,
+  Calendar,
+  TrendingUp,
   Sparkles,
   Briefcase,
   GraduationCap,
@@ -28,10 +24,9 @@ import {
   ChevronDown,
   LayoutDashboard
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import CareerRoadmapLoadingModal from '@/components/CareerRoadmapLoadingModal';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 const TECH_JOB_TITLES = [
   { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
@@ -173,70 +168,14 @@ export default function CareerRoadmapPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
-                        <AvatarFallback className="bg-zinc-700 text-white">
-                          {session.user?.name?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        {session.user?.name && (
-                          <p className="font-medium text-sm text-white">{session.user.name}</p>
-                        )}
-                        {session.user?.email && (
-                          <p className="w-[200px] truncate text-sm text-zinc-400">
-                            {session.user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-zinc-300 hover:text-white">Log in</Button>
-                </Link>
-              )}
-            </nav>
-          </div>
-        </header>
-
-        <div className="pt-16 px-4 h-full overflow-y-auto">
+      <DashboardLayout>
+        <div className="px-4 h-full overflow-y-auto">
           {/* Career Roadmap Form - Centered */}
-          <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-8">
+          <div className="flex items-center justify-center min-h-screen py-8">
             <div className="w-full max-w-2xl">
               {/* Header Section */}
               <div className="text-center mb-8 lg:mb-12">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent mb-3">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
                   Build your personalized career roadmap
                 </h1>
                 <p className="text-zinc-400 text-sm sm:text-base">
@@ -244,13 +183,13 @@ export default function CareerRoadmapPage() {
                 </p>
               </div>
 
-              <Card className="bg-gradient-to-br from-zinc-800/80 via-zinc-800/50 to-amber-900/20 border border-amber-500/20 backdrop-blur-sm shadow-2xl shadow-amber-500/10">
+              <Card className="bg-[#111827] border border-gray-800">
                 <CardContent className="p-6 sm:p-8 space-y-6">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Current Role */}
                     <div className="space-y-3 group">
-                      <label className="text-amber-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Current Role
                       </label>
                       <div className="relative">
@@ -263,7 +202,7 @@ export default function CareerRoadmapPage() {
                             }
                           }}
                         >
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/10">
+                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
                             <SelectValue placeholder="Select your current role" />
                           </SelectTrigger>
                           <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-64 overflow-y-auto">
@@ -271,11 +210,11 @@ export default function CareerRoadmapPage() {
                               <SelectItem 
                                 key={job.id} 
                                 value={job.title} 
-                                className="text-left hover:bg-amber-500/10 focus:bg-amber-500/20 transition-colors"
+                                className="text-left hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
                               >
                                 <div className="flex flex-col items-start w-full">
                                   <div className="font-medium text-white">{job.title}</div>
-                                  <div className="text-sm text-amber-300/70 hidden sm:block">{job.description}</div>
+                                  <div className="text-sm text-blue-300/70 hidden sm:block">{job.description}</div>
                                 </div>
                               </SelectItem>
                             ))}
@@ -289,19 +228,18 @@ export default function CareerRoadmapPage() {
                               placeholder="Enter your current role..."
                               value={customCurrentRole}
                               onChange={(e) => setCustomCurrentRole(e.target.value)}
-                              className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 text-white placeholder:text-zinc-400"
+                              className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-zinc-400"
                               required
                             />
                           </div>
                         )}
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
                     {/* Experience Level */}
                     <div className="space-y-3 group">
-                      <label className="text-amber-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Your experience level
                       </label>
                       <div className="relative">
@@ -309,32 +247,31 @@ export default function CareerRoadmapPage() {
                           value={roadmapData.experienceLevel} 
                           onValueChange={(value) => setRoadmapData(prev => ({ ...prev, experienceLevel: value }))}
                         >
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/10">
+                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
                             <SelectValue placeholder="Select your experience level" />
                           </SelectTrigger>
                           <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="Intern" className="hover:bg-amber-500/10 focus:bg-amber-500/20">
+                            <SelectItem value="Intern" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
                               Intern
                             </SelectItem>
-                            <SelectItem value="Entry-level" className="hover:bg-amber-500/10 focus:bg-amber-500/20">
+                            <SelectItem value="Entry-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
                               Entry-level (0-2 years)
                             </SelectItem>
-                            <SelectItem value="Mid-level" className="hover:bg-amber-500/10 focus:bg-amber-500/20">
+                            <SelectItem value="Mid-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
                               Mid-level (2-5 years)
                             </SelectItem>
-                            <SelectItem value="Senior" className="hover:bg-amber-500/10 focus:bg-amber-500/20">
+                            <SelectItem value="Senior" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
                               Senior (5+ years)
                             </SelectItem>
                           </SelectContent>
                         </Select>
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
                     {/* Career Goal */}
                     <div className="space-y-3 group">
-                      <label className="text-amber-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Dream Role/Career Goal
                       </label>
                       <div className="relative">
@@ -343,22 +280,21 @@ export default function CareerRoadmapPage() {
                           placeholder="e.g., Senior Software Engineer, Tech Lead, CTO..."
                           value={roadmapData.careerGoal}
                           onChange={(e) => setRoadmapData(prev => ({ ...prev, careerGoal: e.target.value }))}
-                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/10 placeholder:text-zinc-500"
+                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  placeholder:text-zinc-500"
                           required
                         />
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
                     {/* Timeline */}
                     <div className="space-y-3 group">
-                      <label className="text-amber-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Timeline to Achieve Goal
                       </label>
                       <div className="relative">
                         <Select value={roadmapData.timeline} onValueChange={(value) => setRoadmapData(prev => ({ ...prev, timeline: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/10">
+                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
                             <SelectValue placeholder="When do you want to achieve this?" />
                           </SelectTrigger>
                           <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
@@ -369,14 +305,13 @@ export default function CareerRoadmapPage() {
                             <SelectItem value="5-years">Within 5 years</SelectItem>
                           </SelectContent>
                         </Select>
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
                     {/* Current Challenges */}
                     <div className="space-y-3 group">
-                      <label className="text-amber-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                         Current Challenges (Optional)
                       </label>
                       <div className="relative">
@@ -384,9 +319,8 @@ export default function CareerRoadmapPage() {
                           placeholder="What obstacles are you facing in your career journey?"
                           value={roadmapData.challenges}
                           onChange={(e) => setRoadmapData(prev => ({ ...prev, challenges: e.target.value }))}
-                          className="w-full px-3 py-3 min-h-[80px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-amber-500/50 focus:border-amber-500 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/10 placeholder:text-zinc-500 rounded-md text-white"
+                          className="w-full px-3 py-3 min-h-[80px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 transition-all duration-300  placeholder:text-zinc-500 rounded-md text-white"
                         />
-                        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                       </div>
                     </div>
 
@@ -400,7 +334,7 @@ export default function CareerRoadmapPage() {
                     <div className="pt-4">
                       <Button
                         type="submit"
-                        className="w-full h-14 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:via-amber-400 hover:to-amber-500 text-white rounded-2xl text-base sm:text-lg font-semibold shadow-2xl shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.02] active:scale-[0.98] border border-amber-400/20"
+                        className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
                         disabled={isLoading || !roadmapData.currentRole || !roadmapData.careerGoal}
                       >
                         <TrendingUp className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
@@ -419,13 +353,13 @@ export default function CareerRoadmapPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Loading Modal */}
-      <CareerRoadmapLoadingModal 
-        isOpen={isLoading}
-        onClose={() => {}} // Don't allow closing during analysis
-      />
+        {/* Loading Modal */}
+        <CareerRoadmapLoadingModal
+          isOpen={isLoading}
+          onClose={() => {}} // Don't allow closing during analysis
+        />
+      </DashboardLayout>
     </ProtectedRoute>
   );
 } 

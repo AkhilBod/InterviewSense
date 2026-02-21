@@ -78,70 +78,8 @@ export default function StarryBackground() {
     }
 
     const drawBackground = (w: number, h: number) => {
-      // ─── BASE: DeSo navy #000818 ───
-      ctx.fillStyle = "#000818"
-      ctx.fillRect(0, 0, w, h)
-
-      // ─── PRIMARY: Large diffuse blue sweep across top-right ───
-      // This is the dominant visual — a huge soft wash that covers
-      // nearly the entire upper 60% of the screen, brightest at top-right
-      const g1 = ctx.createRadialGradient(
-        w * 0.75, h * 0.0, 0,
-        w * 0.75, h * 0.0, Math.max(w, h) * 0.85
-      )
-      g1.addColorStop(0,    "rgba(14, 80, 180, 0.35)")   // rich blue core
-      g1.addColorStop(0.15, "rgba(10, 60, 150, 0.28)")   // slightly darker
-      g1.addColorStop(0.35, "rgba(5, 40, 120, 0.18)")    // fading
-      g1.addColorStop(0.6,  "rgba(2, 25, 80, 0.08)")     // subtle
-      g1.addColorStop(1,    "rgba(0, 8, 24, 0)")          // fade to base
-      ctx.fillStyle = g1
-      ctx.fillRect(0, 0, w, h)
-
-      // ─── SECONDARY: Brighter blue accent at top-right corner ───
-      // Adds that concentrated blue "hot spot" visible in DeSo's top-right
-      const g2 = ctx.createRadialGradient(
-        w * 0.85, h * -0.05, 0,
-        w * 0.85, h * -0.05, w * 0.45
-      )
-      g2.addColorStop(0,    "rgba(46, 157, 255, 0.22)")  // #2e9dff bright
-      g2.addColorStop(0.2,  "rgba(1, 87, 255, 0.15)")    // #0157ff
-      g2.addColorStop(0.5,  "rgba(2, 176, 255, 0.06)")   // #02b0ff cyan edge
-      g2.addColorStop(1,    "rgba(0, 8, 24, 0)")
-      ctx.fillStyle = g2
-      ctx.fillRect(0, 0, w, h)
-
-      // ─── TERTIARY: Wide horizontal blue band across upper quarter ───
-      // Creates the smooth horizon-like transition visible in DeSo
-      const g3 = ctx.createLinearGradient(0, 0, 0, h * 0.7)
-      g3.addColorStop(0,    "rgba(8, 50, 130, 0.20)")
-      g3.addColorStop(0.25, "rgba(5, 35, 100, 0.12)")
-      g3.addColorStop(0.5,  "rgba(2, 20, 60, 0.05)")
-      g3.addColorStop(1,    "rgba(0, 8, 24, 0)")
-      ctx.fillStyle = g3
-      ctx.fillRect(0, 0, w, h)
-
-      // ─── QUATERNARY: Soft left-side blue glow ───
-      // Balances the composition — DeSo has subtle blue on both sides
-      const g4 = ctx.createRadialGradient(
-        w * 0.15, h * 0.15, 0,
-        w * 0.15, h * 0.15, w * 0.55
-      )
-      g4.addColorStop(0,    "rgba(5, 50, 140, 0.12)")
-      g4.addColorStop(0.3,  "rgba(3, 30, 90, 0.06)")
-      g4.addColorStop(1,    "rgba(0, 8, 24, 0)")
-      ctx.fillStyle = g4
-      ctx.fillRect(0, 0, w, h)
-
-      // ─── SUBTLE VIGNETTE: Darken edges/bottom ───
-      // DeSo's bottom is very dark — the glow fades cleanly to navy
-      const vignette = ctx.createRadialGradient(
-        w * 0.5, h * 0.35, w * 0.15,
-        w * 0.5, h * 0.35, Math.max(w, h) * 0.85
-      )
-      vignette.addColorStop(0,   "rgba(0, 8, 24, 0)")
-      vignette.addColorStop(0.6, "rgba(0, 8, 24, 0)")
-      vignette.addColorStop(1,   "rgba(0, 6, 18, 0.3)")
-      ctx.fillStyle = vignette
+      // Solid navy background - no gradients
+      ctx.fillStyle = "#0a0e1a"
       ctx.fillRect(0, 0, w, h)
     }
 

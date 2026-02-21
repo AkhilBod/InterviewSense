@@ -1174,11 +1174,11 @@ function InterviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">{loadingMessage}</p>
-          <p className="mt-2 text-sm text-zinc-500">This may take a few moments...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">{loadingMessage}</p>
+          <p className="mt-2 text-sm text-gray-500">This may take a few moments...</p>
         </div>
       </div>
     );
@@ -1786,13 +1786,13 @@ function InterviewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-zinc-900 flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href={session ? "/dashboard" : "/"} className="flex items-center gap-2">
               <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
+              <span className="font-bold text-xl text-black">InterviewSense</span>
             </Link>
             <UserAccountDropdown />
           </div>
@@ -1801,7 +1801,7 @@ function InterviewPage() {
         {/* Safari Compatibility Notice */}
         {isSafari && (
           <div className="fixed top-16 left-4 right-4 z-40 max-w-4xl mx-auto">
-            <div className="bg-blue-600/90 border border-blue-500/50 rounded-lg p-3 text-center text-white text-sm backdrop-blur-sm">
+            <div className="bg-primary border border-primary rounded-lg p-3 text-center text-white text-sm">
               <span className="font-medium">🍎 Safari Detected:</span> Using optimized settings for best compatibility. 
               If you experience issues, try Chrome or Firefox.
             </div>
@@ -1893,7 +1893,7 @@ function InterviewPage() {
                 </div>
 
                 {/* Phase Status */}
-                <div className="text-slate-400 text-sm md:text-base text-center">
+                <div className="text-gray-600 text-sm md:text-base text-center">
                   {interviewPhase === 'speaking' && (
                     <div className="flex items-center justify-center gap-2">
                       {elevenLabsStatus === 'generating' && (
@@ -1927,13 +1927,13 @@ function InterviewPage() {
               {/* Right Column: Question Content and Controls */}
               <div className="flex-1 w-full max-w-2xl md:max-w-none">
                 {/* Question Counter */}
-                <div className="text-xs text-slate-500 mb-3 text-center md:text-left">
+                <div className="text-xs text-gray-500 mb-3 text-center md:text-left">
                   Question {currentQuestionIndex + 1} of {visibleQuestions.length}
                 </div>
 
                 {/* Question Display */}
-                <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 mb-3">
-                  <p className="text-white text-xs sm:text-sm leading-relaxed text-center md:text-left">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 mb-3">
+                  <p className="text-black text-xs sm:text-sm leading-relaxed text-center md:text-left">
                     {/* Show typewriter text when ElevenLabs is playing, or full question otherwise */}
                     {elevenLabsStatus === 'playing' && isTypewriting ? typewriterText : 
                      (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
@@ -1951,7 +1951,7 @@ function InterviewPage() {
                           setInterviewPhase('speaking');
                           speakQuestion(currentQuestion.question);
                         }}
-                        className="text-slate-400 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
+                        className="text-gray-600 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
                       >
                         <RefreshCw className="h-2.5 w-2.5 mr-1" />
                         Replay Question
@@ -1963,10 +1963,8 @@ function InterviewPage() {
                 {/* Enhanced waveform visualization when recording */}
                 {interviewPhase === 'recording' && (
                   <div className="mb-3">
-                    <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3">
-                      <div className="flex items-end justify-center space-x-1 h-16 bg-gradient-to-b from-zinc-900/30 to-zinc-900/70 rounded-lg p-3 relative overflow-hidden">
-                        {/* Background grid effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent"></div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-end justify-center space-x-1 h-16 bg-gray-100 rounded-lg p-3 relative overflow-hidden">
                         
                         {/* Waveform bars */}
                         {audioLevels.map((level, i) => (
@@ -1976,9 +1974,9 @@ function InterviewPage() {
                             style={{
                               width: '3px',
                               height: `${Math.max(3, level * 0.9)}px`,
-                              background: level > 25 
-                                ? `linear-gradient(to top, rgb(59 130 246), rgb(147 197 253), rgb(191 219 254))`
-                                : `linear-gradient(to top, rgb(59 130 246 / 0.6), rgb(147 197 253 / 0.4))`,
+                              background: level > 25
+                                ? `rgb(59 130 246)`
+                                : `rgb(59 130 246 / 0.6)`,
                               boxShadow: level > 30 
                                 ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level /100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
                                 : level > 15 
@@ -2009,7 +2007,7 @@ function InterviewPage() {
                           <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                           <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping"></div>
                         </div>
-                        <p className="text-zinc-300 text-xs font-medium">Recording your response...</p>
+                        <p className="text-gray-700 text-xs font-medium">Recording your response...</p>
                         <div className="flex space-x-1">
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
@@ -2023,9 +2021,9 @@ function InterviewPage() {
                 {/* Answer Display (when available) */}
                 {answer && interviewPhase === 'feedback' && (
                   <div className="mb-3">
-                    <div className="bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-sm rounded-lg p-3">
-                      <div className="text-xs text-zinc-400 mb-1">Your Response:</div>
-                      <p className="text-zinc-300 text-xs leading-relaxed">{answer}</p>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      <div className="text-xs text-gray-600 mb-1">Your Response:</div>
+                      <p className="text-gray-900 text-xs leading-relaxed">{answer}</p>
                     </div>
                   </div>
                 )}
@@ -2113,15 +2111,15 @@ function InterviewPage() {
           <>
             {/* Desktop Popup (md and up) */}
             <div className="hidden md:block fixed inset-y-0 right-0 w-1/2 lg:w-2/5 xl:w-1/3 z-50">
-              <div className="h-full flex flex-col bg-zinc-900/95 backdrop-blur-md border-l border-zinc-800">
+              <div className="h-full flex flex-col bg-white border-l border-gray-200">
                 {                /* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-                  <h3 className="text-lg font-semibold text-white">Interview Feedback</h3>
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-black">Interview Feedback</h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setFeedbackVisible(false)}
-                    className="text-slate-400 hover:text-white hover:bg-zinc-800 rounded-full p-1"
+                    className="text-gray-600 hover:text-black hover:bg-gray-100 rounded-full p-1"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2140,9 +2138,9 @@ function InterviewPage() {
             </div>
 
             {/* Mobile Full Width (sm and below) */}
-            <div className="md:hidden border-t border-zinc-800 p-4">
+            <div className="md:hidden border-t border-gray-200 p-4">
               <div className="max-w-4xl mx-auto">
-                <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm text-white rounded-lg">
+                <Card className="bg-white border border-gray-200 text-black rounded-lg">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">Interview Feedback</CardTitle>
@@ -2150,7 +2148,7 @@ function InterviewPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setFeedbackVisible(false)}
-                        className="text-slate-400 hover:text-white hover:bg-zinc-800 rounded-full p-1"
+                        className="text-gray-600 hover:text-black hover:bg-gray-100 rounded-full p-1"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2256,10 +2254,10 @@ function InterviewPage() {
 export default function InterviewPageWithSuspense() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-zinc-400">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     }>

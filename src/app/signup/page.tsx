@@ -277,31 +277,15 @@ function SignupPage() {
         .aurora-bg {
           position: absolute;
           inset: 0;
-          background: #0c0c10;
+          background: radial-gradient(ellipse 80% 50% at 50% -20%,
+            rgba(1, 87, 255, 0.15),
+            transparent 50%),
+          radial-gradient(ellipse 60% 80% at 100% 50%,
+            rgba(46, 157, 255, 0.12),
+            transparent 50%),
+          #0c0c10;
         }
 
-        .aurora-bg::before {
-          content: '';
-          position: absolute;
-          top: -10%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 100%;
-          height: 80%;
-          background: linear-gradient(180deg, rgba(59, 130, 246, 0.8) 0%, rgba(59, 130, 246, 0.5) 40%, rgba(96, 165, 250, 0.2) 70%, transparent 100%);
-          filter: blur(80px);
-        }
-
-        .aurora-bg::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 20%;
-          width: 60%;
-          height: 50%;
-          background: radial-gradient(ellipse at top, rgba(96, 165, 250, 0.4) 0%, rgba(59, 130, 246, 0.2) 40%, transparent 70%);
-          filter: blur(60px);
-        }
 
         .grain-texture {
           position: absolute;
@@ -738,7 +722,7 @@ function SignupPage() {
                 style={{
                   width: '100%',
                   height: '44px',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                  background: '#3B82F6',
                   border: 'none',
                   borderRadius: '9px',
                   color: 'white',
