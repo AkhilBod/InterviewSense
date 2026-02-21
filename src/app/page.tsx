@@ -1073,7 +1073,7 @@ export default function Home() {
               {/* Testimonial Card 1 - Databricks Orange */}
               <div className="bg-[#FF6B35] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[450px]">
                 <p className="text-2xl lg:text-3xl font-normal text-black leading-relaxed mb-12">
-                  "Really cool to be able to practice everuthing in one platform."
+                  "It’s amazing to have everything I need to practice in one place. It makes the whole experience smooth, convenient, and actually enjoyable.."
                 </p>
                 <div className="text-black text-sm">
                   <span className="font-medium">Alex R</span>
@@ -1085,7 +1085,7 @@ export default function Home() {
               {/* Testimonial Card 2 - Stripe Purple */}
               <div className="bg-[#635BFF] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[400px]">
                 <p className="text-2xl lg:text-3xl font-normal text-white leading-relaxed mb-12">
-                  "Was getting zero Interviews, now my total comp is two twenty thousand."
+                  "I was getting zero interviews before. Now my total compensation is $220,000."
                 </p>
                 <div className="text-white text-sm">
                   <span className="font-medium">Amir K</span>
