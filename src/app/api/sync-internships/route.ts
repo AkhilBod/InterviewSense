@@ -6,15 +6,12 @@ import { NextRequest } from "next/server";
 /**
  * Autonomous Internship Sync — Vercel Cron
  *
- * Runs daily. Fetches the SimplifyJobs README, parses every open listing,
- * writes each one as a JSON article into generated-content/articles/ (the
- * same directory your existing /opportunities and /opportunities/[slug]
- * pages already read from), prunes stale files, appends new slugs to the
- * internship sitemap, and revalidates affected pages.
- *
- * Nothing in the existing listing or slug pages needs to change — they
- * continue to read from generated-content/articles/ as before, and the
- * new files follow the exact same schema.
+ * Since Vercel production filesystem is read-only, this approach:
+ * 1. Fetches and parses SimplifyJobs data
+ * 2. Compares with existing articles to detect new/stale listings
+ * 3. If changes detected, triggers a Vercel deployment via webhook
+ * 4. The deployment rebuilds static pages with fresh data
+ * 5. Returns summary of what would be synced
  */
 
 const ARTICLES_DIR = path.join(process.cwd(), "generated-content", "articles");
@@ -50,59 +47,76 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // ── 3. Ensure directories exist ──────────────────────────────
-    for (const dir of [ARTICLES_DIR, TRACKER_DIR]) {
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    // ── 3. Check existing articles for comparison ────────────────
+    let existingSlugs = new Set<string>();
+    try {
+      if (fs.existsSync(ARTICLES_DIR)) {
+        const existingFiles = fs.readdirSync(ARTICLES_DIR).filter(f => f.endsWith('.json'));
+        existingSlugs = new Set(existingFiles.map(f => f.replace('.json', '')));
+      }
+    } catch (error) {
+      // In production, we can't read the filesystem, so we'll assume all are new
+      console.log('Cannot read existing articles (production mode)');
     }
 
-    // ── 4. Write article JSON files (same schema as existing) ────
-    const now = new Date().toISOString();
-    const newSlugs: string[] = [];
-    const currentSlugs = new Set<string>();
+    // ── 4. Determine what's new vs existing ──────────────────────
+    const currentSlugs = new Set(rows.map(r => r.slug));
+    const newSlugs = rows.filter(r => !existingSlugs.has(r.slug)).map(r => r.slug);
+    const deletedSlugs = Array.from(existingSlugs).filter(slug => !currentSlugs.has(slug));
 
-    for (const row of rows) {
-      currentSlugs.add(row.slug);
-      const articlePath = path.join(ARTICLES_DIR, `${row.slug}.json`);
-      const trackerPath = path.join(TRACKER_DIR, `${row.slug}.json`);
-      const isNew = !fs.existsSync(articlePath);
-
-      // Build article in the EXACT format the existing [slug]/page.tsx reads
-      const article = buildArticleJson(row, now);
-      fs.writeFileSync(articlePath, JSON.stringify(article, null, 2));
-
-      // Also write a lightweight tracker file (for pruning by mtime)
-      fs.writeFileSync(
-        trackerPath,
-        JSON.stringify({ slug: row.slug, synced_at: now }, null, 2)
-      );
-
-      if (isNew) newSlugs.push(row.slug);
-    }
-
-    // ── 5. Prune stale tracker + article files (>30 days) ────────
-    const cutoff = Date.now() - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
-    const trackerFiles = fs
-      .readdirSync(TRACKER_DIR)
-      .filter((f) => f.endsWith(".json"));
-    const deletedSlugs: string[] = [];
-
-    for (const file of trackerFiles) {
-      const slug = file.replace(".json", "");
-      const tp = path.join(TRACKER_DIR, file);
-      const { mtimeMs } = fs.statSync(tp);
-
-      // Delete if stale AND not in the current parse (still active = keep)
-      if (mtimeMs < cutoff && !currentSlugs.has(slug)) {
-        fs.unlinkSync(tp);
-        const ap = path.join(ARTICLES_DIR, file);
-        if (fs.existsSync(ap)) fs.unlinkSync(ap);
-        deletedSlugs.push(slug);
+    // ── 5. In production, trigger rebuild if changes detected ────
+    const hasChanges = newSlugs.length > 0 || deletedSlugs.length > 0;
+    
+    if (hasChanges && process.env.VERCEL_ENV === 'production') {
+      // Trigger a new deployment to rebuild static pages with fresh data
+      if (process.env.VERCEL_DEPLOY_HOOK) {
+        try {
+          await fetch(process.env.VERCEL_DEPLOY_HOOK, { method: 'POST' });
+        } catch (error) {
+          console.error('Failed to trigger rebuild:', error);
+        }
       }
     }
 
-    // ── 6. Append new slugs to sitemap-internships.xml ───────────
-    if (newSlugs.length > 0) {
-      const today = now.split("T")[0];
+    // ── 6. In development, write files directly ──────────────────
+    if (process.env.NODE_ENV === 'development') {
+      // Ensure directories exist
+      for (const dir of [ARTICLES_DIR, TRACKER_DIR]) {
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      }
+
+      const now = new Date().toISOString();
+      
+      // Write article files
+      for (const row of rows) {
+        const articlePath = path.join(ARTICLES_DIR, `${row.slug}.json`);
+        const trackerPath = path.join(TRACKER_DIR, `${row.slug}.json`);
+
+        const article = buildArticleJson(row, now);
+        fs.writeFileSync(articlePath, JSON.stringify(article, null, 2));
+        fs.writeFileSync(trackerPath, JSON.stringify({ slug: row.slug, synced_at: now }, null, 2));
+      }
+
+      // Prune stale files
+      const cutoff = Date.now() - MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+      const trackerFiles = fs.readdirSync(TRACKER_DIR).filter(f => f.endsWith('.json'));
+      
+      for (const file of trackerFiles) {
+        const slug = file.replace('.json', '');
+        const tp = path.join(TRACKER_DIR, file);
+        const { mtimeMs } = fs.statSync(tp);
+
+        if (mtimeMs < cutoff && !currentSlugs.has(slug)) {
+          fs.unlinkSync(tp);
+          const ap = path.join(ARTICLES_DIR, file);
+          if (fs.existsSync(ap)) fs.unlinkSync(ap);
+        }
+      }
+    }
+
+    // ── 6. Update sitemap (development only) ─────────────────────
+    if (process.env.NODE_ENV === 'development' && newSlugs.length > 0) {
+      const today = new Date().toISOString().split("T")[0];
       const newEntries = newSlugs
         .map(
           (slug) =>
@@ -131,10 +145,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // ── 7. Revalidate existing pages ─────────────────────────────
-    revalidatePath("/opportunities");
-    revalidatePath("/opportunities/[slug]", "page");
-    revalidatePath("/internship-opportunities");
+    // ── 7. Revalidate pages (both dev and prod) ──────────────────
+    try {
+      revalidatePath("/opportunities");
+      revalidatePath("/opportunities/[slug]", "page");
+      revalidatePath("/internship-opportunities");
+    } catch (error) {
+      console.error('Revalidation error:', error);
+    }
 
     return Response.json({
       synced: rows.length,
