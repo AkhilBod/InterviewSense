@@ -360,56 +360,8 @@ export default function CareerRoadmapResultsPage() {
 
   return (
     <ProtectedRoute>
+      <DashboardLayout>
       <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
-        {/* Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            <nav className="flex items-center gap-4">
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
-                        <AvatarFallback className="bg-zinc-700 text-white">
-                          {session.user?.name?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
-                        {session.user?.name && (
-                          <p className="font-medium text-sm text-white">{session.user.name}</p>
-                        )}
-                        {session.user?.email && (
-                          <p className="w-[200px] truncate text-sm text-zinc-400">
-                            {session.user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/career-roadmap" className="cursor-pointer text-white hover:text-white hover:bg-zinc-800">
-                        New Roadmap
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : null}
-            </nav>
-          </div>
-        </header>
 
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Header Section */}
@@ -895,6 +847,7 @@ export default function CareerRoadmapResultsPage() {
           </div>
         </div>
       </div>
+      </DashboardLayout>
     </ProtectedRoute>
   )
 } 

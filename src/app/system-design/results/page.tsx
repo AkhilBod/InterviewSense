@@ -122,12 +122,6 @@ export default function SystemDesignTestPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Audio visualization state
-  const [audioLevels, setAudioLevels] = useState<number[]>(new Array(20).fill(4));
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-
   useEffect(() => {
     const data = sessionStorage.getItem('systemDesignTest');
     if (data) {
@@ -401,35 +395,33 @@ export default function SystemDesignTestPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="flex flex-col min-h-screen bg-gray-50">
-          {/* Timer and Controls */}
-          <div className="bg-white border-b p-4 mb-6">
-            <div className="flex items-center justify-center gap-4">
-              <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
-                <Clock className="h-4 w-4 text-red-500" />
-                <span className={`font-mono ${timeRemaining < 300 ? 'text-red-500' : 'text-gray-900'}`}>
-                  {formatTime(timeRemaining)}
-                </span>
-                <Button
-                  onClick={() => setIsTimerRunning(!isTimerRunning)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                >
-                  {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-                </Button>
-              </div>
-            </div>
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
+        {/* Timer and Controls */}
+        <div className="border-b border-zinc-800/50 px-4 py-2 flex items-center justify-between bg-zinc-900/80">
+          <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-lg">
+            <Clock className="h-4 w-4 text-red-400" />
+            <span className={`font-mono ${timeRemaining < 300 ? 'text-red-400' : 'text-white'}`}>
+              {formatTime(timeRemaining)}
+            </span>
+            <Button
+              onClick={() => setIsTimerRunning(!isTimerRunning)}
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+            >
+              {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+            </Button>
           </div>
+        </div>
 
-          <div className="flex-1 flex px-6">
-            {/* Left Sidebar - Problem & Guidance */}
-            <div className="w-80 border-r border-gray-200 bg-white p-4 overflow-y-auto mr-6 rounded-lg shadow-sm">
-              <div className="space-y-4">
-                {/* Problem Overview */}
-                <Card className="bg-white border-gray-200">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-red-600 flex items-center gap-2">
+        <div className="flex-1 flex">
+          {/* Left Sidebar - Problem & Guidance */}
+          <div className="w-80 border-r border-zinc-800 bg-zinc-900/50 p-4 overflow-y-auto">
+            <div className="space-y-4">
+              {/* Problem Overview */}
+              <Card className="bg-zinc-800/50 border-red-500/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-red-300 flex items-center gap-2">
                     <Target className="h-4 w-4" />
                     {testData.problem.title}
                   </CardTitle>
@@ -739,6 +731,7 @@ export default function SystemDesignTestPage() {
             </div>
           </div>
         </div>
+      </div>
       </DashboardLayout>
     </ProtectedRoute>
   );

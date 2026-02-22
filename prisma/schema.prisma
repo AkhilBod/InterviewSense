@@ -46,9 +46,10 @@ model User {
   dailyCreditLimit    Int                  @default(15)
   dailyCredits        Int                  @default(15)
   lastCreditReset     DateTime             @default(now())
-  stripeCustomerId    String?              @unique
-  accounts            Account[]
-  featureUsage        FeatureUsage[]
+  stripeCustomerId        String?              @unique
+  questionnaireCompleted  Boolean              @default(false)
+  accounts                Account[]
+  featureUsage            FeatureUsage[]
   passwordResetTokens PasswordResetToken[]
   practiceSessions    PracticeSession[]
   savedQuestions      SavedQuestion[]      @relation("SavedQuestions")

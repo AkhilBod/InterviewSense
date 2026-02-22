@@ -56,13 +56,16 @@ const nextConfig = {
         "pdfjs-dist": false,
       };
     }
-    
     // Handle PDF.js worker
     config.resolve.alias = {
       ...config.resolve.alias,
       canvas: false,
     };
-
+    // Add loader for .glb and .gltf files
+    config.module.rules.push({
+      test: /\.(glb|gltf)$/,
+      type: 'asset/resource',
+    });
     return config;
   },
   // Add headers for better caching

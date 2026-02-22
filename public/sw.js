@@ -38,6 +38,10 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache when possible
 self.addEventListener('fetch', (event) => {
+  // Skip logo proxy requests
+  if (event.request.url.includes('/api/logo-proxy')) {
+    return;
+  }
   // Only handle GET requests
   if (event.request.method !== 'GET') {
     return;

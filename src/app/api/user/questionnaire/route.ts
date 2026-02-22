@@ -15,38 +15,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { role, targets, weakest, urgency, goals } = body;
+    const { goal, interviewType, experience, timeline, weakestArea } = body;
 
-    if (!role || !targets || !weakest || !urgency || !goals) {
+    if (!goal || !interviewType || !experience || !timeline || !weakestArea) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Create questionnaire record (use any to bypass type system lag)
-    const questionnaire = await (prisma as any).questionnaire.create({
-      data: {
-        userId: session.user.id,
-        role,
-        targets: targets as string[],
-        weakest,
-        urgency,
-        goals: goals as string[],
-        completedAt: new Date()
-      }
-    });
-
-    // Update user to mark questionnaire as completed
+    // Mark questionnaire as completed on the user record
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { questionnaireCompleted: true } as any
+      data: { questionnaireCompleted: true },
     });
 
-    return NextResponse.json({
-      success: true,
-      questionnaire
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error saving questionnaire:', error);
     return NextResponse.json(

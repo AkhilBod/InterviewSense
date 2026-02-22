@@ -25,7 +25,7 @@ export async function GET() {
       );
     }
 
-    // Access questionnaireCompleted field (type system may not recognize it yet)
+    // Access questionnaireCompleted field
     const questionnaireCompleted = (user as any).questionnaireCompleted || false;
 
     return NextResponse.json({
