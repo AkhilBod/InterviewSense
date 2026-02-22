@@ -10,6 +10,11 @@ interface PageProps {
   }>;
 }
 
+// Allow on-demand ISR — new slugs from the cron sync are rendered at request
+// time and then cached, without needing a full rebuild.
+export const dynamicParams = true
+export const revalidate = 3600 // re-check at most once per hour
+
 // Generate static params for build time generation
 export async function generateStaticParams() {
   try {

@@ -31,5 +31,6 @@ Disallow: /portfolio-review/
 Disallow: /cover-letter/
 
 # Sitemap location
-Sitemap: https://interviewsense.org/sitemap.xml
+Sitemap: https://www.interviewsense.org/sitemap.xml
+Sitemap: https://www.interviewsense.org/sitemap-internships.xml
 

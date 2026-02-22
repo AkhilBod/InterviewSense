@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { ContentManager } from '@/lib/content-manager';
 import { join } from 'path';
 
+// Revalidate every hour so newly synced listings appear without a rebuild
+export const revalidate = 3600;
+
 /**
  * Internship Opportunities Directory Page
  * Lists all available internship articles organized by category

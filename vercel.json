@@ -2,6 +2,12 @@
   "framework": "nextjs",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/sync-internships",
+      "schedule": "0 8 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

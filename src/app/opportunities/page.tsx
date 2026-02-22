@@ -3,6 +3,9 @@ import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
 
+// Revalidate every hour so newly synced listings appear without a rebuild
+export const revalidate = 3600
+
 export const metadata: Metadata = {
   title: 'Interview Opportunities | InterviewSense',
   description: 'Browse through hundreds of tech internship interview questions and practice opportunities from top companies.',

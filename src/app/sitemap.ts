@@ -55,9 +55,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/internship-opportunities`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
   ]
 
-  // Dynamic opportunity pages
+  // Dynamic opportunity pages from generated-content/articles/
   let opportunityPages: MetadataRoute.Sitemap = []
   
   try {
