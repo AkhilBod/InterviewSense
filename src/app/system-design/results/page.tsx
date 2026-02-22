@@ -41,6 +41,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { DashboardLayout } from '@/components/DashboardLayout';
 import { toast } from "@/components/ui/use-toast";
 import { testMicrophone } from '@/lib/microphone';
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
@@ -399,20 +400,14 @@ export default function SystemDesignTestPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            
-            {/* Timer and Controls */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-lg">
-                <Clock className="h-4 w-4 text-red-400" />
-                <span className={`font-mono ${timeRemaining < 300 ? 'text-red-400' : 'text-white'}`}>
+      <DashboardLayout>
+        <div className="flex flex-col min-h-screen bg-gray-50">
+          {/* Timer and Controls */}
+          <div className="bg-white border-b p-4 mb-6">
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
+                <Clock className="h-4 w-4 text-red-500" />
+                <span className={`font-mono ${timeRemaining < 300 ? 'text-red-500' : 'text-gray-900'}`}>
                   {formatTime(timeRemaining)}
                 </span>
                 <Button
@@ -424,49 +419,17 @@ export default function SystemDesignTestPage() {
                   {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
                 </Button>
               </div>
-              
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
-                        <AvatarFallback className="bg-zinc-700 text-white">
-                          {session.user?.name?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-zinc-800 border-zinc-700" align="end">
-                    <DropdownMenuItem
-                      onClick={() => router.push('/system-design')}
-                      className="text-yellow-400 focus:text-yellow-400 focus:bg-yellow-950/50 cursor-pointer"
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Exit Test
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-400 focus:text-red-400 focus:bg-red-950/50 cursor-pointer"
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : null}
             </div>
           </div>
-        </header>
 
-        <div className="pt-16 flex-1 flex">
-          {/* Left Sidebar - Problem & Guidance */}
-          <div className="w-80 border-r border-zinc-800 bg-zinc-900/50 p-4 overflow-y-auto">
-            <div className="space-y-4">
-              {/* Problem Overview */}
-              <Card className="bg-zinc-800/50 border-red-500/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-red-300 flex items-center gap-2">
+          <div className="flex-1 flex px-6">
+            {/* Left Sidebar - Problem & Guidance */}
+            <div className="w-80 border-r border-gray-200 bg-white p-4 overflow-y-auto mr-6 rounded-lg shadow-sm">
+              <div className="space-y-4">
+                {/* Problem Overview */}
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-red-600 flex items-center gap-2">
                     <Target className="h-4 w-4" />
                     {testData.problem.title}
                   </CardTitle>
@@ -776,7 +739,7 @@ export default function SystemDesignTestPage() {
             </div>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 } 

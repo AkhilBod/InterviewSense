@@ -12,6 +12,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { UserAccountDropdown } from '@/components/UserAccountDropdown';
+import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface Question {
   id: number;
@@ -122,29 +123,20 @@ function BehavioralResults() {
 
   return (
     <ProtectedRoute>
-      <div className="h-screen bg-zinc-900 text-white overflow-hidden">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-[#000818]/80">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-                <span className="font-bold text-xl text-white">InterviewSense</span>
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="sm" asChild className="text-zinc-300 hover:text-white">
+              <Link href="/interview/behavioral" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Behavioral Interview
               </Link>
-            </div>
-            <UserAccountDropdown />
+            </Button>
           </div>
-        </header>
 
-        <div className="pt-20 px-4 h-full overflow-y-auto">
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-9 gap-8 px-4 max-w-[1900px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-9 gap-8">
             {/* Left Column - Results Analysis (55% on desktop) */}
             <div className="lg:col-span-5 space-y-6 order-2 lg:order-1">
               {/* Header */}
@@ -375,7 +367,7 @@ function BehavioralResults() {
             </div>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }

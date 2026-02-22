@@ -21,6 +21,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import ProtectedRoute from "@/components/ProtectedRoute"
+import { DashboardLayout } from '@/components/DashboardLayout'
 import { 
   TrendingUp,
   Target,
