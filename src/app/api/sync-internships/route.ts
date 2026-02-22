@@ -266,6 +266,64 @@ function parseTable(
   seenSlugs: Set<string>
 ): ParsedRow[] {
   const rows: ParsedRow[] = [];
+  
+  // Handle HTML table format (Summer 2026 repo uses HTML tables)
+  const tableRows = section.match(/<tr>[\s\S]*?<\/tr>/g);
+  
+  if (tableRows) {
+    for (const tableRow of tableRows) {
+      // Skip header rows
+      if (tableRow.includes('<th>') || tableRow.includes('Company')) continue;
+      
+      // Extract table cells
+      const cells = tableRow.match(/<td[^>]*>([\s\S]*?)<\/td>/g);
+      if (!cells || cells.length < 4) continue;
+      
+      // Clean and extract content from each cell
+      const cleanCells = cells.map(cell => 
+        cell.replace(/<[^>]*>/g, '').trim().replace(/\s+/g, ' ')
+      );
+      
+      const [rawCompany, rawRole, rawLocation, linksCell, rawAge] = cleanCells;
+      
+      if (!rawCompany || !rawRole) continue;
+      
+      // Extract company name (remove any extra formatting)
+      const company = rawCompany.replace(/[🛂🇺🇸🔒]/g, '').trim();
+      const role = rawRole.replace(/[🛂🇺🇸🔒]/g, '').trim();
+      const location = (rawLocation || '').replace(/<br>/g, ', ').trim();
+      
+      // Extract apply link from the original HTML cell
+      const applyMatch = cells[3]?.match(/href="([^"]*)"[^>]*><img[^>]*alt="Apply"/i);
+      const apply_link = applyMatch?.[1] ?? '';
+      
+      if (!apply_link) continue; // Skip if no apply link
+      
+      // Generate unique slug
+      let slug = `${company}-${role}-${location.split(',')[0].trim()}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 100);
+      
+      if (seenSlugs.has(slug)) slug = `${slug}-${seenSlugs.size}`;
+      seenSlugs.add(slug);
+      
+      rows.push({
+        slug,
+        company,
+        role,
+        location,
+        apply_link,
+        date_posted: (rawAge || '').trim(),
+        category,
+      });
+    }
+    
+    return rows;
+  }
+  
+  // Fallback: Handle markdown table format (older repos)
   const lines = section.split("\n");
   let inTable = false;
 
