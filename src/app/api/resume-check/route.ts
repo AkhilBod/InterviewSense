@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProgressService } from "@/lib/progress";
+import { convertToHighlights } from "@/lib/highlight-converter";
 
 // Initialize OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
@@ -141,7 +142,7 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
             model: 'gpt-4o-mini',
             messages,
             temperature: 0.6,
-            max_tokens: 4096,
+            max_completion_tokens: 4096,
         });
 
         console.log("OpenAI API response received.");
@@ -174,7 +175,7 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         console.log("Starting automatic word analysis...");
         let wordAnalysisData = null;
         try {
-            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, model, base64File);
+            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, null, base64File);
             wordAnalysisData = wordAnalysisResult;
             console.log("Word analysis completed successfully");
         } catch (wordError) {
@@ -533,7 +534,7 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
         model: 'gpt-4o-mini',
         messages,
         temperature: 0.3,
-        max_tokens: 4096,
+        max_completion_tokens: 4096,
     });
 
     const analysisText = completion.choices[0].message.content;
@@ -565,7 +566,9 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
             throw new Error("Invalid word analysis response structure");
         }
 
-        return parsedAnalysis;
+        // Convert word improvements to highlights for PDF viewer
+        const highlights = convertToHighlights(parsedAnalysis.wordImprovements);
+        return { ...parsedAnalysis, highlights };
 
     } catch (parseError) {
         console.error("Failed to parse word analysis JSON response:", parseError);
@@ -583,7 +586,14 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
             ],
             overallScore: 70,
             severityBreakdown: { red: 1, yellow: 0, green: 0 },
-            categoryBreakdown: { quantify_impact: 1, communication: 0, length_depth: 0, drive: 0, analytical: 0 }
+            categoryBreakdown: { quantify_impact: 1, communication: 0, length_depth: 0, drive: 0, analytical: 0 },
+            highlights: convertToHighlights([{
+                original: "Generic resume content detected",
+                improved: "Add specific metrics and achievements",
+                severity: "red" as const,
+                category: "quantify_impact" as const,
+                explanation: "Resume needs more specific details and quantifiable achievements"
+            }])
         };
     }
 }

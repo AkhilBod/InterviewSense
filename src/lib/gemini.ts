@@ -1,12 +1,5 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize the Gemini API
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-if (!apiKey) {
-  throw new Error('NEXT_PUBLIC_GEMINI_API_KEY is not set in environment variables');
-}
-
-const genAI = new GoogleGenerativeAI(apiKey || '');
+// Initialize OpenAI client - imports are dynamic within functions to handle both server and client environments
+// The Gemini library is no longer used - all API calls now use OpenAI (GPT-4o-mini, Whisper)
 
 interface JobDetails {
   jobTitle: string;
@@ -21,7 +14,9 @@ interface JobDetails {
 
 export async function generateBehavioralQuestions(jobDetails: JobDetails) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Dynamic import to handle OpenAI module
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     let typeInstructions = '';
     if (jobDetails.interviewType === 'Technical') {
@@ -112,15 +107,20 @@ Make sure the questions are appropriate for a ${jobDetails.experienceLevel} leve
 
 Return ONLY a JSON array of EXACTLY ${numQuestions} objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
 
-    console.log('Sending prompt to Gemini:', prompt);
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    console.log('Received response from Gemini:', text);
+    console.log('Sending prompt to OpenAI:', prompt.substring(0, 100) + '...');
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_completion_tokens: 2048,
+    });
+    
+    const text = completion.choices[0].message.content || '';
+    console.log('Received response from OpenAI');
     
     // Clean the response text by removing markdown formatting
     const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    console.log('Cleaned response:', cleanText);
+    console.log('Cleaned response:', cleanText.substring(0, 100) + '...');
     
     // Parse the JSON response
     const questions = JSON.parse(cleanText);
@@ -160,7 +160,9 @@ interface FeedbackResponse {
 
 export async function generateFeedback(answer: string, question?: string, jobDetails?: Partial<JobDetails>) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Dynamic import to handle OpenAI module
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
     // Check if resume data is available in localStorage
     let resumeText = '';
@@ -265,17 +267,22 @@ The scores should be calculated based on:
 
 Return ONLY the JSON without any markdown formatting or additional text.`;
 
-    console.log('Sending feedback prompt to Gemini:', prompt);
+    console.log('Sending feedback prompt to OpenAI');
     console.log('Resume data included:', hasResume);
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    console.log('Received feedback response from Gemini:', text);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.5,
+      max_completion_tokens: 2048,
+    });
+    
+    const text = completion.choices[0].message.content || '';
+    console.log('Received feedback response from OpenAI');
     
     // Clean the response text by removing markdown formatting
     const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    console.log('Cleaned feedback response:', cleanText);
+    console.log('Cleaned feedback response:', cleanText.substring(0, 100) + '...');
     
     // Parse the JSON response
     const feedback = JSON.parse(cleanText) as FeedbackResponse;
@@ -369,8 +376,9 @@ export async function generateInterviewSummary(): Promise<InterviewSummary> {
     // Concatenate all answers into a single text for analysis
     const combinedAnswerText = answersArray.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n');
     
-    // Use Gemini to analyze all answers together
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use OpenAI to analyze all answers together
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
     // Create our prompt
     const prompt = hasResume 
@@ -475,13 +483,18 @@ The scores should be calculated based on:
 
 Return ONLY the JSON without any markdown formatting or additional text.`;
 
-    console.log('Sending summary prompt to Gemini');
+    console.log('Sending summary prompt to OpenAI');
     console.log('Resume data included:', hasResume);
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    console.log('Received summary response from Gemini');
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.5,
+      max_completion_tokens: 2048,
+    });
+    
+    const text = completion.choices[0].message.content || '';
+    console.log('Received summary response from OpenAI');
     
     // Clean the response text by removing markdown formatting
     const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
@@ -573,164 +586,127 @@ export async function fallbackSpeechRecognition(): Promise<any> {
 
 export async function transcribeAndAnalyzeAudio(audioBlob: Blob) {
   try {
-    console.log("Starting audio transcription with Gemini");
+    // Dynamic import to handle browser vs server environment
+    const OpenAI = (await import('openai')).default;
+    
+    console.log("Starting audio transcription with OpenAI Whisper");
     console.log("Original audio size:", Math.round(audioBlob.size / 1024), "KB");
     
-    // Compress audio if it's too large (over 1MB)
-    let processedBlob = audioBlob;
-    if (audioBlob.size > 1024 * 1024) {
-      console.log("Audio file is large, compressing...");
-      processedBlob = await compressAudio(audioBlob);
-      console.log("Compressed audio size:", Math.round(processedBlob.size / 1024), "KB");
-    }
+    // Initialize OpenAI client (server-side only)
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
-    // Convert the audio blob to a base64 string
-    const base64Audio = await blobToBase64(processedBlob);
+    // Convert Blob to File for Whisper API
+    const audioFile = new File([audioBlob], "audio.wav", { type: audioBlob.type });
     
-    // Initialize the Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
-    // Create a request with the audio content
-    const prompt = `
-    I'm providing an audio file of a person speaking during a job interview. Please:
-    
-    1. Transcribe the audio content accurately.
-    2. Analyze the speaking style (clarity, pace, confidence).
-    3. Identify any filler words or phrases (like "um", "uh", "you know", etc.).
-    4. Provide a brief sentiment analysis (positive, neutral, negative tone).
-    
-    If the audio is silent, empty, or contains no eligible speech, respond with a transcription value of "[No eligible speech detected]" and do not make up or hallucinate content. Do not invent a transcript if nothing is said.
-    
-    Return your response in this JSON format:
-    {
-      "transcription": "Full transcription of the audio here... or [No eligible speech detected] if nothing was said.",
-      "analysis": {
-        "clarity": "Rating from 1-10 with brief explanation",
-        "pace": "Rating from 1-10 with brief explanation",
-        "confidence": "Rating from 1-10 with brief explanation"
-      },
-      "filler_words": [
-        {"word": "um", "count": 5},
-        {"word": "like", "count": 3}
-      ],
-      "sentiment": {"tone": "positive/neutral/negative", "confidence": 0.85}
-    }
-    
-    Only respond with this JSON format and nothing else.`;
-    
-    // Create parts including the audio file
-    const parts = [
-      {text: prompt},
-      {inlineData: {mimeType: audioBlob.type, data: base64Audio}}
-    ];
-    
-    console.log("Sending audio to Gemini for transcription and analysis");
-    
-    // Generate content with the audio
-    const result = await model.generateContent({
-      contents: [{role: "user", parts}]
+    // Transcribe audio using OpenAI Whisper
+    console.log("Sending audio to Whisper for transcription");
+    const transcriptionResponse = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+      language: "en",
     });
     
-    const response = await result.response;
-    const text = response.text();
+    const transcription = transcriptionResponse.text;
+    console.log("Received transcription from Whisper");
     
-    console.log("Received transcription result from Gemini");
+    if (!transcription || transcription.trim().length === 0) {
+      return {
+        transcription: "[No eligible speech detected]",
+        analysis: {
+          clarity: "0/10 - No speech detected",
+          pace: "0/10 - No speech detected",
+          confidence: "0/10 - No speech detected"
+        },
+        filler_words: [],
+        sentiment: { tone: "neutral", confidence: 0 }
+      };
+    }
     
-    // Parse the JSON response
+    // Use OpenAI GPT to analyze the transcription for speaking style and sentiment
+    console.log("Analyzing transcription with GPT for speaking style");
+    
+    const analysisPrompt = `You are an expert interview coach analyzing a candidate's response. Given the following interview response transcript, provide detailed analysis in JSON format:
+
+Transcript:
+"${transcription}"
+
+Analyze:
+1. Clarity: Rate 1-10 how clear and well-articulated the response is
+2. Pace: Rate 1-10 the speaking pace (too fast, too slow, or just right)
+3. Confidence: Rate 1-10 how confident the candidate sounds
+4. Identify filler words (um, uh, like, you know, etc.) and their count
+5. Sentiment: Determine if the tone is positive, neutral, or negative
+
+Return ONLY this JSON format with no other text:
+{
+  "analysis": {
+    "clarity": "Rating from 1-10 with brief explanation",
+    "pace": "Rating from 1-10 with brief explanation",
+    "confidence": "Rating from 1-10 with brief explanation"
+  },
+  "filler_words": [
+    {"word": "um", "count": 2},
+    {"word": "like", "count": 1}
+  ],
+  "sentiment": {"tone": "positive/neutral/negative", "confidence": 0.85}
+}`;
+
+    const analysisResponse = await (openai as any).chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: analysisPrompt }],
+      temperature: 0.3,
+      max_completion_tokens: 1024,
+    });
+    
+    let analysisText = analysisResponse.choices[0].message.content || "{}";
+    
+    // Parse the analysis response
     try {
-      // Clean up any markdown formatting that might be in the response
-      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-      const transcriptionResult = JSON.parse(cleanText);
-      return transcriptionResult;
+      // Clean up markdown formatting if present
+      const cleanText = analysisText.replace(/```json\n?|\n?```/g, '').trim();
+      const analysisResult = JSON.parse(cleanText);
+      
+      return {
+        transcription: transcription,
+        analysis: analysisResult.analysis || {
+          clarity: "Unable to analyze",
+          pace: "Unable to analyze",
+          confidence: "Unable to analyze"
+        },
+        filler_words: analysisResult.filler_words || [],
+        sentiment: analysisResult.sentiment || { tone: "neutral", confidence: 0.5 }
+      };
     } catch (parseError) {
-      console.error("Failed to parse Gemini response:", parseError);
-      console.error("Response was:", text);
-      throw new Error("Invalid response format from transcription API");
+      console.error("Failed to parse GPT analysis response:", parseError);
+      // Return response with basic analysis if GPT parsing fails
+      return {
+        transcription: transcription,
+        analysis: {
+          clarity: "Analysis unavailable",
+          pace: "Analysis unavailable",
+          confidence: "Analysis unavailable"
+        },
+        filler_words: [],
+        sentiment: { tone: "neutral", confidence: 0.5 }
+      };
     }
   } catch (error) {
-    console.error("Error in transcribing audio with Gemini:", error);
+    console.error("Error in transcribing audio with OpenAI:", error);
     
-    // Check for quota limit errors and provide better error messages
+    // Check for API-specific errors and provide better error messages
     if (error instanceof Error) {
       const errorMessage = error.message.toLowerCase();
-      if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
+      if (errorMessage.includes('quota') || errorMessage.includes('limit') || errorMessage.includes('429')) {
         throw new Error("QUOTA_EXCEEDED");
       }
-      if (errorMessage.includes('generativelanguage')) {
+      if (errorMessage.includes('authentication') || errorMessage.includes('401')) {
+        throw new Error("AUTHENTICATION_ERROR");
+      }
+      if (errorMessage.includes('api') || errorMessage.includes('500')) {
         throw new Error("SERVICE_UNAVAILABLE");
       }
     }
     
     throw error;
   }
-}
-
-// Helper function to compress audio blob
-async function compressAudio(blob: Blob): Promise<Blob> {
-  return new Promise((resolve) => {
-    try {
-      // Create audio context for compression
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const reader = new FileReader();
-      
-      reader.onload = async () => {
-        try {
-          const arrayBuffer = reader.result as ArrayBuffer;
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-          
-          // Reduce sample rate and channels for compression
-          const sampleRate = Math.min(audioBuffer.sampleRate, 22050); // Reduce to 22kHz max
-          const numberOfChannels = 1; // Convert to mono
-          
-          const compressedBuffer = audioContext.createBuffer(
-            numberOfChannels,
-            audioBuffer.duration * sampleRate,
-            sampleRate
-          );
-          
-          // Copy and downsample audio data
-          const sourceData = audioBuffer.getChannelData(0);
-          const targetData = compressedBuffer.getChannelData(0);
-          const ratio = audioBuffer.length / compressedBuffer.length;
-          
-          for (let i = 0; i < compressedBuffer.length; i++) {
-            targetData[i] = sourceData[Math.floor(i * ratio)];
-          }
-          
-          // Convert back to blob (this is a simplified approach)
-          // In a real implementation, you'd use an encoder
-          resolve(blob); // For now, return original blob if compression fails
-          
-        } catch (error) {
-          console.warn("Audio compression failed, using original:", error);
-          resolve(blob);
-        }
-      };
-      
-      reader.onerror = () => resolve(blob);
-      reader.readAsArrayBuffer(blob);
-      
-    } catch (error) {
-      console.warn("Audio compression not supported, using original:", error);
-      resolve(blob);
-    }
-  });
-}
-
-// Helper function to convert Blob to base64
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
-        const base64 = reader.result.split(',')[1];
-        resolve(base64);
-      } else {
-        reject(new Error("FileReader did not return a string"));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 }

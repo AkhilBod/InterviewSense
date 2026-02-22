@@ -164,6 +164,12 @@ export default function TechnicalAssessmentResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<TechnicalAssessmentResult | null>(null);
   const { data: session } = useSession();
+  const [zoom, setZoom] = useState(1);
+
+  // Function to dynamically calculate PDF scale
+  function calculatePDFScale(containerWidth: number, pageWidth: number): number {
+    return containerWidth / pageWidth;
+  }
 
   useEffect(() => {
     const loadResults = async () => {
@@ -383,6 +389,38 @@ export default function TechnicalAssessmentResultsPage() {
     if (score >= 75) return "text-blue-500";
     if (score >= 60) return "text-yellow-500";
     return "text-red-500";
+  };
+
+  useEffect(() => {
+    const container = document.querySelector('.pdf-preview-container') as HTMLElement | null;
+    const canvas = document.querySelector('.pdf-canvas') as HTMLCanvasElement | null;
+
+    if (container && canvas) {
+      const containerWidth = container.clientWidth;
+      const context = canvas.getContext('2d');
+
+      if (context) {
+        const viewport = context.canvas.getBoundingClientRect();
+        const scale = calculatePDFScale(containerWidth, viewport.width);
+
+        // Apply the calculated scale
+        canvas.style.transform = `scale(${scale})`;
+        canvas.style.transformOrigin = 'top left';
+      }
+    }
+  }, []);
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    setZoom(prevZoom => Math.min(prevZoom + 0.1, 2)); // Max zoom level 2x
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5)); // Min zoom level 0.5x
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1); // Reset to default zoom
   };
 
   if (isLoading || !result) {

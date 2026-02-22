@@ -229,7 +229,7 @@ Now analyze the attached resume file and the job description above to create a p
             model: 'gpt-4o', // Supports PDFs + images
             messages,
             temperature: 0.75,
-            max_tokens: 2048,
+            max_completion_tokens: 2048,
         });
 
         const generatedRawText = completion.choices[0].message.content;

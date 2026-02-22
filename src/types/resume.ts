@@ -1,3 +1,17 @@
+export interface ResumeHighlight {
+  id: string;
+  page: number; // 1-indexed
+  x: number; // bounding box as % of page dimensions (0-1)
+  y: number;
+  width: number;
+  height: number;
+  color: "green" | "yellow" | "red";
+  title: string; // short label e.g. "Weak quantification"
+  feedback: string; // full explanation shown on click
+  suggestion?: string; // optional rewrite suggestion
+  textExcerpt?: string; // the text being highlighted
+}
+
 export interface WordImprovementSuggestion {
   original: string;
   improved: string;

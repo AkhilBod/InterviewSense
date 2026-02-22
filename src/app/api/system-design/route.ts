@@ -81,7 +81,7 @@ Return ONLY a valid JSON object with this exact structure:
     model: 'gpt-4.1',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.9,
-    max_tokens: 4096,
+    max_completion_tokens: 4096,
   });
 
   const text = completion.choices[0].message.content || '';
@@ -305,10 +305,10 @@ Provide constructive feedback focused on interview performance improvement.
 `;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4.1',
+    model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.3,
-    max_tokens: 3072,
+    max_completion_tokens: 3072,
   });
 
   const text = completion.choices[0].message.content || '';

@@ -30,7 +30,7 @@ Return ONLY the array of questions with no additional text.`;
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
-      max_tokens: 1024,
+      max_completion_tokens: 1024,
     });
 
     let questionsText = completion.choices[0].message.content || '';
@@ -110,7 +110,7 @@ Format your response as valid JSON with the following structure:
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: analysisPrompt }],
       temperature: 0.5,
-      max_tokens: 2048,
+      max_completion_tokens: 2048,
     });
 
     let analysisText = completion.choices[0].message.content || '';

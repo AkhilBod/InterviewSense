@@ -31,8 +31,6 @@ function TechnicalAssessmentPage() {
     return null
   }
 
-  const model = "models/gemini-2.0-flash"
-
   const resumeFeedback = {
     overallAssessment: "This resume is well-structured and presents a strong profile for a Software Engineering (SWE) position...",
     strengths: [

@@ -316,10 +316,10 @@ Now select the optimal problem for a ${difficulty} ${role} interview at ${compan
 
     // Generate the response
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1',
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
-      max_tokens: 2048,
+      max_completion_tokens: 2048,
     });
 
     let responseText = completion.choices[0].message.content || '';
@@ -545,10 +545,10 @@ Provide your analysis in this JSON format (no other text):
 
     // Generate the response
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1',
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
-      max_tokens: 2048,
+      max_completion_tokens: 2048,
     });
 
     let responseText = completion.choices[0].message.content || '';

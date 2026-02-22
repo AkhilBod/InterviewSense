@@ -175,7 +175,7 @@ Provide only the JSON response without any additional text or formatting.
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 4096,
+      max_completion_tokens: 4096,
     });
 
     const text = completion.choices[0].message.content || '';

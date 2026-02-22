@@ -144,7 +144,7 @@ Make sure to analyze projects like InterviewSense, Orbit, Price2Produce, SafeWal
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 3072,
+      max_completion_tokens: 3072,
     });
 
     const text = completion.choices[0].message.content || '';

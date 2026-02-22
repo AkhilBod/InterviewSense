@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check credits
-    const creditCheck = await hasEnoughCredits(user.id, FeatureType.BEHAVIORAL_INTERVIEW)
+    const creditCheck = await hasEnoughCredits(user.id, FeatureType.BEHAVIORAL_PRACTICE)
     if (!creditCheck.hasCredits) {
       return NextResponse.json({
         error: 'Insufficient credits',
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       model: 'gpt-5-nano', // Fastest model for quick interview feedback
       messages,
       temperature: 0.7,
-      max_tokens: 2048,
+      max_completion_tokens: 2048,
     })
 
     const solution = completion.choices[0].message.content || ''
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Deduct credits after successful generation
     const deduction = await deductCredits(
       user.id,
-      FeatureType.BEHAVIORAL_INTERVIEW,
+      FeatureType.BEHAVIORAL_PRACTICE,
       1,
       { promptLength: prompt.length }
     )

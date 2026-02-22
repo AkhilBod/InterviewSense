@@ -166,7 +166,7 @@ Be extremely specific with the "original" text - use exact phrases from the resu
       model: 'gpt-4o-mini',
       messages,
       temperature: 0.7,
-      max_tokens: 4096,
+      max_completion_tokens: 4096,
     });
 
     console.log("OpenAI API response received.");

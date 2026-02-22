@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { convertToHighlights } from "@/lib/highlight-converter";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
@@ -176,7 +177,7 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
       model: 'gpt-4o-mini',
       messages,
       temperature: 0.3,
-      max_tokens: 4096,
+      max_completion_tokens: 4096,
     });
 
     console.log("Received response from OpenAI API");
@@ -215,9 +216,14 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
       }
 
       console.log("Successfully parsed word analysis");
+      
+      // Convert word improvements to highlights for PDF viewer
+      const highlights = convertToHighlights(parsedAnalysis.wordImprovements || []);
+      
       return NextResponse.json({
         success: true,
         analysis: parsedAnalysis,
+        highlights,
         fileName: file.name,
         jobTitle,
         company: company || undefined,
@@ -231,9 +237,13 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
       // Fallback: try to extract information manually
       const fallbackAnalysis = extractAnalysisManually(analysisText);
       
+      // Convert to highlights even with fallback
+      const highlights = convertToHighlights(fallbackAnalysis.wordImprovements || []);
+      
       return NextResponse.json({
         success: true,
         analysis: fallbackAnalysis,
+        highlights,
         fileName: file.name,
         jobTitle,
         company: company || undefined,

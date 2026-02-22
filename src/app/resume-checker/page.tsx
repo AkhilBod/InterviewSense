@@ -36,9 +36,9 @@ import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
-import HighlightablePDFViewer from '@/components/HighlightablePDFViewer';
+import PDFHighlightViewer from '@/components/PDFHighlightViewer';
 import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
-import { WordAnalysisData } from '@/types/resume';
+import { WordAnalysisData, ResumeHighlight } from '@/types/resume';
 import { DashboardLayout } from '@/components/DashboardLayout';
 
 interface ResumeAnalysisData {
@@ -80,7 +80,8 @@ export default function ResumeCheckerPage() {
   const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
   const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
   
-  // PDF Highlighting State
+  // Highlight State
+  const [highlights, setHighlights] = useState<ResumeHighlight[]>([]);
   const [showPDFHighlights, setShowPDFHighlights] = useState(false);
 
   // Removed specific analysis - it was redundant with word analysis
@@ -150,7 +151,12 @@ export default function ResumeCheckerPage() {
         console.log("Word analysis received automatically:", data.wordAnalysis);
         setWordAnalysisData(data.wordAnalysis);
         setShowWordAnalysis(true);
-        setShowPDFHighlights(true);
+        
+        // Set highlights if they're included in the response
+        if (data.wordAnalysis.highlights) {
+          setHighlights(data.wordAnalysis.highlights);
+          setShowPDFHighlights(true);
+        }
       }
       
       setShowResults(true); // Show results after successful analysis
@@ -168,6 +174,7 @@ export default function ResumeCheckerPage() {
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
     setShowPDFHighlights(false);
+    setHighlights([]);
     // Keep resume file for preview - don't clear it
   };
 
@@ -752,35 +759,34 @@ export default function ResumeCheckerPage() {
 
                     {/* Right Column - Resume Viewer (44% width) - Hidden on mobile */}
                     <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-6 lg:h-fit order-1 lg:order-2">
-                      <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full min-h-[85vh]">
-                        <CardHeader className="pb-6">
+                      <Card className="bg-slate-800 border-slate-700 text-slate-100 flex flex-col min-h-[85vh]">
+                        <CardHeader className="pb-6 flex-shrink-0">
                           <CardTitle className="text-2xl font-semibold flex items-center gap-3">
                             <FileText className="h-7 w-7 text-blue-400" />
                             Resume Preview
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0">
+                        <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
                           {resume && (
                             <>
                               {resume.type === 'application/pdf' ? (
-                                <HighlightablePDFViewer
+                                <PDFHighlightViewer
                                   file={resume}
-                                  wordImprovements={wordAnalysisData?.wordImprovements || []}
-                                  showHighlights={showPDFHighlights}
-                                  onHighlightClick={(improvement) => {
-                                    // You could add a toast or modal here to show improvement details
-                                    console.log('Clicked improvement:', improvement);
+                                  highlights={highlights}
+                                  onHighlightClick={(highlight: ResumeHighlight) => {
+                                    // You could add a toast or modal here to show highlight details
+                                    console.log('Clicked highlight:', highlight);
                                   }}
                                 />
                               ) : (
-                                <div className="p-8 bg-white text-gray-800 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto">
+                                <div className="p-8 bg-[#111827] text-gray-300 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto border border-gray-700 rounded-lg">
                                   <div className="flex items-center justify-center h-full">
                                     <div className="text-center">
-                                      <FileText className="h-24 w-24 text-gray-400 mx-auto mb-8" />
-                                      <p className="text-gray-600 font-medium mb-4 text-xl">{resume.name}</p>
-                                      <p className="text-gray-500 text-lg">File type: {resume.type}</p>
-                                      <p className="text-gray-500 text-lg">Size: {Math.round(resume.size / 1024)} KB</p>
-                                      <p className="text-gray-500 text-base mt-6">Preview not available for this file type</p>
+                                      <FileText className="h-24 w-24 text-gray-500 mx-auto mb-8" />
+                                      <p className="text-gray-300 font-medium mb-4 text-xl">{resume.name}</p>
+                                      <p className="text-gray-400 text-lg">File type: {resume.type}</p>
+                                      <p className="text-gray-400 text-lg">Size: {Math.round(resume.size / 1024)} KB</p>
+                                      <p className="text-gray-400 text-base mt-6">Preview not available for this file type</p>
                                     </div>
                                   </div>
                                 </div>
