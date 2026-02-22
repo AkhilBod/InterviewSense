@@ -533,6 +533,7 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
   const [answers, setAnswers] = useState<Answers>({})
   const [fading, setFading] = useState(false)
   const [sideKey, setSideKey] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
 
   const cur = STEPS[step]
   const sel = answers[cur?.id] || []
@@ -557,6 +558,17 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
   }, [])
 
   // ─── Check subscription + questionnaire on mount ────────────────
+  useEffect(() => {
+    // Track mobile status
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ─── Load questionnaire data ────────────────────────────────────
   useEffect(() => {
     async function check() {
       if (status === 'loading') return
@@ -671,9 +683,9 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
     <>
       {/* Blink animation for cursor */}
       <style>{`@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }`}</style>
-      <div style={{ minHeight: '100vh', background: BG, display: 'flex', fontFamily: 'system-ui,-apple-system,sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', fontFamily: 'system-ui,-apple-system,sans-serif', flexDirection: isMobile ? 'column' : 'row' }}>
         {/* Left: questions */}
-        <div style={{ flex: '0 0 48%', display: 'flex', flexDirection: 'column', padding: '44px 52px' }}>
+        <div style={{ flex: isMobile ? 'none' : '0 0 48%', display: 'flex', flexDirection: 'column', padding: isMobile ? '32px 20px' : '44px 52px', width: isMobile ? '100%' : 'auto' }}>
           {/* Progress bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 60 }}>
             <span style={{ color: MUTED, fontSize: 12 }}>Step {step + 1} of {STEPS.length}</span>
@@ -690,7 +702,7 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
             transform: fading ? 'translateY(6px)' : 'translateY(0)',
             transition: 'all 0.18s ease',
           }}>
-            <h2 style={{ color: WHITE, fontSize: 25, fontWeight: 700, lineHeight: 1.3, margin: '0 0 6px' }}>{cur.q}</h2>
+            <h2 style={{ color: WHITE, fontSize: isMobile ? 20 : 25, fontWeight: 700, lineHeight: 1.3, margin: '0 0 6px' }}>{cur.q}</h2>
             {cur.sub && <p style={{ color: MUTED, fontSize: 13, margin: '0 0 26px' }}>{cur.sub}</p>}
             {!cur.sub && <div style={{ marginBottom: 26 }} />}
 
@@ -730,13 +742,15 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ width: 1, background: BORDER, flexShrink: 0 }} />
+        {/* Divider — hidden on mobile */}
+        {!isMobile && <div style={{ width: 1, background: BORDER, flexShrink: 0 }} />}
 
-        {/* Right: animated panel */}
-        <div key={sideKey} style={{ flex: 1, opacity: fading ? 0 : 1, transition: 'opacity 0.25s ease', overflow: 'hidden' }}>
-          <Panel answers={answers} />
-        </div>
+        {/* Right: animated panel — hidden on mobile */}
+        {!isMobile && (
+          <div key={sideKey} style={{ flex: 1, opacity: fading ? 0 : 1, transition: 'opacity 0.25s ease', overflow: 'hidden' }}>
+            <Panel answers={answers} />
+          </div>
+        )}
       </div>
     </>
   )
