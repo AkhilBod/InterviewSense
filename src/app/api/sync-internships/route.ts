@@ -49,14 +49,17 @@ export async function GET(req: NextRequest) {
 
     // ── 3. Check existing articles for comparison ────────────────
     let existingSlugs = new Set<string>();
-    try {
-      if (fs.existsSync(ARTICLES_DIR)) {
-        const existingFiles = fs.readdirSync(ARTICLES_DIR).filter(f => f.endsWith('.json'));
-        existingSlugs = new Set(existingFiles.map(f => f.replace('.json', '')));
+    
+    // Only check existing files in development
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        if (fs.existsSync(ARTICLES_DIR)) {
+          const existingFiles = fs.readdirSync(ARTICLES_DIR).filter(f => f.endsWith('.json'));
+          existingSlugs = new Set(existingFiles.map(f => f.replace('.json', '')));
+        }
+      } catch (error) {
+        console.log('Cannot read existing articles:', error);
       }
-    } catch (error) {
-      // In production, we can't read the filesystem, so we'll assume all are new
-      console.log('Cannot read existing articles (production mode)');
     }
 
     // ── 4. Determine what's new vs existing ──────────────────────
@@ -64,18 +67,26 @@ export async function GET(req: NextRequest) {
     const newSlugs = rows.filter(r => !existingSlugs.has(r.slug)).map(r => r.slug);
     const deletedSlugs = Array.from(existingSlugs).filter(slug => !currentSlugs.has(slug));
 
-    // ── 5. In production, trigger rebuild if changes detected ────
-    const hasChanges = newSlugs.length > 0 || deletedSlugs.length > 0;
-    
-    if (hasChanges && process.env.VERCEL_ENV === 'production') {
+    // ── 5. In production, just return parsed data and trigger rebuild ────
+    if (process.env.VERCEL_ENV === 'production') {
       // Trigger a new deployment to rebuild static pages with fresh data
-      if (process.env.VERCEL_DEPLOY_HOOK) {
+      if (process.env.VERCEL_DEPLOY_HOOK && rows.length > 0) {
         try {
           await fetch(process.env.VERCEL_DEPLOY_HOOK, { method: 'POST' });
         } catch (error) {
           console.error('Failed to trigger rebuild:', error);
         }
       }
+
+      // Return summary without file operations
+      return Response.json({
+        synced: rows.length,
+        new: rows.length, // In production, assume all are potentially new since we can't check existing
+        deleted: 0,
+        message: 'Production mode: data parsed successfully, rebuild triggered',
+        newSlugs: rows.slice(0, 25).map(r => r.slug),
+        deletedSlugs: [],
+      });
     }
 
     // ── 6. In development, write files directly ──────────────────

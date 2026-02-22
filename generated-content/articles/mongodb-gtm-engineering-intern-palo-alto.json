@@ -1,0 +1,63 @@
+{
+  "slug": "mongodb-gtm-engineering-intern-palo-alto",
+  "title": "MongoDB GTM Engineering Intern Interview Questions",
+  "metaDescription": "Ace your MongoDB GTM Engineering Intern interview with AI-powered practice questions and feedback. Get ready for your Palo Alto, CA internship.",
+  "keywords": [
+    "MongoDB interview",
+    "MongoDB GTM Engineering Intern interview questions",
+    "MongoDB internship",
+    "interview practice",
+    "AI interview prep",
+    "GTM Engineering Intern",
+    "data-science interview questions"
+  ],
+  "content": "**Company:** MongoDB\n**Role:** GTM Engineering Intern\n**Location:** Palo Alto, CA\n**Status:** Open\n**Posted:** 1mo\n\n[Apply here](https://www.mongodb.com/careers/job/?gh_jid=7335935&utm_source=Simplify&ref=Simplify)",
+  "structuredData": {
+    "@context": "https://schema.org/",
+    "@type": "Article",
+    "headline": "MongoDB GTM Engineering Intern Interview Questions",
+    "description": "Ace your MongoDB GTM Engineering Intern interview with AI-powered practice questions and feedback. Get ready for your Palo Alto, CA internship.",
+    "author": {
+      "@type": "Organization",
+      "name": "InterviewSense"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "InterviewSense"
+    },
+    "datePublished": "2026-02-22T03:53:14.452Z",
+    "url": "https://www.interviewsense.org/opportunities/mongodb-gtm-engineering-intern-palo-alto"
+  },
+  "openGraph": {
+    "title": "MongoDB GTM Engineering Intern Interview Questions",
+    "description": "Ace your MongoDB GTM Engineering Intern interview with AI-powered practice questions and feedback. Get ready for your Palo Alto, CA internship.",
+    "url": "https://www.interviewsense.org/opportunities/mongodb-gtm-engineering-intern-palo-alto",
+    "type": "article",
+    "site_name": "InterviewSense"
+  },
+  "lastUpdated": "2026-02-22T03:53:14.452Z",
+  "originalData": {
+    "company": "MongoDB",
+    "role": "GTM Engineering Intern",
+    "location": "Palo Alto, CA",
+    "applicationUrl": "https://www.mongodb.com/careers/job/?gh_jid=7335935&utm_source=Simplify&ref=Simplify",
+    "datePosted": 1771732394,
+    "isClosed": false,
+    "source": "SimplifyJobs",
+    "originalData": {
+      "source": "Simplify",
+      "category": "data-science",
+      "company_name": "MongoDB",
+      "title": "GTM Engineering Intern",
+      "active": true,
+      "date_updated": 1771732394,
+      "date_posted": 1771732394,
+      "url": "https://www.mongodb.com/careers/job/?gh_jid=7335935&utm_source=Simplify&ref=Simplify",
+      "locations": [
+        "Palo Alto",
+        "CA"
+      ],
+      "is_visible": true
+    }
+  }
+}
