@@ -562,19 +562,26 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
       if (status === 'loading') return
       if (!session) { router.push('/login'); return }
 
-      // Check questionnaire from DB
+      // Check questionnaire from DB — ONLY trust the DB, never stale localStorage
+      let qDone = false
       try {
         const qRes = await fetch('/api/user/questionnaire-status')
-        const qJson = await qRes.json()
-        if (qJson.questionnaireCompleted) {
-          setQuestionnaireComplete(true)
-          const saved = localStorage.getItem('isQuestionnaireData')
-          if (saved) try { setAnswers(JSON.parse(saved)) } catch { /* ignore */ }
+        if (qRes.ok) {
+          const qJson = await qRes.json()
+          if (qJson.questionnaireCompleted === true) {
+            qDone = true
+            const saved = localStorage.getItem('isQuestionnaireData')
+            if (saved) try { setAnswers(JSON.parse(saved)) } catch { /* ignore */ }
+          }
         }
+        // If response is not ok (401, 404, 500), questionnaire is NOT complete
+        // Do NOT fall back to localStorage — it may be stale from a previous session
       } catch {
-        const qDone = localStorage.getItem('isQuestionnaireCompleted')
-        if (qDone === 'true') setQuestionnaireComplete(true)
+        // Network error — default to showing the questionnaire (safe default)
+        // Don't trust localStorage here, it could be from a different user/session
+        console.warn('Failed to check questionnaire status, defaulting to showing questionnaire')
       }
+      setQuestionnaireComplete(qDone)
 
       try {
         const response = await fetch('/api/subscription-status')
@@ -617,15 +624,21 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
           timeline: (answers.urgency || []).join(', '),
           weakestArea: (answers.weakest || []).join(', '),
         }
-        localStorage.setItem('isQuestionnaireCompleted', 'true')
+        // Save to localStorage as backup
         localStorage.setItem('isQuestionnaireData', JSON.stringify(answers))
+        // Persist to DB — this is the source of truth
         try {
-          await fetch('/api/user/questionnaire', {
+          const res = await fetch('/api/user/questionnaire', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(mappedData),
           })
-        } catch { /* fallback: localStorage already saved */ }
+          if (!res.ok) {
+            console.error('Failed to save questionnaire to DB:', await res.text())
+          }
+        } catch (err) {
+          console.error('Failed to save questionnaire:', err)
+        }
         setQuestionnaireComplete(true)
       }
       setFading(false)
