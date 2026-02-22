@@ -121,6 +121,12 @@ export default function SystemDesignTestPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  // Audio visualization state
+  const [audioLevels, setAudioLevels] = useState<number[]>(new Array(20).fill(4));
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
   useEffect(() => {
     const data = sessionStorage.getItem('systemDesignTest');
     if (data) {

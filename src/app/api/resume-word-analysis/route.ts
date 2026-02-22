@@ -28,9 +28,9 @@ interface WordImprovementSuggestion {
 export async function POST(req: Request) {
   console.log("=== Resume Word Analysis API Started ===");
   try {
-    // Check if Gemini API key is available
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is not configured");
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not configured");
       return NextResponse.json({ error: "API configuration error. Please try again later." }, { status: 500 });
     }
 

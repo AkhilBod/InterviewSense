@@ -1,5 +1,5 @@
-// Initialize OpenAI client - imports are dynamic within functions to handle both server and client environments
-// The Gemini library is no longer used - all API calls now use OpenAI (GPT-4o-mini, Whisper)
+// Client-side wrapper functions that call server-side API routes
+// All OpenAI API calls happen server-side — these functions just relay to /api/* routes
 
 interface JobDetails {
   jobTitle: string;
@@ -14,125 +14,21 @@ interface JobDetails {
 
 export async function generateBehavioralQuestions(jobDetails: JobDetails) {
   try {
-    // Dynamic import to handle OpenAI module
-    const OpenAI = (await import('openai')).default;
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    let typeInstructions = '';
-    if (jobDetails.interviewType === 'Technical') {
-      typeInstructions = `Focus on technical skills, coding, algorithms, system design, and problem-solving. Include questions about:
-- Specific technologies and frameworks relevant to ${jobDetails.jobTitle}${jobDetails.industry ? ` in ${jobDetails.industry}` : ''}
-- Real-world technical challenges and their solutions
-- System architecture and scalability considerations
-- Code optimization and performance
-- Technical decision-making processes
-- Problem-solving approaches and debugging strategies
-- Technical leadership and mentoring${jobDetails.industry ? `\n- Industry-specific technical requirements for ${jobDetails.industry}` : ''}`;
-    } else if (jobDetails.interviewType === 'Behavioral') {
-      typeInstructions = `Focus on past experiences, soft skills, and scenarios relevant to ${jobDetails.jobTitle}. Include questions about:
-- Leadership experiences and team management
-- Conflict resolution and interpersonal skills
-- Project management and deadline handling
-- Cross-functional collaboration
-- Innovation and process improvement
-- Handling high-pressure situations
-- Problem-solving and decision-making
-- Cultural fit and team dynamics
-- Communication with stakeholders
-- Adaptability to change and learning new skills`;
-    } else if (jobDetails.interviewType === 'Case Study') {
-      typeInstructions = `Focus on analytical thinking and business problem-solving${jobDetails.industry ? ` specific to ${jobDetails.industry}` : ''}. Include questions about:${jobDetails.industry ? `\n- Industry-specific business challenges` : '\n- General business challenges'}
-- Market analysis and strategy
-- Data-driven decision making
-- Risk assessment and management
-- Resource optimization
-- Competitive analysis
-- Business process improvement
-- Stakeholder management
-- ROI and business impact${jobDetails.industry ? `\n- Industry trends and adaptation` : ''}`;
-    } else if (jobDetails.interviewType === 'System Design') {
-      typeInstructions = `Focus on architecture and system design${jobDetails.industry ? ` specific to ${jobDetails.industry}` : ''}. Include questions about:
-- Scalable system architecture
-- Performance optimization
-- Security considerations
-- Data modeling and storage
-- API design and integration
-- Microservices architecture
-- Cloud infrastructure
-- System reliability and fault tolerance${jobDetails.industry ? `\n- Industry-specific technical requirements` : ''}
-- System monitoring and maintenance`;
-    } else if (jobDetails.interviewType === 'Leadership') {
-      typeInstructions = `Focus on leadership and management${jobDetails.industry ? ` in ${jobDetails.industry}` : ''}. Include questions about:
-- Team building and development
-- Strategic planning and execution
-- Change management
-- Performance management
-- Resource allocation
-- Stakeholder communication
-- Innovation leadership
-- Crisis management${jobDetails.industry ? `\n- Industry-specific leadership challenges` : ''}
-- Mentoring and coaching`;
-    } else {
-      typeInstructions = `Include a balanced mix of technical and behavioral questions specific to ${jobDetails.jobTitle}${jobDetails.industry ? ` in ${jobDetails.industry}` : ''}, covering:
-- Technical expertise and problem-solving
-- Leadership and team management${jobDetails.industry ? `\n- Industry-specific knowledge` : ''}
-- Communication and collaboration
-- Innovation and strategic thinking
-- Project management
-- Stakeholder management
-- Professional development${jobDetails.industry ? `\n- Industry trends and adaptation` : ''}
-- Cultural fit and values`;
-    }
-
-    const numQuestions = jobDetails.numberOfQuestions || 20;
-    
-    const prompt = `Generate EXACTLY ${numQuestions} highly specific and targeted interview questions for a ${jobDetails.experienceLevel} ${jobDetails.jobTitle} position${jobDetails.company ? ` at ${jobDetails.company}` : ''}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? ` in the ${jobDetails.industry} industry` : ''}.
-
-This is a ${jobDetails.interviewType} interview at the ${jobDetails.interviewStage} stage.
-
-${jobDetails.jobAd ? `Here is the job description to reference:\n${jobDetails.jobAd}\n\n` : ''}
-
-${typeInstructions}
-
-Additional Requirements:
-${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `- Questions should be specific to ${jobDetails.industry} industry context` : '- Questions should be relevant to the role and general business context'}
-- Include scenario-based questions relevant to ${jobDetails.experienceLevel} level
-- Focus on real-world applications and challenges
-${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `- Consider industry-specific tools, technologies, and methodologies\n- Include questions about industry trends and future developments` : '- Focus on transferable skills and universal competencies'}
-- Ensure questions test both technical knowledge and soft skills
-${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `- Include questions about handling industry-specific challenges` : '- Include questions about handling general workplace challenges'}
-- Consider the company's size and market position if provided
-
-Make sure the questions are appropriate for a ${jobDetails.experienceLevel} level position${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? ` and reflect the specific requirements of the ${jobDetails.industry} industry` : ''}.
-
-Return ONLY a JSON array of EXACTLY ${numQuestions} objects with 'id' and 'question' fields. Do not include any markdown formatting or additional text.`;
-
-    console.log('Sending prompt to OpenAI:', prompt.substring(0, 100) + '...');
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_completion_tokens: 2048,
+    console.log('Generating questions via API route...');
+    const response = await fetch('/api/generate-questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobDetails }),
     });
-    
-    const text = completion.choices[0].message.content || '';
-    console.log('Received response from OpenAI');
-    
-    // Clean the response text by removing markdown formatting
-    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    console.log('Cleaned response:', cleanText.substring(0, 100) + '...');
-    
-    // Parse the JSON response
-    const questions = JSON.parse(cleanText);
-    
-    // Validate that we have the expected number of questions
-    if (!Array.isArray(questions) || questions.length !== numQuestions) {
-      console.error('Invalid number of questions received:', questions.length, 'expected:', numQuestions);
-      throw new Error(`Invalid number of questions received from API. Expected ${numQuestions}, got ${questions.length}`);
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to generate questions');
     }
-    
-    console.log('Parsed questions:', questions);
-    return questions;
+
+    console.log('Received questions from API:', data.questions.length);
+    return data.questions;
   } catch (error: any) {
     console.error('Error generating questions:', error);
     throw error;
@@ -158,136 +54,30 @@ interface FeedbackResponse {
   }[];
 }
 
-export async function generateFeedback(answer: string, question?: string, jobDetails?: Partial<JobDetails>) {
+export async function generateFeedback(answer: string, question?: string, jobDetails?: Partial<JobDetails>): Promise<FeedbackResponse> {
   try {
-    // Dynamic import to handle OpenAI module
-    const OpenAI = (await import('openai')).default;
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    // Check if resume data is available in localStorage
+    // Get resume data from localStorage if available
     let resumeText = '';
-    let hasResume = false;
     let resumeFileName = '';
-    
-    // We'll check for resume existence in the browser environment
     if (typeof window !== 'undefined') {
       resumeText = localStorage.getItem('resume') || '';
       resumeFileName = localStorage.getItem('resumeFileName') || '';
-      hasResume = resumeText.trim() !== '';
     }
 
-    // Create our prompt with or without resume data
-    const prompt = hasResume 
-      ? `Analyze this interview answer and provide detailed feedback. I'll also provide the candidate's resume to help you give more personalized feedback that considers their background and experience.
-
-Question: ${question || "Not provided"}
-Answer: "${answer}"
-${jobDetails ? `
-Role: ${jobDetails.jobTitle || "Not specified"}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `\nIndustry: ${jobDetails.industry}` : ''}
-Experience Level: ${jobDetails.experienceLevel || "Not specified"}
-Interview Type: ${jobDetails.interviewType || "Not specified"}
-` : ''}
-
-Candidate Resume (${resumeFileName}):
-${resumeText}
-
-Based on both the answer and the candidate's resume, provide a detailed analysis of the interview answer in the following JSON format:
-
-{
-  "scores": [
-    {"label": "Clarity", "score": <0-100>, "color": "bg-blue-600"},
-    {"label": "Conciseness", "score": <0-100>, "color": "bg-emerald-600"},
-    {"label": "Confidence", "score": <0-100>, "color": "bg-violet-600"},
-    {"label": "Relevance", "score": <0-100>, "color": "bg-amber-600"},
-    {"label": "Resume Alignment", "score": <0-100>, "color": "bg-purple-600"}
-  ],
-  "keywordsDetected": ["keyword1", "keyword2", ...],
-  "keywordsMissing": ["keyword1", "keyword2", ...],
-  "suggestions": [
-    {"id": 1, "text": "<improvement suggestion that references resume experience when applicable>", "type": "improvement"},
-    {"id": 2, "text": "<strength observation that acknowledges background from resume>", "type": "strength"},
-    {"id": 3, "text": "<keyword suggestion based on resume skills and experience>", "type": "keyword"},
-    {"id": 4, "text": "<specific suggestion on how to incorporate resume experience X into the answer>", "type": "resume"},
-    ...
-  ],
-  "fillerWords": [
-    {"word": "<filler word>", "count": <number>},
-    ...
-  ]
-}
-
-The scores should be calculated based on:
-- Clarity: How well the answer is structured and explained
-- Conciseness: How efficiently the response conveys the information
-- Confidence: How confident and authoritative the language is
-- Relevance: How well the answer addresses the question
-- Resume Alignment: How effectively the candidate incorporated relevant experience from their resume
-
-Pay special attention to how the candidate could better leverage their background (from their resume) in their answer. Include at least 2-3 suggestions of type "resume" that tie directly to specific experiences, projects, or skills mentioned in their resume that would strengthen their answer.
-
-Return ONLY the JSON without any markdown formatting or additional text.`
-      : `Analyze this interview answer and provide detailed feedback.
-
-Question: ${question || "Not provided"}
-Answer: "${answer}"
-${jobDetails ? `
-Role: ${jobDetails.jobTitle || "Not specified"}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `\nIndustry: ${jobDetails.industry}` : ''}
-Experience Level: ${jobDetails.experienceLevel || "Not specified"}
-Interview Type: ${jobDetails.interviewType || "Not specified"}
-` : ''}
-
-Provide a detailed analysis of the interview answer in the following JSON format:
-
-{
-  "scores": [
-    {"label": "Clarity", "score": <0-100>, "color": "bg-blue-600"},
-    {"label": "Conciseness", "score": <0-100>, "color": "bg-emerald-600"},
-    {"label": "Confidence", "score": <0-100>, "color": "bg-violet-600"},
-    {"label": "Relevance", "score": <0-100>, "color": "bg-amber-600"}
-  ],
-  "keywordsDetected": ["keyword1", "keyword2", ...],
-  "keywordsMissing": ["keyword1", "keyword2", ...],
-  "suggestions": [
-    {"id": 1, "text": "<improvement suggestion>", "type": "improvement"},
-    {"id": 2, "text": "<strength observation>", "type": "strength"},
-    {"id": 3, "text": "<keyword suggestion>", "type": "keyword"},
-    ...
-  ],
-  "fillerWords": [
-    {"word": "<filler word>", "count": <number>},
-    ...
-  ]
-}
-
-The scores should be calculated based on:
-- Clarity: How well the answer is structured and explained
-- Conciseness: How efficiently the response conveys the information
-- Confidence: How confident and authoritative the language is
-- Relevance: How well the answer addresses the question
-
-Return ONLY the JSON without any markdown formatting or additional text.`;
-
-    console.log('Sending feedback prompt to OpenAI');
-    console.log('Resume data included:', hasResume);
-    
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.5,
-      max_completion_tokens: 2048,
+    console.log('Generating feedback via API route...');
+    const response = await fetch('/api/generate-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer, question, jobDetails, resumeText, resumeFileName }),
     });
-    
-    const text = completion.choices[0].message.content || '';
-    console.log('Received feedback response from OpenAI');
-    
-    // Clean the response text by removing markdown formatting
-    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    console.log('Cleaned feedback response:', cleanText.substring(0, 100) + '...');
-    
-    // Parse the JSON response
-    const feedback = JSON.parse(cleanText) as FeedbackResponse;
-    
-    return feedback;
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to generate feedback');
+    }
+
+    return data.feedback as FeedbackResponse;
   } catch (error: any) {
     console.error('Error generating feedback:', error);
     throw error;
@@ -321,23 +111,19 @@ export interface InterviewSummary {
 
 export async function generateInterviewSummary(): Promise<InterviewSummary> {
   try {
-    // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       throw new Error('This function must be called in a browser environment');
     }
-    
-    // Get all saved answers - check sessionStorage first (active interview), then localStorage (completed interview)
-    let answersJson = sessionStorage.getItem('interviewAnswers') || localStorage.getItem('interviewAnswers');
+
+    // Get all saved answers
+    const answersJson = sessionStorage.getItem('interviewAnswers') || localStorage.getItem('interviewAnswers');
     if (!answersJson) {
       throw new Error('No interview answers found');
     }
-    
-    const allAnswers = JSON.parse(answersJson) as {[key: number]: string};
-    
-    // Get resume data if available
+
+    const allAnswers = JSON.parse(answersJson) as { [key: number]: string };
     const resumeText = localStorage.getItem('resume') || '';
-    const hasResume = resumeText.trim() !== '';
-    
+
     // Get job details from localStorage
     const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
     const jobDetails = {
@@ -346,367 +132,151 @@ export async function generateInterviewSummary(): Promise<InterviewSummary> {
       industry: interviewType === 'Behavioral' ? '' : (localStorage.getItem('industry') || 'Technology'),
       experienceLevel: localStorage.getItem('experienceLevel') || 'Mid-level',
       interviewType: interviewType,
-      interviewStage: localStorage.getItem('interviewStage') || 'Initial'
+      interviewStage: localStorage.getItem('interviewStage') || 'Initial',
     };
-    
-    // Get questions data (may not have all questions available)
-    let questionsData = [];
+
+    // Get questions data
+    let questionsData: any[] = [];
     try {
-      // Try to reconstruct question data from localStorage if available
       const visibleQuestionsJson = localStorage.getItem('visibleQuestions');
       if (visibleQuestionsJson) {
         questionsData = JSON.parse(visibleQuestionsJson);
       }
     } catch (error) {
       console.error('Error parsing questions data:', error);
-      // Continue with empty questions data
     }
-    
-    // Map answers to questions where possible
+
+    // Map answers to questions
     const answersArray = Object.entries(allAnswers).map(([id, text]) => {
       const questionId = parseInt(id);
       const questionObj = questionsData.find((q: any) => q.id === questionId);
       return {
         id: questionId,
         question: questionObj?.question || `Question ${id}`,
-        answer: text
+        answer: text,
       };
     });
-    
-    // Concatenate all answers into a single text for analysis
-    const combinedAnswerText = answersArray.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n');
-    
-    // Use OpenAI to analyze all answers together
-    const OpenAI = (await import('openai')).default;
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    // Create our prompt
-    const prompt = hasResume 
-      ? `Analyze this entire interview and provide a comprehensive summary. I'll also provide the candidate's resume to help you give more personalized feedback that considers their background and experience.
 
-Combined Interview Answers:
-${combinedAnswerText}
-
-Job Details:
-Role: ${jobDetails.jobTitle}
-Company: ${jobDetails.company || "Not specified"}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `\nIndustry: ${jobDetails.industry}` : ''}
-Experience Level: ${jobDetails.experienceLevel}
-Interview Type: ${jobDetails.interviewType}
-Interview Stage: ${jobDetails.interviewStage}
-
-Candidate Resume:
-${resumeText}
-
-Based on both the interview answers and the candidate's resume, provide a comprehensive interview summary in the following JSON format:
-
-{
-  "jobRole": "${jobDetails.jobTitle}",
-  "company": "${jobDetails.company || "Not specified"}",
-  "date": "${new Date().toISOString()}",
-  "duration": "CALCULATE_DURATION_MINUTES",
-  "overallScore": <0-100>,
-  "strengthAreas": ["strength1", "strength2", "strength3"],
-  "improvementAreas": ["improvement1", "improvement2", "improvement3"],
-  "completedQuestions": ${answersArray.length},
-  "questionScores": [
-    {"id": 1, "question": "Question text 1", "score": <0-100>},
-    {"id": 2, "question": "Question text 2", "score": <0-100>},
-    ...
-  ],
-  "fillerWordStats": {
-    "total": <number>,
-    "mostCommon": "<most common filler word>"
-  },
-  "keywordStats": {
-    "matched": <number>,
-    "missed": <number>,
-    "mostImpactful": ["keyword1", "keyword2", "keyword3"]
-  }
-}
-
-The scores should be calculated based on:
-- Overall quality and relevance of answers
-- Alignment with resume experience and skills
-- Use of specific examples and metrics
-- Structure and clarity of responses
-- Demonstration of relevant skills for ${jobDetails.jobTitle}
-- Avoidance of filler words and vague language
-
-Focus on how effectively the candidate incorporated their background from their resume into their answers. Look for connections between their stated experience and their interview responses.
-
-Return ONLY the JSON without any markdown formatting or additional text.`
-      : `Analyze this entire interview and provide a comprehensive summary.
-
-Combined Interview Answers:
-${combinedAnswerText}
-
-Job Details:
-Role: ${jobDetails.jobTitle}
-Company: ${jobDetails.company || "Not specified"}${jobDetails.industry && jobDetails.interviewType !== 'Behavioral' ? `\nIndustry: ${jobDetails.industry}` : ''}
-Experience Level: ${jobDetails.experienceLevel}
-Interview Type: ${jobDetails.interviewType}
-Interview Stage: ${jobDetails.interviewStage}
-
-Provide a comprehensive interview summary in the following JSON format:
-
-{
-  "jobRole": "${jobDetails.jobTitle}",
-  "company": "${jobDetails.company || "Not specified"}",
-  "date": "${new Date().toISOString()}",
-  "duration": "CALCULATE_DURATION_MINUTES",
-  "overallScore": <0-100>,
-  "strengthAreas": ["strength1", "strength2", "strength3"],
-  "improvementAreas": ["improvement1", "improvement2", "improvement3"],
-  "completedQuestions": ${answersArray.length},
-  "questionScores": [
-    {"id": 1, "question": "Question text 1", "score": <0-100>},
-    {"id": 2, "question": "Question text 2", "score": <0-100>},
-    ...
-  ],
-  "fillerWordStats": {
-    "total": <number>,
-    "mostCommon": "<most common filler word>"
-  },
-  "keywordStats": {
-    "matched": <number>,
-    "missed": <number>,
-    "mostImpactful": ["keyword1", "keyword2", "keyword3"]
-  }
-}
-
-The scores should be calculated based on:
-- Overall quality and relevance of answers
-- Use of specific examples and metrics
-- Structure and clarity of responses
-- Demonstration of relevant skills for ${jobDetails.jobTitle}
-- Avoidance of filler words and vague language
-
-Return ONLY the JSON without any markdown formatting or additional text.`;
-
-    console.log('Sending summary prompt to OpenAI');
-    console.log('Resume data included:', hasResume);
-    
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.5,
-      max_completion_tokens: 2048,
+    console.log('Generating interview summary via API route...');
+    const response = await fetch('/api/interview-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answersArray, jobDetails, resumeText }),
     });
-    
-    const text = completion.choices[0].message.content || '';
-    console.log('Received summary response from OpenAI');
-    
-    // Clean the response text by removing markdown formatting
-    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    
-    // Parse the JSON response
-    const summary = JSON.parse(cleanText) as InterviewSummary;
-    
-    // Format the date nicely
-    summary.date = new Date().toLocaleDateString();
-    
-    // Calculate a simulated duration if the API didn't provide a real one
-    if (summary.duration === "CALCULATE_DURATION_MINUTES") {
-      // Generate a realistic interview duration based on number of questions answered
-      const minutes = Math.max(15, Math.min(60, answersArray.length * 4 + Math.floor(Math.random() * 10)));
-      summary.duration = `${minutes} minutes`;
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to generate summary');
     }
-    
-    return summary;
+
+    return data.summary as InterviewSummary;
   } catch (error: any) {
     console.error('Error generating interview summary:', error);
-    
+
     // Return a fallback summary if the API fails
     return {
       jobRole: localStorage.getItem('jobTitle') || 'Software Engineer',
       company: localStorage.getItem('company') || 'Not specified',
       date: new Date().toLocaleDateString(),
-      duration: "24 minutes",
+      duration: '24 minutes',
       overallScore: 83,
-      strengthAreas: ["Problem solving", "Technical knowledge", "Communication"],
-      improvementAreas: ["Leadership examples", "Quantifying achievements", "Brevity"],
+      strengthAreas: ['Problem solving', 'Technical knowledge', 'Communication'],
+      improvementAreas: ['Leadership examples', 'Quantifying achievements', 'Brevity'],
       completedQuestions: parseInt(localStorage.getItem('completedQuestionsCount') || '5'),
       questionScores: [
-        { id: 1, question: "Tell me about yourself", score: 86 },
-        { id: 2, question: "Describe a challenging project", score: 92 },
-        { id: 3, question: "How do you handle conflicting priorities", score: 78 },
-        { id: 4, question: "What are your greatest strengths", score: 88 },
-        { id: 5, question: "Where do you see yourself in 5 years", score: 71 }
+        { id: 1, question: 'Tell me about yourself', score: 86 },
+        { id: 2, question: 'Describe a challenging project', score: 92 },
+        { id: 3, question: 'How do you handle conflicting priorities', score: 78 },
+        { id: 4, question: 'What are your greatest strengths', score: 88 },
+        { id: 5, question: 'Where do you see yourself in 5 years', score: 71 },
       ],
-      fillerWordStats: {
-        total: 27,
-        mostCommon: "like"
-      },
-      keywordStats: {
-        matched: 14,
-        missed: 7,
-        mostImpactful: ["algorithms", "distributed systems", "scalability"]
-      }
+      fillerWordStats: { total: 27, mostCommon: 'like' },
+      keywordStats: { matched: 14, missed: 7, mostImpactful: ['algorithms', 'distributed systems', 'scalability'] },
     };
   }
 }
 
-// Audio transcription and analysis using Gemini
 // Fallback transcription using browser's Speech Recognition API
 export async function fallbackSpeechRecognition(): Promise<any> {
   return new Promise((resolve, reject) => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      reject(new Error("Browser speech recognition not supported"));
+      reject(new Error('Browser speech recognition not supported'));
       return;
     }
-    
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    
+
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'en-US';
-    
+
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       resolve({
         transcription: transcript,
         analysis: {
-          clarity: "Browser transcription - analysis not available",
-          pace: "Browser transcription - analysis not available", 
-          confidence: "Browser transcription - analysis not available"
+          clarity: 'Browser transcription - analysis not available',
+          pace: 'Browser transcription - analysis not available',
+          confidence: 'Browser transcription - analysis not available',
         },
         filler_words: [],
-        sentiment: { tone: "neutral", confidence: 0.5 }
+        sentiment: { tone: 'neutral', confidence: 0.5 },
       });
     };
-    
+
     recognition.onerror = (event: any) => {
       reject(new Error(`Speech recognition error: ${event.error}`));
     };
-    
+
     recognition.start();
   });
 }
 
 export async function transcribeAndAnalyzeAudio(audioBlob: Blob) {
   try {
-    // Dynamic import to handle browser vs server environment
-    const OpenAI = (await import('openai')).default;
-    
-    console.log("Starting audio transcription with OpenAI Whisper");
-    console.log("Original audio size:", Math.round(audioBlob.size / 1024), "KB");
-    
-    // Initialize OpenAI client (server-side only)
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    // Convert Blob to File for Whisper API
-    const audioFile = new File([audioBlob], "audio.wav", { type: audioBlob.type });
-    
-    // Transcribe audio using OpenAI Whisper
-    console.log("Sending audio to Whisper for transcription");
-    const transcriptionResponse = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-1",
-      language: "en",
+    console.log('Transcribing audio via API route...');
+    console.log('Audio size:', Math.round(audioBlob.size / 1024), 'KB');
+
+    // Send audio to server-side API route
+    const formData = new FormData();
+    formData.append('audio', new File([audioBlob], 'audio.webm', { type: audioBlob.type }));
+
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: formData,
     });
-    
-    const transcription = transcriptionResponse.text;
-    console.log("Received transcription from Whisper");
-    
-    if (!transcription || transcription.trim().length === 0) {
-      return {
-        transcription: "[No eligible speech detected]",
-        analysis: {
-          clarity: "0/10 - No speech detected",
-          pace: "0/10 - No speech detected",
-          confidence: "0/10 - No speech detected"
-        },
-        filler_words: [],
-        sentiment: { tone: "neutral", confidence: 0 }
-      };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Map server error types to thrown errors for backward compatibility
+      if (data.error === 'QUOTA_EXCEEDED') {
+        throw new Error('QUOTA_EXCEEDED');
+      }
+      if (data.error === 'AUTHENTICATION_ERROR') {
+        throw new Error('AUTHENTICATION_ERROR');
+      }
+      throw new Error(data.error || 'SERVICE_UNAVAILABLE');
     }
-    
-    // Use OpenAI GPT to analyze the transcription for speaking style and sentiment
-    console.log("Analyzing transcription with GPT for speaking style");
-    
-    const analysisPrompt = `You are an expert interview coach analyzing a candidate's response. Given the following interview response transcript, provide detailed analysis in JSON format:
 
-Transcript:
-"${transcription}"
-
-Analyze:
-1. Clarity: Rate 1-10 how clear and well-articulated the response is
-2. Pace: Rate 1-10 the speaking pace (too fast, too slow, or just right)
-3. Confidence: Rate 1-10 how confident the candidate sounds
-4. Identify filler words (um, uh, like, you know, etc.) and their count
-5. Sentiment: Determine if the tone is positive, neutral, or negative
-
-Return ONLY this JSON format with no other text:
-{
-  "analysis": {
-    "clarity": "Rating from 1-10 with brief explanation",
-    "pace": "Rating from 1-10 with brief explanation",
-    "confidence": "Rating from 1-10 with brief explanation"
-  },
-  "filler_words": [
-    {"word": "um", "count": 2},
-    {"word": "like", "count": 1}
-  ],
-  "sentiment": {"tone": "positive/neutral/negative", "confidence": 0.85}
-}`;
-
-    const analysisResponse = await (openai as any).chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: analysisPrompt }],
-      temperature: 0.3,
-      max_completion_tokens: 1024,
-    });
-    
-    let analysisText = analysisResponse.choices[0].message.content || "{}";
-    
-    // Parse the analysis response
-    try {
-      // Clean up markdown formatting if present
-      const cleanText = analysisText.replace(/```json\n?|\n?```/g, '').trim();
-      const analysisResult = JSON.parse(cleanText);
-      
-      return {
-        transcription: transcription,
-        analysis: analysisResult.analysis || {
-          clarity: "Unable to analyze",
-          pace: "Unable to analyze",
-          confidence: "Unable to analyze"
-        },
-        filler_words: analysisResult.filler_words || [],
-        sentiment: analysisResult.sentiment || { tone: "neutral", confidence: 0.5 }
-      };
-    } catch (parseError) {
-      console.error("Failed to parse GPT analysis response:", parseError);
-      // Return response with basic analysis if GPT parsing fails
-      return {
-        transcription: transcription,
-        analysis: {
-          clarity: "Analysis unavailable",
-          pace: "Analysis unavailable",
-          confidence: "Analysis unavailable"
-        },
-        filler_words: [],
-        sentiment: { tone: "neutral", confidence: 0.5 }
-      };
-    }
+    return {
+      transcription: data.transcription,
+      analysis: data.analysis,
+      filler_words: data.filler_words,
+      sentiment: data.sentiment,
+    };
   } catch (error) {
-    console.error("Error in transcribing audio with OpenAI:", error);
-    
-    // Check for API-specific errors and provide better error messages
+    console.error('Error in transcribing audio:', error);
+
     if (error instanceof Error) {
-      const errorMessage = error.message.toLowerCase();
-      if (errorMessage.includes('quota') || errorMessage.includes('limit') || errorMessage.includes('429')) {
-        throw new Error("QUOTA_EXCEEDED");
-      }
-      if (errorMessage.includes('authentication') || errorMessage.includes('401')) {
-        throw new Error("AUTHENTICATION_ERROR");
-      }
-      if (errorMessage.includes('api') || errorMessage.includes('500')) {
-        throw new Error("SERVICE_UNAVAILABLE");
+      const msg = error.message;
+      if (msg === 'QUOTA_EXCEEDED' || msg === 'AUTHENTICATION_ERROR' || msg === 'SERVICE_UNAVAILABLE') {
+        throw error;
       }
     }
-    
-    throw error;
+
+    throw new Error('SERVICE_UNAVAILABLE');
   }
 }

@@ -183,16 +183,7 @@ function InterviewPage() {
     const fetchQuestions = async () => {
       try {
         setLoadingMessage('Generating personalized questions...');
-        // Check if API key is available
-        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-          console.error('NEXT_PUBLIC_GEMINI_API_KEY is not set in environment variables');
-          setQuestions(mockQuestions);
-          setVisibleQuestions(mockQuestions.slice(0, 5));
-          localStorage.setItem('allQuestions', JSON.stringify(mockQuestions));
-          setIsLoading(false);
-          setInterviewPhase('speaking');
-          return;
-        }
+        // Questions are now generated via server-side API route, no client-side key needed
 
         // Get job details from localStorage or state management
         const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
@@ -1174,10 +1165,10 @@ function InterviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">{loadingMessage}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-300">{loadingMessage}</p>
           <p className="mt-2 text-sm text-gray-500">This may take a few moments...</p>
         </div>
       </div>
@@ -1541,24 +1532,14 @@ function InterviewPage() {
         description: "This may take a few moments...",
       });
       
-      console.log("Starting transcription with Gemini AI");
+      console.log("Starting transcription with OpenAI Whisper");
       
-      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-        console.error("NEXT_PUBLIC_GEMINI_API_KEY is not defined. Check your .env file.");
-        toast({
-          title: "Configuration Error",
-          description: "API key for transcription is missing. Please contact support.",
-          variant: "destructive"
-        });
-        setIsTranscribing(false);
-        setInterviewPhase('feedback');
-        return;
-      }
+      // Transcription now goes through server-side API route, no client-side key needed
       
-      // Use our new Gemini function to transcribe and analyze the audio
+      // Use OpenAI Whisper to transcribe and analyze the audio
       const transcriptResult = await transcribeAndAnalyzeAudio(audioBlob);
       
-      console.log("Transcription response from Gemini:", transcriptResult);
+      console.log("Transcription response:", transcriptResult);
       
       if (transcriptResult && transcriptResult.transcription) {
         // Set the transcribed text as the answer
@@ -1786,13 +1767,13 @@ function InterviewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-[#0a0f1e] flex flex-col">
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0f1e]/90 backdrop-blur-lg border-b border-gray-800">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <Link href={session ? "/dashboard" : "/"} className="flex items-center gap-2">
               <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-black">InterviewSense</span>
+              <span className="font-bold text-xl text-white">InterviewSense</span>
             </Link>
             <UserAccountDropdown />
           </div>
@@ -1893,7 +1874,7 @@ function InterviewPage() {
                 </div>
 
                 {/* Phase Status */}
-                <div className="text-gray-600 text-sm md:text-base text-center">
+                <div className="text-gray-400 text-sm md:text-base text-center">
                   {interviewPhase === 'speaking' && (
                     <div className="flex items-center justify-center gap-2">
                       {elevenLabsStatus === 'generating' && (
@@ -1932,8 +1913,8 @@ function InterviewPage() {
                 </div>
 
                 {/* Question Display */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 mb-3">
-                  <p className="text-black text-xs sm:text-sm leading-relaxed text-center md:text-left">
+                <div className="bg-[#111827] border border-gray-700 rounded-lg p-3 sm:p-4 mb-3">
+                  <p className="text-gray-200 text-xs sm:text-sm leading-relaxed text-center md:text-left">
                     {/* Show typewriter text when ElevenLabs is playing, or full question otherwise */}
                     {elevenLabsStatus === 'playing' && isTypewriting ? typewriterText : 
                      (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
@@ -1951,7 +1932,7 @@ function InterviewPage() {
                           setInterviewPhase('speaking');
                           speakQuestion(currentQuestion.question);
                         }}
-                        className="text-gray-600 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
+                        className="text-gray-400 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
                       >
                         <RefreshCw className="h-2.5 w-2.5 mr-1" />
                         Replay Question
@@ -1963,8 +1944,8 @@ function InterviewPage() {
                 {/* Enhanced waveform visualization when recording */}
                 {interviewPhase === 'recording' && (
                   <div className="mb-3">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-end justify-center space-x-1 h-16 bg-gray-100 rounded-lg p-3 relative overflow-hidden">
+                    <div className="bg-[#111827] border border-gray-700 rounded-lg p-3">
+                      <div className="flex items-end justify-center space-x-1 h-16 bg-[#1f2937] rounded-lg p-3 relative overflow-hidden">
                         
                         {/* Waveform bars */}
                         {audioLevels.map((level, i) => (
@@ -1999,7 +1980,7 @@ function InterviewPage() {
                         ))}
                         
                         {/* Center line indicator */}
-                        <div className="absolute inset-x-0 bottom-4 h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent opacity-30"></div>
+                        <div className="absolute inset-x-0 bottom-4 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent opacity-30"></div>
                       </div>
                       
                       <div className="flex items-center justify-center mt-2 space-x-2">
@@ -2007,7 +1988,7 @@ function InterviewPage() {
                           <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                           <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping"></div>
                         </div>
-                        <p className="text-gray-700 text-xs font-medium">Recording your response...</p>
+                        <p className="text-gray-400 text-xs font-medium">Recording your response...</p>
                         <div className="flex space-x-1">
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
                           <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
@@ -2021,9 +2002,9 @@ function InterviewPage() {
                 {/* Answer Display (when available) */}
                 {answer && interviewPhase === 'feedback' && (
                   <div className="mb-3">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                      <div className="text-xs text-gray-600 mb-1">Your Response:</div>
-                      <p className="text-gray-900 text-xs leading-relaxed">{answer}</p>
+                    <div className="bg-[#111827] border border-gray-700 rounded-lg p-3">
+                      <div className="text-xs text-gray-500 mb-1">Your Response:</div>
+                      <p className="text-gray-300 text-xs leading-relaxed">{answer}</p>
                     </div>
                   </div>
                 )}
@@ -2036,7 +2017,7 @@ function InterviewPage() {
                         variant="outline"
                         onClick={showFeedback}
                         disabled={isAnalyzingFeedback}
-                        className="w-full border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg py-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg py-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isAnalyzingFeedback ? (
                           <>
@@ -2111,15 +2092,15 @@ function InterviewPage() {
           <>
             {/* Desktop Popup (md and up) */}
             <div className="hidden md:block fixed inset-y-0 right-0 w-1/2 lg:w-2/5 xl:w-1/3 z-50">
-              <div className="h-full flex flex-col bg-white border-l border-gray-200">
+              <div className="h-full flex flex-col bg-[#0a0f1e] border-l border-gray-800">
                 {                /* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-black">Interview Feedback</h3>
+                <div className="flex items-center justify-between p-4 border-b border-gray-800">
+                  <h3 className="text-lg font-semibold text-white">Interview Feedback</h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setFeedbackVisible(false)}
-                    className="text-gray-600 hover:text-black hover:bg-gray-100 rounded-full p-1"
+                    className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-1"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2138,9 +2119,9 @@ function InterviewPage() {
             </div>
 
             {/* Mobile Full Width (sm and below) */}
-            <div className="md:hidden border-t border-gray-200 p-4">
+            <div className="md:hidden border-t border-gray-800 p-4">
               <div className="max-w-4xl mx-auto">
-                <Card className="bg-white border border-gray-200 text-black rounded-lg">
+                <Card className="bg-[#111827] border border-gray-700 text-white rounded-lg">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">Interview Feedback</CardTitle>
@@ -2148,7 +2129,7 @@ function InterviewPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setFeedbackVisible(false)}
-                        className="text-gray-600 hover:text-black hover:bg-gray-100 rounded-full p-1"
+                        className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-1"
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2254,10 +2235,10 @@ function InterviewPage() {
 export default function InterviewPageWithSuspense() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-300">Loading...</p>
         </div>
       </div>
     }>

@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResumeHighlight } from '@/types/resume';
 
 interface PDFHighlightViewerProps {
   file: File;
   highlights?: ResumeHighlight[];
-  onHighlightClick?: (highlight: ResumeHighlight) => void;
 }
 
 interface TextItem {
@@ -41,14 +40,12 @@ const COLOR_MAP: Record<string, { bg: string; border: string; label: string }> =
 export default function PDFHighlightViewer({
   file,
   highlights = [],
-  onHighlightClick
 }: PDFHighlightViewerProps) {
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [highlightBoxes, setHighlightBoxes] = useState<HighlightBox[]>([]);
   const [visibleColors, setVisibleColors] = useState(new Set(['green', 'yellow', 'red']));
-  const [popover, setPopover] = useState<{ highlight: ResumeHighlight; x: number; y: number } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [displayScale, setDisplayScale] = useState(1);
   const [pdfjsLoaded, setPdfjsLoaded] = useState(false);
@@ -360,7 +357,6 @@ export default function PDFHighlightViewer({
         ref={scrollWrapperRef}
         className="flex-1 min-h-0 bg-[#0a0f1e] overflow-auto flex justify-center"
         style={{ padding: 16 }}
-        onClick={() => setPopover(null)}
       >
         {pdfDoc ? (
           /* Sized container — exactly the visual height the scaled paper occupies */
@@ -392,7 +388,7 @@ export default function PDFHighlightViewer({
                 {highlightBoxes.map(box => (
                   <div
                     key={box.id}
-                    className="absolute cursor-pointer transition-all"
+                    className="absolute transition-all"
                     style={{
                       left: box.x, top: box.y, width: box.width, height: box.height,
                       ...getColorStyle(box.highlight.color),
@@ -400,12 +396,6 @@ export default function PDFHighlightViewer({
                     }}
                     onMouseEnter={() => setHoveredId(box.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      setPopover({ highlight: box.highlight, x: rect.left, y: rect.top });
-                      onHighlightClick?.(box.highlight);
-                    }}
                   />
                 ))}
               </div>
@@ -425,33 +415,6 @@ export default function PDFHighlightViewer({
           </div>
         )}
       </div>
-
-      {/* Popover */}
-      {popover && (
-        <div
-          className="fixed z-50 bg-[#111827] border border-gray-700 rounded-lg p-4 w-80 shadow-2xl"
-          style={{
-            left: `${Math.max(10, Math.min(popover.x - 160, window.innerWidth - 320))}px`,
-            top: `${popover.y - 200}px`,
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLOR_MAP[popover.highlight.color]?.border }} />
-              <h3 className="text-sm font-semibold text-white">{popover.highlight.title}</h3>
-            </div>
-            <button onClick={() => setPopover(null)} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
-          </div>
-          <p className="text-sm text-gray-300 mb-3 leading-relaxed">{popover.highlight.feedback}</p>
-          {popover.highlight.suggestion && (
-            <div className="bg-blue-500/10 border-l-4 border-blue-500 p-3 rounded">
-              <p className="text-xs text-blue-300 font-medium">Try:</p>
-              <p className="text-sm text-gray-300 mt-1">{popover.highlight.suggestion}</p>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Controls bar */}
       <div className="flex items-center justify-between px-6 py-3 border-t border-gray-700 bg-[#111827]">

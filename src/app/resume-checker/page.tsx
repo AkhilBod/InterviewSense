@@ -773,10 +773,6 @@ export default function ResumeCheckerPage() {
                                 <PDFHighlightViewer
                                   file={resume}
                                   highlights={highlights}
-                                  onHighlightClick={(highlight: ResumeHighlight) => {
-                                    // You could add a toast or modal here to show highlight details
-                                    console.log('Clicked highlight:', highlight);
-                                  }}
                                 />
                               ) : (
                                 <div className="p-8 bg-[#111827] text-gray-300 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto border border-gray-700 rounded-lg">

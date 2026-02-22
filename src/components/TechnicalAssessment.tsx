@@ -392,10 +392,8 @@ const ProblemStatement = ({ text }: { text: string }) => {
 };
 
 export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
-  // Add loading state at the top of the component
+  // Loading state for submit button
   const [isLoading, setIsLoading] = useState(false);
-
-  const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [customRole, setCustomRole] = useState('');
@@ -1249,22 +1247,12 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
         description: "This may take a few moments...",
       });
       
-      // Check if API key is available
-      if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-        console.error("NEXT_PUBLIC_GEMINI_API_KEY is not defined. Check your .env file.");
-        toast({
-          title: "Configuration Error",
-          description: "API key for transcription is missing. Please contact support.",
-          variant: "destructive"
-        });
-        setIsTranscribing(false);
-        return;
-      }
+      // Transcription now goes through server-side API route, no client-side key needed
       
-      // Use Gemini to transcribe and analyze audio
+      // Use OpenAI Whisper to transcribe and analyze audio
       const transcriptResult = await transcribeAndAnalyzeAudio(audioBlob);
       
-      console.log("Transcription response from Gemini:", transcriptResult);
+      console.log("Transcription response:", transcriptResult);
       
       if (transcriptResult && transcriptResult.transcription) {
         // Set the transcribed text as the thought process
@@ -2397,10 +2385,10 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${qu
             <Button 
               type="submit"
               onClick={handleSubmit}
-              disabled={loading || (problemMode === 'preset' && (!selectedPreset || !selectedCategory))}
+              disabled={isLoading || (problemMode === 'preset' && (!selectedPreset || !selectedCategory))}
               className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
             >
-              {loading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
+              {isLoading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
               <span>
                 {problemMode === 'ai' && 'Generate AI Problem'}
                 {problemMode === 'specific' && 'Get Specific Problem'}

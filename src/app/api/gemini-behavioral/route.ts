@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     messages.push({ role: 'user', content: prompt })
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano', // Fastest model for quick interview feedback
+      model: 'gpt-4o-mini', // Fastest model for quick interview feedback
       messages,
       temperature: 0.7,
       max_completion_tokens: 2048,

@@ -444,7 +444,7 @@ async function generateWordAnalysis(file: File, jobTitle: string, company: strin
 
     const wordAnalysisPrompt = `You are an expert resume reviewer specializing in identifying specific words and phrases that need improvement for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
-Your task is to analyze the resume and identify EXACT words, phrases, or sentences that should be improved, categorizing them by severity and improvement type.
+Your task is to analyze the resume and identify EVERY SINGLE phrase, bullet point, or sentence that could be improved, categorizing them by severity and improvement type. Be thorough — scan every line of the resume.
 
 Focus on these key areas:
 1. QUANTIFY IMPACT: Identify vague statements that need specific numbers, percentages, or metrics
@@ -452,8 +452,17 @@ Focus on these key areas:
 3. LENGTH & DEPTH: Spot overly brief descriptions that need more detail or overly verbose sections
 4. DRIVE: Identify language that doesn't show initiative, leadership, or proactive behavior
 5. ANALYTICAL: Find missing analytical thinking, problem-solving, or data-driven decision making
+6. GENERAL: Catch formatting issues, buzzword overuse, clichés, or missing keywords from the job description
 
 ${jobDescription ? `\nJob Description Context:\n${jobDescription}\n` : ""}
+
+IMPORTANT INSTRUCTIONS:
+- Find AT LEAST 15-25 specific improvements across the entire resume
+- Flag EVERY bullet point that lacks quantifiable metrics (numbers, percentages, dollar amounts, timeframes)
+- Flag EVERY weak action verb (e.g. "worked", "helped", "was responsible for", "assisted", "handled")
+- Flag EVERY generic/vague phrase that could apply to anyone
+- Include some GREEN highlights for strong phrases that just need minor tweaks
+- The "original" field MUST contain the EXACT text as it appears in the resume — copy it verbatim
 
 Return your analysis in this EXACT JSON format - no additional text, markdown, or formatting:
 
@@ -476,16 +485,17 @@ Return your analysis in this EXACT JSON format - no additional text, markdown, o
   ],
   "overallScore": 75,
   "severityBreakdown": {
-    "red": 5,
-    "yellow": 8,
-    "green": 2
+    "red": 8,
+    "yellow": 10,
+    "green": 4
   },
   "categoryBreakdown": {
-    "quantify_impact": 6,
-    "communication": 4,
+    "quantify_impact": 8,
+    "communication": 5,
     "length_depth": 3,
-    "drive": 1,
-    "analytical": 1
+    "drive": 3,
+    "analytical": 2,
+    "general": 1
   }
 }
 
@@ -500,8 +510,9 @@ CATEGORIES:
 - length_depth: Right-size descriptions (more detail for achievements, concise for routine tasks)
 - drive: Show initiative, leadership, proactive behavior, ownership
 - analytical: Demonstrate problem-solving, data analysis, strategic thinking
+- general: Formatting, keyword optimization, clichés, buzzword overuse
 
-Find 10-20 specific improvements. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`;
+Find 15-25 specific improvements. Be exhaustive — scan EVERY bullet point, job title, summary section, and skills section. Flag even minor issues. The user wants comprehensive coverage across the entire resume. Focus on the most impactful changes that hiring managers for ${jobTitle} positions would notice.`;
 
     // Prepare messages for OpenAI
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -534,7 +545,7 @@ Find 10-20 specific improvements. Focus on the most impactful changes that hirin
         model: 'gpt-4o-mini',
         messages,
         temperature: 0.3,
-        max_completion_tokens: 4096,
+        max_completion_tokens: 6144,
     });
 
     const analysisText = completion.choices[0].message.content;
