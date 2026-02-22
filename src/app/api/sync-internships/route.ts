@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   try {
     // ── 1. Fetch the SimplifyJobs README ─────────────────────────
     const md = await fetch(
-      "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
+      "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/README.md",
       { cache: "no-store" }
     ).then((r) => r.text());
 
