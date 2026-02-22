@@ -10,8 +10,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/opportunities`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/internship-opportunities`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.95,
     },
     {
       url: `${baseUrl}/login`,
@@ -78,7 +90,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           url: `${baseUrl}/opportunities/${slug}`,
           lastModified: new Date(),
           changeFrequency: 'weekly' as const,
-          priority: 0.8,
+          priority: 0.85, // High priority for opportunity pages
         }
       })
     }

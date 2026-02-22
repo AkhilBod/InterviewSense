@@ -1,19 +1,23 @@
 User-agent: *
 Allow: /
 
-# Important pages for crawling
-Allow: /
+# High priority pages for SEO
+Allow: /opportunities/
+Allow: /opportunities/*
+Allow: /internship-opportunities/
 Allow: /signup
 Allow: /login
-Allow: /contact
-Allow: /opportunities/
-Allow: /opportunities/*/
+Allow: /dashboard
+Allow: /interview
+Allow: /technical-assessment
+Allow: /resume-checker
 
 # Disallow admin and internal pages
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /private/
+Disallow: /generated-content/
 
 # Block WordPress-specific files (not applicable to Next.js)
 Disallow: /xmlrpc.php
@@ -33,4 +37,3 @@ Disallow: /cover-letter/
 # Sitemap location
 Sitemap: https://www.interviewsense.org/sitemap.xml
 Sitemap: https://www.interviewsense.org/sitemap-internships.xml
-

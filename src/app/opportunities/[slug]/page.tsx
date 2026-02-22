@@ -246,7 +246,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  return generateSEOMetadata(pageData)
+  // Enhanced SEO metadata
+  const companyName = pageData.company?.name || 'Tech Company'
+  const roleTitle = pageData.role?.title || 'Software Engineering Intern'
+  const location = pageData.internship?.location || 'Remote'
+  const currentYear = new Date().getFullYear()
+  
+  const enhancedPageData = {
+    ...pageData,
+    title: `${companyName} ${roleTitle} Interview Questions & Prep Guide ${currentYear}`,
+    description: `Master ${companyName} ${roleTitle} interviews with AI-powered practice questions, coding challenges, and expert insights. Get hired at ${companyName} in ${location}. Updated ${currentYear}.`,
+    keyword: `${companyName.toLowerCase()} ${roleTitle.toLowerCase().replace(/\s+/g, ' ')}, ${companyName.toLowerCase()} interview questions, ${roleTitle.toLowerCase()} coding interview, ${location.toLowerCase()} tech internships ${currentYear}`
+  }
+
+  return generateSEOMetadata(enhancedPageData)
 }
 
 export default async function OpportunityPage({ params }: PageProps) {
@@ -257,7 +270,7 @@ export default async function OpportunityPage({ params }: PageProps) {
     notFound()
   }
 
-  const questions = getQuestionsForPage(pageData)
+  const questionsData = getQuestionsForPage(pageData)
   const relatedPages: any[] = [
     // Related pages would be populated here based on company/role similarity
   ]
@@ -265,7 +278,7 @@ export default async function OpportunityPage({ params }: PageProps) {
   return (
     <ProgrammaticSEOTemplate
       data={pageData}
-      questions={questions}
+      questions={questionsData}
       relatedPages={relatedPages}
     />
   )

@@ -141,19 +141,86 @@ const getQuestionsForPage = (data: PageData) => {
 };
 
 export function generateMetadata(data: PageData): Metadata {
+  const companyName = data.company?.name || 'Tech Company'
+  const roleTitle = data.role?.title || 'Software Engineering Intern'
+  const location = data.internship?.location || 'Remote'
+  const currentYear = new Date().getFullYear()
+  
+  // Enhanced SEO keywords
+  const baseKeywords = [
+    `${companyName.toLowerCase()} interview questions`,
+    `${roleTitle.toLowerCase()} interview prep`,
+    `${companyName.toLowerCase()} coding interview`,
+    `${roleTitle.toLowerCase()} practice questions`,
+    `${location.toLowerCase()} tech internships`,
+    `${companyName.toLowerCase()} ${roleTitle.toLowerCase()}`,
+    `computer science internship interview`,
+    `technical interview preparation`,
+    `coding interview practice`,
+    `software engineering interview guide`,
+    `${currentYear} internship interview questions`,
+    `${companyName.toLowerCase()} recruitment process`,
+    `${data.company?.tier?.toLowerCase() || 'tech'} company interviews`,
+    `algorithm interview questions`,
+    `data structures interview prep`
+  ]
+
   return {
-    title: `${data.title} | CS Interview Prep - InterviewSense`,
+    title: data.title,
     description: data.description,
-    keywords: `${data.keyword}, programming interview questions, computer science interview prep, coding interview practice, ${data.company?.name || ''} interview, ${data.role?.title || ''} questions`,
+    keywords: baseKeywords.join(', '),
+    authors: [{ name: 'InterviewSense', url: 'https://www.interviewsense.org' }],
+    creator: 'InterviewSense',
+    publisher: 'InterviewSense',
+    category: 'Education',
+    classification: 'Interview Preparation',
     openGraph: {
       title: data.title,
       description: data.description,
-      type: 'website',
-      url: `https://www.interviewsense.org/internships/${data.slug}`,
+      type: 'article',
+      url: `https://www.interviewsense.org/opportunities/${data.slug}`,
+      siteName: 'InterviewSense',
+      locale: 'en_US',
+      images: [
+        {
+          url: `https://www.interviewsense.org/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: `${companyName} ${roleTitle} Interview Preparation Guide`,
+        },
+      ],
+      publishedTime: new Date().toISOString(),
+      modifiedTime: new Date().toISOString(),
+      authors: ['InterviewSense'],
+      section: 'Interview Preparation',
+      tags: baseKeywords.slice(0, 10),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description: data.description,
+      creator: '@InterviewSense',
+      images: [`https://www.interviewsense.org/og-image.png`],
     },
     alternates: {
-      canonical: `https://www.interviewsense.org/internships/${data.slug}`,
-    }
+      canonical: `https://www.interviewsense.org/opportunities/${data.slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: 'your-google-verification-code',
+      yandex: 'your-yandex-verification-code',
+      yahoo: 'your-yahoo-verification-code',
+    },
   }
 }
 
@@ -161,22 +228,151 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
   // Handle both old format (array) and new format (object with technical/behavioral)
   const questionsData = Array.isArray(questions) ? { technical: [], behavioral: [], all: questions } : questions;
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
-    "name": `InterviewSense - ${data.title}`,
-    "description": data.description,
-    "url": `https://www.interviewsense.org/internships/${data.slug}`,
-    "teaches": questionsData.all.map(q => q.topic),
-    "educationalLevel": "undergraduate",
-    "courseMode": "online"
-  };
+  const companyName = data.company?.name || 'Tech Company'
+  const roleTitle = data.role?.title || 'Software Engineering Intern'
+  const location = data.internship?.location || 'Remote'
+  const currentYear = new Date().getFullYear()
+
+  // Enhanced structured data with multiple schema types
+  const structuredDataArray = [
+    // Main Article Schema
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": data.title,
+      "description": data.description,
+      "url": `https://www.interviewsense.org/opportunities/${data.slug}`,
+      "datePublished": new Date().toISOString(),
+      "dateModified": new Date().toISOString(),
+      "author": {
+        "@type": "Organization",
+        "name": "InterviewSense",
+        "url": "https://www.interviewsense.org"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "InterviewSense",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.interviewsense.org/logo.webp"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://www.interviewsense.org/opportunities/${data.slug}`
+      },
+      "keywords": `${companyName} interview, ${roleTitle} questions, coding interview prep, technical interview`
+    },
+    // Educational Course Schema
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": `${companyName} ${roleTitle} Interview Preparation`,
+      "description": `Complete interview preparation course for ${companyName} ${roleTitle} positions with practice questions and expert guidance`,
+      "provider": {
+        "@type": "Organization",
+        "name": "InterviewSense"
+      },
+      "courseMode": "online",
+      "educationalLevel": "undergraduate",
+      "teaches": questionsData.all?.map(q => q.topic) || [],
+      "hasCourseInstance": {
+        "@type": "CourseInstance",
+        "courseMode": "online",
+        "instructor": {
+          "@type": "Organization",
+          "name": "InterviewSense"
+        }
+      }
+    },
+    // JobPosting Schema (if apply URL exists)
+    ...(data.internship?.applyUrl && data.internship.applyUrl !== '#' ? [{
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      "title": roleTitle,
+      "description": `${roleTitle} position at ${companyName} in ${location}`,
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": companyName
+      },
+      "jobLocation": {
+        "@type": "Place",
+        "address": location
+      },
+      "employmentType": "INTERN",
+      "datePosted": new Date().toISOString(),
+      "validThrough": new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days from now
+      "url": data.internship.applyUrl,
+      "industry": "Technology",
+      "occupationalCategory": "Software Engineering"
+    }] : []),
+    // FAQPage Schema for questions
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": questionsData.all?.slice(0, 5).map((q, index) => ({
+        "@type": "Question",
+        "name": q.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": q.solution || `Practice question for ${companyName} ${roleTitle} technical interview focusing on ${q.topic || 'software engineering'} concepts.`
+        }
+      })) || []
+    }
+  ];
 
   return (
     <>
+      {/* Enhanced structured data with multiple schemas */}
+      {structuredDataArray.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+
+      {/* Preconnect to external domains for performance */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+      
+      {/* SEO Meta Tags (these are invisible but crucial for SEO) */}
+      <meta name="geo.region" content="US" />
+      <meta name="geo.placename" content={location} />
+      <meta name="distribution" content="global" />
+      <meta name="rating" content="general" />
+      <meta name="revisit-after" content="7 days" />
+      <meta name="language" content="en" />
+      
+      {/* Breadcrumb structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.interviewsense.org"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Opportunities",
+                "item": "https://www.interviewsense.org/opportunities"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": data.title,
+                "item": `https://www.interviewsense.org/opportunities/${data.slug}`
+              }
+            ]
+          })
+        }}
       />
 
       <div className="min-h-screen bg-black text-white">
@@ -354,6 +550,156 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
             </div>
           </section>
         )}
+
+        {/* SEO Content Section - Hidden from users but visible to search engines */}
+        <section style={{ 
+          color: '#000000', 
+          backgroundColor: '#000000',
+          fontSize: '1px',
+          lineHeight: '1px',
+          position: 'absolute',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden'
+        }}>
+          <div>
+            {/* Interview Process Overview */}
+            <div>
+              <h2>
+                {companyName} {roleTitle} Interview Process {currentYear}
+              </h2>
+              <div>
+                <p>
+                  The {companyName} {roleTitle} interview typically consists of {data.company?.typical_questions || 220}+ technical questions 
+                  covering algorithms, data structures, and system design. Located in {location}, this position offers 
+                  hands-on experience with cutting-edge technology and mentorship from senior engineers.
+                </p>
+                <p>
+                  Key interview stages include: initial screening, technical coding rounds focusing on {data.company?.focus_areas?.join(', ') || 'software development, system design, behavioral'}, 
+                  and final rounds with team leads. The difficulty level is rated as {data.company?.difficulty || 'Medium'} 
+                  within the {data.company?.tier || 'Enterprise'} tier.
+                </p>
+              </div>
+            </div>
+
+            {/* Skills & Preparation Tips */}
+            <div>
+              <h3>
+                Essential Skills for {companyName} {roleTitle} Role
+              </h3>
+              <div>
+                <div>
+                  <h4>Technical Skills</h4>
+                  <ul>
+                    {(data.role?.skills || ['Programming', 'Problem Solving', 'System Design', 'Algorithms']).map((skill: string, index: number) => (
+                      <li key={index}>{skill}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4>Interview Topics</h4>
+                  <ul>
+                    {(data.company?.focus_areas || ['Data Structures', 'Algorithms', 'System Design', 'Behavioral']).map((topic: string, index: number) => (
+                      <li key={index}>{topic}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Company-Specific Insights */}
+            <div>
+              <h3>
+                What Makes {companyName} Different
+              </h3>
+              <div>
+                <p>
+                  {companyName} is known for its {data.company?.tier === 'FAANG' ? 'rigorous technical standards and innovative culture' :
+                   data.company?.tier === 'Big Tech' ? 'cutting-edge technology and rapid growth' : 
+                   'collaborative environment and meaningful impact'}. 
+                  Interns work on real production systems and contribute to projects used by millions of users.
+                </p>
+                <p>
+                  The company offers comprehensive learning opportunities, including mentorship programs, 
+                  technical talks, and hands-on experience with industry-leading tools and frameworks. 
+                  {roleTitle} interns typically work in {location} with hybrid flexibility.
+                </p>
+              </div>
+            </div>
+
+            {/* Frequently Asked Questions */}
+            <div>
+              <h3>
+                Frequently Asked Questions
+              </h3>
+              <div>
+                <div>
+                  <h4>
+                    How difficult is the {companyName} {roleTitle} interview?
+                  </h4>
+                  <p>
+                    The interview is rated as {data.company?.difficulty || 'Medium'} difficulty. Candidates should prepare 
+                    for {data.company?.typical_questions || 220}+ practice questions covering algorithms, data structures, 
+                    and system design fundamentals.
+                  </p>
+                </div>
+                <div>
+                  <h4>
+                    What programming languages are accepted?
+                  </h4>
+                  <p>
+                    Most candidates use Python, Java, C++, or JavaScript. Choose the language you're most comfortable with 
+                    for optimal performance during coding rounds.
+                  </p>
+                </div>
+                <div>
+                  <h4>
+                    How long is the {companyName} interview process?
+                  </h4>
+                  <p>
+                    The process typically takes 2-4 weeks from initial application to final decision, 
+                    including phone screens, technical rounds, and team interviews.
+                  </p>
+                </div>
+                <div>
+                  <h4>
+                    {companyName} {roleTitle} salary and benefits
+                  </h4>
+                  <p>
+                    {companyName} offers competitive compensation packages for {roleTitle} positions in {location}. 
+                    Benefits include health insurance, learning stipends, mentorship programs, and potential full-time conversion opportunities.
+                  </p>
+                </div>
+                <div>
+                  <h4>
+                    Best preparation resources for {companyName} interviews
+                  </h4>
+                  <p>
+                    Practice coding problems on LeetCode, study system design fundamentals, review computer science concepts, 
+                    and prepare behavioral questions using the STAR method. Focus on {data.company?.focus_areas?.join(', ') || 'algorithms, data structures, and problem solving'}.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional SEO Keywords */}
+            <div>
+              <h3>
+                {companyName} Internship Program {currentYear}
+              </h3>
+              <p>
+                Apply for {companyName} {roleTitle} internship {currentYear}. Summer internship opportunities at {companyName} in {location}. 
+                Software engineering intern jobs {currentYear}. Tech internships {location}. Computer science internship interview preparation. 
+                {companyName} recruiting process. {data.company?.tier || 'Tech'} company internships. 
+                Coding interview practice for {companyName}. {roleTitle} interview questions and answers.
+                {companyName} internship application tips. How to get internship at {companyName}.
+                {companyName} interview experience. {roleTitle} salary {location}. 
+                {companyName} internship review. Best {companyName} interview preparation.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Final CTA */}
         <section className="py-20 px-4">
