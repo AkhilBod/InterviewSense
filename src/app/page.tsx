@@ -11,6 +11,8 @@ import RotatingText from "./RotatingText"
 import CountUpOnView from './CountUpOnView'
 import RevealOnView from './RevealOnView'
 import StarryBackground from '@/components/StarryBackground'
+import Aurora from '@/components/Aurora'
+import TypewriterHeadline from '@/components/TypewriterHeadline'
 // Optional: if using next-auth or similar
 import { getSession } from "next-auth/react"
 import { useSession } from "next-auth/react"
@@ -114,6 +116,7 @@ export default function Home() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [showLoading, setShowLoading] = useState(true)
   const [loadingFadeOut, setLoadingFadeOut] = useState(false)
+  const [heroStarted, setHeroStarted] = useState(false)
   const [subscriptionLoading, setSubscriptionLoading] = useState<string | null>(null)
 
   useEffect(() => {
@@ -129,6 +132,8 @@ export default function Home() {
           setLoadingFadeOut(true)
           setTimeout(() => {
             setShowLoading(false)
+            // Start hero typewriter only after loading screen is fully gone
+            setHeroStarted(true)
           }, 800)
         }, 400)
       }
@@ -331,8 +336,8 @@ export default function Home() {
       `}</style>
 
       {/* Hero Section with Integrated Navigation */}
-      <section className="flex flex-col relative" style={{ background: '#0a0e1a', minHeight: '100vh' }}>
-        <StarryBackground />
+      <section className="flex flex-col relative" style={{ background: '#080d1a', minHeight: '100vh' }}>
+        <Aurora color1="000000" color2="0044ff" color3="0d4baf" blend={1} speed={1.2} />
         {/* Navigation Bar */}
         <nav className="w-full z-50 relative" style={{ background: 'transparent', borderBottom: 'none' }}>
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -470,27 +475,16 @@ export default function Home() {
           <div className="w-full max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-12 lg:gap-16 items-center">
             {/* LEFT COLUMN - Text + CTA */}
             <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 w-full" style={{
-                fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
-                letterSpacing: '-0.025em',
-                lineHeight: 1.1
-              }}>
-                <div style={{ color: 'white' }}>AI tool for</div>
-                <div className="min-h-[60px] sm:min-h-[75px] lg:min-h-[90px] flex items-center justify-center lg:justify-start" style={{ color: '#4a9eff' }}>
-                  <RotatingText
-                    texts={['behavioral interviews', 'technical interviews', 'resume reviews', ]}
-                    mainClassName="px-0 bg-transparent text-blue-400 overflow-hidden justify-center lg:justify-start w-full"
-                    staggerFrom={"first"}
-                    initial={{ y: "100%", opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: "-100%", opacity: 0 }}
-                    staggerDuration={0}
-                    splitLevelClassName="overflow-hidden"
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    rotationInterval={2500}
-                  />
-                </div>
-              </h1>
+              <div className="mb-10 w-full">
+                <TypewriterHeadline
+                  phrases={['behavioral interviews', 'technical interviews', 'resume review']}
+                  typingSpeed={45}
+                  highlightDuration={1000}
+                  holdDuration={2000}
+                  fadeDuration={600}
+                  started={heroStarted}
+                />
+              </div>
 
               {/* CTA Button */}
               <button

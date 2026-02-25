@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
+import { Inter, Playfair_Display, Sora } from 'next/font/google'
 import './globals.css'
 import Providers from './providers' // Import the provider
 import { Toaster } from "@/components/ui/toaster"
@@ -9,6 +9,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'] })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+const sora = Sora({ subsets: ['latin'], variable: '--font-sora', weight: ['400', '500', '600', '700', '800'] })
 
 export const viewport: Viewport = {
   themeColor: '#3b82f6',
@@ -122,7 +123,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${playfair.variable} bg-[#000818] text-white`}>
+      <body className={`${inter.className} ${playfair.variable} ${sora.variable} bg-[#000818] text-white`}>
         <Providers> {/* Wrap your content with the SessionProvider */}
           {children}
         </Providers>

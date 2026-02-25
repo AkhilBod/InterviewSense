@@ -11,6 +11,7 @@ export default {
     extend: {
       fontFamily: {
         playfair: ['var(--font-playfair)', 'Georgia', 'serif'],
+        sora: ['var(--font-sora)', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       animation: {
         "fadeIn": "fadeIn 0.5s ease-in-out forwards",
