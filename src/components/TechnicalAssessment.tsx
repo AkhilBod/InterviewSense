@@ -451,6 +451,11 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [solutions, setSolutions] = useState<any[]>([]);
   const [solutionsLoading, setSolutionsLoading] = useState(false);
   const [solutionsGenerated, setSolutionsGenerated] = useState(false);
+  const [problemTopics, setProblemTopics] = useState<string[]>([]);
+  const [problemId, setProblemId] = useState<number | null>(null);
+  // Resizable split state: left panel width as percentage
+  const [splitPos, setSplitPos] = useState(45);
+  const splitDragging = useRef(false);
   
   // Monaco Editor ref
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -798,10 +803,10 @@ public class Solution {
 
   const handleNext = async () => {
     if (isSubmitting) return;
-    if (!code || !thoughtProcess) {
+    if (!code) {
       toast({
         title: "Incomplete Solution",
-        description: "Please provide both code and explanation before continuing.",
+        description: "Please write your code solution before continuing.",
         variant: "destructive"
       });
       return;
@@ -939,6 +944,8 @@ public class Solution {
 
       if (data.success) {
         setQuestion(data.question);
+        setProblemTopics(data.topics || []);
+        setProblemId(data.problemId || null);
         toast({
           title: "Problem Loaded",
           description: problemId
@@ -2275,530 +2282,281 @@ public class Solution {
         </div>
       )}
 
-      {question && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)]">
-          {/* Problem/Solutions Panel - Left Side */}
-          <Card className="bg-zinc-800 border-zinc-700 text-zinc-100 h-full overflow-hidden">
-            <CardHeader className="pb-4 border-b border-zinc-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <CardTitle className="text-2xl font-bold text-white">
-                    {(() => {
-                      const leetcodeProblem = parseLeetCodeProblem(question);
-                      return `${leetcodeProblem.number}. ${leetcodeProblem.title}`;
-                    })()}
-                  </CardTitle>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    (() => {
-                      const leetcodeProblem = parseLeetCodeProblem(question);
-                      return leetcodeProblem.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500 border border-blue-500/40' :
-                        leetcodeProblem.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' :
-                        'bg-red-500/20 text-red-400 border border-red-500/40';
-                    })()
-                  }`}>
-                    {(() => {
-                      const leetcodeProblem = parseLeetCodeProblem(question);
-                      return leetcodeProblem.difficulty;
-                    })()}
-                  </span>
+      {question && (() => {
+        const lc = parseLeetCodeProblem(question);
+        const diffColor = lc.difficulty === 'Easy' ? '#34d399' : lc.difficulty === 'Medium' ? '#fbbf24' : '#f87171';
+        const diffBg   = lc.difficulty === 'Easy' ? 'rgba(52,211,153,0.1)' : lc.difficulty === 'Medium' ? 'rgba(251,191,36,0.1)' : 'rgba(248,113,113,0.1)';
+        const lcUrl = `https://leetcode.com/problems/${lc.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/solutions/`;
+        const btnBase: React.CSSProperties = {
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '5px 12px', height: 30,
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 6,
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '0.78rem', fontWeight: 500,
+          color: '#8892b0', cursor: 'pointer',
+          whiteSpace: 'nowrap' as const,
+          transition: 'all 0.15s',
+        };
+
+        return (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: 'calc(100vh - 80px)',
+              width: '100%',
+              overflow: 'hidden',
+              background: '#0a0e1a',
+            }}
+          >
+            {/* ── TOP BAR ── */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '0 16px', height: 46,
+              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              flexShrink: 0, background: '#0d1117',
+            }}>
+              {/* Back */}
+              <button
+                onClick={() => { setQuestion(''); setProblemTopics([]); setProblemId(null); }}
+                style={{ ...btnBase, color: '#5a6380' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#dde2f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#5a6380'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              >
+                ← Back
+              </button>
+              <span style={{ color: 'rgba(255,255,255,0.08)' }}>|</span>
+              {/* Title + difficulty */}
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 600, color: '#dde2f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 340 }}>
+                {lc.number}. {lc.title}
+              </span>
+              <span style={{ padding: '2px 9px', borderRadius: 20, fontSize: '0.7rem', fontWeight: 600, color: diffColor, background: diffBg, flexShrink: 0 }}>
+                {lc.difficulty}
+              </span>
+              {/* Topics */}
+              {problemTopics.slice(0, 3).map(t => (
+                <span key={t} style={{ padding: '2px 8px', borderRadius: 5, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', color: '#5a6380', whiteSpace: 'nowrap' as const }}>{t}</span>
+              ))}
+              <div style={{ flex: 1 }} />
+              {/* Run */}
+              <button
+                onClick={runCode}
+                style={btnBase}
+                onMouseEnter={e => { e.currentTarget.style.color = '#dde2f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#8892b0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              >
+                ▶ Run
+              </button>
+              {/* Record */}
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isTranscribing}
+                style={{
+                  ...btnBase,
+                  color: isRecording ? '#f87171' : '#8892b0',
+                  borderColor: isRecording ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.1)',
+                  background: isRecording ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.05)',
+                  opacity: isTranscribing ? 0.55 : 1,
+                  cursor: isTranscribing ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#dde2f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
+                onMouseLeave={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#8892b0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
+              >
+                {isTranscribing ? (
+                  <>
+                    <span style={{ display: 'inline-block', width: 9, height: 9, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                    Transcribing…
+                  </>
+                ) : isRecording ? (
+                  <>
+                    <span style={{ width: 7, height: 7, borderRadius: 2, background: '#f87171', display: 'inline-block', flexShrink: 0 }} />
+                    Stop
+                  </>
+                ) : (
+                  'Record Explanation'
+                )}
+              </button>
+              {audioUrl && !isTranscribing && (
+                <span style={{ fontSize: '0.72rem', color: '#34d399', fontFamily: "'Inter', sans-serif" }}>✓ Recorded</span>
+              )}
+              {/* Submit */}
+              <button
+                onClick={handleNext}
+                disabled={isSubmitting || !code}
+                style={{
+                  ...btnBase,
+                  padding: '5px 16px',
+                  background: (!code || isSubmitting) ? 'rgba(255,255,255,0.04)' : '#1d4ed8',
+                  border: (!code || isSubmitting) ? '1px solid rgba(255,255,255,0.1)' : '1px solid #2563eb',
+                  color: (!code || isSubmitting) ? '#4a5370' : '#fff',
+                  cursor: (!code || isSubmitting) ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.6 : 1,
+                  fontWeight: 600,
+                }}
+                onMouseEnter={e => { if (code && !isSubmitting) { e.currentTarget.style.background = '#1e40af'; } }}
+                onMouseLeave={e => { if (code && !isSubmitting) { e.currentTarget.style.background = '#1d4ed8'; } }}
+              >
+                {isSubmitting ? 'Submitting…' : 'Submit'}
+              </button>
+            </div>
+
+            {/* ── SPLIT BODY ── */}
+            <div
+              style={{ flex: 1, display: 'flex', minHeight: 0, userSelect: splitDragging.current ? 'none' : undefined }}
+              onMouseMove={e => {
+                if (!splitDragging.current) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pct = Math.min(70, Math.max(25, ((e.clientX - rect.left) / rect.width) * 100));
+                setSplitPos(pct);
+              }}
+              onMouseUp={() => { splitDragging.current = false; }}
+              onMouseLeave={() => { splitDragging.current = false; }}
+            >
+              {/* LEFT: Problem / Solutions */}
+              <div style={{ width: `${splitPos}%`, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0d1117' }}>
+                {/* Tabs */}
+                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, padding: '0 16px' }}>
+                  {[{ key: 'problem', label: 'Problem' }, { key: 'solutions', label: 'Solutions' }].map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      style={{
+                        padding: '10px 14px',
+                        background: 'none', border: 'none',
+                        borderBottom: activeTab === tab.key ? '2px solid #3b82f6' : '2px solid transparent',
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: '0.82rem',
+                        fontWeight: activeTab === tab.key ? 600 : 400,
+                        color: activeTab === tab.key ? '#93c5fd' : '#4a5370',
+                        cursor: 'pointer', marginBottom: -1,
+                        transition: 'color 0.15s',
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-zinc-400">
-                  <span>Topics:</span>
-                  <span className="bg-zinc-700 px-2 py-1 rounded text-xs">Array</span>
-                  <span className="bg-zinc-700 px-2 py-1 rounded text-xs">Hash Table</span>
+
+                {/* Content */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px 40px' }}>
+                  {activeTab === 'problem' && (
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', lineHeight: 1.75, color: '#c9d1d9' }}>
+                      <p style={{ marginTop: 0, marginBottom: 20 }}>{lc.description}</p>
+
+                      {lc.examples.map((ex, i) => (
+                        <div key={i} style={{ marginBottom: 20 }}>
+                          <p style={{ fontWeight: 600, color: '#e6edf3', marginBottom: 8, fontSize: '0.85rem' }}>Example {i + 1}:</p>
+                          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, padding: '12px 14px', fontFamily: "'Monaco', 'Menlo', monospace", fontSize: '0.82rem' }}>
+                            <div><span style={{ color: '#6e7681' }}>Input: </span><span style={{ color: '#e6edf3' }}>{ex.input}</span></div>
+                            <div><span style={{ color: '#6e7681' }}>Output: </span><span style={{ color: '#e6edf3' }}>{ex.output}</span></div>
+                            {ex.explanation && <div style={{ marginTop: 6, color: '#6e7681', fontSize: '0.78rem' }}>Explanation: {ex.explanation}</div>}
+                          </div>
+                        </div>
+                      ))}
+
+                      <details style={{ marginBottom: 8 }}>
+                        <summary style={{ cursor: 'pointer', padding: '9px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, fontSize: '0.82rem', color: '#6e7681', listStyle: 'none', display: 'flex', justifyContent: 'space-between', userSelect: 'none' }}>
+                          Time &amp; Space Complexity <span>›</span>
+                        </summary>
+                        <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderTop: 'none', borderRadius: '0 0 6px 6px', fontSize: '0.82rem', color: '#6e7681' }}>
+                          <div>Time: <code style={{ color: '#79c0ff' }}>{lc.timeComplexity}</code></div>
+                          <div style={{ marginTop: 4 }}>Space: <code style={{ color: '#d2a8ff' }}>{lc.spaceComplexity}</code></div>
+                        </div>
+                      </details>
+
+                      {lc.hints.map((hint, i) => (
+                        <details key={i} style={{ marginBottom: 8 }}>
+                          <summary style={{ cursor: 'pointer', padding: '9px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, fontSize: '0.82rem', color: '#6e7681', listStyle: 'none', display: 'flex', justifyContent: 'space-between', userSelect: 'none' }}>
+                            Hint {i + 1} <span>›</span>
+                          </summary>
+                          <div style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderTop: 'none', borderRadius: '0 0 6px 6px', fontSize: '0.82rem', color: '#6e7681', lineHeight: 1.6 }}>
+                            {hint}
+                          </div>
+                        </details>
+                      ))}
+
+                      {lc.followUp && (
+                        <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(56,139,253,0.07)', border: '1px solid rgba(56,139,253,0.2)', borderRadius: 6, fontSize: '0.82rem', color: '#79c0ff' }}>
+                          <span style={{ fontWeight: 600 }}>Follow-up: </span>{lc.followUp}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'solutions' && (
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', color: '#6e7681' }}>
+                      <p style={{ marginTop: 0, marginBottom: 14 }}>Community solutions for {lc.number}. {lc.title}</p>
+                      <a
+                        href={lcUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#79c0ff', textDecoration: 'none', fontSize: '0.85rem' }}
+                        onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline'; }}
+                        onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none'; }}
+                      >
+                        View on LeetCode ↗
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
-            </CardHeader>
-            
-            <CardContent className="h-full overflow-hidden p-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-                <TabsList className="w-full justify-start bg-zinc-800/50 border-b border-zinc-700 rounded-none h-12 p-1">
-                  <TabsTrigger 
-                    value="problem" 
-                    className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-green-300 data-[state=active]:border-blue-500/50 flex items-center gap-2 h-10"
-                  >
-                    <BookOpen className="h-4 w-4" />
-                    Problem
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="solutions" 
-                    className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-green-300 data-[state=active]:border-blue-500/50 flex items-center gap-2 h-10"
-                  >
-                    <Lightbulb className="h-4 w-4" />
-                    Solutions
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="problem" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
-                  {(() => {
-                    const leetcodeProblem = parseLeetCodeProblem(question);
-                    return (
-                      <div className="space-y-6 pb-40">
-                        {/* Problem Description */}
-                        <div className="bg-slate-800 rounded-lg p-6 space-y-4">
-                          <div className="text-lg font-semibold text-slate-100">
-                            {question ? cleanProblemText(question) : "Loading problem..."}
-                          </div>
-                        </div>
 
-                        {/* Examples */}
-                        {leetcodeProblem.examples && leetcodeProblem.examples.length > 0 && (
-                          <div className="space-y-4">
-                            {leetcodeProblem.examples.map((example, index) => (
-                              <div key={index} className="space-y-3">
-                                <h4 className="text-base font-bold text-white">Example {index + 1}:</h4>
-                                <div className="bg-zinc-900/80 rounded-lg p-4 border border-zinc-600/50 font-mono text-sm">
-                                  <div className="space-y-2">
-                                    <div>
-                                      <span className="text-zinc-400 font-semibold">Input: </span>
-                                      <span className="text-blue-300">{example.input}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-zinc-400 font-semibold">Output: </span>
-                                      <span className="text-blue-300">{example.output}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                {example.explanation && (
-                                  <div className="bg-zinc-700/30 rounded-lg p-3 border border-zinc-600/30">
-                                    <p className="text-zinc-300 text-sm">
-                                      <span className="font-semibold text-zinc-200">Explanation: </span>
-                                      {example.explanation}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+              {/* DRAG HANDLE */}
+              <div
+                onMouseDown={() => { splitDragging.current = true; }}
+                style={{ width: 4, flexShrink: 0, cursor: 'col-resize', background: 'rgba(255,255,255,0.05)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56,139,253,0.4)'; }}
+                onMouseLeave={e => { if (!splitDragging.current) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              />
 
-                        {/* Individual Dropdowns Section */}
-                        <div className="space-y-4">
-                          {/* Recommended Time & Space Complexity */}
-                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                              <span className="font-medium text-zinc-200">Recommended Time & Space Complexity</span>
-                              <ChevronDown className="h-4 w-4 text-zinc-400" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="p-4 pt-0">
-                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50 space-y-3">
-                                <div className="flex items-center gap-3">
-                                  <Clock className="h-4 w-4 text-blue-400" />
-                                  <div className="flex-1">
-                                    <div className="text-sm text-zinc-400">Time Complexity</div>
-                                    <code className="text-blue-400 text-sm">{leetcodeProblem.timeComplexity}</code>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <Box className="h-4 w-4 text-purple-400" />
-                                  <div className="flex-1">
-                                    <div className="text-sm text-zinc-400">Space Complexity</div>
-                                    <code className="text-purple-400 text-sm">{leetcodeProblem.spaceComplexity}</code>
-                                  </div>
-                                </div>
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-
-                          {/* Hint 1 */}
-                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                              <span className="font-medium text-zinc-200">Hint 1</span>
-                              <ChevronDown className="h-4 w-4 text-zinc-400" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="p-4 pt-0">
-                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
-                                <p className="text-zinc-300 text-sm leading-relaxed">
-                                  {leetcodeProblem.hints[0] || "Consider the basic approach first - what data structures could help solve this problem?"}
-                                </p>
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-
-                          {/* Hint 2 */}
-                          <Collapsible className="bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-all duration-200 hover:border-zinc-600/50">
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left">
-                              <span className="font-medium text-zinc-200">Hint 2</span>
-                              <ChevronDown className="h-4 w-4 text-zinc-400" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="p-4 pt-0">
-                              <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/50">
-                                <p className="text-zinc-300 text-sm leading-relaxed">
-                                  {leetcodeProblem.hints[1] || "Think about edge cases - what happens with empty inputs, single elements, or boundary conditions?"}
-                                </p>
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </div>
-
-                        {/* Follow Up */}
-                        {leetcodeProblem.followUp && (
-                          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                            <h4 className="text-base font-bold text-blue-300 mb-2">Follow-up:</h4>
-                            <p className="text-slate-300 text-sm">{leetcodeProblem.followUp}</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </TabsContent>
-                
-                <TabsContent value="solutions" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
-                  <div className="space-y-6 pb-40">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-blue-500" />
-                        Solution Approaches
-                      </h3>
-                      <div className="text-sm text-zinc-400">
-                        {solutionsLoading ? 'Generating solutions...' : `${solutions.length} approaches available`}
-                      </div>
-                    </div>
-                    
-                    {solutionsLoading ? (
-                      <div className="flex items-center justify-center py-12">
-                        <div className="text-center space-y-4">
-                          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
-                          <p className="text-zinc-400">Generating optimal solutions with AI...</p>
-                        </div>
-                      </div>
-                    ) : !solutionsGenerated ? (
-                      <div className="flex items-center justify-center py-12">
-                        <div className="text-center space-y-4">
-                          <Zap className="h-8 w-8 text-blue-500 mx-auto" />
-                          <p className="text-zinc-400">Click "Generate Solutions" to see AI-powered approaches</p>
-                          <Button 
-                            onClick={generateSolutions}
-                            className="bg-blue-600 hover:bg-green-700 text-white"
-                          >
-                            <Lightbulb className="h-4 w-4 mr-2" />
-                            Generate Solutions
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      solutions.map((solution: any, index: number) => (
-                      <Card key={solution.id} className="bg-zinc-800/50 border border-zinc-700/50 overflow-hidden mb-6">
-                        <CardHeader className="pb-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                solution.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500' :
-                                solution.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                'bg-red-500/20 text-red-400'
-                              }`}>
-                                {index + 1}
-                              </div>
-                              <div>
-                                <h4 className="text-lg font-semibold text-white">{solution.title}</h4>
-                                <div className="flex items-center gap-4 mt-1">
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Clock className="h-3 w-3 text-blue-400" />
-                                    <span className="text-blue-400">Time: {solution.timeComplexity}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Box className="h-3 w-3 text-purple-400" />
-                                    <span className="text-purple-400">Space: {solution.spaceComplexity}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              index === 0 ? 'bg-red-500/20 text-red-400' :
-                              index === 1 ? 'bg-blue-500/20 text-blue-500' :
-                              'bg-blue-500/20 text-blue-400'
-                            }`}>
-                              {index === 0 ? 'Brute Force' : index === 1 ? 'Optimal' : 'Alternative'}
-                            </span>
-                          </div>
-                        </CardHeader>
-                        
-                        <CardContent className="space-y-4">
-                          <p className="text-zinc-300 text-sm leading-relaxed">
-                            {solution.description}
-                          </p>
-                          
-                          {/* Code Implementation */}
-                          <Collapsible className="bg-zinc-900/50 rounded-lg border border-zinc-600/50">
-                            <CollapsibleTrigger className="w-full p-4 flex items-center justify-between text-left hover:bg-zinc-900/70 transition-colors rounded-t-lg">
-                              <span className="font-medium text-zinc-200 flex items-center gap-2">
-                                <ExternalLink className="h-4 w-4" />
-                                View Implementation
-                              </span>
-                              <ChevronDown className="h-4 w-4 text-zinc-400" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="px-4 pb-4 rounded-b-lg">
-                              <Tabs defaultValue="javascript" className="w-full">
-                                <TabsList className="grid grid-cols-3 w-full bg-zinc-800">
-                                  <TabsTrigger value="javascript" className="text-xs">JavaScript</TabsTrigger>
-                                  <TabsTrigger value="python" className="text-xs">Python</TabsTrigger>
-                                  <TabsTrigger value="java" className="text-xs">Java</TabsTrigger>
-                                </TabsList>
-                                {Object.entries(solution.code).map(([lang, code]: [string, any]) => (
-                                  <TabsContent key={lang} value={lang} className="mt-4">
-                                    <div className="bg-[#1e1e1e] rounded-lg overflow-hidden border border-zinc-700">
-                                      <div className="p-2 bg-zinc-800 border-b border-zinc-700 flex items-center justify-between">
-                                        <span className="text-xs text-zinc-400 capitalize">{lang}</span>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => {
-                                            navigator.clipboard.writeText(code as string);
-                                            toast({
-                                              title: "Code copied",
-                                              description: "Solution code copied to clipboard",
-                                            });
-                                          }}
-                                          className="h-6 px-2 text-xs hover:bg-zinc-700"
-                                        >
-                                          Copy
-                                        </Button>
-                                      </div>
-                                      <Editor
-                                        height="200px"
-                                        language={lang === 'javascript' ? 'javascript' : lang}
-                                        value={code as string}
-                                        theme="vs-dark"
-                                        options={{
-                                          readOnly: true,
-                                          minimap: { enabled: false },
-                                          fontSize: 12,
-                                          lineNumbers: 'on',
-                                          scrollBeyondLastLine: false,
-                                          automaticLayout: true,
-                                          tabSize: 2,
-                                          wordWrap: 'on',
-                                        }}
-                                      />
-                                    </div>
-                                  </TabsContent>
-                                ))}
-                              </Tabs>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </CardContent>
-                      </Card>
-                      ))
-                    )}
-
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          {/* Solution Panel - Right Side */}
-          <Card className="bg-slate-800 border-slate-700 text-slate-100 h-full flex flex-col">
-            <CardHeader className="pb-4 border-b border-slate-700 flex-shrink-0">
-              <CardTitle className="text-xl font-semibold text-white flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                Your Solution
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col overflow-hidden p-6">
-              {/* Code Editor Section */}
-              <div className="space-y-4 flex-shrink-0">
-                <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold text-slate-200 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Code Solution
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger className="w-[150px] h-8 border-slate-600 bg-slate-700 text-slate-100">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="javascript">JavaScript</SelectItem>
-                        <SelectItem value="python">Python</SelectItem>
-                        <SelectItem value="java">Java</SelectItem>
-                        <SelectItem value="cpp">C++</SelectItem>
-                        <SelectItem value="typescript">TypeScript</SelectItem>
-                        <SelectItem value="go">Go</SelectItem>
-                        <SelectItem value="rust">Rust</SelectItem>
-                        <SelectItem value="csharp">C#</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={runCode}
-                      className="h-8 px-3 border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200"
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      Run
-                    </Button>
-                  </div>
+              {/* RIGHT: Code editor */}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0a0e1a' }}>
+                {/* Language bar */}
+                <div style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#0d1117' }}>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger style={{ width: 140, height: 28, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5, color: '#8892b0', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      {['javascript','python','java','cpp','typescript','go','rust','csharp'].map(l => (
+                        <SelectItem key={l} value={l}>{l === 'cpp' ? 'C++' : l === 'csharp' ? 'C#' : l.charAt(0).toUpperCase() + l.slice(1)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="border rounded-lg overflow-hidden bg-[#1e1e1e] border-slate-600 shadow-lg">
+
+                {/* Editor fills all remaining space */}
+                <div style={{ flex: 1, minHeight: 0 }}>
                   <Editor
-                    height="280px"
+                    height="100%"
                     language={language}
                     value={code}
-                    onChange={(value) => setCode(value || '')}
+                    onChange={v => setCode(v || '')}
                     onMount={handleEditorDidMount}
                     theme="vs-dark"
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
                       lineNumbers: 'on',
-                      roundedSelection: false,
                       scrollBeyondLastLine: false,
                       automaticLayout: true,
                       tabSize: 2,
                       wordWrap: 'on',
-                      suggest: {
-                        showKeywords: true,
-                        showSnippets: true,
-                      },
-                      quickSuggestions: {
-                        other: true,
-                        comments: true,
-                        strings: true,
-                      },
-                      parameterHints: {
-                        enabled: true,
-                      },
-                      bracketPairColorization: {
-                        enabled: true,
-                      },
-                      cursorBlinking: 'blink',
-                      cursorStyle: 'line',
                       fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                      padding: { top: 16, bottom: 16 },
+                      padding: { top: 14, bottom: 14 },
+                      bracketPairColorization: { enabled: true },
+                      cursorBlinking: 'blink',
                     }}
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      })()}
 
-              {/* Divider */}
-              <div className="relative my-4 flex-shrink-0">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-slate-800 px-4 text-slate-400 font-medium">Solution Explanation</span>
-                </div>
-              </div>
-
-              {/* Explanation Section - Flexible with constrained height */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                  <Label className="text-base font-semibold text-slate-200 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Explain Your Solution
-                  </Label>
-                  <div className="text-xs text-slate-400">
-                    Describe your approach, time/space complexity, and reasoning
-                  </div>
-                </div>
-                
-                <div className="bg-slate-700/20 rounded-lg p-4 border border-slate-600/50 flex-1 flex flex-col">
-                  <div className="flex gap-3 items-center mb-4 flex-shrink-0">
-                    <Button
-                      variant={isRecording ? "destructive" : "default"}
-                      onClick={isRecording ? stopRecording : startRecording}
-                      disabled={isTranscribing}
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="h-4 w-4" />
-                          <span className="hidden sm:inline">Stop Recording</span>
-                          <span className="sm:hidden">Stop</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="h-4 w-4" />
-                          <span className="hidden sm:inline">Record Explanation</span>
-                          <span className="sm:hidden">Record</span>
-                        </>
-                      )}
-                    </Button>
-                    {isTranscribing && (
-                      <div className="flex items-center text-sm text-slate-400">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span className="hidden sm:inline">Transcribing your explanation...</span>
-                        <span className="sm:hidden">Transcribing...</span>
-                      </div>
-                    )}
-                    {audioUrl && !isTranscribing && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-blue-500">✓ <span className="hidden sm:inline">Recording saved</span><span className="sm:hidden">Saved</span></span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Textarea
-                    value={thoughtProcess}
-                    onChange={(e) => setThoughtProcess(e.target.value)}
-                    className="flex-1 min-h-[120px] max-h-[200px] resize-none bg-slate-900 border-slate-600 focus:border-blue-500 transition-colors"
-                    placeholder="Explain your solution approach here. Consider including:
-• Your algorithm strategy and why you chose it
-• Time and space complexity analysis
-• How you handle edge cases
-• Alternative approaches you considered"
-                  />
-                </div>
-              </div>
-              
-              {/* Submit Section - Always visible at bottom */}
-              <div className="pt-4 border-t border-slate-600/50 flex-shrink-0">
-                <div className="flex gap-4">
-                  {/* Skip button */}
-                  <Button 
-                    variant="outline"
-                    onClick={handleSkip}
-                    disabled={isSkipping || isSubmitting}
-                    className="flex-1 h-12 text-base font-semibold border-slate-600 hover:bg-slate-700"
-                  >
-                    {isSkipping ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Skipping...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="w-4 h-4 mr-2" />
-                        Skip Question
-                      </>
-                    )}
-                  </Button>
-                  
-                  {/* Submit/Next button */}
-                  <Button 
-                    onClick={handleNext}
-                    disabled={isSkipping || isSubmitting || !code || !thoughtProcess}
-                    className="flex-1 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Submit & Continue
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {(!code || !thoughtProcess) && (
-                  <div className="mt-3 text-center">
-                    <p className="text-sm text-slate-400">
-                      {!code && !thoughtProcess ? "Please provide both your code solution and explanation" :
-                       !code ? "Please provide your code solution" :
-                       "Please provide an explanation of your solution"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
       <MicrophonePermissionGuide 
         isOpen={showPermissionGuide} 
         onClose={() => setShowPermissionGuide(false)} 

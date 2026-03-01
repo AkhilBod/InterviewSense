@@ -197,9 +197,12 @@ Return ONLY a JSON array in this exact format (no other text):
         }, { status: 404 });
       }
       const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+      const lcProblem = getProblemsMap().get(id)!;
       return NextResponse.json({
         success: true,
         question: problem,
+        problemId: id,
+        topics: lcProblem.topics || [],
         creditsRemaining: deduction.remainingCredits,
       });
     }
@@ -233,9 +236,12 @@ Respond with ONLY the integer problem number. No explanation. No text. Just the 
     }
 
     const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+    const chosenProblem = getProblemsMap().get(chosenId)!;
     return NextResponse.json({
       success: true,
       question: problem,
+      problemId: chosenId,
+      topics: chosenProblem.topics || [],
       creditsRemaining: deduction.remainingCredits,
     });
 
