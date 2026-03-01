@@ -1,35 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const TECH_JOB_TITLES = [
-  { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
-  { id: 'backend-developer', title: 'Backend Developer', description: 'Node.js, Python, Java, Go, APIs, Databases' },
-  { id: 'fullstack-developer', title: 'Full Stack Developer', description: 'Frontend + Backend Development' },
-  { id: 'mobile-developer', title: 'Mobile Developer', description: 'React Native, Flutter, iOS, Android' },
-  { id: 'devops-engineer', title: 'DevOps Engineer', description: 'AWS, Docker, Kubernetes, CI/CD, Infrastructure' },
-  { id: 'software-engineer', title: 'Software Engineer', description: 'General Software Development' },
-  { id: 'senior-software-engineer', title: 'Senior Software Engineer', description: 'Advanced Software Development & Leadership' },
-  { id: 'tech-lead', title: 'Tech Lead', description: 'Technical Leadership & Architecture' },
-  { id: 'engineering-manager', title: 'Engineering Manager', description: 'Team Management & Technical Strategy' },
-  { id: 'aiml-engineer', title: 'AI/ML Engineer', description: 'Python, TensorFlow, PyTorch, Machine Learning' },
-  { id: 'data-engineer', title: 'Data Engineer', description: 'SQL, Spark, Data Pipelines, ETL' },
-  { id: 'data-scientist', title: 'Data Scientist', description: 'Statistics, Machine Learning, Analytics' },
-  { id: 'security-engineer', title: 'Security Engineer', description: 'Cybersecurity, Penetration Testing, InfoSec' },
-  { id: 'qa-engineer', title: 'QA Engineer', description: 'Testing, Automation, Quality Assurance' },
-  { id: 'platform-engineer', title: 'Platform Engineer', description: 'Infrastructure, Platform Tools, Developer Experience' },
-  { id: 'site-reliability-engineer', title: 'Site Reliability Engineer (SRE)', description: 'System Reliability, Monitoring, Performance' },
-  { id: 'cloud-engineer', title: 'Cloud Engineer', description: 'AWS, Azure, GCP, Cloud Architecture' },
-  { id: 'solutions-architect', title: 'Solutions Architect', description: 'System Design, Architecture, Technical Strategy' },
-  { id: 'product-engineer', title: 'Product Engineer', description: 'Product Development, User Experience, Business Logic' },
-  { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' },
-  { id: 'other', title: 'Other', description: 'Enter your own job title' }
-];
 import { Upload, FileText, AlertCircle, MessageSquare, ChevronLeft, RefreshCw, CheckCircle, Brain } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -40,6 +13,48 @@ import PDFHighlightViewer from '@/components/PDFHighlightViewer';
 import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
 import { WordAnalysisData, ResumeHighlight } from '@/types/resume';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { PrefilledChip } from '@/components/ProfileFormComponents';
+import { useProfileData } from '@/hooks/useProfileData';
+
+const pageStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 340px;
+    background: radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '12px 14px',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.88rem',
+  color: '#dde2f0',
+  outline: 'none',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.68rem',
+  fontWeight: 600,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: '#8892b0',
+  marginBottom: 7,
+};
 
 interface ResumeAnalysisData {
   jobTitle: string;
@@ -50,41 +65,47 @@ interface ResumeAnalysisData {
   skillsScore: number;
   strengths: string[];
   improvementAreas: string[];
-  analysis: string; // Full markdown analysis text
+  analysis: string;
   fileType: string;
-  resumeLength?: number; // Estimated pages
-  keywordMatch?: number; // Percentage
-  skillsCount?: number; // Number of strengths
-  atsCompatibility?: string; // "Good", "Needs Improvement", "Optimized", "Unknown"
+  resumeLength?: number;
+  keywordMatch?: number;
+  skillsCount?: number;
+  atsCompatibility?: string;
 }
 
 export default function ResumeCheckerPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { profile, loading: profileLoading } = useProfileData();
 
-  // Form State
+  // Form state
   const [resume, setResume] = useState<File | null>(null);
-  const [jobTitle, setJobTitle] = useState("");
-  const [customJobTitle, setCustomJobTitle] = useState("");
+  const [overridingResume, setOverridingResume] = useState(false);
+  const [overridingCompany, setOverridingCompany] = useState(false);
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Results State
+  // Results state
   const [showResults, setShowResults] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeAnalysisData | null>(null);
-  
+
   // Word Analysis State
   const [showWordAnalysis, setShowWordAnalysis] = useState(false);
   const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
   const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
-  
+
   // Highlight State
   const [highlights, setHighlights] = useState<ResumeHighlight[]>([]);
   const [showPDFHighlights, setShowPDFHighlights] = useState(false);
 
-  // Removed specific analysis - it was redundant with word analysis
+  // Pre-fill company from profile
+  useEffect(() => {
+    if (profile?.targetCompany) {
+      setCompany(profile.targetCompany);
+    }
+  }, [profile]);
 
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -96,26 +117,36 @@ export default function ResumeCheckerPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setShowResults(false); // Ensure results are hidden while processing
+    setShowResults(false);
 
-    const effectiveJobTitle = jobTitle === 'Other' ? customJobTitle : jobTitle;
-    if (!resume || !effectiveJobTitle) {
-      setError("Please upload a resume and provide a job title.");
+    const jobTitle = profile?.targetRole || 'Software Engineer';
+
+    // Resolve resume: use uploaded file, or fetch from profile URL
+    let resolvedResume: File | null = resume;
+    if (!resolvedResume && profile?.resumeUrl) {
+      try {
+        const resp = await fetch(profile.resumeUrl);
+        const blob = await resp.blob();
+        const filename = profile.resumeFilename || 'resume.pdf';
+        resolvedResume = new File([blob], filename, { type: blob.type });
+      } catch {
+        setError("Could not load your saved resume. Please upload it manually.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    if (!resolvedResume) {
+      setError("Please upload a resume.");
       setIsLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append("resume", resume);
-    formData.append("jobTitle", effectiveJobTitle);
-
-    if (company) {
-      formData.append("company", company);
-    }
-
-    if (jobDescription) {
-      formData.append("jobDescription", jobDescription);
-    }
+    formData.append("resume", resolvedResume);
+    formData.append("jobTitle", jobTitle);
+    if (company) formData.append("company", company);
+    if (jobDescription) formData.append("jobDescription", jobDescription);
 
     try {
       const response = await fetch("/api/resume-check", {
@@ -130,7 +161,7 @@ export default function ResumeCheckerPage() {
       }
 
       setResumeData({
-        jobTitle: jobTitle,
+        jobTitle,
         company: company || undefined,
         overallScore: data.score,
         impactScore: data.impactScore || 75,
@@ -145,21 +176,17 @@ export default function ResumeCheckerPage() {
         skillsCount: data.stats.skillsCount || undefined,
         atsCompatibility: data.stats.atsCompatibility || undefined,
       });
-      
-      // Automatically process word analysis if available
+
       if (data.wordAnalysis) {
-        console.log("Word analysis received automatically:", data.wordAnalysis);
         setWordAnalysisData(data.wordAnalysis);
         setShowWordAnalysis(true);
-        
-        // Set highlights if they're included in the response
         if (data.wordAnalysis.highlights) {
           setHighlights(data.wordAnalysis.highlights);
           setShowPDFHighlights(true);
         }
       }
-      
-      setShowResults(true); // Show results after successful analysis
+
+      setShowResults(true);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
@@ -169,16 +196,14 @@ export default function ResumeCheckerPage() {
 
   const handleBackToChecker = () => {
     setShowResults(false);
-    setResumeData(null); // Clear previous results
-    setError(null); // Clear any previous errors
+    setResumeData(null);
+    setError(null);
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
     setShowPDFHighlights(false);
     setHighlights([]);
-    // Keep resume file for preview - don't clear it
   };
 
-  // Helper functions for results display (copied from ResumeResultsPage)
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-400";
     if (score >= 60) return "text-yellow-400";
@@ -247,188 +272,186 @@ export default function ResumeCheckerPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="px-4 py-8 h-screen overflow-y-auto">
+        <style>{pageStyles}</style>
+        <div className="h-screen overflow-y-auto">
           {!showResults ? (
-            // Resume Checker Form - Centered with Progress
-            <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
-              <div className="w-full max-w-2xl">
-                {/* Header Section */}
-                <div className="text-center mb-6 lg:mb-8">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                    Optimize your resume for success
-                  </h1>
-                  <p className="text-zinc-400 text-sm sm:text-base">
-                    Get AI-powered feedback to make your resume stand out to recruiters
-                  </p>
-                </div>
+            <div style={{
+              minHeight: 'calc(100vh - 64px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '52px 24px',
+              position: 'relative',
+              zIndex: 1,
+            }}>
+              <div style={{ width: '100%', maxWidth: 560 }}>
+                <h1 style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontWeight: 400,
+                  fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+                  color: '#dde2f0',
+                  marginBottom: 8,
+                  marginTop: 0,
+                }}>
+                  Resume Review
+                </h1>
+                <p style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#5a6380',
+                  marginBottom: 36,
+                  marginTop: 0,
+                }}>
+                  AI feedback to help your resume land interviews.
+                </p>
 
-                <Card className="bg-[#111827] border border-gray-800">
-                  <CardContent className="p-6 sm:p-8 space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Job Title and Resume Upload Row */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Job Title Section - Takes 2/3 of the space */}
-                        <div className="md:col-span-2 group">
-                          <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                            Job Title
-                          </label>
-                          <div className="relative">
-                            <Select 
-                              value={jobTitle} 
-                              onValueChange={(value) => {
-                                setJobTitle(value);
-                                if (value !== 'Other') {
-                                  setCustomJobTitle('');
-                                }
-                              }}
-                              required
-                            >
-                              <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
-                                <SelectValue placeholder="Select your target role..." className="text-zinc-400" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
-                                {TECH_JOB_TITLES.map(job => (
-                                  <SelectItem 
-                                    key={job.id} 
-                                    value={job.title}
-                                    className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
-                                  >
-                                    <div>
-                                      <div className="font-medium text-white">{job.title}</div>
-                                      <div className="text-sm text-blue-300/70">{job.description}</div>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            
-                            {/* Custom Job Title Input */}
-                            {jobTitle === 'Other' && (
-                              <div className="mt-3">
-                                <Input
-                                  placeholder="Enter your job title..."
-                                  value={customJobTitle}
-                                  onChange={(e) => setCustomJobTitle(e.target.value)}
-                                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-zinc-400"
-                                  required
-                                />
-                              </div>
-                            )}
-                            
-                          </div>
-                        </div>
-
-                        {/* Resume Upload Section - Takes 1/3 of the space */}
-                        <div className="md:col-span-1 group">
-                          <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                            Resume
-                          </label>
-                          <div className="w-full">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className={`w-full flex items-center justify-center text-sm ${resume
-                                ? "bg-blue-500/20 border border-blue-500 text-white transition-all duration-150 h-12 px-4"
-                                : "bg-zinc-900 border border-gray-800 hover:border-blue-500 text-gray-400 transition-all duration-150 h-12 px-4"
-                              }`}
-                              onClick={() =>
-                                document.getElementById("resume-upload")?.click()
-                              }
-                            >
-                              {resume ? (
-                                <>
-                                  <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                                  <span className="truncate">
-                                    {resume.name.length > 25
-                                      ? `${resume.name.substring(0, 25)}...`
-                                      : resume.name}
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="h-4 w-4 mr-2" />
-                                  <span>Upload Resume</span>
-                                </>
-                              )}
-                            </Button>
-                            <input
-                              id="resume-upload"
-                              name="resume"
-                              type="file"
-                              className="hidden"
-                              accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                              onChange={handleResumeChange}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 group">
-                        <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                          Company (Optional)
-                        </label>
-                        <div className="relative">
-                          <Input
-                            placeholder="e.g., Google, Meta, Apple"
-                            value={company}
-                            onChange={(e) => setCompany(e.target.value)}
-                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  placeholder:text-zinc-500"
-                          />
-                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 group">
-                        <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                          Job Description (Optional)
-                        </label>
-                        <div className="relative">
-                          <Textarea
-                            placeholder="Paste the job description here for more targeted analysis..."
-                            value={jobDescription}
-                            onChange={(e) => setJobDescription(e.target.value)}
-                            className="min-h-[120px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 transition-all duration-300  placeholder:text-zinc-500"
-                          />
-                          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        </div>
-                      </div>
-
-                      {error && (
-                        <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                          <div className="text-sm">{error}</div>
-                        </div>
-                      )}
-
-                      <div className="pt-4">
-                        <Button
-                          type="submit"
-                          className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
-                          disabled={isLoading || !resume || !jobTitle}
+                <form onSubmit={handleSubmit}>
+                  {/* Resume */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Resume</label>
+                    {profile?.resumeFilename && !overridingResume ? (
+                      <PrefilledChip
+                        label="From profile"
+                        value={profile.resumeFilename}
+                        onChangeRequest={() => setOverridingResume(true)}
+                      />
+                    ) : (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById("resume-upload")?.click()}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            background: resume ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.04)',
+                            border: resume ? '1px solid rgba(59,130,246,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 10,
+                            padding: '12px 14px',
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.88rem',
+                            color: resume ? '#93c5fd' : '#5a6380',
+                            cursor: 'pointer',
+                            transition: 'border-color 0.15s',
+                          }}
                         >
-                          <Brain className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-                          <span>{isLoading ? "Analyzing Resume..." : "Analyze Resume"}</span>
-                        </Button>
-                        
-                        {(!resume || !jobTitle) && (
-                          <p className="text-center text-zinc-400 text-sm mt-3">
-                            Please upload a resume and select a job title to get started
-                          </p>
-                        )}
+                          {resume ? (
+                            <>
+                              <FileText size={15} />
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {resume.name.length > 35 ? `${resume.name.substring(0, 35)}…` : resume.name}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={15} />
+                              <span>Upload Resume</span>
+                            </>
+                          )}
+                        </button>
+                        <input
+                          id="resume-upload"
+                          name="resume"
+                          type="file"
+                          style={{ display: 'none' }}
+                          accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleResumeChange}
+                        />
                       </div>
-                    </form>
-                  </CardContent>
-                </Card>
+                    )}
+                  </div>
+
+                  {/* Company */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>
+                      Company <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                    </label>
+                    {profile?.targetCompany && !overridingCompany ? (
+                      <PrefilledChip
+                        label="From profile"
+                        value={profile.targetCompany}
+                        onChangeRequest={() => setOverridingCompany(true)}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="e.g., Google, Meta, Apple"
+                        value={company}
+                        onChange={(e) => setCompany(e.target.value)}
+                        style={inputStyle}
+                        onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Job Description */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>
+                      Job Description <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                    </label>
+                    <textarea
+                      placeholder="Paste the job description here for more targeted analysis…"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      rows={5}
+                      style={{
+                        ...inputStyle,
+                        resize: 'vertical',
+                        minHeight: 120,
+                      }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {error && (
+                    <div style={{
+                      borderRadius: 8,
+                      background: 'rgba(239,68,68,0.08)',
+                      border: '1px solid rgba(239,68,68,0.25)',
+                      color: '#fca5a5',
+                      padding: '10px 14px',
+                      fontSize: '0.82rem',
+                      fontFamily: "'Inter', sans-serif",
+                      marginBottom: 16,
+                    }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isLoading || (!resume && !profile?.resumeUrl)}
+                    style={{
+                      width: '100%',
+                      marginTop: 32,
+                      padding: 14,
+                      background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 10,
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.88rem',
+                      fontWeight: 500,
+                      cursor: (isLoading || (!resume && !profile?.resumeUrl)) ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                      opacity: (isLoading || (!resume && !profile?.resumeUrl)) ? 0.5 : 1,
+                      transition: 'opacity 0.2s, transform 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = (isLoading || (!resume && !profile?.resumeUrl)) ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    {isLoading ? 'Analyzing Resume…' : 'Analyze Resume'}
+                  </button>
+                </form>
               </div>
             </div>
           ) : (
             // Resume Analysis Results - Full Width Layout
-            <div className="w-full">
+            <div className="w-full px-4 py-8">
               {/* Header with Back Button and Analysis Buttons */}
               <div className="mb-8 px-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -815,8 +838,8 @@ export default function ResumeCheckerPage() {
                 <div className="px-4 max-w-[1900px] mx-auto mt-8">
                   <ResumeWordAnalysis 
                     analysis={wordAnalysisData}
-                    fileName={resume?.name || "Resume"}
-                    jobTitle={jobTitle}
+                    fileName={resume?.name || profile?.resumeFilename || "Resume"}
+                    jobTitle={profile?.targetRole || 'Software Engineer'}
                     company={company}
                   />
                 </div>

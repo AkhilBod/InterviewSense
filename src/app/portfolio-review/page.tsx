@@ -1,47 +1,71 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  GitBranch,
-  Upload,
-  ExternalLink,
-  Globe,
-  Github,
-  Sparkles,
-  Target,
-  Zap,
-  AlertCircle
-} from 'lucide-react';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import PortfolioAnalysisLoadingModal from '@/components/PortfolioAnalysisLoadingModal';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { PrefilledChip } from '@/components/ProfileFormComponents';
+import { useProfileData } from '@/hooks/useProfileData';
+
+const pageStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 340px;
+    background: radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '12px 14px',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.88rem',
+  color: '#dde2f0',
+  outline: 'none',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.68rem',
+  fontWeight: 600,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: '#8892b0',
+  marginBottom: 7,
+};
 
 export default function PortfolioReviewPage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const { profile, loading: profileLoading } = useProfileData();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [overridingRole, setOverridingRole] = useState(false);
 
-  // Form state
   const [portfolioData, setPortfolioData] = useState({
     portfolioUrl: '',
     githubUrl: '',
-    description: '',
-    projectTypes: [] as string[],
-    experience: '',
     targetRole: '',
-    specificFeedback: ''
   });
+
+  useEffect(() => {
+    if (profile?.targetRole) {
+      setPortfolioData(prev => ({ ...prev, targetRole: profile.targetRole! }));
+    }
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +73,7 @@ export default function PortfolioReviewPage() {
     setError(null);
     
     if (!portfolioData.portfolioUrl || !portfolioData.targetRole) {
-      setError("Please provide your portfolio URL and target role.");
+      setError("Please provide your portfolio URL.");
       setIsLoading(false);
       return;
     }
@@ -59,9 +83,7 @@ export default function PortfolioReviewPage() {
       
       const response = await fetch('/api/portfolio-review', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(portfolioData),
       });
 
@@ -71,10 +93,7 @@ export default function PortfolioReviewPage() {
         throw new Error(result.error || 'Failed to analyze portfolio');
       }
 
-      // Store results in sessionStorage to pass to results page
       sessionStorage.setItem('portfolioReviewResults', JSON.stringify(result));
-      
-      // Close loading modal before navigation
       setShowLoadingModal(false);
       router.push('/portfolio-review/results');
     } catch (error) {
@@ -86,167 +105,144 @@ export default function PortfolioReviewPage() {
     }
   };
 
-  const handleProjectTypeChange = (projectType: string, checked: boolean) => {
-    if (checked) {
-      setPortfolioData(prev => ({
-        ...prev,
-        projectTypes: [...prev.projectTypes, projectType]
-      }));
-    } else {
-      setPortfolioData(prev => ({
-        ...prev,
-        projectTypes: prev.projectTypes.filter(type => type !== projectType)
-      }));
-    }
-  };
-
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <div className="px-4 h-full overflow-y-auto">
-          {/* Portfolio Review Form - Centered */}
-          <div className="flex items-center justify-center min-h-screen py-8">
-            <div className="w-full max-w-2xl">
-              {/* Header Section */}
-              <div className="text-center mb-8 lg:mb-12">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                  Get portfolio feedback that matters
-                </h1>
-                <p className="text-zinc-400 text-sm sm:text-base">
-                  Professional review of your projects and code quality
-                </p>
-              </div>
+    <DashboardLayout>
+      <style>{pageStyles}</style>
+      <div style={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '52px 24px',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        <div style={{ width: '100%', maxWidth: 560 }}>
+          <h1 style={{
+            fontFamily: "'Instrument Serif', serif",
+            fontWeight: 400,
+            fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+            color: '#dde2f0',
+            marginBottom: 8,
+            marginTop: 0,
+          }}>
+            Portfolio Review
+          </h1>
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.88rem',
+            color: '#5a6380',
+            marginBottom: 36,
+            marginTop: 0,
+          }}>
+            Professional feedback on your projects and code quality.
+          </p>
 
-              <Card className="bg-[#111827] border border-gray-800">
-                <CardContent className="p-6 sm:p-8 space-y-6">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Portfolio URL */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Portfolio Website URL
-                      </label>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          placeholder="https://yourportfolio.com"
-                          value={portfolioData.portfolioUrl}
-                          onChange={(e) => setPortfolioData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10 placeholder:text-zinc-500"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* GitHub URL */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        GitHub Profile (Optional)
-                      </label>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          placeholder="https://github.com/yourusername"
-                          value={portfolioData.githubUrl}
-                          onChange={(e) => setPortfolioData(prev => ({ ...prev, githubUrl: e.target.value }))}
-                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10 placeholder:text-zinc-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Target Role */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Target Role
-                      </label>
-                      <div className="relative">
-                        <Select value={portfolioData.targetRole} onValueChange={(value) => setPortfolioData(prev => ({ ...prev, targetRole: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10">
-                            <SelectValue placeholder="What role are you targeting?" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="frontend">Frontend Developer</SelectItem>
-                            <SelectItem value="backend">Backend Developer</SelectItem>
-                            <SelectItem value="fullstack">Full Stack Developer</SelectItem>
-                            <SelectItem value="mobile">Mobile Developer</SelectItem>
-                            <SelectItem value="devops">DevOps Engineer</SelectItem>
-                            <SelectItem value="data">Data Scientist</SelectItem>
-                            <SelectItem value="ml">ML Engineer</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Experience Level */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Experience Level
-                      </label>
-                      <div className="relative">
-                        <Select value={portfolioData.experience} onValueChange={(value) => setPortfolioData(prev => ({ ...prev, experience: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/10">
-                            <SelectValue placeholder="Select your experience level" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="Intern" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
-                              Intern
-                            </SelectItem>
-                            <SelectItem value="Entry-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
-                              Entry-level (0-2 years)
-                            </SelectItem>
-                            <SelectItem value="Mid-level" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
-                              Mid-level (2-5 years)
-                            </SelectItem>
-                            <SelectItem value="Senior" className="hover:bg-blue-500/10 focus:bg-blue-500/20">
-                              Senior (5+ years)
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-
-
-                    {error && (
-                      <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <div className="text-sm">{error}</div>
-                      </div>
-                    )}
-
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
-                        disabled={isLoading || !portfolioData.portfolioUrl || !portfolioData.targetRole}
-                      >
-                        <GitBranch className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-                        <span>{isLoading ? "Analyzing Portfolio..." : "Get Portfolio Review"}</span>
-                      </Button>
-                      
-                      {(!portfolioData.portfolioUrl || !portfolioData.targetRole) && (
-                        <p className="text-center text-zinc-400 text-sm mt-3">
-                          Please provide your portfolio URL and target role to get started
-                        </p>
-                      )}
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+          <form onSubmit={handleSubmit}>
+            {/* Portfolio URL */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>
+                Portfolio URL
+              </label>
+              <input
+                type="url"
+                placeholder="https://yourportfolio.com"
+                value={portfolioData.portfolioUrl}
+                onChange={(e) => setPortfolioData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                required
+                style={inputStyle}
+                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+              />
             </div>
-          </div>
-        </div>
 
-        {/* Loading Modal */}
-        <PortfolioAnalysisLoadingModal
-          isOpen={showLoadingModal}
-          onClose={() => {}} // Don't allow closing during analysis
-        />
-      </DashboardLayout>
-    </ProtectedRoute>
+            {/* GitHub URL */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>
+                GitHub Profile <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+              </label>
+              <input
+                type="url"
+                placeholder="https://github.com/yourusername"
+                value={portfolioData.githubUrl}
+                onChange={(e) => setPortfolioData(prev => ({ ...prev, githubUrl: e.target.value }))}
+                style={inputStyle}
+                onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+              />
+            </div>
+
+            {/* Target Role */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Target Role</label>
+              {profile?.targetRole && !overridingRole ? (
+                <PrefilledChip
+                  label="From profile"
+                  value={profile.targetRole}
+                  onChangeRequest={() => setOverridingRole(true)}
+                />
+              ) : (
+                <input
+                  type="text"
+                  placeholder="e.g., Software Engineer, Frontend Developer"
+                  value={portfolioData.targetRole}
+                  onChange={(e) => setPortfolioData(prev => ({ ...prev, targetRole: e.target.value }))}
+                  autoFocus={overridingRole}
+                  style={inputStyle}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                />
+              )}
+            </div>
+
+            {error && (
+              <div style={{
+                borderRadius: 8,
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.25)',
+                color: '#fca5a5',
+                padding: '10px 14px',
+                fontSize: '0.82rem',
+                fontFamily: "'Inter', sans-serif",
+                marginBottom: 16,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading || !portfolioData.portfolioUrl}
+              style={{
+                width: '100%',
+                marginTop: 32,
+                padding: 14,
+                background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 10,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.88rem',
+                fontWeight: 500,
+                cursor: (isLoading || !portfolioData.portfolioUrl) ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                opacity: (isLoading || !portfolioData.portfolioUrl) ? 0.5 : 1,
+                transition: 'opacity 0.2s, transform 0.15s',
+              }}
+              onMouseEnter={e => { if (!isLoading && portfolioData.portfolioUrl) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = (isLoading || !portfolioData.portfolioUrl) ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+            >
+              {isLoading ? 'Analyzing Portfolio…' : 'Get Portfolio Review'}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <PortfolioAnalysisLoadingModal
+        isOpen={showLoadingModal}
+        onClose={() => {}}
+      />
+    </DashboardLayout>
   );
-} 
+}
+

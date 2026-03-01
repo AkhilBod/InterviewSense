@@ -48,6 +48,14 @@ model User {
   lastCreditReset     DateTime             @default(now())
   stripeCustomerId        String?              @unique
   questionnaireCompleted  Boolean              @default(false)
+  onboardingCompleted     Boolean              @default(false)
+  resumeUrl               String?
+  resumeFilename          String?
+  resumeUploadedAt        DateTime?
+  targetRole              String?
+  targetCompany           String?
+  jobDescription          String?
+  onboardingCompletedAt   DateTime?
   accounts                Account[]
   featureUsage            FeatureUsage[]
   passwordResetTokens PasswordResetToken[]

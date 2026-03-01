@@ -1,13 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -16,437 +11,229 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
-import { toast } from "@/components/ui/use-toast"
-import {
-  Upload,
-  FileText,
-  Mic,
-  Volume2,
-  Play,
-  RefreshCw
-} from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RefreshCw, Mic, Volume2 } from "lucide-react"
 import { DashboardLayout } from '@/components/DashboardLayout'
-
-const TECH_JOB_TITLES = [
-  { id: 'frontend-developer', title: 'Frontend Developer', description: 'React, Vue, Angular, JavaScript, TypeScript' },
-  { id: 'backend-developer', title: 'Backend Developer', description: 'Node.js, Python, Java, Go, APIs, Databases' },
-  { id: 'fullstack-developer', title: 'Full Stack Developer', description: 'Frontend + Backend Development' },
-  { id: 'mobile-developer', title: 'Mobile Developer', description: 'React Native, Flutter, iOS, Android' },
-  { id: 'devops-engineer', title: 'DevOps Engineer', description: 'AWS, Docker, Kubernetes, CI/CD, Infrastructure' },
-  { id: 'software-engineer', title: 'Software Engineer', description: 'General Software Development' },
-  { id: 'senior-software-engineer', title: 'Senior Software Engineer', description: 'Advanced Software Development & Leadership' },
-  { id: 'tech-lead', title: 'Tech Lead', description: 'Technical Leadership & Architecture' },
-  { id: 'engineering-manager', title: 'Engineering Manager', description: 'Team Management & Technical Strategy' },
-  { id: 'aiml-engineer', title: 'AI/ML Engineer', description: 'Python, TensorFlow, PyTorch, Machine Learning' },
-  { id: 'data-engineer', title: 'Data Engineer', description: 'SQL, Spark, Data Pipelines, ETL' },
-  { id: 'data-scientist', title: 'Data Scientist', description: 'Statistics, Machine Learning, Analytics' },
-  { id: 'security-engineer', title: 'Security Engineer', description: 'Cybersecurity, Penetration Testing, InfoSec' },
-  { id: 'qa-engineer', title: 'QA Engineer', description: 'Testing, Automation, Quality Assurance' },
-  { id: 'platform-engineer', title: 'Platform Engineer', description: 'Infrastructure, Platform Tools, Developer Experience' },
-  { id: 'site-reliability-engineer', title: 'Site Reliability Engineer (SRE)', description: 'System Reliability, Monitoring, Performance' },
-  { id: 'cloud-engineer', title: 'Cloud Engineer', description: 'AWS, Azure, GCP, Cloud Architecture' },
-  { id: 'solutions-architect', title: 'Solutions Architect', description: 'System Design, Architecture, Technical Strategy' },
-  { id: 'product-engineer', title: 'Product Engineer', description: 'Product Development, User Experience, Business Logic' },
-  { id: 'embedded-engineer', title: 'Embedded Systems Engineer', description: 'C/C++, Hardware, IoT, Firmware' }
-];
-
-interface FormData {
-  role: string;
-  numberOfQuestions: number;
-  resume: File | null;
-  company: string;
-  jobTitle: string;
-  customJobTitle: string;
-  industry: string;
-  experienceLevel: string;
-  interviewType: string;
-  interviewStage: string;
-  jobDescription: string;
-}
+import { useProfileData } from '@/hooks/useProfileData'
+import { PrefilledChip } from '@/components/ProfileFormComponents'
 
 interface MicrophoneState {
-  devices: MediaDeviceInfo[];
-  selectedDevice: string;
-  volume: number;
-  isSupported: boolean;
-  isLoading: boolean;
+  devices: MediaDeviceInfo[]
+  selectedDevice: string
+  volume: number
+  isSupported: boolean
+  isLoading: boolean
 }
+
+// ── page-level styles injected once ──────────────────────────────────────────
+const pageStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
+  body { background: #0a0e1a; overflow-x: hidden; }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -160px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 380px;
+    background: radial-gradient(ellipse at center, rgba(37,99,235,0.45) 0%, rgba(99,102,241,0.22) 40%, transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(8px);
+  }
+`
 
 export default function StartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  
-  // Form state
-  const [formData, setFormData] = useState<FormData>({
-    role: '',
-    numberOfQuestions: 5,
-    resume: null,
-    company: '',
-    jobTitle: '',
-    customJobTitle: '',
-    industry: '',
-    experienceLevel: 'Intern',
-    interviewType: 'Behavioral',
-    interviewStage: 'Initial Screening',
-    jobDescription: ''
-  });
+  const { profile, loading: profileLoading } = useProfileData()
 
-  // UI state
-  const [showMicSetup, setShowMicSetup] = useState(false);
+  const [company, setCompany] = useState('')
+  const [overridingCompany, setOverridingCompany] = useState(false)
+  const [showMicSetup, setShowMicSetup] = useState(false)
   const [micState, setMicState] = useState<MicrophoneState>({
     devices: [],
     selectedDevice: '',
     volume: 100,
     isSupported: false,
-    isLoading: false
-  });
+    isLoading: false,
+  })
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Pre-fill company from profile
+  useEffect(() => {
+    if (profile.targetCompany) setCompany(profile.targetCompany)
+  }, [profile.targetCompany])
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-    checkMicrophoneSupport();
+    if (status === 'unauthenticated') router.push('/login')
+    checkMicrophoneSupport()
   }, [status, router])
 
   const checkMicrophoneSupport = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }));
-      return;
+      setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }))
+      return
     }
-
-    setMicState(prev => ({ ...prev, isLoading: true }));
-
+    setMicState(prev => ({ ...prev, isLoading: true }))
     try {
-      // First, request microphone permission to get device labels
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Now enumerate devices (this will include labels after permission is granted)
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const audioDevices = devices.filter(device => device.kind === 'audioinput');
-      
-      // Stop the stream as we only needed it for permission
-      stream.getTracks().forEach(track => track.stop());
-      
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const audioDevices = devices.filter(d => d.kind === 'audioinput')
+      stream.getTracks().forEach(t => t.stop())
       setMicState(prev => ({
         ...prev,
         isSupported: true,
         devices: audioDevices,
         selectedDevice: audioDevices[0]?.deviceId || '',
-        isLoading: false
-      }));
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      
-      // Try to enumerate devices anyway (might work without labels)
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioDevices = devices.filter(device => device.kind === 'audioinput');
-        
-        setMicState(prev => ({
-          ...prev,
-          isSupported: audioDevices.length > 0,
-          devices: audioDevices,
-          selectedDevice: audioDevices[0]?.deviceId || '',
-          isLoading: false
-        }));
-      } catch (enumError) {
-        console.error('Error enumerating devices:', enumError);
-        setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }));
-      }
+        isLoading: false,
+      }))
+    } catch {
+      setMicState(prev => ({ ...prev, isSupported: false, isLoading: false }))
     }
-  };
-
-  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain'
-      ];
-      const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt'];
-      
-      if (allowedTypes.includes(file.type) || allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
-        setFormData(prev => ({ ...prev, resume: file }));
-        toast({
-          title: "Resume uploaded successfully",
-          description: `${file.name} has been uploaded.`,
-        });
-      } else {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF, DOC, DOCX, or TXT file.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
+  }
 
   const handleStartInterview = async () => {
-    const effectiveJobTitle = formData.jobTitle === 'other' ? formData.customJobTitle : formData.jobTitle;
-    if (!effectiveJobTitle) {
-      toast({
-        title: "Please enter a job title",
-        description: "Job title is required to generate relevant questions.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Refresh microphone devices before showing the dialog
-    await checkMicrophoneSupport();
-    setShowMicSetup(true);
-  };
+    await checkMicrophoneSupport()
+    setShowMicSetup(true)
+  }
 
   const handleContinueToInterview = () => {
-    // Store form data in localStorage for the interview page
-    const effectiveJobTitle = formData.jobTitle === 'other' ? formData.customJobTitle : formData.jobTitle;
-    localStorage.setItem('jobTitle', effectiveJobTitle);
-    localStorage.setItem('company', formData.company);
-    localStorage.setItem('industry', formData.industry);
-    localStorage.setItem('experienceLevel', formData.experienceLevel);
-    localStorage.setItem('interviewType', formData.interviewType);
-    localStorage.setItem('interviewStage', formData.interviewStage);
-    localStorage.setItem('jobDescription', formData.jobDescription);
-    localStorage.setItem('numberOfQuestions', formData.numberOfQuestions.toString());
-    
-    // Store additional settings
-    const interviewData = {
-      ...formData,
-      micSettings: {
-        deviceId: micState.selectedDevice,
-        volume: micState.volume
-      }
-    };
-    
-    localStorage.setItem('interviewData', JSON.stringify(interviewData));
-    router.push('/interview');
-  };
-
-  const isFormValid = () => {
-    if (formData.jobTitle === 'other') {
-      return formData.customJobTitle.trim() !== '';
-    }
-    return formData.jobTitle.trim() !== '';
-  };
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    // Use profile role if available, fallback to 'Software Engineer'
+    const jobTitle = profile.targetRole || 'Software Engineer'
+    localStorage.setItem('jobTitle', jobTitle)
+    localStorage.setItem('company', company)
+    localStorage.setItem('industry', '')
+    localStorage.setItem('experienceLevel', 'Mid-level')
+    localStorage.setItem('interviewType', 'Behavioral')
+    localStorage.setItem('interviewStage', 'Initial Screening')
+    localStorage.setItem('jobDescription', '')
+    localStorage.setItem('numberOfQuestions', '5')
+    router.push('/interview')
   }
+
+  if (status === 'loading' || profileLoading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0e1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 26, height: 26, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      </div>
+    )
+  }
+
+  const effectiveCompany = company
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
-          
-          {/* Left Side - Breathing Circle */}
-          <div className="flex flex-col items-center justify-center space-y-8">
-            <div className="relative">
-              {/* Breathing Dotted Circle Pattern */}
-              <div className="w-80 h-80 rounded-full relative animate-breathing">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  {/* Main dotted circle with dot animation */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="rgb(59 130 246)"
-                    strokeWidth="0.8"
-                    strokeLinecap="round"
-                    strokeDasharray="0.5 1.5 1 2 0.3 1.8 1.2 1.2 0.7 2.5 0.4 1.6 1.5 1 0.6 2.2 0.8 1.4 1.1 1.8 0.5 2 0.9 1.3 0.7 1.9 1.3 1.1 0.4 2.3 0.6 1.7 1.2 1.4 0.8 2.1 0.5 1.5 1 1.6 0.9 1.2 1.4 1.8 0.7 2.4 0.3 1.9"
-                    className="animate-dot-flow opacity-90"
-                  />
-                  {/* Second layer with different dot animation */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="none"
-                    stroke="rgb(59 130 246)"
-                    strokeWidth="0.6"
-                    strokeLinecap="round"
-                    strokeDasharray="0.3 2 1.5 1 0.7 1.8 0.4 2.2 1.2 1.3 0.6 1.9 0.8 1.6 1.1 1.4 0.5 2.1 0.9 1.7"
-                    className="animate-dot-flow-reverse opacity-60"
-                  />
-                  {/* Subtle background circle with pulse */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="48"
-                    fill="none"
-                    stroke="rgb(51 65 85 / 0.2)"
-                    strokeWidth="0.5"
-                    strokeDasharray="0.2 3 0.8 2.5 0.4 3.2 1.1 2.8 0.6 3.5 0.3 2.9 0.9 3.1 0.5 2.7"
-                    className="animate-pulse-slow"
-                  />
-                </svg>
-              </div>
-            </div>
+      <style>{pageStyles}</style>
+      <div style={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '52px 24px',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        <div style={{ width: '100%', maxWidth: 560 }}>
+          {/* Title */}
+          <h1 style={{
+            fontFamily: "'Instrument Serif', serif",
+            fontWeight: 400,
+            fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+            color: '#dde2f0',
+            marginBottom: 8,
+            marginTop: 0,
+          }}>
+            Behavioral Interview
+          </h1>
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.88rem',
+            color: '#5a6380',
+            marginBottom: 36,
+            marginTop: 0,
+          }}>
+            Practice questions tailored to your background and target role.
+          </p>
+
+          {/* Company field */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{
+              display: 'block',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.68rem',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#8892b0',
+              marginBottom: 7,
+            }}>
+              Company <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+            </label>
+
+            {profile.targetCompany && !overridingCompany ? (
+              <PrefilledChip
+                label="Company"
+                value={profile.targetCompany}
+                onChangeRequest={() => setOverridingCompany(true)}
+              />
+            ) : (
+              <input
+                type="text"
+                value={company}
+                onChange={e => setCompany(e.target.value)}
+                placeholder="e.g., Google, Meta, Apple"
+                autoFocus={overridingCompany}
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#dde2f0',
+                  outline: 'none',
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = '#3b82f6'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              />
+            )}
           </div>
 
-          {/* Right Side - Form */}
-          <div className="space-y-6">
-            <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm">
-              <CardContent className="p-8 space-y-6">
-                
-                {/* Resume Upload and Job Title Row */}
-                <div className="flex items-end justify-between gap-6">
-                  {/* Job Title Selection */}
-                  <div className="flex-1">
-                    <Label className="text-zinc-300 text-sm mb-2 block">Job Title</Label>
-                    <Select 
-                      value={formData.jobTitle} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value, customJobTitle: value === 'other' ? prev.customJobTitle : '' }))}
-                    >
-                      <SelectTrigger className="bg-zinc-800 border-zinc-600 justify-start text-left [&>span]:justify-start [&>span]:text-left">
-                        <SelectValue placeholder="Select your job title" className="text-left" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-800 border-zinc-600 max-h-60">
-                        {TECH_JOB_TITLES
-                          .filter(job => job.title && job.title.trim() !== '')
-                          .map(job => (
-                            <SelectItem key={job.id} value={job.title} className="justify-start text-left data-[highlighted]:text-left">
-                              <div className="flex flex-col items-start w-full text-left">
-                                <div className="font-medium text-left w-full">{job.title}</div>
-                                <div className="text-sm text-zinc-400 text-left w-full">{job.description}</div>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        <SelectItem value="other" className="justify-start text-left data-[highlighted]:text-left">
-                          <div className="flex flex-col items-start w-full text-left">
-                            <div className="font-medium text-left w-full">Other</div>
-                            <div className="text-sm text-zinc-400 text-left w-full">Enter your own job title</div>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    {/* Custom Job Title Input */}
-                    {formData.jobTitle === 'other' && (
-                      <div className="mt-3">
-                        <Input
-                          placeholder="Enter your job title..."
-                          value={formData.customJobTitle}
-                          onChange={(e) => setFormData(prev => ({ ...prev, customJobTitle: e.target.value }))}
-                          className="bg-zinc-800 border-zinc-600 text-zinc-100 placeholder:text-zinc-400"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Resume Upload */}
-                  <div className="flex-shrink-0">
-                    <Label className="text-zinc-300 text-sm mb-2 block">Resume</Label>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className={`w-full flex items-center justify-center text-sm ${formData.resume 
-                          ? "bg-gradient-to-r from-zinc-600/30 to-zinc-700/30 hover:from-zinc-600/40 hover:to-zinc-700/40 border-2 border-zinc-400/70 hover:border-zinc-300/90 text-zinc-200 hover:text-zinc-100 transition-all duration-300 shadow-lg shadow-zinc-500/25 hover:shadow-zinc-500/35 h-12 px-4"
-                          : "bg-gradient-to-r from-zinc-600/10 to-zinc-700/10 hover:from-zinc-600/20 hover:to-zinc-700/20 border-2 border-zinc-500/30 hover:border-zinc-400/50 text-zinc-300 hover:text-zinc-200 transition-all duration-300 shadow-lg shadow-zinc-500/10 hover:shadow-zinc-500/20 h-12 px-4"
-                        }`}
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        {formData.resume ? (
-                          <>
-                            <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                            <span className="truncate">
-                              {formData.resume.name.length > 25
-                                ? `${formData.resume.name.substring(0, 25)}...`
-                                : formData.resume.name}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            <span>Upload Resume</span>
-                          </>
-                        )}
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleResumeUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Experience Level */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Experience Level</Label>
-                  <Select 
-                    value={formData.experienceLevel} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
-                  >
-                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600">
-                      <SelectItem value="Intern">Intern</SelectItem>
-                      <SelectItem value="Entry-level">Entry-level (0-2 years)</SelectItem>
-                      <SelectItem value="Mid-level">Mid-level (2-5 years)</SelectItem>
-                      <SelectItem value="Senior">Senior (5+ years)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Number of Questions */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Number of Questions</Label>
-                  <Select 
-                    value={formData.numberOfQuestions.toString()} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(value) }))}
-                  >
-                    <SelectTrigger className="bg-zinc-800 border-zinc-600">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-600">
-                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map(num => (
-                        <SelectItem key={num} value={num.toString()}>{num} questions</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Company Input */}
-                <div className="space-y-3">
-                  <Label className="text-zinc-300">Company (Optional)</Label>
-                  <Input
-                    placeholder="e.g., Google, Apple, Meta"
-                    value={formData.company}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                    className="bg-zinc-800 border-zinc-600 focus:border-blue-400"
-                  />
-                </div>
-
-                {/* Start Interview Button */}
-                <Button
-                  onClick={handleStartInterview}
-                  disabled={!isFormValid()}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-full py-6 text-lg font-medium shadow transition-colors disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <Play className="mr-2 h-5 w-5" />
-                  Start Interview
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Start button */}
+          <button
+            onClick={handleStartInterview}
+            style={{
+              width: '100%',
+              marginTop: 32,
+              padding: 14,
+              background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 10,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.88rem',
+              fontWeight: 500,
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+              transition: 'opacity 0.2s, transform 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none' }}
+          >
+            Start Interview
+          </button>
         </div>
       </div>
 
-      {/* Microphone Setup Dialog */}
+      {/* Microphone Setup Dialog — unchanged functionality */}
       <Dialog open={showMicSetup} onOpenChange={setShowMicSetup}>
         <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-700">
           <DialogHeader>
@@ -458,58 +245,48 @@ export default function StartPage() {
               Configure your microphone before starting the interview
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
-            {/* Microphone Selection */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-zinc-300">Microphone</Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={checkMicrophoneSupport}
-                  className="text-zinc-400 hover:text-zinc-300 p-1"
+                  className="text-zinc-400 hover:text-zinc-300 p-1 bg-transparent border-none cursor-pointer"
                 >
                   <RefreshCw className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
-              
+
               {micState.isLoading ? (
                 <div className="bg-zinc-800 border border-zinc-600 rounded-md p-3 text-center">
                   <div className="flex items-center justify-center space-x-2 text-zinc-400">
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">Detecting microphones...</span>
+                    <span className="text-sm">Detecting microphones…</span>
                   </div>
                 </div>
               ) : micState.devices.length === 0 ? (
                 <div className="bg-zinc-800 border border-zinc-600 rounded-md p-3 text-center">
-                  <p className="text-sm text-zinc-400 mb-2">
-                    No microphones detected. Please allow microphone access.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={checkMicrophoneSupport}
-                    className="bg-zinc-700 border-zinc-600 hover:bg-zinc-600"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                  <p className="text-sm text-zinc-400 mb-2">No microphones detected. Please allow microphone access.</p>
+                  <button type="button" onClick={checkMicrophoneSupport} className="text-sm text-blue-400 underline bg-transparent border-none cursor-pointer">
                     Detect Microphones
-                  </Button>
+                  </button>
                 </div>
               ) : (
-                <Select 
-                  value={micState.selectedDevice} 
-                  onValueChange={(value) => setMicState(prev => ({ ...prev, selectedDevice: value }))}
+                <Select
+                  value={micState.selectedDevice}
+                  onValueChange={value => setMicState(prev => ({ ...prev, selectedDevice: value }))}
                 >
                   <SelectTrigger className="bg-zinc-800 border-zinc-600">
                     <SelectValue placeholder="Select microphone" />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-800 border-zinc-600">
                     {micState.devices
-                      .filter(device => device.deviceId && device.deviceId.trim() !== '')
-                      .map(device => (
-                        <SelectItem key={device.deviceId} value={device.deviceId}>
-                          {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                      .filter(d => d.deviceId && d.deviceId.trim() !== '')
+                      .map(d => (
+                        <SelectItem key={d.deviceId} value={d.deviceId}>
+                          {d.label || `Microphone ${d.deviceId.slice(0, 8)}`}
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -517,7 +294,6 @@ export default function StartPage() {
               )}
             </div>
 
-            {/* Volume Control */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-zinc-300">Volume</Label>
@@ -527,7 +303,7 @@ export default function StartPage() {
                 <Volume2 className="h-4 w-4 text-zinc-400" />
                 <Slider
                   value={[micState.volume]}
-                  onValueChange={(value) => setMicState(prev => ({ ...prev, volume: value[0] }))}
+                  onValueChange={value => setMicState(prev => ({ ...prev, volume: value[0] }))}
                   max={100}
                   step={1}
                   className="flex-1"
@@ -536,83 +312,47 @@ export default function StartPage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex space-x-3 pt-4">
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setShowMicSetup(false)}
-              className="flex-1 border-zinc-600 hover:bg-zinc-800"
+              style={{
+                flex: 1,
+                padding: '10px 0',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8,
+                color: '#8892b0',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleContinueToInterview}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white shadow transition-colors"
+              style={{
+                flex: 1,
+                padding: '10px 0',
+                background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                border: 'none',
+                borderRadius: 8,
+                color: '#fff',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.85rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
             >
               Continue to Interview
-            </Button>
+            </button>
           </div>
         </DialogContent>
       </Dialog>
-
-      <style jsx>{`
-        @keyframes breathing {
-          0%, 100% {
-            transform: translateY(0px) scale(1);
-          }
-          50% {
-            transform: translateY(-8px) scale(1.02);
-          }
-        }
-        @keyframes dot-flow {
-          0% {
-            stroke-dashoffset: 0;
-            opacity: 0.9;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            stroke-dashoffset: 20;
-            opacity: 0.9;
-          }
-        }
-        @keyframes dot-flow-reverse {
-          0% {
-            stroke-dashoffset: 20;
-            opacity: 0.6;
-          }
-          50% {
-            opacity: 0.3;
-          }
-          100% {
-            stroke-dashoffset: 0;
-            opacity: 0.6;
-          }
-        }
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 0.2;
-            stroke-width: 0.5;
-          }
-          50% {
-            opacity: 0.4;
-            stroke-width: 0.7;
-          }
-        }
-        .animate-breathing {
-          animation: breathing 4s ease-in-out infinite;
-        }
-        .animate-dot-flow {
-          animation: dot-flow 6s linear infinite;
-        }
-        .animate-dot-flow-reverse {
-          animation: dot-flow-reverse 8s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </DashboardLayout>
   )
 }
+
+

@@ -3,6 +3,14 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* Instrument Serif font for onboarding */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+/* Onboarding spinner */
+@keyframes onb-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Fix @apply rules */
 @layer base {
   * {

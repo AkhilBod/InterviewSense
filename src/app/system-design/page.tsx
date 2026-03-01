@@ -1,49 +1,46 @@
 "use client"
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Code2,
-  AlertCircle
-} from 'lucide-react';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { ToggleGroup } from '@/components/ProfileFormComponents';
+
+const pageStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 340px;
+    background: radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
 
 export default function SystemDesignPage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    experienceLevel: '',
-    testDifficulty: '',
-    targetCompany: ''
-  });
+  const [testDifficulty, setTestDifficulty] = useState('medium');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     
-    if (!formData.experienceLevel || !formData.testDifficulty) {
-      setError("Please provide your experience level and test difficulty.");
-      setIsLoading(false);
-      return;
-    }
-    
     try {
       const response = await fetch('/api/system-design', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experienceLevel: 'mid',
+          testDifficulty,
+          targetCompany: 'general',
+        }),
       });
 
       const result = await response.json();
@@ -52,7 +49,6 @@ export default function SystemDesignPage() {
         throw new Error(result.error || 'Failed to generate system design test');
       }
 
-      // Store the result and navigate to results page
       sessionStorage.setItem('systemDesignTest', JSON.stringify(result.data));
       router.push('/system-design/results');
     } catch (error) {
@@ -63,128 +59,107 @@ export default function SystemDesignPage() {
     }
   };
 
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0f1e]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <ProtectedRoute>
-      <DashboardLayout>
-        <div className="px-4 h-full overflow-y-auto">
-          {/* System Design Test - Centered */}
-          <div className="flex items-center justify-center min-h-screen py-8">
-            <div className="w-full max-w-2xl">
-              {/* Header Section */}
-              <div className="text-center mb-8 lg:mb-12">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                  System Design Interview Test
-                </h1>
-                <p className="text-zinc-400 text-sm sm:text-base">
-                  Demonstrate your system design skills with real-world scenarios
-                </p>
-              </div>
+    <DashboardLayout>
+      <style>{pageStyles}</style>
+      <div style={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '52px 24px',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        <div style={{ width: '100%', maxWidth: 560 }}>
+          <h1 style={{
+            fontFamily: "'Instrument Serif', serif",
+            fontWeight: 400,
+            fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+            color: '#dde2f0',
+            marginBottom: 8,
+            marginTop: 0,
+          }}>
+            System Design
+          </h1>
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.88rem',
+            color: '#5a6380',
+            marginBottom: 36,
+            marginTop: 0,
+          }}>
+            Real-world architecture problems with AI evaluation.
+          </p>
 
-              <Card className="bg-[#111827] border border-gray-800">
-                <CardContent className="p-6 sm:p-8 space-y-6">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Experience Level */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Your Experience Level
-                      </label>
-                      <div className="relative">
-                        <Select value={formData.experienceLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
-                            <SelectValue placeholder="Select your experience level" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="junior">Junior (0-2 years)</SelectItem>
-                            <SelectItem value="mid">Mid-Level (2-5 years)</SelectItem>
-                            <SelectItem value="senior">Senior (5+ years)</SelectItem>
-                            <SelectItem value="lead">Tech Lead/Principal</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Test Difficulty */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Test Difficulty
-                      </label>
-                      <div className="relative">
-                        <Select value={formData.testDifficulty} onValueChange={(value) => setFormData(prev => ({ ...prev, testDifficulty: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
-                            <SelectValue placeholder="Choose test difficulty" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="easy">Easy (Basic concepts)</SelectItem>
-                            <SelectItem value="medium">Medium (Real-world scenarios)</SelectItem>
-                            <SelectItem value="hard">Hard (Complex systems)</SelectItem>
-                            <SelectItem value="interview">Interview Style (Mixed difficulty)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Target Company Type */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Target Company Type (Optional)
-                      </label>
-                      <div className="relative">
-                        <Select value={formData.targetCompany} onValueChange={(value) => setFormData(prev => ({ ...prev, targetCompany: value }))}>
-                          <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300 ">
-                            <SelectValue placeholder="What type of company are you targeting?" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                            <SelectItem value="faang">FAANG/Big Tech</SelectItem>
-                            <SelectItem value="startup">Startup</SelectItem>
-                            <SelectItem value="fintech">Fintech</SelectItem>
-                            <SelectItem value="ecommerce">E-commerce</SelectItem>
-                            <SelectItem value="general">General</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {error && (
-                      <div className="rounded-lg bg-blue-900/30 border border-blue-800 text-blue-200 p-3 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <div className="text-sm">{error}</div>
-                      </div>
-                    )}
-
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
-                        disabled={isLoading || !formData.experienceLevel || !formData.testDifficulty}
-                      >
-                        <Code2 className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-                        <span>{isLoading ? "Preparing Test..." : "Start System Design Test"}</span>
-                      </Button>
-
-                      {(!formData.experienceLevel || !formData.testDifficulty) && (
-                        <p className="text-center text-zinc-400 text-sm mt-3">
-                          Please select your experience level and test difficulty to begin
-                        </p>
-                      )}
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+          <form onSubmit={handleSubmit}>
+            {/* Difficulty */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{
+                display: 'block',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                color: '#8892b0',
+                marginBottom: 7,
+              }}>
+                Difficulty
+              </label>
+              <ToggleGroup
+                options={[
+                  { label: 'Easy', value: 'easy' },
+                  { label: 'Medium', value: 'medium' },
+                  { label: 'Hard', value: 'hard' },
+                ]}
+                value={testDifficulty}
+                onChange={setTestDifficulty}
+              />
             </div>
-          </div>
+
+            {error && (
+              <div style={{
+                borderRadius: 8,
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.25)',
+                color: '#fca5a5',
+                padding: '10px 14px',
+                fontSize: '0.82rem',
+                fontFamily: "'Inter', sans-serif",
+                marginBottom: 16,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                marginTop: 32,
+                padding: 14,
+                background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 10,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.88rem',
+                fontWeight: 500,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                opacity: isLoading ? 0.5 : 1,
+                transition: 'opacity 0.2s, transform 0.15s',
+              }}
+              onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = isLoading ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+            >
+              {isLoading ? 'Preparing Test…' : 'Start System Design Test'}
+            </button>
+          </form>
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+      </div>
+    </DashboardLayout>
   );
-} 
+}

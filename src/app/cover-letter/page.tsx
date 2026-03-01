@@ -2,14 +2,54 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Download, Upload, MessageSquare, User, LogOut, Copy, Check, FileText } from "lucide-react";
-import jsPDF from 'jspdf'; // Import jsPDF
-import { useSession, signOut } from "next-auth/react";
+import { AlertCircle, CheckCircle, Download, Upload, Copy, Check, FileText } from "lucide-react";
+import jsPDF from 'jspdf';
+import { useSession } from "next-auth/react";
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { PrefilledChip } from '@/components/ProfileFormComponents';
+import { useProfileData } from '@/hooks/useProfileData';
+
+const pageStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 340px;
+    background: radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '12px 14px',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.88rem',
+  color: '#dde2f0',
+  outline: 'none',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: '0.68rem',
+  fontWeight: 600,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: '#8892b0',
+  marginBottom: 7,
+};
 
 interface CoverLetter {
   id: string;
@@ -19,10 +59,12 @@ interface CoverLetter {
 
 export default function CoverLetterPage() {
   const { data: session } = useSession();
+  const { profile, loading: profileLoading } = useProfileData();
   const [jobDescription, setJobDescription] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [overridingCompany, setOverridingCompany] = useState(false);
   const [resume, setResume] = useState<File | null>(null);
-  const [resumeName, setResumeName] = useState<string>("");
+  const [overridingResume, setOverridingResume] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<string | null>(null);
@@ -31,15 +73,32 @@ export default function CoverLetterPage() {
   const [currentLetterId, setCurrentLetterId] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Pre-fill company from profile
+  useEffect(() => {
+    if (profile?.targetCompany) setCompanyName(profile.targetCompany);
+  }, [profile]);
+
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setResume(file);
-      setResumeName(file.name);
+      setResume(e.target.files[0]);
     } else {
       setResume(null);
-      setResumeName("");
     }
+  };
+
+  // Resolves the resume to a File, either from state or by fetching profile URL
+  const resolveResume = async (): Promise<File | null> => {
+    if (resume) return resume;
+    if (profile?.resumeUrl) {
+      try {
+        const resp = await fetch(profile.resumeUrl);
+        const blob = await resp.blob();
+        return new File([blob], profile.resumeFilename || 'resume.pdf', { type: blob.type });
+      } catch {
+        return null;
+      }
+    }
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,26 +106,33 @@ export default function CoverLetterPage() {
     setIsLoading(true);
     setError(null);
 
-    if (!resume || !jobDescription || !companyName) {
-      setError("Please upload a resume, provide a job description, and enter the company name.");
+    const effectiveCompany = overridingCompany ? companyName : (profile?.targetCompany || companyName);
+
+    if (!effectiveCompany || !jobDescription) {
+      setError("Please enter the company name and provide a job description.");
+      setIsLoading(false);
+      return;
+    }
+
+    const resolvedResume = await resolveResume();
+    if (!resolvedResume) {
+      setError("Could not load your resume. Please upload it manually.");
       setIsLoading(false);
       return;
     }
 
     const formData = new FormData();
     formData.append("jobDescription", jobDescription);
-    formData.append("companyName", companyName);
-    formData.append("resume", resume);
+    formData.append("companyName", effectiveCompany);
+    formData.append("resume", resolvedResume);
 
     try {
       setLoadingStep("Analyzing your resume...");
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setLoadingStep("Processing job description...");
       await new Promise(resolve => setTimeout(resolve, 800));
-      
       setLoadingStep("Creating your personalized cover letter...");
-      
+
       const response = await fetch("/api/generate-cover-letter", {
         method: "POST",
         body: formData,
@@ -78,20 +144,17 @@ export default function CoverLetterPage() {
         throw new Error(data.error || "Failed to generate cover letter. Please try again.");
       }
 
-      // Clean up newlines and formatting issues
       const cleanedLetter = data.coverLetter
         .replace(/\\n/g, '\n')
         .replace(/\n\n\n+/g, '\n\n')
         .trim();
 
-      // Create new letter version
       const newLetter: CoverLetter = {
         id: `letter_${Date.now()}`,
         content: cleanedLetter,
         timestamp: new Date()
       };
 
-      // Add to previous letters and set as current
       setPreviousLetters(prev => [newLetter, ...prev]);
       setCurrentLetterId(newLetter.id);
       setGeneratedCoverLetter(cleanedLetter);
@@ -104,20 +167,15 @@ export default function CoverLetterPage() {
     }
   };
 
-  // Enhanced copy functionality
   const handleCopyToClipboard = async () => {
     if (!generatedCoverLetter) return;
-    
     try {
       await navigator.clipboard.writeText(generatedCoverLetter);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
+    } catch {}
   };
 
-  // Version management
   const switchToLetter = (letterId: string) => {
     const letter = previousLetters.find(l => l.id === letterId);
     if (letter) {
@@ -126,261 +184,208 @@ export default function CoverLetterPage() {
     }
   };
 
-  // Generate new letter with existing data
   const generateNewLetter = async () => {
-    if (!resume || !jobDescription || !companyName) {
-      setError("Please ensure you have uploaded a resume, provided a job description, and entered the company name.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append("jobDescription", jobDescription);
-    formData.append("companyName", companyName);
-    formData.append("resume", resume);
-
-    try {
-      setLoadingStep("Analyzing your resume...");
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setLoadingStep("Processing job description...");
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      setLoadingStep("Creating new version...");
-      
-      const response = await fetch("/api/generate-cover-letter", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to generate cover letter. Please try again.");
-      }
-
-      // Clean up newlines and formatting issues
-      const cleanedLetter = data.coverLetter
-        .replace(/\\n/g, '\n')
-        .replace(/\n\n\n+/g, '\n\n')
-        .trim();
-
-      // Create new letter version
-      const newLetter: CoverLetter = {
-        id: `letter_${Date.now()}`,
-        content: cleanedLetter,
-        timestamp: new Date()
-      };
-
-      // Add to previous letters and set as current
-      setPreviousLetters(prev => [newLetter, ...prev]);
-      setCurrentLetterId(newLetter.id);
-      setGeneratedCoverLetter(cleanedLetter);
-
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
-    } finally {
-      setIsLoading(false);
-      setLoadingStep("");
-    }
+    await handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
   const handleDownload = () => {
     if (!generatedCoverLetter) return;
-
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
     const maxLineWidth = pageWidth - margin * 2;
     let yPosition = margin;
-    
-    // Split cover letter into sections for better formatting
     const sections = generatedCoverLetter.split('\n\n');
-    
     sections.forEach((section, index) => {
       if (!section.trim()) return;
-      
-      // Check if this is a header section (contains contact info)
-      const isHeader = section.includes('@') || section.includes('(') || /^\d+/.test(section);
-      const isDate = /^\w+\s+\d+,\s+\d{4}/.test(section.trim());
-      const isSalutation = section.toLowerCase().startsWith('dear');
-      const isClosing = section.toLowerCase().includes('sincerely') || section.toLowerCase().includes('best regards');
-      
-      // Set appropriate font and size
-      if (isHeader) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(11);
-      } else if (isDate || isSalutation || isClosing) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-      } else {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-      }
-      
-      // Split section into lines
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
       const lines = doc.splitTextToSize(section, maxLineWidth);
-      
-      lines.forEach((line: string, lineIndex: number) => {
-        // Check if we need a new page
-        if (yPosition + 15 > pageHeight - margin) {
-          doc.addPage();
-          yPosition = margin;
-        }
-        
+      lines.forEach((line: string) => {
+        if (yPosition + 15 > pageHeight - margin) { doc.addPage(); yPosition = margin; }
         doc.text(line, margin, yPosition);
-        yPosition += 6; // Line spacing
-      });
-      
-      // Add extra spacing between sections
-      if (index < sections.length - 1) {
         yPosition += 6;
-      }
+      });
+      if (index < sections.length - 1) yPosition += 6;
     });
-
-    // Generate filename
-    const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `Cover_Letter_${timestamp}.pdf`;
-    
-    doc.save(filename);
+    doc.save(`Cover_Letter_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="p-8">
-          <div className="w-full max-w-4xl mx-auto">
-            {/* Header Section */}
-            <div className="text-center mb-6 lg:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-              Craft your perfect cover letter
-            </h1>
-            <p className="text-zinc-400 text-sm sm:text-base">
-              Create compelling, personalized cover letters that get you noticed
-            </p>
-          </div>
+        <style>{pageStyles}</style>
+        <div className="h-screen overflow-y-auto">
+          {isLoading ? (
+            <div style={{
+              minHeight: 'calc(100vh - 64px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 16,
+            }}>
+              <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+              <p style={{ fontFamily: "'Inter', sans-serif", color: '#7da8d4', fontSize: '0.9rem' }}>{loadingStep}</p>
+            </div>
+          ) : !generatedCoverLetter ? (
+            <div style={{
+              minHeight: 'calc(100vh - 64px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '52px 24px',
+              position: 'relative',
+              zIndex: 1,
+            }}>
+              <div style={{ width: '100%', maxWidth: 560 }}>
+                <h1 style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontWeight: 400,
+                  fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+                  color: '#dde2f0',
+                  marginBottom: 8,
+                  marginTop: 0,
+                }}>
+                  Cover Letter
+                </h1>
+                <p style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#5a6380',
+                  marginBottom: 36,
+                  marginTop: 0,
+                }}>
+                  Written around your resume and the specific role.
+                </p>
 
-          <Card className="bg-[#111827] border border-gray-800">
-            <CardContent className="p-6 sm:p-8 space-y-6">
-              {isLoading ? (
-                <div className="text-center py-16 bg-[#0a0f1e]">
-                  <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
-                  <h3 className="text-xl font-semibold text-white mb-3">{loadingStep}</h3>
-                  <p className="text-zinc-400">Please wait while we craft your perfect cover letter...</p>
-                </div>
-              ) : (
-                <>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    
-                    {/* Company Name and Resume Upload Row - Better Space Distribution */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Company Name Section - Takes 2/3 of the space */}
-                      <div className="md:col-span-2 group">
-                        <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                          Company Name
-                        </label>
-                        <div className="relative">
-                          <Input
-                            placeholder="e.g., Google, Meta, Apple"
-                            value={companyName}
-                            onChange={(e) => setCompanyName(e.target.value)}
-                            className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-lg placeholder:text-zinc-500"
-                            required
-                          />
-                          </div>
-                      </div>
+                <form onSubmit={handleSubmit}>
+                  {/* Company */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Company Name</label>
+                    {profile?.targetCompany && !overridingCompany ? (
+                      <PrefilledChip
+                        label="From profile"
+                        value={profile.targetCompany}
+                        onChangeRequest={() => setOverridingCompany(true)}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="e.g., Google, Meta, Apple"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        required
+                        style={inputStyle}
+                        onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                      />
+                    )}
+                  </div>
 
-                      {/* Resume Upload Section - Takes 1/3 of the space */}
-                      <div className="md:col-span-1 group">
-                        <label className="text-blue-300 text-sm font-medium mb-3 block flex items-center gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                          Resume
-                        </label>
-                        <div className="w-full">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className={`w-full flex items-center justify-center text-sm ${resumeName
-                              ? "bg-blue-500/20 border border-blue-500 text-white transition-all duration-150 h-12 px-4"
-                              : "bg-zinc-900 border border-gray-800 hover:border-blue-500 text-gray-400 transition-all duration-150 h-12 px-4"
-                            }`}
-                            onClick={() => document.getElementById("resume-upload")?.click()}
-                          >
-                            {resumeName ? (
-                              <>
-                                <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">
-                                  {resumeName.length > 25
-                                    ? `${resumeName.substring(0, 25)}...`
-                                    : resumeName}
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="h-4 w-4 mr-2" />
-                                <span>Upload Resume</span>
-                              </>
-                            )}
-                          </Button>
-                          <input
-                            id="resume-upload"
-                            name="resume"
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={handleResumeChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Job Description Section */}
-                    <div className="space-y-3 group">
-                      <label className="text-blue-300 text-sm font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                        Job Description
-                      </label>
-                      <div className="relative">
-                        <Textarea
-                          placeholder="Paste the complete job description here for the most targeted cover letter..."
-                          value={jobDescription}
-                          onChange={(e) => setJobDescription(e.target.value)}
-                          className="min-h-[250px] bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 transition-all duration-300  placeholder:text-zinc-500"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {error && (
-                      <div className="rounded-lg bg-red-900/30 border border-red-800 text-red-200 p-3 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <div className="text-sm">{error}</div>
+                  {/* Resume */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Resume</label>
+                    {profile?.resumeFilename && !overridingResume ? (
+                      <PrefilledChip
+                        label="Saved"
+                        value={profile.resumeFilename}
+                        onChangeRequest={() => setOverridingResume(true)}
+                      />
+                    ) : (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById("cl-resume-upload")?.click()}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            background: resume ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.04)',
+                            border: resume ? '1px solid rgba(59,130,246,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 10,
+                            padding: '12px 14px',
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.88rem',
+                            color: resume ? '#93c5fd' : '#5a6380',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {resume ? (
+                            <><FileText size={15} /><span>{resume.name.length > 35 ? `${resume.name.substring(0, 35)}…` : resume.name}</span></>
+                          ) : (
+                            <><Upload size={15} /><span>Upload Resume</span></>
+                          )}
+                        </button>
+                        <input id="cl-resume-upload" type="file" style={{ display: 'none' }} accept=".pdf,.doc,.docx,.txt" onChange={handleResumeChange} />
                       </div>
                     )}
+                  </div>
 
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
-                        disabled={isLoading || !resume || !jobDescription || !companyName}
-                      >
-                        <FileText className="mr-3 h-5 w-5 sm:h-6 sm:w-6" />
-                        <span>Generate Cover Letter</span>
-                      </Button>
-                      
-                      {(!resume || !jobDescription || !companyName) && (
-                        <p className="text-center text-zinc-400 text-sm mt-3">
-                          Please upload a resume, enter company name, and provide job description
-                        </p>
-                      )}
+                  {/* Job Description */}
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Job Description</label>
+                    <textarea
+                      placeholder="Paste the complete job description here for the most targeted cover letter…"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      required
+                      rows={8}
+                      style={{ ...inputStyle, resize: 'vertical', minHeight: 180 }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {error && (
+                    <div style={{
+                      borderRadius: 8,
+                      background: 'rgba(239,68,68,0.08)',
+                      border: '1px solid rgba(239,68,68,0.25)',
+                      color: '#fca5a5',
+                      padding: '10px 14px',
+                      fontSize: '0.82rem',
+                      fontFamily: "'Inter', sans-serif",
+                      marginBottom: 16,
+                    }}>
+                      {error}
                     </div>
-                  </form>
+                  )}
 
+                  <button
+                    type="submit"
+                    disabled={isLoading || !jobDescription || (!companyName && !profile?.targetCompany)}
+                    style={{
+                      width: '100%',
+                      marginTop: 32,
+                      padding: 14,
+                      background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 10,
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.88rem',
+                      fontWeight: 500,
+                      cursor: (isLoading || !jobDescription || (!companyName && !profile?.targetCompany)) ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                      opacity: (isLoading || !jobDescription || (!companyName && !profile?.targetCompany)) ? 0.5 : 1,
+                      transition: 'opacity 0.2s, transform 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!isLoading && jobDescription) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = (isLoading || !jobDescription) ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    Generate Cover Letter
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            /* Generated cover letter view */
+            <div className="p-8">
+              <div className="w-full max-w-4xl mx-auto">
                   {generatedCoverLetter && (
                     <div className="mt-8">
                       <div className="flex items-center justify-between mb-6">
@@ -530,11 +535,9 @@ export default function CoverLetterPage() {
                       </div>
                     </div>
                   )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

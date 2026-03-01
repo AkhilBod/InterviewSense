@@ -6,7 +6,7 @@ export const CREDIT_COSTS = {
   COVER_LETTER: 1,
   RESUME_REVIEW: 1,
   RESUME_ANALYSIS: 1,
-  TECHNICAL_INTERVIEW: 10, // per question
+  TECHNICAL_INTERVIEW: 5, // per question
   BEHAVIORAL_PRACTICE: 0.25, // per question
   SYSTEM_DESIGN: 5,
   PORTFOLIO_REVIEW: 2,

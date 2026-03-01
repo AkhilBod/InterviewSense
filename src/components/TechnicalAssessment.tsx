@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useProfileData } from '@/hooks/useProfileData';
+import { PrefilledChip, ToggleGroup } from '@/components/ProfileFormComponents';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -395,9 +397,10 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   // Loading state for submit button
   const [isLoading, setIsLoading] = useState(false);
   const [company, setCompany] = useState('');
+  const [overridingCompany, setOverridingCompany] = useState(false);
   const [role, setRole] = useState('');
   const [customRole, setCustomRole] = useState('');
-  const [difficulty, setDifficulty] = useState('');
+  const [difficulty, setDifficulty] = useState('Medium');
   const [question, setQuestion] = useState('');
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
@@ -407,6 +410,14 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
+  const { profile } = useProfileData();
+
+  // Pre-fill company and role from profile on first load
+  useEffect(() => {
+    if (profile.targetCompany && !company) setCompany(profile.targetCompany);
+    if (profile.targetRole && !role) setRole(profile.targetRole);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.targetCompany, profile.targetRole]);
   
   // Add state for question progression
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -880,50 +891,35 @@ public class Solution {
       setSolutions([]);
       setSolutionsGenerated(false);
 
-      let problemId = '';
-      let problemTitle = '';
-      let problemDifficulty = '';
-      let prompt = '';
-
-      if (problemMode === 'ai') {
-        // For AI mode, get a random problem from our collections
-        const allCollections = [BLIND75_PROBLEMS, NEETCODE_150_PROBLEMS, GRIND75_PROBLEMS];
-        const randomCollection = allCollections[Math.floor(Math.random() * allCollections.length)];
-        const categories = Object.keys(randomCollection);
-        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-        const problems = randomCollection[randomCategory as keyof typeof randomCollection];
-        const randomProblem = problems[Math.floor(Math.random() * problems.length)];
-        
-        problemId = randomProblem.id.toString();
-        problemTitle = randomProblem.title;
-        problemDifficulty = randomProblem.difficulty;
-      } else if (problemMode === 'specific') {
-        problemId = leetcodeNumber;
-      } else if (problemMode === 'preset') {
-        if (!selectedQuestion) {
-          throw new Error('Please select a problem');
+      // Validate specific mode input
+      if (problemMode === 'specific') {
+        const num = parseInt(leetcodeNumber);
+        if (isNaN(num) || num < 1 || num > 3549) {
+          toast({
+            title: "Invalid problem number",
+            description: "Please enter a number between 1 and 3549.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
         }
-
-        problemId = selectedQuestion.id.toString();
-        problemTitle = selectedQuestion.title;
-        problemDifficulty = selectedQuestion.difficulty;
       }
 
-      if (!problemId) {
-        throw new Error('No problem selected');
+      if (problemMode === 'preset' && !selectedQuestion) {
+        toast({
+          title: "No problem selected",
+          description: "Please select a problem from the list.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
       }
 
-      // Now we use Gemini just to fetch the full problem content
-      prompt = `Get LeetCode problem #${problemId}${problemTitle ? ` (${problemTitle})` : ''}.
-
-Return the EXACT problem as it appears on LeetCode with:
-1. Problem number and title
-2. Difficulty${problemDifficulty ? ` (${problemDifficulty})` : ''}
-3. Full description
-4. Examples
-5. Constraints
-
-DO NOT modify or generate a new problem. Return the exact LeetCode problem #${problemId}.`;
+      const problemId = problemMode === 'specific'
+        ? leetcodeNumber
+        : problemMode === 'preset'
+          ? String(selectedQuestion!.id)
+          : undefined;
 
       const response = await fetch('/api/technical-assessment', {
         method: 'POST',
@@ -934,11 +930,8 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
           company,
           role,
           difficulty,
-          useCustomNumber: problemMode === 'specific' || problemMode === 'preset',
+          useCustomNumber: problemMode !== 'ai',
           leetcodeNumber: problemId,
-          preset: selectedPreset,
-          category: selectedCategory,
-          prompt
         }),
       });
 
@@ -948,7 +941,9 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
         setQuestion(data.question);
         toast({
           title: "Problem Loaded",
-          description: `Problem #${problemId}${problemTitle ? `: ${problemTitle}` : ''} is ready.`,
+          description: problemId
+            ? `Problem #${problemId} is ready.`
+            : "Your problem is ready.",
         });
       } else {
         toast({
@@ -1884,526 +1879,401 @@ DO NOT modify or generate a new problem. Return the exact LeetCode problem #${pr
 
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
-      {/* Header Section */}
-      <div className="text-center mb-6 lg:mb-8">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-          Ready for your technical challenge?
-        </h1>
-        <p className="text-zinc-400 text-sm sm:text-base">
-          Practice coding problems with AI-powered feedback and analysis
-        </p>
-      </div>
+      {/* ── Setup Form ────────────────────────────────────────────── */}
+      {!question && (
+        <div style={{ maxWidth: 560, margin: '0 auto', padding: '52px 24px 0' }}>
+          {/* Title */}
+          <h1 style={{
+            fontFamily: "'Instrument Serif', serif",
+            fontWeight: 400,
+            fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+            color: '#dde2f0',
+            marginBottom: 8,
+            marginTop: 0,
+          }}>
+            Technical Challenge
+          </h1>
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.88rem',
+            color: '#5a6380',
+            marginBottom: 28,
+            marginTop: 0,
+          }}>
+            AI-generated problems matched to your role.
+          </p>
 
-      <Card className="bg-[#111827] border border-gray-800">
-        <CardContent className="p-6 sm:p-8 space-y-6">
-          {/* Problem Selection Mode */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div 
-              onClick={() => setProblemMode('ai')}
-              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
-                problemMode === 'ai' 
-                  ? 'bg-blue-600/20 border-blue-500/50 ' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'ai' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
-                }`}>
-                  <Zap className={`w-5 h-5 ${problemMode === 'ai' ? 'text-blue-500' : 'text-zinc-400'}`} />
-                </div>
-                <div>
-                  <h3 className={`font-semibold ${problemMode === 'ai' ? 'text-blue-500' : 'text-zinc-300'}`}>
-                    AI Generator
-                  </h3>
-                  <p className="text-sm text-zinc-400">
-                    Smart problem selection
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div 
-              onClick={() => setProblemMode('specific')}
-              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
-                problemMode === 'specific' 
-                  ? 'bg-blue-600/20 border-blue-500/50 ' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'specific' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
-                }`}>
-                  <Target className={`w-5 h-5 ${problemMode === 'specific' ? 'text-blue-500' : 'text-zinc-400'}`} />
-                </div>
-                <div>
-                  <h3 className={`font-semibold ${problemMode === 'specific' ? 'text-blue-500' : 'text-zinc-300'}`}>
-                    Specific Problem
-                  </h3>
-                  <p className="text-sm text-zinc-400">
-                    Choose by number
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div 
-              onClick={() => setProblemMode('preset')}
-              className={`cursor-pointer rounded-xl p-4 border transition-all duration-300 ${
-                problemMode === 'preset' 
-                  ? 'bg-blue-600/20 border-blue-500/50 ' 
-                  : 'bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  problemMode === 'preset' ? 'bg-blue-500/20' : 'bg-zinc-700/50'
-                }`}>
-                  <BookOpen className={`w-5 h-5 ${problemMode === 'preset' ? 'text-blue-500' : 'text-zinc-400'}`} />
-                </div>
-                <div>
-                  <h3 className={`font-semibold ${problemMode === 'preset' ? 'text-blue-500' : 'text-zinc-300'}`}>
-                    Popular Presets
-                  </h3>
-                  <p className="text-sm text-zinc-400">
-                    Curated collections
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* Mode Tabs */}
+          <div style={{
+            display: 'flex',
+            gap: 4,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10,
+            padding: 4,
+            marginBottom: 28,
+          }}>
+            {([
+              { key: 'ai', label: 'AI Generated' },
+              { key: 'specific', label: 'Specific Problem' },
+              { key: 'preset', label: 'Popular Presets' },
+            ] as const).map(tab => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setProblemMode(tab.key)}
+                style={{
+                  flex: 1,
+                  padding: '8px 0',
+                  borderRadius: 7,
+                  border: 'none',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.78rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  background: problemMode === tab.key ? 'rgba(59,130,246,0.18)' : 'transparent',
+                  color: problemMode === tab.key ? '#93c5fd' : '#5a6380',
+                  borderBottom: problemMode === tab.key ? '1px solid rgba(59,130,246,0.4)' : '1px solid transparent',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Preset Selection */}
-          {problemMode === 'preset' && (
-            <div className="space-y-6 mt-6">
-              {/* Selected Preset Details */}
-              {selectedPreset && (
-                <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-6 mb-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-xl font-bold text-zinc-100">
-                        {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.title}
-                      </h3>
-                      <p className="text-sm text-zinc-400 mt-1">
-                        Select a category and question to practice
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedPreset('');
-                        setSelectedCategory('');
-                        setSelectedQuestion(null);
-                      }}
-                      className="text-zinc-400 hover:text-zinc-100"
-                    >
-                      Change Preset
-                    </Button>
-                  </div>
+          {/* Company + Difficulty — only for AI mode */}
+          {problemMode === 'ai' && (
+            <>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{
+                  display: 'block',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  color: '#8892b0',
+                  marginBottom: 7,
+                }}>
+                  Company <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none' as const, letterSpacing: 0 }}>(optional)</span>
+                </label>
+                {profile.targetCompany && !overridingCompany ? (
+                  <PrefilledChip
+                    label="Company"
+                    value={profile.targetCompany}
+                    onChangeRequest={() => setOverridingCompany(true)}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={company}
+                    onChange={e => setCompany(e.target.value)}
+                    placeholder="e.g., Google, Meta, Apple"
+                    autoFocus={overridingCompany}
+                    style={{
+                      width: '100%',
+                      boxSizing: 'border-box' as const,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 10,
+                      padding: '12px 14px',
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.88rem',
+                      color: '#dde2f0',
+                      outline: 'none',
+                    }}
+                    onFocus={e => {
+                      e.currentTarget.style.borderColor = '#3b82f6';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)';
+                    }}
+                    onBlur={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  />
+                )}
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.categories.map((category) => (
-                      <div
-                        key={category.name}
-                        onClick={() => {
-                          setSelectedCategory(category.name);
-                          setSelectedQuestion(null);
+              <div style={{ marginBottom: 20 }}>
+                <label style={{
+                  display: 'block',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  color: '#8892b0',
+                  marginBottom: 7,
+                }}>
+                  Difficulty
+                </label>
+                <ToggleGroup
+                  options={['Easy', 'Medium', 'Hard']}
+                  value={difficulty}
+                  onChange={setDifficulty}
+                />
+              </div>
+            </>
+          )}
+
+          {/* ── Specific Problem Mode ── */}
+          {problemMode === 'specific' && (
+            <div style={{ marginBottom: 20 }}>
+              <label style={{
+                display: 'block',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                color: '#8892b0',
+                marginBottom: 7,
+              }}>
+                LeetCode Problem Number
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={3549}
+                value={leetcodeNumber}
+                onChange={e => {
+                  const v = e.target.value;
+                  if (v === '') { setLeetcodeNumber(''); return; }
+                  const n = parseInt(v);
+                  if (!isNaN(n) && n >= 1 && n <= 3549) setLeetcodeNumber(v);
+                }}
+                placeholder="e.g., 1, 42, 146, 295…"
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box' as const,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#dde2f0',
+                  outline: 'none',
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)';
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              />
+              <span style={{ display: 'block', marginTop: 6, fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#4a5370' }}>
+                Problems 1–3549
+              </span>
+            </div>
+          )}
+
+          {/* ── Presets Mode ── */}
+          {problemMode === 'preset' && (
+            <div style={{ marginBottom: 20 }}>
+              {/* Preset picker */}
+              {!selectedPreset ? (
+                <>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.68rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    color: '#8892b0',
+                    marginBottom: 12,
+                  }}>
+                    Choose a preset
+                  </label>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    {(['neetcode75', 'neetcode150'] as const).map(preset => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => { setSelectedPreset(preset); setSelectedCategory(''); setSelectedQuestion(null); }}
+                        style={{
+                          flex: 1,
+                          padding: '18px 14px',
+                          borderRadius: 10,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'rgba(255,255,255,0.04)',
+                          cursor: 'pointer',
+                          fontFamily: "'Inter', sans-serif",
+                          transition: 'all 0.15s',
+                          textAlign: 'center' as const,
                         }}
-                        className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
-                          selectedCategory === category.name
-                            ? 'bg-blue-600/20 border-blue-500/50 '
-                            : 'bg-zinc-800/30 border-zinc-700/50 hover:border-blue-500/30'
-                        }`}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; e.currentTarget.style.background = 'rgba(59,130,246,0.07)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
-                            selectedCategory === category.name ? 'bg-blue-500/20' : 'bg-zinc-700/50'
-                          }`}>
-                            {category.icon}
-                          </div>
-                          <div>
-                            <h4 className={`font-medium ${
-                              selectedCategory === category.name ? 'text-blue-500' : 'text-zinc-200'
-                            }`}>
-                              {category.name}
-                            </h4>
-                            <p className="text-sm text-zinc-400">
-                              {category.count} problems
-                            </p>
-                          </div>
+                        <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.25rem', color: '#dde2f0', marginBottom: 4 }}>
+                          {preset === 'neetcode75' ? 'NeetCode 75' : 'NeetCode 150'}
                         </div>
-                      </div>
+                        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#5a6380' }}>
+                          {preset === 'neetcode75' ? '75 curated problems' : '150 essential problems'}
+                        </div>
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Preset Cards Grid */}
-              {!selectedPreset && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {LEETCODE_PRESETS.map((preset) => (
-                    <div
-                      key={preset.id}
-                      onClick={() => setSelectedPreset(preset.id)}
-                      className={`cursor-pointer rounded-xl p-6 border transition-all duration-300 hover:scale-[1.02] ${
-                        selectedPreset === preset.id
-                          ? 'bg-[#111827] border-blue-500'
-                          : 'bg-[#111827] border-gray-800 hover:border-blue-500'
-                      }`}
+                </>
+              ) : (
+                <>
+                  {/* Back + preset label */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedPreset(''); setSelectedCategory(''); setSelectedQuestion(null); }}
+                      style={{ background: 'none', border: 'none', color: '#5a6380', cursor: 'pointer', padding: '2px 0', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}
                     >
-                      <div className="flex flex-col h-full">
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className={`text-lg font-bold mb-1 ${
-                              selectedPreset === preset.id ? 'text-blue-500' : 'text-zinc-100'
-                            }`}>
-                              {preset.title}
-                            </h3>
-                            <p className="text-sm text-zinc-400">
-                              {preset.description}
-                            </p>
-                          </div>
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 ${
-                            selectedPreset === preset.id 
-                              ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
-                              : 'bg-zinc-800 border-zinc-600 text-zinc-400'
-                          }`}>
-                            {preset.icon}
-                          </div>
-                        </div>
+                      ← Back
+                    </button>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600 }}>
+                      {selectedPreset === 'neetcode75' ? 'NeetCode 75' : 'NeetCode 150'}
+                    </span>
+                  </div>
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700/30">
-                            <div className="text-2xl font-bold text-zinc-100 mb-1">
-                              {preset.totalProblems}
-                            </div>
-                            <div className="text-xs text-zinc-400">Problems</div>
-                          </div>
-                          <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700/30">
-                            <div className="text-2xl font-bold text-zinc-100 mb-1">
-                              {preset.estimatedHours}h
-                            </div>
-                            <div className="text-xs text-zinc-400">Est. Time</div>
-                          </div>
-                        </div>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.68rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase' as const,
+                    color: '#8892b0',
+                    marginBottom: 10,
+                  }}>
+                    Topic
+                  </label>
 
-                        {/* Progress Bar */}
-                        <div className="mt-auto">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm text-zinc-400">Progress</div>
-                            <div className="text-sm font-medium text-zinc-300">0%</div>
-                          </div>
-                          <div className="h-2 bg-zinc-700/50 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full w-0 rounded-full transition-all duration-150 ${
-                                selectedPreset === preset.id
-                                  ? 'bg-blue-500'
-                                  : 'bg-zinc-600'
-                              }`}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Categories */}
-                        <div className="mt-4">
-                          <div className="flex flex-wrap gap-2">
-                            {preset.categories.slice(0, 3).map((category, idx) => (
-                              <span 
-                                key={idx}
-                                className={`text-xs px-2 py-1 rounded-full border flex items-center gap-1 ${
-                                  selectedPreset === preset.id
-                                    ? 'bg-blue-500/10 border-blue-500/30 text-blue-500'
-                                    : 'bg-zinc-800 border-zinc-700 text-zinc-400'
-                                }`}
-                              >
-                                <span>{category.icon}</span>
-                                <span>{category.name}</span>
-                              </span>
-                            ))}
-                            {preset.categories.length > 3 && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
-                                +{preset.categories.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Difficulty Indicator */}
-                        <div className="mt-4 flex items-center gap-2">
-                          <div className="text-xs text-zinc-400">Difficulty:</div>
-                          <div className={`text-xs font-medium px-2 py-1 rounded-full ${
-                            preset.difficulty.includes('Hard') 
-                              ? 'bg-red-500/20 text-red-400 border border-red-500/40'
-                              : preset.difficulty.includes('Medium')
-                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
-                                : 'bg-blue-500/20 text-blue-500 border border-blue-500/40'
-                          }`}>
-                            {preset.difficulty}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Questions List for Selected Category */}
-              {selectedCategory && (
-                <div className="mt-8">
-                  <h4 className="text-lg font-semibold text-zinc-100 mb-4">
-                    Select a Question from {selectedCategory}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(() => {
-                      // Get problems based on the selected preset
-                      const problems = (() => {
-                        switch (selectedPreset) {
-                          case 'blind75':
-                            return BLIND75_PROBLEMS[selectedCategory as keyof typeof BLIND75_PROBLEMS];
-                          case 'neetcode150':
-                            return NEETCODE_150_PROBLEMS[selectedCategory as keyof typeof NEETCODE_150_PROBLEMS];
-                          case 'grind75':
-                            return GRIND75_PROBLEMS[selectedCategory as keyof typeof GRIND75_PROBLEMS];
-                          default:
-                            return [];
-                        }
-                      })();
-
-                      return problems?.map((question) => (
-                        <div
-                          key={question.id}
-                          onClick={async () => {
-                            setSelectedQuestion(question);
-                            // Immediately trigger question generation for the selected problem
-                            try {
-                              setIsLoading(true);
-                              const response = await fetch('/api/technical-assessment', {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                  useCustomNumber: true,
-                                  leetcodeNumber: question.id,
-                                  preset: selectedPreset,
-                                  category: selectedCategory,
-                                  prompt: `Get LeetCode problem #${question.id} (${question.title}).
-
-Return the EXACT problem as it appears on LeetCode with:
-1. Problem number and title
-2. Difficulty (${question.difficulty})
-3. Full description
-4. Examples
-5. Constraints
-
-DO NOT modify or generate a new problem. Return the exact LeetCode problem #${question.id}.`
-                                }),
-                              });
-
-                              const data = await response.json();
-
-                              if (data.success) {
-                                setQuestion(data.question);
-                              } else {
-                                toast({
-                                  title: "Error",
-                                  description: data.error || "Failed to load question. Please try again.",
-                                  variant: "destructive",
-                                });
-                              }
-                            } catch (error) {
-                              console.error('Error loading question:', error);
-                              toast({
-                                title: "Error",
-                                description: "Failed to load question. Please try again.",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setIsLoading(false);
-                            }
+                  {/* Topic grid */}
+                  {!selectedCategory ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
+                      {Object.keys(selectedPreset === 'neetcode75' ? BLIND75_PROBLEMS : NEETCODE_150_PROBLEMS).map(cat => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => { setSelectedCategory(cat); setSelectedQuestion(null); }}
+                          style={{
+                            padding: '7px 14px',
+                            borderRadius: 20,
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'rgba(255,255,255,0.04)',
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.78rem',
+                            color: '#8892b0',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
                           }}
-                          className={`cursor-pointer rounded-lg p-4 border transition-all duration-300 ${
-                            selectedQuestion?.id === question.id
-                              ? 'bg-blue-600/20 border-blue-500/50 '
-                              : 'bg-zinc-800/30 border-zinc-700/50 hover:border-blue-500/30'
-                          }`}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; e.currentTarget.style.color = '#93c5fd'; e.currentTarget.style.background = 'rgba(59,130,246,0.07)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#8892b0'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-zinc-300 font-medium">#{question.id}</span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              question.difficulty === 'Easy' ? 'bg-blue-500/20 text-blue-500' :
-                              question.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-red-500/20 text-red-400'
-                            }`}>
-                              {question.difficulty}
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Back to topics */}
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedCategory(''); setSelectedQuestion(null); }}
+                        style={{ background: 'none', border: 'none', color: '#5a6380', cursor: 'pointer', padding: '2px 0', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', marginBottom: 10 }}
+                      >
+                        ← {selectedCategory}
+                      </button>
+
+                      {/* Problem list */}
+                      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
+                        {((selectedPreset === 'neetcode75' ? BLIND75_PROBLEMS : NEETCODE_150_PROBLEMS) as Record<string, { id: number; title: string; difficulty: string }[]>)[selectedCategory]?.map((prob) => (
+                          <button
+                            key={prob.id}
+                            type="button"
+                            onClick={() => setSelectedQuestion(prob)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 14px',
+                              borderRadius: 8,
+                              border: `1px solid ${selectedQuestion?.id === prob.id ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                              background: selectedQuestion?.id === prob.id ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.02)',
+                              fontFamily: "'Inter', sans-serif",
+                              fontSize: '0.82rem',
+                              color: selectedQuestion?.id === prob.id ? '#93c5fd' : '#8892b0',
+                              cursor: 'pointer',
+                              textAlign: 'left' as const,
+                              transition: 'all 0.12s',
+                            }}
+                          >
+                            <span>
+                              <span style={{ color: '#4a5370', marginRight: 8, fontSize: '0.72rem' }}>#{prob.id}</span>
+                              {prob.title}
                             </span>
-                          </div>
-                          <h5 className={`font-medium ${
-                            selectedQuestion?.id === question.id ? 'text-blue-500' : 'text-zinc-200'
-                          }`}>
-                            {question.title}
-                          </h5>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
+                            <span style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              color: prob.difficulty === 'Easy' ? '#34d399' : prob.difficulty === 'Medium' ? '#fbbf24' : '#f87171',
+                              flexShrink: 0,
+                              marginLeft: 12,
+                            }}>
+                              {prob.difficulty}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
               )}
             </div>
           )}
 
-          {/* AI Generator Form */}
-          {problemMode === 'ai' && (
-            <div className="bg-[#111827] p-6 rounded-xl border border-gray-800">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Existing AI form fields */}
-                <div className="space-y-4 group">
-                  <Label htmlFor="company" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                    Company
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="company"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      placeholder="e.g., Google, Meta, Apple"
-                      required={problemMode === 'ai'}
-                      className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 placeholder:text-zinc-500"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4 group">
-                  <Label htmlFor="role" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                    Role
-                  </Label>
-                  <div className="relative">
-                    <Select 
-                      value={role} 
-                      onValueChange={(value) => {
-                        setRole(value);
-                        if (value !== 'Other') {
-                          setCustomRole('');
-                        }
-                      }}
-                      required={!useCustomNumber}
-                      disabled={useCustomNumber}
-                    >
-                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 justify-start text-left [&>span]:justify-start [&>span]:text-left disabled:opacity-50">
-                        <SelectValue placeholder="Select your role" className="text-left text-zinc-400" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50 max-h-60">
-                        {TECH_JOB_TITLES
-                          .filter(job => job.title && job.title.trim() !== '')
-                          .map(job => (
-                            <SelectItem 
-                              key={job.id} 
-                              value={job.title} 
-                              className="justify-start text-left data-[highlighted]:text-left hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors"
-                            >
-                              <div className="flex flex-col items-start w-full text-left">
-                                <div className="font-medium text-left w-full text-white">{job.title}</div>
-                                <div className="text-sm text-green-300/70 text-left w-full">{job.description}</div>
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {/* Custom Role Input */}
-                    {role === 'Other' && (
-                      <div className="mt-3">
-                        <Input
-                          placeholder="Enter your job title..."
-                          value={customRole}
-                          onChange={(e) => setCustomRole(e.target.value)}
-                          className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-zinc-400"
-                          required
-                        />
-                      </div>
-                    )}
-                    
-                  </div>
-                </div>
-                <div className="space-y-4 group">
-                  <Label htmlFor="difficulty" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                    Question Difficulty
-                  </Label>
-                  <div className="relative">
-                    <Select 
-                      value={difficulty} 
-                      onValueChange={setDifficulty} 
-                      required={!useCustomNumber}
-                      disabled={useCustomNumber}
-                    >
-                      <SelectTrigger className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 disabled:opacity-50">
-                        <SelectValue placeholder="Select difficulty" className="text-zinc-400" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900/95 backdrop-blur-lg border-2 border-zinc-700/50">
-                        <SelectItem value="easy" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Easy</SelectItem>
-                        <SelectItem value="medium" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Medium</SelectItem>
-                        <SelectItem value="hard" className="hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Submit */}
+          <button
+            onClick={() => {
+              const effectiveRole = role || profile.targetRole || 'Software Engineer';
+              setProblemMode(problemMode);
+              setRole(effectiveRole);
+              setTimeout(() => {
+                const submitBtn = document.getElementById('ta-hidden-submit');
+                submitBtn?.click();
+              }, 0);
+            }}
+            disabled={isLoading || (problemMode === 'preset' && !selectedQuestion) || (problemMode === 'specific' && !leetcodeNumber)}
+            style={{
+              width: '100%',
+              marginTop: 32,
+              padding: 14,
+              background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 10,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.88rem',
+              fontWeight: 500,
+              cursor: (isLoading || (problemMode === 'preset' && !selectedQuestion) || (problemMode === 'specific' && !leetcodeNumber)) ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+              opacity: (isLoading || (problemMode === 'preset' && !selectedQuestion) || (problemMode === 'specific' && !leetcodeNumber)) ? 0.5 : 1,
+              transition: 'opacity 0.2s, transform 0.15s',
+            }}
+            onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = isLoading ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+          >
+            {isLoading ? 'Generating…' : 'Start Challenge'}
+          </button>
 
-          {/* Specific Problem Form */}
-          {problemMode === 'specific' && (
-            <div className="space-y-4 group">
-              <Label htmlFor="leetcodeNumber" className="text-green-300 text-sm font-medium flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                LeetCode Question Number
-              </Label>
-              <div className="relative">
-                <Input
-                  id="leetcodeNumber"
-                  value={leetcodeNumber}
-                  onChange={(e) => setLeetcodeNumber(e.target.value)}
-                  placeholder="e.g., 1 (Two Sum), 121 (Palindrome Number)"
-                  required={problemMode === 'specific'}
-                  type="number"
-                  min="1"
-                  max="3000"
-                  className="bg-zinc-900/50 border-2 border-zinc-600/50 hover:border-blue-500/50 focus:border-blue-500 h-12 transition-all duration-300  text-zinc-100 placeholder:text-zinc-500"
-                />
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-              <p className="text-sm text-zinc-400">Enter any problem number from LeetCode's database (1-3000). The system will retrieve the exact problem.</p>
-            </div>
-          )}
-
-          <div className="pt-4">
-            <Button 
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isLoading || (problemMode === 'preset' && (!selectedPreset || !selectedCategory))}
-              className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none border-0"
-            >
-              {isLoading && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
-              <span>
-                {problemMode === 'ai' && 'Generate AI Problem'}
-                {problemMode === 'specific' && 'Get Specific Problem'}
-                {problemMode === 'preset' && (
-                  selectedPreset && selectedCategory 
-                    ? `Start ${selectedCategory} Practice from ${LEETCODE_PRESETS.find(p => p.id === selectedPreset)?.title}` 
-                    : selectedPreset
-                      ? 'Select a Category to Start'
-                      : 'Select a Preset to Start'
-                )}
-              </span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          {/* Hidden button that triggers the real handleSubmit */}
+          <button
+            id="ta-hidden-submit"
+            onClick={handleSubmit}
+            style={{ display: 'none' }}
+            aria-hidden
+          />
+        </div>
+      )}
 
       {question && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)]">

@@ -12,6 +12,7 @@ import CountUpOnView from './CountUpOnView'
 import RevealOnView from './RevealOnView'
 import StarryBackground from '@/components/StarryBackground'
 import Aurora from '@/components/Aurora'
+import Antigravity from '@/components/Antigravity'
 import TypewriterHeadline from '@/components/TypewriterHeadline'
 // Optional: if using next-auth or similar
 import { getSession } from "next-auth/react"
@@ -130,10 +131,9 @@ export default function Home() {
         clearInterval(interval)
         setTimeout(() => {
           setLoadingFadeOut(true)
+          setHeroStarted(true)
           setTimeout(() => {
             setShowLoading(false)
-            // Start hero typewriter only after loading screen is fully gone
-            setHeroStarted(true)
           }, 800)
         }, 400)
       }
@@ -337,7 +337,23 @@ export default function Home() {
 
       {/* Hero Section with Integrated Navigation */}
       <section className="flex flex-col relative" style={{ background: '#080d1a', minHeight: '100vh' }}>
-        <Aurora color1="000000" color2="0044ff" color3="0d4baf" blend={1} speed={1.2} />
+        <Antigravity
+          count={300}
+          magnetRadius={10}
+          ringRadius={10}
+          waveSpeed={0.4}
+          waveAmplitude={1}
+          particleSize={2}
+          lerpSpeed={0.1}
+          color="#2663eb"
+          autoAnimate={false}
+          particleVariance={1}
+          rotationSpeed={0}
+          depthFactor={1}
+          pulseSpeed={3}
+          particleShape="capsule"
+          fieldStrength={10}
+        />
         {/* Navigation Bar */}
         <nav className="w-full z-50 relative" style={{ background: 'transparent', borderBottom: 'none' }}>
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">

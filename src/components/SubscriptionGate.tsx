@@ -598,7 +598,24 @@ export default function SubscriptionGate({ children }: SubscriptionGateProps) {
       try {
         const response = await fetch('/api/subscription-status')
         const data = await response.json()
-        setHasSubscription(!!data.hasActiveSubscription)
+        const hasSub = !!data.hasActiveSubscription
+        setHasSubscription(hasSub)
+
+        // If user has an active subscription, check onboarding status
+        if (hasSub && qDone) {
+          try {
+            const obRes = await fetch('/api/onboarding/status')
+            if (obRes.ok) {
+              const obData = await obRes.json()
+              if (!obData.onboardingCompleted) {
+                router.push('/onboarding')
+                return
+              }
+            }
+          } catch {
+            // If onboarding check fails, don't block — let user through
+          }
+        }
       } catch {
         setHasSubscription(false)
       } finally {
