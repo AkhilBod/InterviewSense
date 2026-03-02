@@ -109,8 +109,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check credits
-    const creditCheck = await hasEnoughCredits(user.id, FeatureType.TECHNICAL_INTERVIEW);
+    // Check credits — only AI-mode costs credits (1.5); gate at that minimum
+    const creditCheck = await hasEnoughCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
     if (!creditCheck.hasCredits) {
       return NextResponse.json({
         error: 'Insufficient credits',
@@ -172,7 +172,7 @@ Return ONLY a JSON array in this exact format (no other text):
         throw new Error('Failed to generate valid solutions.');
       }
 
-      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
       return NextResponse.json({
         success: true,
         question: responseText,
@@ -196,14 +196,14 @@ Return ONLY a JSON array in this exact format (no other text):
           error: `Problem #${id} not found in the database.`,
         }, { status: 404 });
       }
-      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+      // No AI used — no credit charge for specific/preset lookups
       const lcProblem = getProblemsMap().get(id)!;
       return NextResponse.json({
         success: true,
         question: problem,
         problemId: id,
         topics: lcProblem.topics || [],
-        creditsRemaining: deduction.remainingCredits,
+        creditsRemaining: null,
       });
     }
 
@@ -235,7 +235,8 @@ Respond with ONLY the integer problem number. No explanation. No text. Just the 
       throw new Error(`Problem #${chosenId} not found in local database.`);
     }
 
-    const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 1);
+    // AI was used to pick this problem — charge 1.5 credits (quantity = 0.3 × base cost 5)
+    const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
     const chosenProblem = getProblemsMap().get(chosenId)!;
     return NextResponse.json({
       success: true,
@@ -263,6 +264,11 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const { 
@@ -395,7 +401,10 @@ Provide your analysis in this JSON format (no other text):
         analysis: analysis // Keep original analysis for detailed view
       };
 
-      return NextResponse.json(transformedResponse);
+      // AI was used to analyze the submission — charge 1.5 credits
+      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
+
+      return NextResponse.json({ ...transformedResponse, creditsRemaining: deduction.remainingCredits });
     } catch (error) {
       console.error('Error parsing analysis:', error);
       

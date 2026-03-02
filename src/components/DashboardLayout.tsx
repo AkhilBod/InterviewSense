@@ -32,8 +32,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [profileSaved, setProfileSaved] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeUploaded, setResumeUploaded] = useState(false);
-  const [uploadingResume, setUploadingResume] = useState(false);
   const [resumeFilename, setResumeFilename] = useState('');
+  const [resumeUrl, setResumeUrl] = useState('');
 
   // Load current profile values when settings opens
   useEffect(() => {
@@ -44,6 +44,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           setSettingsRole(data.targetRole || '');
           setSettingsCompany(data.targetCompany || '');
           setResumeFilename(data.resumeFilename || '');
+          setResumeUrl(data.resumeUrl || '');
         })
         .catch(() => {});
       setSettingsTab('profile');
@@ -103,6 +104,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleSaveProfile = async () => {
     setSavingProfile(true);
     try {
+      // Upload resume first if one is staged
+      if (resumeFile) {
+        const formData = new FormData();
+        formData.append('resume', resumeFile);
+        const response = await fetch('/api/onboarding/upload-resume', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (response.ok) {
+          setResumeFilename(data.filename || resumeFile.name);
+          setResumeUrl(data.url || '');
+          setResumeFile(null);
+          setResumeUploaded(true);
+          setTimeout(() => setResumeUploaded(false), 2500);
+        } else {
+          alert(data.error || 'Failed to upload resume. Please try again.');
+          setSavingProfile(false);
+          return;
+        }
+      }
+      // Save role + company
       await fetch('/api/onboarding/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,28 +134,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       alert('Failed to save. Please try again.');
     } finally {
       setSavingProfile(false);
-    }
-  };
-
-  const handleResumeUpload = async () => {
-    if (!resumeFile) return;
-    setUploadingResume(true);
-    try {
-      const formData = new FormData();
-      formData.append('resume', resumeFile);
-      const response = await fetch('/api/onboarding/upload-resume', { method: 'POST', body: formData });
-      if (response.ok) {
-        const data = await response.json();
-        setResumeFilename(data.filename || resumeFile.name);
-        setResumeUploaded(true);
-        setTimeout(() => setResumeUploaded(false), 2500);
-      } else {
-        alert('Failed to upload resume. Please try again.');
-      }
-    } catch {
-      alert('An error occurred uploading resume.');
-    } finally {
-      setUploadingResume(false);
     }
   };
 
@@ -203,7 +201,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => setShowSettings(false)}
                 style={{
                   background: 'none', border: 'none',
-                  color: '#4a5370', cursor: 'pointer',
+                  color: '#ffffff', cursor: 'pointer',
                   fontSize: '1.1rem', lineHeight: 1,
                   padding: '4px 2px', marginTop: 6,
                   fontFamily: "'Inter', sans-serif",
@@ -268,24 +266,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </button>
                     <input id="settings-resume-input" type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }}
                       onChange={e => { const f = e.target.files?.[0]; if (f) setResumeFile(f); }} />
-                    {resumeFile && (
-                      <button
-                        onClick={handleResumeUpload}
-                        disabled={uploadingResume}
-                        style={{
-                          padding: '12px 18px', borderRadius: 10, border: 'none',
-                          background: 'rgba(59,130,246,0.15)', color: '#93c5fd',
-                          fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 500,
-                          cursor: uploadingResume ? 'not-allowed' : 'pointer',
-                          opacity: uploadingResume ? 0.6 : 1, flexShrink: 0,
-                        }}
-                      >
-                        {uploadingResume ? '…' : 'Save'}
-                      </button>
-                    )}
                   </div>
                   {resumeUploaded && (
                     <p style={{ margin: '8px 0 0', fontSize: '0.78rem', color: '#34d399', fontFamily: "'Inter', sans-serif" }}>✓ Resume updated</p>
+                  )}
+                  {resumeUrl && !resumeFile && !resumeUploaded && (
+                    <a
+                      href={resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: 8, fontSize: '0.75rem', color: '#4a5370', fontFamily: "'Inter', sans-serif", textDecoration: 'none' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#93c5fd'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#4a5370'; }}
+                    >
+                      View current resume ↗
+                    </a>
                   )}
                 </div>
 

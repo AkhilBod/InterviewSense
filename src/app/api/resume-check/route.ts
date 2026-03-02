@@ -75,37 +75,45 @@ export async function POST(req: Request) {
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        const textPrompt = `You are an expert resume reviewer specifically focused on the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Analyze the provided resume with particular attention to industry-specific standards, required skills, and experiences most valued for this exact position.
-${jobDescription ? `\nConsider the following job description for your role-specific analysis:\n---\n${jobDescription}\n---\n` : ""}
+        const textPrompt = `You are a brutally honest, senior hiring manager and resume expert who has reviewed thousands of resumes for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. You are NOT a cheerleader — your job is to give candidates an honest, unsparing assessment so they know exactly where they stand against top applicants competing for this same role.
+${jobDescription ? `\nJob description to evaluate against:\n---\n${jobDescription}\n---\n` : ""}
 
-Please provide a detailed, structured resume analysis focused on this specific role. Format your response as clean, readable text without any markdown symbols, hashtags, or special formatting. Use the following structure:
+SCORING CALIBRATION — read carefully before assigning any score:
+- 90-100: Exceptional. This resume would immediately land interviews at top-tier companies. Nearly flawless for this role.
+- 75-89: Strong. Competitive candidate but with clear gaps that would get it filtered out at selective companies.
+- 60-74: Average. Passes basic screening but lacks the depth, specificity, or impact that strong candidates show.
+- 40-59: Weak. Significant gaps in content, measurable results, or role alignment. Needs major rework.
+- Below 40: Poor. Fundamental issues that would cause immediate rejection.
+
+Most resumes submitted by students or early-career candidates score in the 40-65 range. A score above 80 should be genuinely rare and earned. Be as critical as you would be if your own reputation depended on recommending only the best candidates. Do NOT inflate scores to be encouraging.
+
+Please analyze the resume below and respond using ONLY this exact structure, with plain text and no markdown:
 
 RESUME ANALYSIS REPORT FOR ${jobTitle.toUpperCase()} POSITION
 
 OVERALL ASSESSMENT
-Provide a role-specific evaluation of the resume's suitability, using a rating out of 100 (e.g., "Overall Score: 85/100 - This resume demonstrates strong technical skills for the ${jobTitle} position but needs more emphasis on domain expertise."). Ensure the score is explicitly mentioned as "Overall Score: XX/100" so it can be parsed.
+Give an honest, direct evaluation. Start with: "Overall Score: XX/100 - " then explain why, calling out specific weaknesses you see. Do not soften the critique.
 
-Additionally, provide these specific category scores:
-Impact Score: XX/100 (measuring quantifiable achievements, results, and career progression)
-Style Score: XX/100 (measuring formatting, readability, and professional presentation)
-Skills Score: XX/100 (measuring technical competencies and relevant qualifications for this role)
+Impact Score: XX/100 (Are achievements quantified with real numbers? Or are they vague duty lists? Dock heavily for bullet points like "helped with" or "worked on" with no metrics.)
+Style Score: XX/100 (Is formatting clean, consistent, and ATS-friendly? Are fonts, spacing, and section headers professional?)
+Skills Score: XX/100 (Does the skills section directly match what top candidates for ${jobTitle} roles list? Are there obvious missing skills?)
 
 ROLE-SPECIFIC STRENGTHS
-List achievements, skills, and experiences that align specifically with the ${jobTitle} position requirements. Focus on industry-relevant accomplishments and quantifiable results that matter for this role. Highlight technical skills, domain knowledge, or certifications particularly valuable for this position. Present each point as a complete sentence without bullet points or dashes.
+Only list genuine strengths that would actually stand out to a recruiter for this role. If there are fewer than 3 real strengths, say so. Do not manufacture praise. Write each as a complete sentence.
 
 AREAS FOR IMPROVEMENT
-List aspects that need enhancement to better align with ${jobTitle} position expectations. Provide actionable advice tailored to this specific role and industry. Present each point as a complete sentence without bullet points or dashes.
+Be specific and blunt. Do not write generic advice. Point to exact problems in the resume — missing metrics on specific bullet points, wrong keywords, weak action verbs, formatting issues, missing sections, etc. Write each as a complete sentence.
 
 INDUSTRY-SPECIFIC RECOMMENDATIONS
-Suggest precise additions of keywords, experiences, or accomplishments typical for successful candidates in this exact role. Recommend role-specific wording changes or enhancements based on industry standards. Present each point as a complete sentence without bullet points or dashes.
+Name exact skills, certifications, tools, or keywords this resume is missing that top ${jobTitle} candidates include. Be specific — name the actual tools, frameworks, or accomplishments. Write each as a complete sentence.
 
 ATS OPTIMIZATION SUGGESTIONS
-List suggestions to improve Applicant Tracking System (ATS) compatibility specifically for ${jobTitle} positions. Include advice on industry-specific keywords and formatting practices for this role. Present each point as a complete sentence without bullet points or dashes.
+Identify specific keyword gaps, formatting problems, or structural issues that would cause ATS rejection for ${jobTitle} roles. Write each as a complete sentence.
 
 FORMAT AND PRESENTATION FEEDBACK
-Provide feedback on formatting with special attention to what hiring managers for ${jobTitle} positions typically expect. Suggest improvements aligned with industry standards for this specific role. Present each point as a complete sentence without bullet points or dashes.
+Point out specific formatting inconsistencies, spacing problems, font issues, or structural weaknesses. Write each as a complete sentence.
 
-Important: Use only plain text without any markdown formatting, asterisks, hashtags, bullet points, or special characters. Write in complete sentences and paragraphs for better readability.`;
+Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, no markdown. Complete sentences only.`;
 
         // Prepare messages for OpenAI - use vision model for PDF/image files
         const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -113,7 +121,7 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
         // Check if file is an image or PDF that can be analyzed visually
         const isVisualFile = file.type.includes('image') || file.type.includes('pdf');
 
-        if (isVisualFile && file.type.includes('image')) {
+        if (file.type.includes('image')) {
             // For images, use vision capabilities
             messages.push({
                 role: 'user',
@@ -127,21 +135,34 @@ Important: Use only plain text without any markdown formatting, asterisks, hasht
                     }
                 ]
             });
-        } else {
-            // For PDFs and documents, include file type info in the prompt
-            // Note: OpenAI doesn't directly support PDF uploads like Gemini
-            // This is a limitation - ideally you'd extract text from PDF first
+        } else if (file.type.includes('pdf')) {
+            // PDFs: send as base64-encoded file input so the model reads actual content
             messages.push({
                 role: 'user',
-                content: `${textPrompt}\n\nNote: Resume file type is ${file.type}. Please provide a detailed analysis based on typical resume content for this role.`
+                content: [
+                    { type: 'text', text: textPrompt },
+                    {
+                        type: 'file',
+                        file: {
+                            filename: file.name,
+                            file_data: `data:application/pdf;base64,${base64File}`
+                        }
+                    } as unknown as OpenAI.Chat.ChatCompletionContentPartText
+                ]
+            });
+        } else {
+            // DOCX/DOC and other text-based documents — extract what we can via text hint
+            messages.push({
+                role: 'user',
+                content: `${textPrompt}\n\n[Document file: ${file.name}, type: ${file.type}. Analyze the resume content embedded in this document.]`
             });
         }
 
         console.log("Sending request to OpenAI API...");
         const completion = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+            model: 'gpt-4o',
             messages,
-            temperature: 0.6,
+            temperature: 0.9,
             max_completion_tokens: 4096,
         });
 
