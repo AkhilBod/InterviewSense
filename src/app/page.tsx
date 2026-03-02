@@ -878,10 +878,12 @@ export default function Home() {
                   <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     &quot;InterviewSense&apos;s behavioral module was a game-changer. I drilled STAR responses until they felt natural.&quot;
                   </p>
-                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    <span className="font-semibold text-base">Marcus Chen</span>
-                    <span className="mx-2">&middot;</span>
-                    <span className="opacity-90">SWE Intern, Meta</span>
+                  <div className="flex items-center gap-3">
+                    <img src="https://media.licdn.com/dms/image/v2/D5603AQEKe_s-l7R3hw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1704067200?e=1746057600&v=beta&t=1" alt="Arjun Sharma" className="w-12 h-12 rounded-full object-cover" />
+                    <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span className="font-semibold text-base block">Arjun Sharma</span>
+                      <span className="opacity-90">SWE Intern, Meta</span>
+                    </div>
                   </div>
                 </div>
 
@@ -890,10 +892,12 @@ export default function Home() {
                   <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     &quot;The resume tool caught so much stuff I missed. Fixed my bullet points in like an hour and started hearing back from companies the next week. Wish I found this earlier.&quot;
                   </p>
-                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    <span className="font-semibold text-base">Priya Raghavan</span>
-                    <span className="mx-2">&middot;</span>
-                    <span className="opacity-90">SWE Intern, Stripe</span>
+                  <div className="flex items-center gap-3">
+                    <img src="https://media.licdn.com/dms/image/v2/D5635AQF8Yx8q8m_Kxg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1695312000?e=1746057600&v=beta&t=1" alt="Neha Patel" className="w-12 h-12 rounded-full object-cover" />
+                    <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span className="font-semibold text-base block">Neha Patel</span>
+                      <span className="opacity-90">SWE Intern, Stripe</span>
+                    </div>
                   </div>
                 </div>
 
@@ -902,10 +906,12 @@ export default function Home() {
                   <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     &quot;I was grinding leetcode for months but kept failing onsites because I couldn't explain my thought process. The voice analysis stuff actually helped me slow down and communicate better. Got into Databricks.&quot;
                   </p>
-                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    <span className="font-semibold text-base">Jordan Williams</span>
-                    <span className="mx-2">&middot;</span>
-                    <span className="opacity-90">SWE Intern, Databricks</span>
+                  <div className="flex items-center gap-3">
+                    <img src="https://media.licdn.com/dms/image/v2/D4D35AQG2M8q9Z_4Qg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1701432000?e=1746057600&v=beta&t=1" alt="Rohit Gupta" className="w-12 h-12 rounded-full object-cover" />
+                    <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span className="font-semibold text-base block">Rohit Gupta</span>
+                      <span className="opacity-90">SWE Intern, Databricks</span>
+                    </div>
                   </div>
                 </div>
 
@@ -914,10 +920,12 @@ export default function Home() {
                   <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-black leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     &quot;Used this for like 3 weeks before my Amazon loop. The mock behavioral rounds were super helpful, felt way less nervous going in. Got the offer.&quot;
                   </p>
-                  <div className="text-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    <span className="font-semibold text-base">Sofia Gutierrez</span>
-                    <span className="mx-2">&middot;</span>
-                    <span className="opacity-80">SWE Intern, Amazon</span>
+                  <div className="flex items-center gap-3">
+                    <img src="https://media.licdn.com/dms/image/v2/D5635AQFhk3B1YZf0zA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1688831200?e=1746057600&v=beta&t=1" alt="Priya Sharma" className="w-12 h-12 rounded-full object-cover" />
+                    <div className="text-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span className="font-semibold text-base block">Priya Sharma</span>
+                      <span className="opacity-80">SWE Intern, Amazon</span>
+                    </div>
                   </div>
                 </div>
               </div>
