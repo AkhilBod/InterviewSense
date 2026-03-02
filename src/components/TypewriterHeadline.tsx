@@ -8,16 +8,18 @@ interface TypewriterHeadlineProps {
   typingSpeed?: number
   highlightDuration?: number
   holdDuration?: number
-  fadeDuration?: number
   /** Set to true only after the loading screen has fully disappeared */
   started?: boolean
 }
 
-const SORA: React.CSSProperties = {
-  fontFamily: 'var(--font-sora), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontWeight: 800,
+// Font used WHILE typing — Noto Serif Devanagari
+const NOTO: React.CSSProperties = {
+  fontFamily: 'var(--font-noto-serif), "Noto Serif Devanagari", Georgia, serif',
+  fontWeight: 600,
   fontStyle: 'normal',
 }
+
+// Font used AFTER highlight (rotating phrases) — Playfair italic
 const PLAYFAIR: React.CSSProperties = {
   fontFamily: 'var(--font-playfair), Georgia, serif',
   fontWeight: 400,
@@ -25,18 +27,18 @@ const PLAYFAIR: React.CSSProperties = {
 }
 
 export default function TypewriterHeadline({
-  phrases = ['behavioral interviews', 'technical interviews', 'resume review'],
+  phrases = ['behavioral interviews', 'technical interviews', 'resume screen', 'system design'],
   typingSpeed = 42,
-  highlightDuration = 900,
+  highlightDuration = 320,
   holdDuration = 2400,
   started = true,
 }: TypewriterHeadlineProps) {
-  // phases: idle → typing → highlight → transform → rotate
-  const [phase, setPhase] = useState<'idle' | 'typing' | 'highlight' | 'transform' | 'rotate'>('idle')
+  // phases: idle → typing → highlight → rotate
+  const [phase, setPhase] = useState<'idle' | 'typing' | 'highlight' | 'rotate'>('idle')
   const [typed, setTyped] = useState('')
   const [phraseIdx, setPhraseIdx] = useState(0)
 
-  const staticPart = 'AI tool for '
+  const staticPart = 'Never fail another '
   const fullFirstPhrase = staticPart + phrases[0]
 
   // ── start once hero is ready ──────────────────────────────────────────────
@@ -55,19 +57,13 @@ export default function TypewriterHeadline({
     return () => clearTimeout(t)
   }, [phase, typed, fullFirstPhrase, typingSpeed])
 
-  // ── highlight hold ────────────────────────────────────────────────────────
+  // ── highlight hold → immediately rotate ──────────────────────────────────
+  // Font switches to PLAYFAIR the instant highlight fires (no transform delay)
   useEffect(() => {
     if (phase !== 'highlight') return
-    const t = setTimeout(() => setPhase('transform'), highlightDuration)
+    const t = setTimeout(() => setPhase('rotate'), highlightDuration)
     return () => clearTimeout(t)
   }, [phase, highlightDuration])
-
-  // ── transform → rotate ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (phase !== 'transform') return
-    const t = setTimeout(() => setPhase('rotate'), 600)
-    return () => clearTimeout(t)
-  }, [phase])
 
   // ── rotation loop ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -80,34 +76,33 @@ export default function TypewriterHeadline({
   const typedStatic = typed.slice(0, Math.min(typed.length, staticPart.length))
   const typedPhrase = typed.length > staticPart.length ? typed.slice(staticPart.length) : ''
   const isHighlighted = phase === 'highlight'
-  const isCursive = phase === 'transform' || phase === 'rotate'
+  // As soon as highlight fires, switch font to PLAYFAIR instantly
+  const phraseFont = (phase === 'highlight' || phase === 'rotate') ? PLAYFAIR : NOTO
 
-  // Line 2 height stays rock-solid — never let font/length affect layout
   const LINE2_HEIGHT = '1.3em'
 
   return (
     <h1
       style={{
-        ...SORA,
+        ...NOTO,
         letterSpacing: '-0.02em',
         lineHeight: 1.25,
         color: '#e8f0ff',
       }}
       className="text-3xl sm:text-4xl md:text-[2.6rem] lg:text-[3.1rem]"
     >
-      {/* ── Line 1: always "AI tool for" ── */}
-      <span style={{ display: 'block', color: '#e8f0ff' }}>
+      {/* ── Line 1: "Never fail another" ── */}
+      <span style={{ display: 'block', color: '#e8f0ff', ...NOTO }}>
         {phase === 'idle' ? (
-          <span style={{ opacity: 0 }}>AI tool for</span>
+          <span style={{ opacity: 0 }}>N</span>
+        ) : phase === 'typing' ? (
+          typedStatic || <span style={{ opacity: 0 }}>Never fail another</span>
         ) : (
-          // During typing phase, type out just the static part
-          phase === 'typing'
-            ? typedStatic || <span style={{ opacity: 0 }}>AI tool for</span>
-            : 'AI tool for'
+          'Never fail another'
         )}
       </span>
 
-      {/* ── Line 2: always the rotating phrase — fixed height so it never jumps ── */}
+      {/* ── Line 2: rotating phrase — fixed height ── */}
       <span
         style={{
           display: 'block',
@@ -116,13 +111,14 @@ export default function TypewriterHeadline({
           position: 'relative',
         }}
       >
-        {/* TYPING: phrase chars appear after static part is done */}
+        {/* TYPING + HIGHLIGHT: show typed phrase with instant font switch on highlight */}
         {(phase === 'typing' || phase === 'highlight') && (
           <span
             style={{
               display: 'block',
-              ...SORA,
-              color: 'white',
+              ...phraseFont,
+              color: isHighlighted ? '#93c5fd' : 'white',
+              transition: 'color 0.15s ease',
             }}
           >
             <span
@@ -130,8 +126,8 @@ export default function TypewriterHeadline({
                 borderRadius: '4px',
                 padding: isHighlighted ? '1px 6px' : '0',
                 margin: isHighlighted ? '0 -6px' : '0',
-                background: isHighlighted ? 'rgba(59,130,246,0.25)' : 'transparent',
-                transition: 'background 0.35s ease, padding 0.35s ease',
+                background: isHighlighted ? 'rgba(59,130,246,0.2)' : 'transparent',
+                transition: 'background 0.15s ease, padding 0.15s ease',
               }}
             >
               {typedPhrase}
@@ -153,20 +149,20 @@ export default function TypewriterHeadline({
           </span>
         )}
 
-        {/* TRANSFORM + ROTATE: AnimatePresence swap, always block on line 2 */}
-        {(phase === 'transform' || phase === 'rotate') && (
+        {/* ROTATE: AnimatePresence swap with Playfair italic */}
+        {phase === 'rotate' && (
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={phraseIdx}
               style={{
                 display: 'block',
-                ...(isCursive ? PLAYFAIR : SORA),
+                ...PLAYFAIR,
                 color: '#60a5fa',
               }}
-              initial={{ opacity: 0, y: 18, filter: 'blur(8px)' }}
+              initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
               animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
-              exit={{    opacity: 0, y: -18, filter: 'blur(8px)' }}
-              transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+              exit={{    opacity: 0, y: -18, filter: 'blur(6px)' }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
               {phrases[phraseIdx]}
             </motion.span>

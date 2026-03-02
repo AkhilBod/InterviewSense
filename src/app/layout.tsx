@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from 'next'
-import { Inter, Playfair_Display, Sora } from 'next/font/google'
+import { Inter, Playfair_Display, Sora, Noto_Serif_Devanagari } from 'next/font/google'
 import './globals.css'
 import Providers from './providers' // Import the provider
 import { Toaster } from "@/components/ui/toaster"
@@ -10,6 +10,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 const inter = Inter({ subsets: ['latin'] })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
 const sora = Sora({ subsets: ['latin'], variable: '--font-sora', weight: ['400', '500', '600', '700', '800'] })
+const notoSerifDevanagari = Noto_Serif_Devanagari({ subsets: ['latin'], variable: '--font-noto-serif', weight: ['400', '500', '600', '700'] })
 
 export const viewport: Viewport = {
   themeColor: '#3b82f6',
@@ -72,7 +73,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.interviewsense.org',
     siteName: 'InterviewSense - CS Internship Interview Prep',
-    title: 'InterviewSense - CS Internship Interview Preparation | LeetCode Practice & AI Feedback',
+    title: 'InterviewSense - CS Internship Interview Preparation | AI Feedback',
     description: 'Land CS internships at top tech companies with AI-powered interview prep. Practice LeetCode problems, master behavioral questions, and get instant feedback. Free for all computer science students.',
     images: [
       {
@@ -123,7 +124,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${playfair.variable} ${sora.variable} bg-[#000818] text-white`}>
+      <body className={`${inter.className} ${playfair.variable} ${sora.variable} ${notoSerifDevanagari.variable} bg-[#000818] text-white`}>
         <Providers> {/* Wrap your content with the SessionProvider */}
           {children}
         </Providers>

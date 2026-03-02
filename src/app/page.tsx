@@ -493,7 +493,7 @@ export default function Home() {
             <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
               <div className="mb-10 w-full">
                 <TypewriterHeadline
-                  phrases={['behavioral interviews', 'technical interviews', 'resume review']}
+                  phrases={['behavioral interview', 'technical interview', 'resume screen', 'system design']}
                   typingSpeed={45}
                   highlightDuration={1000}
                   holdDuration={2000}
