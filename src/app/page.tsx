@@ -686,7 +686,7 @@ export default function Home() {
           
           {/* Sliding logos container */}
           <div className="relative overflow-hidden">
-            <div className="flex animate-slide-left space-x-16">
+            <div className="flex animate-slide-left-infinite space-x-16">
               {/* First set of logos */}
               <div className="flex items-center space-x-16 flex-shrink-0">
                 <div className="flex items-center justify-center h-16 w-32 opacity-60 hover:opacity-100 transition-opacity">
@@ -1003,6 +1003,8 @@ export default function Home() {
                       <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>LeetCode</th>
                       <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Pramp</th>
                       <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AlgoExpert</th>
+                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>GetCracked</th>
+                      <th className="text-center py-5 px-6 text-zinc-400 font-medium text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>FinalRoundAI</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1032,9 +1034,33 @@ export default function Home() {
                           </svg>
                         </div>
                       </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Behavioral Interview Practice</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
                           <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
@@ -1081,7 +1107,11 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
@@ -1089,6 +1119,61 @@ export default function Home() {
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>System Design Prep</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
                       </td>
                     </tr>
                     <tr>
@@ -1121,6 +1206,61 @@ export default function Home() {
                           </svg>
                         </div>
                       </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Mock Interview Sessions</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AI-Powered Feedback</td>
@@ -1135,12 +1275,116 @@ export default function Home() {
                         <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Video Solutions</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
                         <span className="inline-block px-2.5 py-0.5 bg-yellow-500/10 rounded-full text-yellow-400 text-xs font-medium" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Partial</span>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="w-5 h-5 mx-auto flex items-center justify-center">
                           <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Progress Tracking</td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 mx-auto flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
                       </td>
@@ -1158,6 +1402,12 @@ export default function Home() {
                       </td>
                       <td className="py-4 px-6 text-center">
                         <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$99/yr</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$275/yr</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$149/yr</span>
                       </td>
                     </tr>
                   </tbody>
@@ -1235,40 +1485,6 @@ export default function Home() {
               Practice Smart, Interview Better.
             </h2>
 
-            {/* Email Subscription Form */}
-            <div className="max-w-md mx-auto mb-6">
-              <div className="relative">
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  className="w-full px-6 py-4 bg-zinc-900 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                />
-                <button className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
-                  Join Email List
-                </button>
-              </div>
-              <p className="text-zinc-500 text-xs mt-3 text-left">
-                Be the first to experience new features, limited to 500 early access users.
-              </p>
-            </div>
-
-            {/* Checkbox */}
-            <div className="max-w-md mx-auto mb-3">
-              <label className="flex items-start gap-3 text-left cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 w-4 h-4 rounded bg-zinc-900 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
-                  defaultChecked
-                />
-                <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                  I agree to receive InterviewSense updates and offers by email.
-                </span>
-              </label>
-            </div>
-
-            <p className="text-zinc-600 text-xs max-w-md mx-auto mb-12">
-              Unsubscribe anytime. We don&apos;t sell or share your info.
-            </p>
           </div>
 
           {/* Footer Links and Copyright */}

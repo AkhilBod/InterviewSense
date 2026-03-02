@@ -15,11 +15,16 @@ export default {
       },
       animation: {
         "fadeIn": "fadeIn 0.5s ease-in-out forwards",
+        "slide-left-infinite": "slide-left-infinite 30s linear infinite",
       },
       keyframes: {
         fadeIn: {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-left-infinite": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
       colors: {

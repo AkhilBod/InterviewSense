@@ -14,20 +14,20 @@ function BehavioralAnimation() {
   }, [phase])
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="relative flex items-end gap-12 sm:gap-16 lg:gap-20">
+    <div className="w-full h-full flex items-end justify-center pb-6">
+      <div className="relative flex items-end gap-10 sm:gap-14 lg:gap-16">
         {/* Left figure */}
         <div className="flex flex-col items-center">
           {/* Speech bubble */}
           <div
-            className="mb-4 transition-all duration-700 ease-out"
+            className="mb-3 transition-all duration-700 ease-out"
             style={{
               opacity: phase === 1 || phase === 2 ? 1 : 0,
               transform: phase === 1 || phase === 2 ? "translateY(0)" : "translateY(8px)",
             }}
           >
             <div
-              className="relative px-4 py-2.5 rounded-lg border"
+              className="relative px-3 py-2 rounded-lg border"
               style={{
                 borderColor: "rgba(255,255,255,0.15)",
                 background: phase === 1 ? "rgba(58,57,132,0.25)" : "rgba(255,255,255,0.03)",
@@ -35,8 +35,8 @@ function BehavioralAnimation() {
                 transition: "background 0.5s, box-shadow 0.5s",
               }}
             >
-              <span className="text-[13px] sm:text-sm text-zinc-400 whitespace-nowrap" style={{ fontFamily: "monospace" }}>
-                Tell me about a time…
+              <span className="text-[11px] sm:text-xs text-zinc-400 whitespace-nowrap" style={{ fontFamily: "monospace" }}>
+                Tell me about…
               </span>
               {/* Tail */}
               <div
@@ -49,7 +49,7 @@ function BehavioralAnimation() {
             </div>
           </div>
           {/* Figure - wireframe silhouette */}
-          <svg width="44" height="72" viewBox="0 0 40 64" fill="none">
+          <svg width="40" height="64" viewBox="0 0 40 64" fill="none">
             <circle cx="20" cy="12" r="10" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
             <rect x="8" y="26" width="24" height="34" rx="8" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
           </svg>
@@ -59,14 +59,14 @@ function BehavioralAnimation() {
         <div className="flex flex-col items-center">
           {/* Speech bubble */}
           <div
-            className="mb-4 transition-all duration-700 ease-out"
+            className="mb-3 transition-all duration-700 ease-out"
             style={{
               opacity: phase === 2 ? 1 : 0,
               transform: phase === 2 ? "translateY(0)" : "translateY(8px)",
             }}
           >
             <div
-              className="relative px-4 py-2.5 rounded-lg border"
+              className="relative px-3 py-2 rounded-lg border"
               style={{
                 borderColor: "rgba(255,255,255,0.15)",
                 background: phase === 2 ? "rgba(58,57,132,0.25)" : "rgba(255,255,255,0.03)",
@@ -74,8 +74,8 @@ function BehavioralAnimation() {
                 transition: "background 0.5s, box-shadow 0.5s",
               }}
             >
-              <span className="text-[13px] sm:text-sm text-zinc-400 whitespace-nowrap" style={{ fontFamily: "monospace" }}>
-                In my last role, I…
+              <span className="text-[11px] sm:text-xs text-zinc-400 whitespace-nowrap" style={{ fontFamily: "monospace" }}>
+                In my last role…
               </span>
               <div
                 className="absolute -bottom-1.5 right-4 w-3 h-3 rotate-45 border-b border-r"
@@ -87,7 +87,7 @@ function BehavioralAnimation() {
             </div>
           </div>
           {/* Figure */}
-          <svg width="44" height="72" viewBox="0 0 40 64" fill="none">
+          <svg width="40" height="64" viewBox="0 0 40 64" fill="none">
             <circle cx="20" cy="12" r="10" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
             <rect x="8" y="26" width="24" height="34" rx="8" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
           </svg>
@@ -205,7 +205,7 @@ function ResumeReviewAnimation() {
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center" style={{ transition: "opacity 0.8s", opacity: containerOpacity }}>
+    <div className="w-full h-full flex items-center justify-center pt-6" style={{ transition: "opacity 0.8s", opacity: containerOpacity }}>
       <div className="relative">
         {/* Document */}
         <div className="relative w-36 sm:w-44 border border-white/10 rounded-lg overflow-hidden" style={{ background: "rgba(255,255,255,0.02)" }}>
@@ -246,15 +246,15 @@ function ResumeReviewAnimation() {
 
         {/* Score badge */}
         <div
-          className="absolute -top-4 -right-14 sm:-right-16 px-4 py-2 rounded-lg border border-white/10 transition-all duration-500"
+          className="absolute -top-2 -right-12 sm:-right-14 px-3 py-1.5 rounded-lg border border-white/10 transition-all duration-500"
           style={{
             opacity: phase >= 1 && phase < 4 ? 1 : 0,
             transform: phase >= 1 && phase < 4 ? "translateY(0)" : "translateY(6px)",
             background: "rgba(34,197,94,0.1)",
           }}
         >
-          <div className="text-[11px] text-zinc-500">Score</div>
-          <div className="text-xl font-bold" style={{ color: "#22c55e" }}>87</div>
+          <div className="text-[10px] text-zinc-500">Score</div>
+          <div className="text-lg font-bold" style={{ color: "#22c55e" }}>87</div>
         </div>
 
         {/* ATS simulation bar */}
@@ -470,7 +470,7 @@ export default function PreparationSection() {
           {/* Section Title */}
           <div className="text-center mb-10 lg:mb-12">
             <h2
-              className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-2 tracking-[-0.03em]"
+              className="text-[28px] sm:text-[36px] md:text-[42px] lg:text-[48px] font-bold text-white mb-2 tracking-[-0.03em]"
               style={{ fontFamily: 'var(--font-sora), Inter, -apple-system, sans-serif' }}
             >
               Preparation Beyond Code

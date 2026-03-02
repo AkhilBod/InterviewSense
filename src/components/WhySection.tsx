@@ -162,7 +162,7 @@ export default function WhySection() {
           {/* Header */}
           <div className="text-center mb-12 lg:mb-14">
             <h2
-              className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-3 tracking-[-0.03em]"
+              className="text-[28px] sm:text-[36px] md:text-[42px] lg:text-[48px] font-bold text-white mb-3 tracking-[-0.03em]"
               style={{ fontFamily: 'var(--font-sora), Inter, -apple-system, sans-serif' }}
             >
               Why InterviewSense?
