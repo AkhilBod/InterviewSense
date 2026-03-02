@@ -879,9 +879,13 @@ export default function Home() {
                     &quot;InterviewSense&apos;s behavioral module was a game-changer. I drilled STAR responses until they felt natural.&quot;
                   </p>
                   <div className="flex items-center gap-3">
-                    <img src="https://media.licdn.com/dms/image/v2/D5603AQEKe_s-l7R3hw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1704067200?e=1746057600&v=beta&t=1" alt="Arjun Sharma" className="w-12 h-12 rounded-full object-cover" />
                     <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      <span className="font-semibold text-base block">Arjun Sharma</span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-base">Siddharth Trivedi</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
+                        </svg>
+                      </div>
                       <span className="opacity-90">SWE Intern, Meta</span>
                     </div>
                   </div>
@@ -893,9 +897,13 @@ export default function Home() {
                     &quot;The resume tool caught so much stuff I missed. Fixed my bullet points in like an hour and started hearing back from companies the next week. Wish I found this earlier.&quot;
                   </p>
                   <div className="flex items-center gap-3">
-                    <img src="https://media.licdn.com/dms/image/v2/D5635AQF8Yx8q8m_Kxg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1695312000?e=1746057600&v=beta&t=1" alt="Neha Patel" className="w-12 h-12 rounded-full object-cover" />
                     <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      <span className="font-semibold text-base block">Neha Patel</span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-base">Ethan Liu</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
+                        </svg>
+                      </div>
                       <span className="opacity-90">SWE Intern, Stripe</span>
                     </div>
                   </div>
@@ -907,9 +915,13 @@ export default function Home() {
                     &quot;I was grinding leetcode for months but kept failing onsites because I couldn't explain my thought process. The voice analysis stuff actually helped me slow down and communicate better. Got into Databricks.&quot;
                   </p>
                   <div className="flex items-center gap-3">
-                    <img src="https://media.licdn.com/dms/image/v2/D4D35AQG2M8q9Z_4Qg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1701432000?e=1746057600&v=beta&t=1" alt="Rohit Gupta" className="w-12 h-12 rounded-full object-cover" />
                     <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      <span className="font-semibold text-base block">Rohit Gupta</span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-base">Karan Garde</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
+                        </svg>
+                      </div>
                       <span className="opacity-90">SWE Intern, Databricks</span>
                     </div>
                   </div>
@@ -921,9 +933,13 @@ export default function Home() {
                     &quot;Used this for like 3 weeks before my Amazon loop. The mock behavioral rounds were super helpful, felt way less nervous going in. Got the offer.&quot;
                   </p>
                   <div className="flex items-center gap-3">
-                    <img src="https://media.licdn.com/dms/image/v2/D5635AQFhk3B1YZf0zA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1688831200?e=1746057600&v=beta&t=1" alt="Priya Sharma" className="w-12 h-12 rounded-full object-cover" />
                     <div className="text-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      <span className="font-semibold text-base block">Priya Sharma</span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-base">Shakur Collier</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
+                        </svg>
+                      </div>
                       <span className="opacity-80">SWE Intern, Amazon</span>
                     </div>
                   </div>
