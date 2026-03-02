@@ -13,7 +13,10 @@ import RevealOnView from './RevealOnView'
 import StarryBackground from '@/components/StarryBackground'
 import Aurora from '@/components/Aurora'
 import Antigravity from '@/components/Antigravity'
+import Grainient from '@/components/Grainient'
 import TypewriterHeadline from '@/components/TypewriterHeadline'
+import PreparationSection from '@/components/PreparationSection'
+import WhySection from '@/components/WhySection'
 // Optional: if using next-auth or similar
 import { getSession } from "next-auth/react"
 import { useSession } from "next-auth/react"
@@ -303,7 +306,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }} 
       />
       
-      <div className="flex flex-col min-h-screen text-white relative" style={{ background: '#0a0e1a' }}>
+      <div className="flex flex-col min-h-screen text-white relative" style={{ background: '#000000' }}>
 
       <style jsx>{`
         @keyframes spin {
@@ -335,25 +338,38 @@ export default function Home() {
         }
       `}</style>
 
+      {/* Grainient background that extends past hero into logos section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          <Grainient
+            color1="#000000"
+            color2="#000000"
+            color3="#3a3984"
+            colorBalance={-0.34}
+            timeSpeed={0.75}
+            warpFrequency={1.4}
+            warpStrength={1.0}
+            warpSpeed={2.0}
+            warpAmplitude={50.0}
+            noiseScale={2.0}
+            grainAmount={0.1}
+            contrast={1.5}
+            saturation={1.0}
+          />
+          {/* Fade to black at the bottom */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '35%',
+            background: 'linear-gradient(to bottom, transparent, #000000)',
+            pointerEvents: 'none',
+          }} />
+        </div>
+
       {/* Hero Section with Integrated Navigation */}
-      <section className="flex flex-col relative" style={{ background: '#080d1a', minHeight: '100vh' }}>
-        <Antigravity
-          count={300}
-          magnetRadius={10}
-          ringRadius={10}
-          waveSpeed={0.4}
-          waveAmplitude={1}
-          particleSize={2}
-          lerpSpeed={0.1}
-          color="#2663eb"
-          autoAnimate={false}
-          particleVariance={1}
-          rotationSpeed={0}
-          depthFactor={1}
-          pulseSpeed={3}
-          particleShape="capsule"
-          fieldStrength={10}
-        />
+      <section className="flex flex-col relative" style={{ background: 'transparent', minHeight: '100vh' }}>
         {/* Navigation Bar */}
         <nav className="w-full z-50 relative" style={{ background: 'transparent', borderBottom: 'none' }}>
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -495,45 +511,47 @@ export default function Home() {
                 <TypewriterHeadline
                   phrases={['behavioral interview', 'technical interview', 'resume screen', 'system design']}
                   typingSpeed={45}
-                  highlightDuration={1000}
-                  holdDuration={2000}
-                  fadeDuration={600}
+                  highlightDuration={320}
+                  holdDuration={1200}
                   started={heroStarted}
                 />
               </div>
 
               {/* CTA Button */}
-              <button
-                onClick={handleGetStartedClick}
-                className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5"
-                style={{
-                  background: '#3b82f6',
-                  color: 'white',
-                  fontWeight: 500,
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.2s',
-                  fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#2563eb'
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#3b82f6'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                Start Practicing
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginLeft: '4px' }}>
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+              <div className="flex flex-col items-center lg:items-start gap-2">
+                <button
+                  onClick={handleGetStartedClick}
+                  className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-7 py-3 sm:py-3.5"
+                  style={{
+                    background: '#3b82f6',
+                    color: 'white',
+                    fontWeight: 500,
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s',
+                    fontFamily: 'Syne, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#2563eb'
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#3b82f6'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  Start Practicing Free
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginLeft: '4px' }}>
+                    <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <p className="text-xs text-zinc-500" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No credit card required · 3-day free trial</p>
+              </div>
 
               {/* Mobile Video - Shows below button on mobile */}
               <div className="lg:hidden mt-10 w-full max-w-2xl mx-auto" style={{
@@ -660,10 +678,10 @@ export default function Home() {
       </section>
 
       {/* Company Logos Section */}
-      <section id="company-logos" className="py-12 relative z-[1]" style={{ background: '#0a0e1a' }}>
+      <section id="company-logos" className="py-12 relative z-[1]" style={{ background: 'transparent' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <p className="text-sm text-zinc-400 font-medium">Practice with interview questions from top tech companies offering CS internships</p>
+            <p className="text-base sm:text-lg text-zinc-300 font-medium tracking-wide">InterviewSense users have landed offers at</p>
           </div>
           
           {/* Sliding logos container */}
@@ -832,315 +850,118 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>{/* end Grainient wrapper */}
 
-      {/* Features Section */}
-      <section id="features" className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
+      {/* 1. Product — show what they get immediately */}
+      <PreparationSection />
+
+      {/* 2. Social proof — build trust right after product showcase */}
+      {/* Testimonials Section - Scrollable Carousel */}
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#000000' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1400px] mx-auto">
-            <div className="text-center mb-16 lg:mb-20">
-              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Four ways we help you ace interviews</h2>
-              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Everything you need to prepare for your dream role, powered by AI.</p>
+            <div className="text-center mb-12">
+              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-3 tracking-[-0.03em]" style={{ fontFamily: 'var(--font-sora), Inter, -apple-system, sans-serif' }}>What our users say</h2>
+              <p className="text-base text-white/40">Real stories from engineers who landed their dream roles.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Feature Card 1 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative flex items-center justify-center">
-                  {/* Voice Analysis Mockup - Speaking Agent Waveform */}
-                  <div className="w-full h-full p-6 flex items-center justify-center">
-                    <div className="flex items-center gap-1.5 h-20">
-                      {/* Animated waveform bars */}
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '30%', animation: 'wave1 0.8s ease-in-out infinite' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '50%', animation: 'wave2 0.8s ease-in-out infinite 0.1s' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '70%', animation: 'wave1 0.8s ease-in-out infinite 0.2s' }}></div>
-                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '45%', animation: 'wave2 0.8s ease-in-out infinite 0.3s' }}></div>
-                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '85%', animation: 'wave1 0.8s ease-in-out infinite 0.4s' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '60%', animation: 'wave2 0.8s ease-in-out infinite 0.5s' }}></div>
-                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '40%', animation: 'wave1 0.8s ease-in-out infinite 0.6s' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '75%', animation: 'wave2 0.8s ease-in-out infinite 0.7s' }}></div>
-                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '55%', animation: 'wave1 0.8s ease-in-out infinite 0.8s' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '35%', animation: 'wave2 0.8s ease-in-out infinite 0.9s' }}></div>
-                      <div className="w-1 bg-blue-400 rounded-full" style={{ height: '65%', animation: 'wave1 0.8s ease-in-out infinite 1s' }}></div>
-                      <div className="w-1 bg-blue-500 rounded-full" style={{ height: '50%', animation: 'wave2 0.8s ease-in-out infinite 1.1s' }}></div>
-                    </div>
+            {/* Carousel wrapper */}
+            <div className="relative">
+              {/* Scroll container */}
+              <div
+                id="testimonials-carousel"
+                className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+              >
+                {/* Testimonial Card 1 - Meta Blue */}
+                <div className="snap-start flex-shrink-0 w-full lg:w-[calc(50%-12px)] bg-[#0668E1] rounded-3xl p-10 lg:p-14 flex flex-col justify-between min-h-[480px]">
+                  <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    &quot;InterviewSense&apos;s behavioral module was a game-changer. I drilled STAR responses until they felt natural.&quot;
+                  </p>
+                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span className="font-semibold text-base">Marcus Chen</span>
+                    <span className="mx-2">&middot;</span>
+                    <span className="opacity-90">SWE Intern, Meta</span>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Real-time Voice Analysis</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Get instant feedback on pacing, filler words, and clarity during interviews.</p>
+
+                {/* Testimonial Card 2 - Stripe Purple */}
+                <div className="snap-start flex-shrink-0 w-full lg:w-[calc(50%-12px)] bg-[#635BFF] rounded-3xl p-10 lg:p-14 flex flex-col justify-between min-h-[480px]">
+                  <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    &quot;The resume tool caught so much stuff I missed. Fixed my bullet points in like an hour and started hearing back from companies the next week. Wish I found this earlier.&quot;
+                  </p>
+                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span className="font-semibold text-base">Priya Raghavan</span>
+                    <span className="mx-2">&middot;</span>
+                    <span className="opacity-90">SWE Intern, Stripe</span>
+                  </div>
+                </div>
+
+                {/* Testimonial Card 3 - Databricks Red */}
+                <div className="snap-start flex-shrink-0 w-full lg:w-[calc(50%-12px)] bg-[#FF3621] rounded-3xl p-10 lg:p-14 flex flex-col justify-between min-h-[480px]">
+                  <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    &quot;I was grinding leetcode for months but kept failing onsites because I couldn't explain my thought process. The voice analysis stuff actually helped me slow down and communicate better. Got into Databricks.&quot;
+                  </p>
+                  <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span className="font-semibold text-base">Jordan Williams</span>
+                    <span className="mx-2">&middot;</span>
+                    <span className="opacity-90">SWE Intern, Databricks</span>
+                  </div>
+                </div>
+
+                {/* Testimonial Card 4 - Amazon Orange */}
+                <div className="snap-start flex-shrink-0 w-full lg:w-[calc(50%-12px)] bg-[#FF9900] rounded-3xl p-10 lg:p-14 flex flex-col justify-between min-h-[480px]">
+                  <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-black leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    &quot;Used this for like 3 weeks before my Amazon loop. The mock behavioral rounds were super helpful, felt way less nervous going in. Got the offer.&quot;
+                  </p>
+                  <div className="text-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span className="font-semibold text-base">Sofia Gutierrez</span>
+                    <span className="mx-2">&middot;</span>
+                    <span className="opacity-80">SWE Intern, Amazon</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Feature Card 2 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative">
-                  {/* Code Editor Mockup */}
-                  <div className="w-full h-full p-3 font-mono text-[9px]">
-                    <div className="flex items-center gap-1.5 mb-3 pb-2">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
-                        <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
-                        <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
-                      </div>
-                      <div className="text-[9px] text-zinc-500">two_sum.py</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex"><span className="text-zinc-600 w-4">1</span><span className="text-purple-400">def</span> <span className="text-yellow-400">twoSum</span><span className="text-zinc-400">(nums, target):</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">2</span><span className="text-zinc-400 pl-3">hashmap = {`{}`}</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">3</span><span className="text-purple-400 pl-3">for</span> <span className="text-zinc-400">i, num</span> <span className="text-purple-400">in</span> <span className="text-blue-400">enumerate</span><span className="text-zinc-400">(nums):</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">4</span><span className="text-zinc-400 pl-6">complement = target - num</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">5</span><span className="text-purple-400 pl-6">if</span> <span className="text-zinc-400">complement</span> <span className="text-purple-400">in</span> <span className="text-zinc-400">hashmap:</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">6</span><span className="text-purple-400 pl-9">return</span> <span className="text-zinc-400">[hashmap[complement], i]</span></div>
-                      <div className="flex"><span className="text-zinc-600 w-4">7</span><span className="text-zinc-400 pl-6">hashmap[num] = i</span></div>
-                    </div>
-                    <div className="mt-3 pt-2">
-                      <div className="text-[9px]"><span className="text-green-400">✓ All test cases passed</span></div>
-                    </div>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>LeetCode-style Practice</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Practice coding problems with hints, solutions, and complexity analysis.</p>
-              </div>
+              {/* Navigation arrows */}
+              <button
+                onClick={() => {
+                  const el = document.getElementById('testimonials-carousel')
+                  if (el) el.scrollBy({ left: -(el.clientWidth / 2 + 12), behavior: 'smooth' })
+                }}
+                className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-zinc-800/80 hover:bg-zinc-700 rounded-full items-center justify-center text-white transition-colors z-10 backdrop-blur-sm border border-zinc-700/50"
+                aria-label="Previous testimonials"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('testimonials-carousel')
+                  if (el) el.scrollBy({ left: el.clientWidth / 2 + 12, behavior: 'smooth' })
+                }}
+                className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-zinc-800/80 hover:bg-zinc-700 rounded-full items-center justify-center text-white transition-colors z-10 backdrop-blur-sm border border-zinc-700/50"
+                aria-label="Next testimonials"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
 
-              {/* Feature Card 3 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-zinc-900 rounded-xl mb-5 overflow-hidden relative">
-                  {/* STAR Method Mockup */}
-                  <div className="w-full h-full p-4 flex flex-col">
-                    <div className="text-[11px] font-semibold text-emerald-400 mb-3">STAR Framework</div>
-                    <div className="space-y-2.5 flex-1">
-                      <div className="bg-zinc-800/50 rounded-md p-2.5">
-                        <div className="text-[10px] text-zinc-500 mb-1">Situation</div>
-                        <div className="h-1.5 bg-emerald-500/30 rounded"></div>
-                      </div>
-                      <div className="bg-zinc-800/50 rounded-md p-2.5">
-                        <div className="text-[10px] text-zinc-500 mb-1">Task</div>
-                        <div className="h-1.5 bg-emerald-500/30 rounded"></div>
-                      </div>
-                      <div className="bg-zinc-800/50 rounded-md p-2.5">
-                        <div className="text-[10px] text-zinc-500 mb-1">Action</div>
-                        <div className="h-1.5 bg-emerald-500/50 rounded"></div>
-                      </div>
-                      <div className="bg-zinc-800/50 rounded-md p-2.5">
-                        <div className="text-[10px] text-zinc-500 mb-1">Result</div>
-                        <div className="h-1.5 bg-zinc-700 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Behavioral Coaching</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Master the STAR method with structured coaching and AI suggestions.</p>
-              </div>
-
-              {/* Feature Card 4 */}
-              <div className="group bg-zinc-900/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-zinc-900/60 transition-all duration-500 flex flex-col">
-                <div className="aspect-[4/3] bg-white rounded-xl mb-5 overflow-hidden relative p-2">
-                  {/* Resume Document Mockup - Zoomed Out */}
-                  <div className="w-full h-full bg-white text-black text-[6px] space-y-1">
-                    <div className="font-bold text-[8px]">JOHN DOE</div>
-                    <div className="text-zinc-600 text-[5px]">john.doe@email.com • (555) 123-4567 • linkedin.com/in/johndoe</div>
-                    <div className="h-px bg-zinc-300 my-0.5"></div>
-
-                    <div className="font-semibold text-[7px] mb-0.5">EXPERIENCE</div>
-                    <div className="relative mb-0.5">
-                      <div className="bg-blue-100 px-0.5 py-0.5 rounded">
-                        <div className="font-medium text-[6px]">Senior Developer</div>
-                        <div className="text-[5px] text-zinc-600">Tech Corp • San Francisco, CA • 2021-2023</div>
-                        <div className="text-[5px] mt-0.5 leading-tight space-y-0.5">
-                          <div>• Led development of microservices architecture</div>
-                          <div>• Reduced API response time by 40%</div>
-                          <div>• Mentored 3 junior developers</div>
-                        </div>
-                      </div>
-                      <div className="absolute -right-0.5 top-0 bg-blue-500 text-white px-0.5 rounded text-[5px]">
-                        ✓ Strong
-                      </div>
-                    </div>
-
-                    <div className="relative mb-0.5">
-                      <div className="bg-yellow-50 px-0.5 py-0.5 rounded">
-                        <div className="font-medium text-[6px]">Junior Developer</div>
-                        <div className="text-[5px] text-zinc-600">StartupCo • Remote • 2019-2021</div>
-                        <div className="text-[5px] mt-0.5 leading-tight">
-                          <div>• Built web applications</div>
-                        </div>
-                      </div>
-                      <div className="absolute -right-0.5 top-0 bg-yellow-500 text-white px-0.5 rounded text-[5px]">
-                        ! Weak
-                      </div>
-                    </div>
-
-                    <div className="font-semibold text-[7px] mt-1 mb-0.5">EDUCATION</div>
-                    <div className="text-[5px]">
-                      <div className="font-medium text-[6px]">BS Computer Science</div>
-                      <div className="text-zinc-600">University of California • GPA: 3.8/4.0</div>
-                    </div>
-
-                    <div className="font-semibold text-[7px] mt-1 mb-0.5">SKILLS</div>
-                    <div className="flex flex-wrap gap-0.5">
-                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">React</span>
-                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">Node.js</span>
-                      <span className="bg-blue-100 px-1 py-0.5 rounded text-[5px]">Python</span>
-                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">AWS</span>
-                      <span className="bg-zinc-200 px-1 py-0.5 rounded text-[5px]">Docker</span>
-                    </div>
-
-                    <div className="font-semibold text-[7px] mt-1 mb-0.5">PROJECTS</div>
-                    <div className="text-[5px] leading-tight space-y-0.5">
-                      <div>
-                        <span className="font-medium text-[6px]">E-commerce Platform</span>
-                        <div className="text-zinc-600">Built full-stack application with 10k+ users</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Resume & Feedback</h3>
-                <p className="text-[14px] leading-[160%] text-zinc-400 flex-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Get automated resume scoring and detailed feedback to optimize your resume.</p>
+              {/* Scroll indicator dots */}
+              <div className="flex justify-center gap-2 mt-6">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <div className="w-2 h-2 rounded-full bg-zinc-600"></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-[1400px] mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Testimonial Card 1 - Databricks Orange */}
-              <div className="bg-[#FF6B35] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[450px]">
-                <p className="text-2xl lg:text-3xl font-normal text-black leading-relaxed mb-12">
-                  "It’s amazing to have everything I need to practice in one place. It makes the whole experience smooth, convenient, and actually enjoyable.."
-                </p>
-                <div className="text-black text-sm">
-                  <span className="font-medium">Alex R</span>
-                  <span className="mx-1.5">·</span>
-                  <span className="opacity-80">Intern, Databricks</span>
-                </div>
-              </div>
-
-              {/* Testimonial Card 2 - Stripe Purple */}
-              <div className="bg-[#635BFF] rounded-3xl p-10 lg:p-12 flex flex-col justify-between min-h-[400px]">
-                <p className="text-2xl lg:text-3xl font-normal text-white leading-relaxed mb-12">
-                  "I was getting zero interviews before. Now my total compensation is $220,000."
-                </p>
-                <div className="text-white text-sm">
-                  <span className="font-medium">Amir K</span>
-                  <span className="mx-1.5">·</span>
-                  <span className="opacity-90">Product Manager, Stripe</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-[1000px] mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-[42px] sm:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Choose Your Plan
-              </h2>
-              <p className="text-[17px] text-zinc-400">
-                Start your 3-day free trial today. Cancel anytime.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Monthly Plan */}
-              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-8 hover:border-zinc-600 transition-all">
-                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Monthly</h3>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-5xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$25</span>
-                  <span className="text-zinc-400">/month</span>
-                </div>
-
-                <button
-                  onClick={() => handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID, 'Monthly')}
-                  disabled={subscriptionLoading === 'Monthly'}
-                  className="w-full mb-6 bg-white text-black hover:bg-zinc-200 font-semibold py-4 text-lg rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  {subscriptionLoading === 'Monthly' ? 'Loading...' : 'Try 3-day trial'}
-                </button>
-
-                <ul className="space-y-3 text-zinc-300">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Access to all questions, problems, and quizzes</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Interview video guides</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Advanced filtering and question playlists</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>5% off all coaching services</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Annual Plan */}
-              <div className="bg-blue-600/10 border-2 border-blue-500 rounded-2xl p-8 relative hover:border-blue-400 transition-all shadow-lg">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-blue-600 rounded-full text-sm font-semibold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Best Value
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Annual</h3>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-5xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$199</span>
-                  <span className="text-zinc-400">/year</span>
-                </div>
-                <div className="text-green-400 text-sm font-semibold mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Save 33%</div>
-
-                <button
-                  onClick={() => handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID, 'Annual')}
-                  disabled={subscriptionLoading === 'Annual'}
-                  className="w-full mb-6 bg-blue-600 text-white hover:bg-blue-500 font-semibold py-4 text-lg rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  {subscriptionLoading === 'Annual' ? 'Loading...' : 'Try 3-day trial'}
-                </button>
-
-                <ul className="space-y-3 text-zinc-300">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Access to all questions, problems, and quizzes</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Interview video guides</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Advanced filtering and question playlists</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>15% off all coaching services</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Premium community with working professionals</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* 3. Differentiation — show why you're better than alternatives */}
       {/* Comparison Table Section */}
-      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#0a0e1a' }}>
+      <section className="py-20 lg:py-28 relative z-[1]" style={{ background: '#000000' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1200px] mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>How we compare</h2>
-              <p className="text-[17px] leading-[150%] text-zinc-400 max-w-[640px] mx-auto">See what makes us different from traditional coding interview platforms.</p>
+            <div className="text-center mb-14">
+              <h2 className="text-[36px] sm:text-[42px] md:text-[48px] font-bold text-white mb-3 tracking-[-0.03em]" style={{ fontFamily: 'var(--font-sora), Inter, -apple-system, sans-serif' }}>How we compare</h2>
+              <p className="text-base text-white/40">See what sets us apart from traditional prep platforms.</p>
             </div>
 
             <div className="bg-zinc-950/30 rounded-2xl overflow-hidden">
@@ -1323,8 +1144,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 4. Value reinforcement — summarize why before final CTA */}
+      <WhySection />
+
       {/*CTA Section */}
-      <section id="cta" className="py-20 md:py-24 relative overflow-hidden z-[1]" style={{ background: '#0a0e1a' }}>
+      <section id="cta" className="py-20 md:py-24 relative overflow-hidden z-[1]" style={{ background: '#000000' }}>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-lg md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -1380,7 +1204,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 lg:py-20 relative z-[1]" style={{ background: '#0a0e1a' }}>
+      <footer className="py-16 lg:py-20 relative z-[1]" style={{ background: '#000000' }}>
         <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-8">

@@ -12,15 +12,15 @@ interface TypewriterHeadlineProps {
   started?: boolean
 }
 
-// Font used WHILE typing — Noto Serif Devanagari
-const NOTO: React.CSSProperties = {
-  fontFamily: 'var(--font-noto-serif), "Noto Serif Devanagari", Georgia, serif',
-  fontWeight: 600,
+// Font used WHILE typing — clean neo-grotesk sans-serif
+const HEADING: React.CSSProperties = {
+  fontFamily: 'var(--font-sora), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontWeight: 700,
   fontStyle: 'normal',
 }
 
-// Font used AFTER highlight (rotating phrases) — Playfair italic
-const PLAYFAIR: React.CSSProperties = {
+// Font used AFTER highlight (rotating phrases) — Playfair italic (original style)
+const PHRASE: React.CSSProperties = {
   fontFamily: 'var(--font-playfair), Georgia, serif',
   fontWeight: 400,
   fontStyle: 'italic',
@@ -77,22 +77,22 @@ export default function TypewriterHeadline({
   const typedPhrase = typed.length > staticPart.length ? typed.slice(staticPart.length) : ''
   const isHighlighted = phase === 'highlight'
   // As soon as highlight fires, switch font to PLAYFAIR instantly
-  const phraseFont = (phase === 'highlight' || phase === 'rotate') ? PLAYFAIR : NOTO
+  const phraseFont = (phase === 'highlight' || phase === 'rotate') ? PHRASE : HEADING
 
   const LINE2_HEIGHT = '1.3em'
 
   return (
     <h1
       style={{
-        ...NOTO,
-        letterSpacing: '-0.02em',
-        lineHeight: 1.25,
+        ...HEADING,
+        letterSpacing: '-0.03em',
+        lineHeight: 1.2,
         color: '#e8f0ff',
       }}
       className="text-3xl sm:text-4xl md:text-[2.6rem] lg:text-[3.1rem]"
     >
       {/* ── Line 1: "Never fail another" ── */}
-      <span style={{ display: 'block', color: '#e8f0ff', ...NOTO }}>
+      <span style={{ display: 'block', color: '#e8f0ff', ...HEADING }}>
         {phase === 'idle' ? (
           <span style={{ opacity: 0 }}>N</span>
         ) : phase === 'typing' ? (
@@ -156,7 +156,7 @@ export default function TypewriterHeadline({
               key={phraseIdx}
               style={{
                 display: 'block',
-                ...PLAYFAIR,
+                ...PHRASE,
                 color: '#60a5fa',
               }}
               initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
