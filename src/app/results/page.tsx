@@ -157,9 +157,9 @@ function ResultsPage() {
             {/* Stats Cards */}
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 28, textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#e2e8f0', lineHeight: 1, marginBottom: 8 }}>
-                {interviewSummary.duration}
+                {interviewSummary.duration.split(' ')[0]}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>Duration</div>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif" }}>Minutes</div>
             </div>
 
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 28, textAlign: 'center' }}>

@@ -164,8 +164,8 @@ export default function SystemDesignFinalResultsPage() {
           {/* Score Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 20,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: 16,
             marginBottom: 40,
           }}>
             {/* Overall Score */}
@@ -173,7 +173,7 @@ export default function SystemDesignFinalResultsPage() {
               background: 'rgba(59, 130, 246, 0.06)',
               border: '1px solid rgba(59, 130, 246, 0.12)',
               borderRadius: 16,
-              padding: 28,
+              padding: 20,
               textAlign: 'center',
             }}>
               <div style={{
@@ -204,7 +204,7 @@ export default function SystemDesignFinalResultsPage() {
                 background: 'rgba(255, 255, 255, 0.02)',
                 border: '1px solid rgba(255, 255, 255, 0.06)',
                 borderRadius: 16,
-                padding: 28,
+                padding: 20,
                 textAlign: 'center',
               }}>
                 <div style={{
