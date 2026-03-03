@@ -1,45 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react';
-import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ArrowLeft,
-  Clock,
-  Target,
-  Lightbulb,
-  CheckCircle,
-  AlertTriangle,
-  Code2,
-  Database,
-  Network,
-  Zap,
-  TrendingUp,
-  LogOut,
-  User,
-  Timer,
-  PenTool,
-  MessageCircle,
-  BarChart3,
-  Play,
-  Pause,
-  RotateCcw,
-  Save,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  CheckSquare,
-  Square,
-  Mic,
-  MicOff
-} from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { toast } from "@/components/ui/use-toast";
@@ -47,37 +9,10 @@ import { testMicrophone } from '@/lib/microphone';
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
 
 interface SystemDesignTest {
-  problem: {
-    title: string;
-    description: string;
-    requirements: string[];
-    constraints: string[];
-    estimatedTime: string;
-  };
-  guidance: {
-    approach: string[];
-    keyComponents: string[];
-    scaleConsiderations: string[];
-    commonPitfalls: string[];
-  };
-  evaluation: {
-    criteria: Array<{
-      category: string;
-      description: string;
-      weight: number;
-    }>;
-    sampleSolution: {
-      overview: string;
-      architecture: string[];
-      technologies: string[];
-      tradeoffs: string[];
-    };
-  };
-  tips: {
-    timeManagement: string[];
-    communicationTips: string[];
-    drawingTips: string[];
-  };
+  problem: { title: string; description: string; requirements: string[]; constraints: string[]; estimatedTime: string; };
+  guidance: { approach: string[]; keyComponents: string[]; scaleConsiderations: string[]; commonPitfalls: string[]; };
+  evaluation: { criteria: Array<{ category: string; description: string; weight: number; }>; sampleSolution: { overview: string; architecture: string[]; technologies: string[]; tradeoffs: string[]; }; };
+  tips: { timeManagement: string[]; communicationTips: string[]; drawingTips: string[]; };
 }
 
 const STEPS = [
@@ -89,650 +24,201 @@ const STEPS = [
 ];
 
 export default function SystemDesignTestPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [testData, setTestData] = useState<SystemDesignTest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Test state
   const [currentStep, setCurrentStep] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(45 * 60); // 45 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(45 * 60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [showGuidance, setShowGuidance] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  
-  // Drawing state
+  const [instructionsWidth, setInstructionsWidth] = useState(320);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingTool, setDrawingTool] = useState<'pen' | 'eraser'>('pen');
-  
-  // Recording state
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [stepExplanations, setStepExplanations] = useState<Record<string, string>>({
-    requirements: '',
-    estimation: '',
-    highlevel: '',
-    detailed: '',
-    scale: ''
+    requirements: '', estimation: '', highlevel: '', detailed: '', scale: ''
   });
-  
-  // Audio recording refs
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const currentStepData = STEPS[currentStep];
 
   useEffect(() => {
     const data = sessionStorage.getItem('systemDesignTest');
-    if (data) {
-      setTestData(JSON.parse(data));
-    } else {
-      router.push('/system-design');
-    }
+    if (data) { setTestData(JSON.parse(data)); } else { router.push('/system-design'); }
     setIsLoading(false);
   }, [router]);
 
-  // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerRunning && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining(prev => prev - 1);
-      }, 1000);
-    }
+    if (isTimerRunning && timeRemaining > 0) { interval = setInterval(() => setTimeRemaining(prev => prev - 1), 1000); }
     return () => clearInterval(interval);
   }, [isTimerRunning, timeRemaining]);
 
-  // Canvas drawing functions
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    setIsDrawing(true);
-    const rect = canvas.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    
-    const x = ((clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((clientY - rect.top) / rect.height) * canvas.height;
-    
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    
-    const x = ((clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((clientY - rect.top) / rect.height) * canvas.height;
-    
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.lineWidth = drawingTool === 'pen' ? 2 : 20;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.strokeStyle = drawingTool === 'pen' ? '#ffffff' : '#1a1a1a';
-      ctx.globalCompositeOperation = drawingTool === 'pen' ? 'source-over' : 'destination-out';
-      
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-    const ctx = canvasRef.current?.getContext('2d');
-    if (ctx) {
-      ctx.beginPath();
-    }
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Set canvas background to dark
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  };
-
-  // Initialize canvas background
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  }, [testData]);
+    const handleMouseMove = (e: MouseEvent) => { if (isResizing) setInstructionsWidth(Math.min(Math.max(240, e.clientX - 220), 480)); };
+    const handleMouseUp = () => setIsResizing(false);
+    if (isResizing) { document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseUp); }
+    return () => { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseUp); };
+  }, [isResizing]);
 
-  // Recording functions
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current; if (!canvas) return; setIsDrawing(true);
+    const rect = canvas.getBoundingClientRect();
+    const cX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const cY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const x = ((cX - rect.left) / rect.width) * canvas.width;
+    const y = ((cY - rect.top) / rect.height) * canvas.height;
+    const ctx = canvas.getContext('2d'); if (ctx) { ctx.beginPath(); ctx.moveTo(x, y); }
+  };
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return; const canvas = canvasRef.current; if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const cX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const cY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const x = ((cX - rect.left) / rect.width) * canvas.width;
+    const y = ((cY - rect.top) / rect.height) * canvas.height;
+    const ctx = canvas.getContext('2d');
+    if (ctx) { ctx.lineWidth = drawingTool === 'pen' ? 2 : 20; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = drawingTool === 'pen' ? '#94a3b8' : '#0f1117'; ctx.globalCompositeOperation = drawingTool === 'pen' ? 'source-over' : 'destination-out'; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+  };
+  const stopDrawing = () => { setIsDrawing(false); const ctx = canvasRef.current?.getContext('2d'); if (ctx) ctx.beginPath(); };
+  const clearCanvas = () => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, canvas.width, canvas.height); } };
+
+  useEffect(() => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, canvas.width, canvas.height); } }, [testData]);
+
   const startRecording = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast({
-          title: "Browser Compatibility Error",
-          description: "Your browser doesn't support microphone access. Please try using Chrome, Firefox, or Safari.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      const micTest = await testMicrophone();
-      if (!micTest.success) {
-        toast({
-          title: "Microphone Error",
-          description: micTest.message || "Could not access your microphone. Please check permissions.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000,
-        } 
-      });
-      
-      const recorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 128000
-      });
-      
-      mediaRecorderRef.current = recorder;
-      audioChunksRef.current = [];
-      
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
-      
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setAudioUrl(audioUrl);
-        await transcribeAudio(audioBlob);
-      };
-      
-      recorder.start();
-      setIsRecording(true);
-      
-      toast({
-        title: "Recording started",
-        description: "Explain your approach for this step clearly into your microphone",
-      });
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-      toast({
-        title: "Microphone Error",
-        description: "Could not access your microphone. Please check your browser settings.",
-        variant: "destructive"
-      });
-    }
+      if (!navigator.mediaDevices?.getUserMedia) { toast({ title: "Browser Error", description: "Microphone not supported", variant: "destructive" }); return; }
+      const micTest = await testMicrophone(); if (!micTest.success) { toast({ title: "Microphone Error", description: micTest.message, variant: "destructive" }); return; }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      mediaRecorderRef.current = recorder; audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => { const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' }); await transcribeAudio(audioBlob); };
+      recorder.start(); setIsRecording(true); toast({ title: "Recording started" });
+    } catch { toast({ title: "Microphone Error", variant: "destructive" }); }
   };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
-      if (mediaRecorderRef.current.stream) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      }
-    }
-  };
-
+  const stopRecording = () => { if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); mediaRecorderRef.current.stream?.getTracks().forEach(t => t.stop()); } };
   const transcribeAudio = async (audioBlob: Blob) => {
-    try {
-      setIsTranscribing(true);
-      toast({
-        title: "Transcribing audio",
-        description: "This may take a few moments...",
-      });
-      
-      const transcriptResult = await transcribeAndAnalyzeAudio(audioBlob);
-      
-      if (transcriptResult && transcriptResult.transcription) {
-        setStepExplanations(prev => ({
-          ...prev,
-          [currentStepData.id]: transcriptResult.transcription
-        }));
-        
-        toast({
-          title: "Transcription complete",
-          description: "Your explanation has been recorded and transcribed.",
-        });
-      } else {
-        toast({
-          title: "Transcription issue",
-          description: "Could not transcribe audio clearly. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Transcription error:', error);
-      toast({
-        title: "Transcription Error",
-        description: "There was an error transcribing your audio. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsTranscribing(false);
-    }
+    try { setIsTranscribing(true); const result = await transcribeAndAnalyzeAudio(audioBlob); if (result?.transcription) { setStepExplanations(prev => ({ ...prev, [currentStepData.id]: result.transcription })); toast({ title: "Transcription complete" }); } }
+    catch { toast({ title: "Transcription Error", variant: "destructive" }); } finally { setIsTranscribing(false); }
   };
+  const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+  const handleStepComplete = () => { if (!completedSteps.includes(currentStep)) setCompletedSteps([...completedSteps, currentStep]); if (currentStep < STEPS.length - 1) setCurrentStep(currentStep + 1); };
+  const handleFinishTest = () => { sessionStorage.setItem('systemDesignResponses', JSON.stringify(stepExplanations)); router.push('/system-design/final-results'); };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleStepComplete = () => {
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps([...completedSteps, currentStep]);
-    }
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleFinishTest = () => {
-    // Save explanations and navigate to results
-    sessionStorage.setItem('systemDesignResponses', JSON.stringify(stepExplanations));
-    router.push('/system-design/final-results');
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-        <div className="text-white">Loading test...</div>
-      </div>
-    );
+  if (isLoading || !testData) {
+    return (<ProtectedRoute><DashboardLayout><div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b', fontFamily: "'Inter', sans-serif" }}>Loading test...</p></div></DashboardLayout></ProtectedRoute>);
   }
-
-  if (!testData) {
-    return null;
-  }
-
-  const currentStepData = STEPS[currentStep];
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white">
-        {/* Timer and Controls */}
-        <div className="border-b border-zinc-800/50 px-4 py-2 flex items-center justify-between bg-zinc-900/80">
-          <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-lg">
-            <Clock className="h-4 w-4 text-red-400" />
-            <span className={`font-mono ${timeRemaining < 300 ? 'text-red-400' : 'text-white'}`}>
-              {formatTime(timeRemaining)}
-            </span>
-            <Button
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-            >
-              {isTimerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-            </Button>
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', userSelect: isResizing ? 'none' : 'auto', overflow: 'hidden' }}>
+          {/* Top Bar */}
+          <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117', flexShrink: 0 }}>
+            <div>
+              <h1 style={{ color: '#e2e8f0', fontSize: '0.95rem', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{testData.problem.title}</h1>
+              <p style={{ color: '#64748b', fontSize: '0.78rem', marginTop: 2, fontFamily: "'Inter', sans-serif" }}>Step {currentStep + 1} of {STEPS.length} — {currentStepData.title}</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ color: timeRemaining < 300 ? '#ef4444' : '#e2e8f0', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
+                <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 28, height: 28, borderRadius: 6, background: isTimerRunning ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${isTimerRunning ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)'}`, color: isTimerRunning ? '#f87171' : '#4ade80', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isTimerRunning ? <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg> : <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9"/></svg>}
+                </button>
+              </div>
+              {currentStep < STEPS.length - 1 ? (
+                <button onClick={handleStepComplete} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>Next Step</button>
+              ) : (
+                <button onClick={handleFinishTest} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Finish Test</button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 flex">
-          {/* Left Sidebar - Problem & Guidance */}
-          <div className="w-80 border-r border-zinc-800 bg-zinc-900/50 p-4 overflow-y-auto">
-            <div className="space-y-4">
-              {/* Problem Overview */}
-              <Card className="bg-zinc-800/50 border-red-500/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-red-300 flex items-center gap-2">
-                    <Target className="h-4 w-4" />
-                    {testData.problem.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-xs text-zinc-300 leading-relaxed">
-                    {testData.problem.description}
-                  </p>
-                  
-                  <div>
-                    <h4 className="text-xs font-medium text-green-300 mb-1">Requirements:</h4>
-                    <ul className="space-y-1">
-                      {testData.problem.requirements.map((req, index) => (
-                        <li key={index} className="text-xs text-zinc-400 flex items-start gap-1">
-                          <span className="w-1 h-1 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          {req}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-xs font-medium text-orange-300 mb-1">Constraints:</h4>
-                    <ul className="space-y-1">
-                      {testData.problem.constraints.map((constraint, index) => (
-                        <li key={index} className="text-xs text-zinc-400 flex items-start gap-1">
-                          <span className="w-1 h-1 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                          {constraint}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Main */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {/* Left Panel */}
+            <div style={{ width: `${instructionsWidth}px`, minWidth: 240, maxWidth: 480, borderRight: '1px solid rgba(255,255,255,0.06)', background: '#0a0e18', overflow: 'auto', flexShrink: 0 }}>
+              <div style={{ padding: 20 }}>
+                <div style={{ background: 'rgba(59,130,246,0.04)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid rgba(59,130,246,0.1)' }}>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#3b82f6', fontSize: '0.7rem', fontWeight: 600, marginBottom: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Problem</h3>
+                  <p style={{ fontFamily: "'Inter', sans-serif", color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.65, marginBottom: 14 }}>{testData.problem.description}</p>
+                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: '#22c55e', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Requirements</h4>
+                  <ul style={{ margin: '0 0 14px 0', paddingLeft: 16 }}>{testData.problem.requirements.map((r, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 4, lineHeight: 1.5 }}>{r}</li>)}</ul>
+                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: '#f59e0b', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Constraints</h4>
+                  <ul style={{ margin: 0, paddingLeft: 16 }}>{testData.problem.constraints.map((c, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 4, lineHeight: 1.5 }}>{c}</li>)}</ul>
+                </div>
 
-              {/* Step Progress */}
-              <Card className="bg-zinc-800/50 border-zinc-700/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-blue-300 flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Progress ({currentStep + 1}/{STEPS.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
+                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Progress</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {STEPS.map((step, index) => (
-                      <div 
-                        key={step.id}
-                        className={`flex items-center gap-2 p-2 rounded text-xs cursor-pointer transition-colors ${
-                          index === currentStep 
-                            ? 'bg-red-600/20 border border-red-500/30' 
-                            : completedSteps.includes(index)
-                            ? 'bg-green-600/20 border border-green-500/30'
-                            : 'bg-zinc-700/30'
-                        }`}
-                        onClick={() => setCurrentStep(index)}
-                      >
-                        {completedSteps.includes(index) ? (
-                          <CheckSquare className="h-3 w-3 text-green-400" />
-                        ) : (
-                          <Square className="h-3 w-3 text-zinc-400" />
-                        )}
-                        <span className="flex-1">{step.title}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {step.duration}m
-                        </Badge>
+                      <div key={step.id} onClick={() => setCurrentStep(index)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: index === currentStep ? 'rgba(59,130,246,0.08)' : 'transparent', border: index === currentStep ? '1px solid rgba(59,130,246,0.15)' : '1px solid transparent', transition: 'all 0.15s' }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontFamily: "'Inter', sans-serif", fontWeight: 600, background: completedSteps.includes(index) ? '#22c55e' : 'transparent', border: completedSteps.includes(index) ? 'none' : '1.5px solid rgba(100,116,139,0.3)', color: completedSteps.includes(index) ? '#fff' : '#64748b' }}>
+                          {completedSteps.includes(index) ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : index + 1}
+                        </div>
+                        <span style={{ flex: 1, fontFamily: "'Inter', sans-serif", color: index === currentStep ? '#e2e8f0' : '#94a3b8', fontSize: '0.78rem', fontWeight: index === currentStep ? 500 : 400 }}>{step.title}</span>
+                        <span style={{ fontFamily: "monospace", color: '#475569', fontSize: '0.68rem' }}>{step.duration}m</span>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Current Step Guidance */}
-              {showGuidance && (
-                <Card className="bg-zinc-800/50 border-blue-500/20">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm text-blue-300 flex items-center gap-2">
-                        <Lightbulb className="h-4 w-4" />
-                        Step Guidance
-                      </CardTitle>
-                      <Button
-                        onClick={() => setShowGuidance(false)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                      >
-                        <EyeOff className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {testData.guidance.approach.slice(currentStep, currentStep + 1).map((step, index) => (
-                        <p key={index} className="text-xs text-zinc-300 leading-relaxed">
-                          {step}
-                        </p>
-                      ))}
-                      
-                      {currentStep === 2 && ( // High-level design
-                        <div className="mt-3">
-                          <h5 className="text-xs font-medium text-purple-300 mb-1">Key Components:</h5>
-                          <ul className="space-y-1">
-                            {testData.guidance.keyComponents.map((component, index) => (
-                              <li key={index} className="text-xs text-zinc-400">• {component}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {currentStep === 4 && ( // Scale considerations
-                        <div className="mt-3">
-                          <h5 className="text-xs font-medium text-cyan-300 mb-1">Scale Considerations:</h5>
-                          <ul className="space-y-1">
-                            {testData.guidance.scaleConsiderations.map((consideration, index) => (
-                              <li key={index} className="text-xs text-zinc-400">• {consideration}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {!showGuidance && (
-                <Button
-                  onClick={() => setShowGuidance(true)}
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-blue-500/50 text-blue-300 hover:bg-blue-900/20"
-                >
-                  <Eye className="mr-2 h-3 w-3" />
-                  Show Guidance
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col">
-            {/* Current Step Header */}
-            <div className="border-b border-zinc-800 bg-zinc-900/30 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-white">
-                    Step {currentStep + 1}: {currentStepData.title}
-                  </h2>
-                  <p className="text-sm text-zinc-400">
-                    Recommended time: {currentStepData.duration} minutes
-                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {currentStep < STEPS.length - 1 ? (
-                    <Button
-                      onClick={handleStepComplete}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Complete Step
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleFinishTest}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Finish Test
-                    </Button>
-                  )}
+
+                {showInstructions ? (
+                  <div style={{ background: 'rgba(59,130,246,0.04)', borderRadius: 12, padding: 18, border: '1px solid rgba(59,130,246,0.08)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Guidance</h3>
+                      <button onClick={() => setShowInstructions(false)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem' }}>Hide</button>
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>{testData.guidance.approach.map((t, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 6, lineHeight: 1.55 }}>{t}</li>)}</ul>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowInstructions(true)} style={{ width: '100%', padding: 10, background: 'transparent', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 8, color: '#3b82f6', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>Show Guidance</button>
+                )}
+              </div>
+            </div>
+
+            {/* Resize Handle */}
+            <div ref={resizeRef} onMouseDown={() => setIsResizing(true)} style={{ width: 5, cursor: 'col-resize', flexShrink: 0, background: isResizing ? 'rgba(59,130,246,0.4)' : 'transparent', transition: 'background 0.15s' }} onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(59,130,246,0.2)')} onMouseLeave={(e) => !isResizing && (e.currentTarget.style.background = 'transparent')} />
+
+            {/* Canvas */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f1117' }}>
+                <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingTool === 'pen' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Pen</button>
+                <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingTool === 'eraser' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Eraser</button>
+                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.06)' }} />
+                <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: '#f87171', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
+              </div>
+              <div style={{ flex: 1, padding: 12, background: '#0a0e18' }}>
+                <div style={{ height: '100%', background: '#0f1117', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <canvas ref={canvasRef} width={1200} height={800} style={{ width: '100%', height: '100%', cursor: drawingTool === 'pen' ? 'crosshair' : 'cell', touchAction: 'none' }} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={(e) => { e.preventDefault(); startDrawing(e); }} onTouchMove={(e) => { e.preventDefault(); draw(e); }} onTouchEnd={(e) => { e.preventDefault(); stopDrawing(); }} />
                 </div>
               </div>
             </div>
 
-            {/* Work Area */}
-            <div className="flex-1 flex">
-              {/* Drawing Canvas */}
-              <div className="flex-1 bg-zinc-800/20 p-4">
-                <div className="h-full bg-zinc-900/50 rounded-lg border border-zinc-700/50 relative overflow-hidden">
-                  {/* Canvas Toolbar */}
-                  <div className="absolute top-2 left-2 z-10 flex items-center gap-2 bg-zinc-800/80 backdrop-blur-sm rounded-lg p-2">
-                    <Button
-                      onClick={() => setDrawingTool('pen')}
-                      variant={drawingTool === 'pen' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                    >
-                      <PenTool className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => setDrawingTool('eraser')}
-                      variant={drawingTool === 'eraser' ? 'default' : 'ghost'}
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
-                    <div className="w-px h-6 bg-zinc-600"></div>
-                    <Button
-                      onClick={clearCanvas}
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-red-400 hover:text-red-300"
-                    >
-                      Clear
-                    </Button>
-                  </div>
-
-                  {/* Canvas */}
-                  <canvas
-                    ref={canvasRef}
-                    width={1200}
-                    height={800}
-                    className="w-full h-full cursor-crosshair touch-none"
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={(e) => {
-                      e.preventDefault();
-                      startDrawing(e);
-                    }}
-                    onTouchMove={(e) => {
-                      e.preventDefault();
-                      draw(e);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      stopDrawing();
-                    }}
-                    style={{ touchAction: 'none' }}
-                  />
+            {/* Right Panel */}
+            <div style={{ width: 280, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0a0e18', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+              <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, marginBottom: 14, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Voice Explanation</h3>
+                <button onClick={isRecording ? stopRecording : startRecording} disabled={isTranscribing} style={{ width: '100%', padding: 12, borderRadius: 8, background: isRecording ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.08)', color: isRecording ? '#f87171' : '#3b82f6', border: `1px solid ${isRecording ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.15)'}`, cursor: isTranscribing ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, marginBottom: 14, opacity: isTranscribing ? 0.5 : 1, transition: 'all 0.15s' }}>{isRecording ? 'Stop Recording' : 'Record Explanation'}</button>
+                {isTranscribing && <p style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.75rem', textAlign: 'center', marginBottom: 14 }}>Transcribing...</p>}
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: 14, overflow: 'auto', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  {stepExplanations[currentStepData.id] ? <p style={{ fontFamily: "'Inter', sans-serif", color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{stepExplanations[currentStepData.id]}</p> : <p style={{ fontFamily: "'Inter', sans-serif", color: '#475569', fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>Record your explanation for this step</p>}
                 </div>
-              </div>
-
-              {/* Recording Area */}
-              <div className="w-80 border-l border-zinc-800 bg-zinc-900/30 p-4">
-                <div className="h-full flex flex-col">
-                  <h3 className="text-sm font-medium text-white mb-3">
-                    {currentStepData.title} Explanation
-                  </h3>
-                  
-                  {/* Recording Controls */}
-                  <div className="mb-4">
-                    <Button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      disabled={isTranscribing}
-                      className={`w-full ${
-                        isRecording 
-                          ? 'bg-red-600 hover:bg-red-700' 
-                          : 'bg-red-600/20 border border-red-500/50 text-red-300 hover:bg-red-600/30'
-                      }`}
-                      variant={isRecording ? 'default' : 'outline'}
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="mr-2 h-4 w-4" />
-                          <span className="hidden sm:inline">Stop Recording</span>
-                          <span className="sm:hidden">Stop</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="mr-2 h-4 w-4" />
-                          <span className="hidden sm:inline">Record Explanation</span>
-                          <span className="sm:hidden">Record</span>
-                        </>
-                      )}
-                    </Button>
-                    
-                    {isTranscribing && (
-                      <div className="mt-2 text-center">
-                        <div className="text-xs text-zinc-400">
-                          <span className="hidden sm:inline">Transcribing your explanation...</span>
-                          <span className="sm:hidden">Transcribing...</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Transcribed Content */}
-                  <div className="flex-1 overflow-hidden">
-                    {stepExplanations[currentStepData.id] ? (
-                      <div className="bg-zinc-800/50 rounded-lg p-3 h-full overflow-y-auto">
-                        <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                          {stepExplanations[currentStepData.id]}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="bg-zinc-800/30 rounded-lg p-3 h-full flex items-center justify-center">
-                        <p className="text-xs text-zinc-500 text-center">
-                          Click record to explain your approach for this step
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-zinc-700/50">
-                    <div className="flex items-center justify-between text-xs text-zinc-400">
-                      <span>
-                        {stepExplanations[currentStepData.id] ? 'Recorded' : 'No recording'}
-                      </span>
-                      <Mic className="h-3 w-3" />
-                    </div>
-                  </div>
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Inter', sans-serif", color: '#475569', fontSize: '0.72rem' }}>{stepExplanations[currentStepData.id] ? 'Recorded' : 'Not recorded'}</span>
+                  {stepExplanations[currentStepData.id] && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       </DashboardLayout>
     </ProtectedRoute>
   );
-} 
+}

@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Download, Upload, Copy, Check, FileText } from "lucide-react";
+import { Download, Upload, Copy, Check, FileText, ChevronLeft } from "lucide-react";
 import jsPDF from 'jspdf';
 import { useSession } from "next-auth/react";
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { PrefilledChip } from '@/components/ProfileFormComponents';
 import { useProfileData } from '@/hooks/useProfileData';
+import CoverLetterLoadingModal from '@/components/CoverLetterLoadingModal';
 
 const pageStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
@@ -217,19 +216,7 @@ export default function CoverLetterPage() {
       <DashboardLayout>
         <style>{pageStyles}</style>
         <div className="h-screen overflow-y-auto">
-          {isLoading ? (
-            <div style={{
-              minHeight: 'calc(100vh - 64px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: 16,
-            }}>
-              <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
-              <p style={{ fontFamily: "'Inter', sans-serif", color: '#7da8d4', fontSize: '0.9rem' }}>{loadingStep}</p>
-            </div>
-          ) : !generatedCoverLetter ? (
+          {!generatedCoverLetter ? (
             <div style={{
               minHeight: 'calc(100vh - 64px)',
               display: 'flex',
@@ -362,7 +349,7 @@ export default function CoverLetterPage() {
                       width: '100%',
                       marginTop: 32,
                       padding: 14,
-                      background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                      background: '#2563eb',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 10,
@@ -370,7 +357,7 @@ export default function CoverLetterPage() {
                       fontSize: '0.88rem',
                       fontWeight: 500,
                       cursor: (isLoading || !jobDescription || (!companyName && !profile?.targetCompany)) ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                      boxShadow: '0 4px 20px rgba(37,99,235,0.25)',
                       opacity: (isLoading || !jobDescription || (!companyName && !profile?.targetCompany)) ? 0.5 : 1,
                       transition: 'opacity 0.2s, transform 0.15s',
                     }}
@@ -384,161 +371,257 @@ export default function CoverLetterPage() {
             </div>
           ) : (
             /* Generated cover letter view */
-            <div className="p-8">
-              <div className="w-full max-w-4xl mx-auto">
-                  {generatedCoverLetter && (
-                    <div className="mt-8">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-xl font-semibold flex items-center text-white">
-                            <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+            <div className="w-full px-4 py-8">
+              <div className="max-w-4xl mx-auto">
+                {/* Back Button */}
+                <div className="mb-6">
+                  <button
+                    onClick={() => setGeneratedCoverLetter(null)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 12px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#94a3b8',
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      borderRadius: 8,
+                      transition: 'color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <ChevronLeft size={16} />
+                    Back to Form
+                  </button>
+                </div>
+
+                {generatedCoverLetter && (
+                  <div className="space-y-6">
+                    {/* Header Card */}
+                    <div style={{
+                      background: 'rgba(37, 99, 235, 0.08)',
+                      border: '1px solid rgba(59,130,246,0.15)',
+                      borderRadius: 16,
+                      padding: '24px 28px',
+                    }}>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                          <h2 style={{
+                            fontFamily: "'Instrument Serif', serif",
+                            fontSize: '1.75rem',
+                            color: '#dde2f0',
+                            marginBottom: 4,
+                          }}>
                             Your Cover Letter
-                          </h3>
+                          </h2>
+                          <p style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.85rem',
+                            color: '#64748b',
+                          }}>
+                            Generated {new Date().toLocaleDateString()} • Ready to send
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
                           {previousLetters.length > 1 && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-zinc-400">Version:</span>
-                              <select 
-                                value={currentLetterId || ''}
-                                onChange={(e) => switchToLetter(e.target.value)}
-                                className="bg-zinc-700 border border-zinc-600 text-white text-sm rounded px-2 py-1"
-                              >
-                                {previousLetters.map((letter, index) => (
-                                  <option key={letter.id} value={letter.id}>
-                                    {index === 0 ? 'Latest' : `Version ${previousLetters.length - index}`}
-                                    ({letter.timestamp.toLocaleTimeString()})
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
+                            <select 
+                              value={currentLetterId || ''}
+                              onChange={(e) => switchToLetter(e.target.value)}
+                              style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 8,
+                                padding: '8px 12px',
+                                color: '#dde2f0',
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {previousLetters.map((letter, index) => (
+                                <option key={letter.id} value={letter.id}>
+                                  {index === 0 ? 'Latest' : `Version ${previousLetters.length - index}`}
+                                </option>
+                              ))}
+                            </select>
                           )}
+                          <button
+                            onClick={handleDownload}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              padding: '10px 16px',
+                              background: '#2563eb',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 10,
+                              fontFamily: "'Inter', sans-serif",
+                              fontSize: '0.85rem',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
+                            }}
+                          >
+                            <Download size={15} />
+                            Download PDF
+                          </button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-blue-600 hover:bg-blue-500 border-blue-600 text-white hover:text-white flex items-center gap-2 px-4 py-2"
-                          onClick={handleDownload}
-                        >
-                          <Download className="h-4 w-4" />
-                          Download PDF
-                        </Button>
-                      </div>
-                      
-                      {/* Cover Letter Preview */}
-                      <div className="bg-white text-gray-900 p-8 rounded-lg shadow-lg border border-zinc-300 font-serif">
-                        <div 
-                          className="prose prose-lg max-w-none leading-relaxed"
-                          style={{ 
-                            fontFamily: 'var(--font-playfair), Georgia, serif',
-                            lineHeight: '1.6',
-                            fontSize: '14px'
-                          }}
-                        >
-                          {generatedCoverLetter.split('\n').map((line, index) => {
-                            const trimmedLine = line.trim();
-                            
-                            // Empty lines for spacing
-                            if (!trimmedLine) {
-                              return <div key={index} className="h-4" />;
-                            }
-                            
-                            // Header sections (contact info)
-                            if (trimmedLine.includes('@') || /^\(\d{3}\)/.test(trimmedLine) || /^\d+/.test(trimmedLine)) {
-                              return (
-                                <div key={index} className="text-sm text-gray-700 mb-1">
-                                  {trimmedLine}
-                                </div>
-                              );
-                            }
-                            
-                            // Date
-                            if (/^\w+\s+\d+,\s+\d{4}/.test(trimmedLine)) {
-                              return (
-                                <div key={index} className="text-sm text-gray-700 mb-6 mt-4">
-                                  {trimmedLine}
-                                </div>
-                              );
-                            }
-                            
-                            // Salutation
-                            if (trimmedLine.toLowerCase().startsWith('dear')) {
-                              return (
-                                <div key={index} className="text-base font-medium text-gray-900 mb-4">
-                                  {trimmedLine}
-                                </div>
-                              );
-                            }
-                            
-                            // Closing
-                            if (trimmedLine.toLowerCase().includes('sincerely') || 
-                                trimmedLine.toLowerCase().includes('best regards') ||
-                                trimmedLine.toLowerCase().includes('yours truly')) {
-                              return (
-                                <div key={index} className="text-base text-gray-900 mt-6 mb-2">
-                                  {trimmedLine}
-                                </div>
-                              );
-                            }
-                            
-                            // Name at the end
-                            if (index > 0 && generatedCoverLetter.split('\n')[index - 1].toLowerCase().includes('sincerely')) {
-                              return (
-                                <div key={index} className="text-base font-medium text-gray-900 mt-8">
-                                  {trimmedLine}
-                                </div>
-                              );
-                            }
-                            
-                            // Regular paragraphs
-                            return (
-                              <p key={index} className="text-base text-gray-800 mb-4 leading-relaxed">
-                                {trimmedLine}
-                              </p>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="mt-6 flex gap-3">
-                        <Button
-                          variant="outline"
-                          className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white flex items-center gap-2"
-                          onClick={handleCopyToClipboard}
-                        >
-                          {copySuccess ? (
-                            <>
-                              <Check className="h-4 w-4 text-green-400" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4" />
-                              Copy to Clipboard
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="bg-zinc-800 hover:bg-zinc-700 border-zinc-600 text-zinc-300 hover:text-white"
-                          onClick={generateNewLetter}
-                          disabled={isLoading || !resume || !jobDescription || !companyName}
-                        >
-                          {isLoading ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 border-2 border-zinc-500/30 border-t-zinc-300 rounded-full animate-spin"></div>
-                              Generating...
-                            </div>
-                          ) : (
-                            "Generate New Letter"
-                          )}
-                        </Button>
                       </div>
                     </div>
-                  )}
+                      
+                    {/* Cover Letter Preview */}
+                    <div style={{
+                      background: '#fff',
+                      borderRadius: 16,
+                      padding: '40px 48px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                      <div style={{ 
+                        fontFamily: 'Georgia, serif',
+                        lineHeight: '1.7',
+                        fontSize: '14px',
+                        color: '#1f2937',
+                      }}>
+                        {generatedCoverLetter.split('\n').map((line, index) => {
+                          const trimmedLine = line.trim();
+                          
+                          // Empty lines for spacing
+                          if (!trimmedLine) {
+                            return <div key={index} style={{ height: 16 }} />;
+                          }
+                          
+                          // Header sections (contact info)
+                          if (trimmedLine.includes('@') || /^\(\d{3}\)/.test(trimmedLine) || /^\d+/.test(trimmedLine)) {
+                            return (
+                              <div key={index} style={{ fontSize: '13px', color: '#4b5563', marginBottom: 4 }}>
+                                {trimmedLine}
+                              </div>
+                            );
+                          }
+                          
+                          // Date
+                          if (/^\w+\s+\d+,\s+\d{4}/.test(trimmedLine)) {
+                            return (
+                              <div key={index} style={{ fontSize: '13px', color: '#4b5563', marginBottom: 24, marginTop: 16 }}>
+                                {trimmedLine}
+                              </div>
+                            );
+                          }
+                          
+                          // Salutation
+                          if (trimmedLine.toLowerCase().startsWith('dear')) {
+                            return (
+                              <div key={index} style={{ fontSize: '15px', fontWeight: 500, color: '#1f2937', marginBottom: 16 }}>
+                                {trimmedLine}
+                              </div>
+                            );
+                          }
+                          
+                          // Closing
+                          if (trimmedLine.toLowerCase().includes('sincerely') || 
+                              trimmedLine.toLowerCase().includes('best regards') ||
+                              trimmedLine.toLowerCase().includes('yours truly')) {
+                            return (
+                              <div key={index} style={{ fontSize: '14px', color: '#1f2937', marginTop: 24, marginBottom: 8 }}>
+                                {trimmedLine}
+                              </div>
+                            );
+                          }
+                          
+                          // Name at the end
+                          if (index > 0 && generatedCoverLetter.split('\n')[index - 1].toLowerCase().includes('sincerely')) {
+                            return (
+                              <div key={index} style={{ fontSize: '14px', fontWeight: 500, color: '#1f2937', marginTop: 32 }}>
+                                {trimmedLine}
+                              </div>
+                            );
+                          }
+                          
+                          // Regular paragraphs
+                          return (
+                            <p key={index} style={{ fontSize: '14px', color: '#374151', marginBottom: 16, lineHeight: 1.7 }}>
+                              {trimmedLine}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    </div>
+                      
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                      <button
+                        onClick={handleCopyToClipboard}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '10px 16px',
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 10,
+                          color: '#94a3b8',
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#94a3b8'; }}
+                      >
+                        {copySuccess ? (
+                          <>
+                            <Check size={15} style={{ color: '#4ade80' }} />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={15} />
+                            Copy to Clipboard
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={generateNewLetter}
+                        disabled={isLoading}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '10px 16px',
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 10,
+                          color: '#94a3b8',
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.85rem',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          opacity: isLoading ? 0.5 : 1,
+                          transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#94a3b8'; }}
+                      >
+                        Generate New Letter
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
+
+        {/* Cover Letter Loading Modal */}
+        <CoverLetterLoadingModal
+          isOpen={isLoading}
+          onClose={() => setIsLoading(false)}
+        />
       </DashboardLayout>
     </ProtectedRoute>
   );

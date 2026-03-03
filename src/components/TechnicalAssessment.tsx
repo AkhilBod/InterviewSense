@@ -2254,7 +2254,7 @@ public class Solution {
               width: '100%',
               marginTop: 32,
               padding: 14,
-              background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+              background: '#2563eb',
               color: '#fff',
               border: 'none',
               borderRadius: 10,
@@ -2349,20 +2349,20 @@ public class Solution {
               >
                 ▶ Run
               </button>
-              {/* Record */}
+              {/* Record - Highlighted to be more visible */}
               <button
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isTranscribing}
                 style={{
                   ...btnBase,
-                  color: isRecording ? '#f87171' : '#8892b0',
-                  borderColor: isRecording ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.1)',
-                  background: isRecording ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.05)',
+                  color: isRecording ? '#f87171' : '#60a5fa',
+                  borderColor: isRecording ? 'rgba(239,68,68,0.35)' : 'rgba(59,130,246,0.4)',
+                  background: isRecording ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.1)',
                   opacity: isTranscribing ? 0.55 : 1,
                   cursor: isTranscribing ? 'not-allowed' : 'pointer',
                 }}
-                onMouseEnter={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#dde2f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
-                onMouseLeave={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#8892b0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
+                onMouseEnter={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#93c5fd'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.6)'; e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; } }}
+                onMouseLeave={e => { if (!isTranscribing && !isRecording) { e.currentTarget.style.color = '#60a5fa'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.4)'; e.currentTarget.style.background = 'rgba(59,130,246,0.1)'; } }}
               >
                 {isTranscribing ? (
                   <>
@@ -2375,7 +2375,10 @@ public class Solution {
                     Stop
                   </>
                 ) : (
-                  'Record Explanation'
+                  <>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', display: 'inline-block', flexShrink: 0, marginRight: 4 }} />
+                    Record Explanation
+                  </>
                 )}
               </button>
               {audioUrl && !isTranscribing && (

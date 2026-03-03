@@ -217,7 +217,7 @@ export default function PortfolioReviewPage() {
                 width: '100%',
                 marginTop: 32,
                 padding: 14,
-                background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                background: '#2563eb',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,

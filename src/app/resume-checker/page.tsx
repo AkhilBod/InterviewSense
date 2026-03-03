@@ -99,8 +99,6 @@ export default function ResumeCheckerPage() {
   // Highlight State
   const [highlights, setHighlights] = useState<ResumeHighlight[]>([]);
   const [showPDFHighlights, setShowPDFHighlights] = useState(false);
-  // The resolved file used for the preview panel (local upload OR fetched from saved URL)
-  const [previewFile, setPreviewFile] = useState<File | null>(null);
 
   // Pre-fill company from profile
   useEffect(() => {
@@ -143,9 +141,6 @@ export default function ResumeCheckerPage() {
       setIsLoading(false);
       return;
     }
-
-    // Store the resolved file so the preview panel always has something to render
-    setPreviewFile(resolvedResume);
 
     const formData = new FormData();
     formData.append("resume", resolvedResume);
@@ -207,7 +202,6 @@ export default function ResumeCheckerPage() {
     setWordAnalysisData(null);
     setShowPDFHighlights(false);
     setHighlights([]);
-    setPreviewFile(null);
   };
 
   const getScoreColor = (score: number) => {
@@ -435,7 +429,7 @@ export default function ResumeCheckerPage() {
                       width: '100%',
                       marginTop: 32,
                       padding: 14,
-                      background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                      background: '#2563eb',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 10,
@@ -443,7 +437,7 @@ export default function ResumeCheckerPage() {
                       fontSize: '0.88rem',
                       fontWeight: 500,
                       cursor: (isLoading || (!resume && !profile?.resumeUrl)) ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
+                      boxShadow: '0 4px 20px rgba(37,99,235,0.25)',
                       opacity: (isLoading || (!resume && !profile?.resumeUrl)) ? 0.5 : 1,
                       transition: 'opacity 0.2s, transform 0.15s',
                     }}
@@ -796,11 +790,11 @@ export default function ResumeCheckerPage() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
-                          {previewFile && (
+                          {resume && (
                             <>
-                              {previewFile.type === 'application/pdf' ? (
+                              {resume.type === 'application/pdf' ? (
                                 <PDFHighlightViewer
-                                  file={previewFile}
+                                  file={resume}
                                   highlights={highlights}
                                 />
                               ) : (
@@ -808,9 +802,9 @@ export default function ResumeCheckerPage() {
                                   <div className="flex items-center justify-center h-full">
                                     <div className="text-center">
                                       <FileText className="h-24 w-24 text-gray-500 mx-auto mb-8" />
-                                      <p className="text-gray-300 font-medium mb-4 text-xl">{previewFile.name}</p>
-                                      <p className="text-gray-400 text-lg">File type: {previewFile.type}</p>
-                                      <p className="text-gray-400 text-lg">Size: {Math.round(previewFile.size / 1024)} KB</p>
+                                      <p className="text-gray-300 font-medium mb-4 text-xl">{resume.name}</p>
+                                      <p className="text-gray-400 text-lg">File type: {resume.type}</p>
+                                      <p className="text-gray-400 text-lg">Size: {Math.round(resume.size / 1024)} KB</p>
                                       <p className="text-gray-400 text-base mt-6">Preview not available for this file type</p>
                                     </div>
                                   </div>

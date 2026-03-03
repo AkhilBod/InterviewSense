@@ -18,6 +18,9 @@ const SUPPORTED_RESUME_MIME_TYPES = [
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/msword",
     "text/plain",
+    "image/png",
+    "image/jpeg",
+    "image/webp",
 ];
 
 export async function POST(req: Request) {
@@ -94,134 +97,79 @@ export async function POST(req: Request) {
 
         const currentDate = new Date().toLocaleDateString();
 
-        const promptText = `You are an expert cover letter writer with extensive experience in helping candidates land interviews at top companies. You understand what hiring managers want to see and how to make candidates stand out in competitive job markets.
+        const promptText = `You are an expert cover letter writer. Create a professional, ready-to-send cover letter.
 
-**ANALYSIS APPROACH:**
-1. **Deep Resume Analysis** - Extract specific achievements, skills, metrics, and unique value propositions
-2. **Job Requirements Mapping** - Identify key requirements and map candidate's experience to each one
-3. **Strategic Alignment** - Create compelling connections between candidate background and role needs
-4. **Industry Contextualization** - Use appropriate terminology and demonstrate industry knowledge
+**TASK:** Generate ONLY the cover letter text. Do not include any analysis, candidate summaries, or metadata.
 
-**PERSONALIZATION REQUIREMENTS:**
-- Use specific metrics, numbers, and quantifiable achievements from the resume
-- Reference particular technologies, tools, and methodologies mentioned
-- Incorporate industry-specific terminology that shows expertise
-- Address 3-4 specific job requirements with concrete examples from candidate's background
-- Demonstrate understanding of company challenges and how candidate can solve them
-- Show cultural fit through soft skills and work style alignment
+**COVER LETTER FORMAT:**
+1. Start with candidate's name and contact info (single line each)
+2. Current date: ${currentDate}
+3. "Dear Hiring Manager,"
+4. 3-4 compelling body paragraphs
+5. Professional closing: "Sincerely," followed by candidate's name
 
-**CONTENT STRUCTURE:**
-1. **Opening Hook** - Immediate value proposition specific to the role
-2. **Value Proposition** (2-3 specific examples with metrics/results)
-3. **Technical/Skills Alignment** - Direct mapping to job requirements
-4. **Cultural/Soft Skills Fit** - Leadership, collaboration, problem-solving examples
-5. **Forward-Looking Close** - Vision for contribution and growth
+**CONTENT GUIDELINES:**
+- Opening: Express genuine interest in the specific role at ${companyName}
+- Body: Highlight 2-3 most relevant experiences/achievements with quantified results
+- Show alignment between candidate's background and job requirements
+- Closing: Express enthusiasm and suggest next steps
+- Total body length: 250-350 words
+- Use professional yet personable tone
 
-**HIRING MANAGER FOCUS:**
-Write for busy hiring managers who need to see:
-- Immediate evidence of relevant experience and results
-- Problem-solving ability with concrete demonstrations
-- Understanding of role challenges and how to address them
-- Cultural fit indicators and team collaboration skills
-- Results-driven mindset with quantifiable achievements
-- Growth potential and learning agility
-
-**TASK:** Create a complete, professional cover letter by extracting information from the resume and job description.
-
-**STEP 1: EXTRACT INFORMATION**
-From the RESUME, extract:
-- Candidate's full name
-- Email address 
-- Phone number
-- Address (if available)
-- Key skills and experiences with specific technologies/tools
-- Notable achievements with quantified results and metrics
-- Educational background and certifications
-- Professional background/industry expertise
-- Leadership and collaboration examples
-- Problem-solving and innovation instances
-
-From the JOB DESCRIPTION, extract:
-- Job title
-- Company name
-- Key requirements and qualifications (prioritize top 3-4)
-- Specific skills, technologies, and tools mentioned
-- Company values, culture, and mission (if mentioned)
-- Hiring manager name (if mentioned)
-- Company challenges or goals (if mentioned)
-- Growth opportunities and career progression
-
-**STEP 2: CREATE COVER LETTER**
-Using the extracted information, create a professional cover letter that:
-
-1. **Uses proper business letter format:**
-   - Candidate contact information at top
-   - Date (use "${currentDate}")
-   - Professional salutation (use "Dear Hiring Manager" if specific name not found)
-   - 3-4 body paragraphs
-   - Professional closing and signature
-
-2. **Contains compelling content:**
-   - Opening: Express genuine interest in the specific role
-   - Body: Highlight 2-3 most relevant experiences/achievements from resume
-   - Include specific examples with quantified results when possible
-   - Show alignment between candidate's background and job requirements
-   - Demonstrate knowledge of the company (when available in job description)
-   - Closing: Express enthusiasm and suggest next steps
-
-3. **Writing style:**
-   - Professional yet personable tone
-   - Confident but not arrogant
-   - Specific rather than generic
-   - Action-oriented language
-   - Error-free grammar and spelling
-
-**FORMATTING REQUIREMENTS:**
-- Use double line breaks (\\n\\n) between sections
-- Keep paragraphs concise (3-4 sentences each)
-- Total length: 300-400 words for body content
-- Use standard business letter spacing
-
-**IMPORTANT INSTRUCTIONS:** 
-- Extract ALL information from the provided documents - do not ask for additional input
-- Do NOT include company address or hiring manager address sections in the letter
-- Do NOT use placeholders like [Company Name], [Hiring Manager Name], [Company Address] anywhere in the letter
-- Use the provided company name "${companyName}" throughout the letter to personalize it
-- Use "Dear Hiring Manager" as the salutation if no specific name is provided
-- If specific information is not available in the resume, use the candidate's information where available or omit sections gracefully
-- Create a complete, compelling narrative using the candidate's actual experiences
-- Make the letter specific to both the candidate's background AND the job requirements
-- Write the complete cover letter with all actual content - no placeholders anywhere
-- Use the actual extracted names, companies, and details throughout the letter
-- Show specific knowledge and enthusiasm about ${companyName} based on the job description
-
-**COMPANY NAME:** ${companyName}
+**CRITICAL INSTRUCTIONS:**
+- Output ONLY the cover letter text, nothing else
+- No markdown formatting (no ** or #)
+- No "Candidate Information" blocks
+- No "Cover Letter for X:" headers
+- No code blocks or backticks
+- Do not use placeholders like [Your Name] - extract real information
+- Start directly with the candidate's name at the top
 
 **JOB DESCRIPTION:**
 ${jobDescription}
 
-**RESUME ANALYSIS:**
-Please read the attached resume file carefully and extract all relevant information to create a personalized cover letter.
-
-Now analyze the attached resume file and the job description above to create a professional cover letter for ${companyName} using the extracted information.`;
+Analyze the attached resume and create the cover letter now.`;
 
         // Prepare messages for OpenAI
-        // gpt-4o supports both images AND PDFs (up to 100 pages, 32MB)
         const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-        // gpt-4o can handle images, PDFs, and documents via base64
-        messages.push({
-            role: 'user',
-            content: [
-                { type: 'text', text: promptText },
-                {
-                    type: 'image_url',
-                    image_url: {
-                        url: `data:${resumeMimeType};base64,${resumeBase64}`
+        // Handle different file types appropriately
+        if (resumeMimeType.includes('image')) {
+            // For images, use vision capabilities with image_url
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: promptText },
+                    {
+                        type: 'image_url',
+                        image_url: {
+                            url: `data:${resumeMimeType};base64,${resumeBase64}`
+                        }
                     }
-                }
-            ]
-        });
+                ]
+            });
+        } else if (resumeMimeType === 'application/pdf') {
+            // PDFs: send as base64-encoded file input so the model reads actual content
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: promptText },
+                    {
+                        type: 'file',
+                        file: {
+                            filename: resumeFile.name,
+                            file_data: `data:application/pdf;base64,${resumeBase64}`
+                        }
+                    } as unknown as OpenAI.Chat.ChatCompletionContentPartText
+                ]
+            });
+        } else {
+            // DOCX/DOC and other text-based documents — include filename in prompt
+            messages.push({
+                role: 'user',
+                content: `${promptText}\n\n[Document file: ${resumeFile.name}, type: ${resumeMimeType}. Analyze the resume content embedded in this document.]`
+            });
+        }
 
         console.log("Sending request to OpenAI API with file upload...");
 

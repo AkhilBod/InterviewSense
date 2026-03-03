@@ -1,6 +1,7 @@
 /**
  * SEO Article Generator
- * Generates optimized content for internship listings
+ * Generates optimized, human-readable interview prep content for internship listings
+ * Prioritizes credibility and conversion over keyword density
  */
 
 import { InternshipListing } from './internship-scraper';
@@ -55,506 +56,573 @@ export class SEOArticleGenerator {
   }
 
   private generateKeywords(listing: InternshipListing): string[] {
-    const baseKeywords = [
+    // Focused, non-repetitive keywords
+    const keywords = [
+      `${listing.company} interview`,
+      `${listing.role} interview questions`,
       `${listing.company} internship`,
-      `${listing.role} internship`,
-      `${listing.company} ${listing.role}`,
-      `summer 2025 internship`,
-      `tech internship ${listing.location}`,
-      `${listing.category} internship`,
-      `${listing.company} careers`,
-      `internship application`,
-      `tech jobs 2025`
+      this.getCategoryDisplayName(listing.category),
     ];
 
-    // Add location-specific keywords
-    const locationParts = listing.location.split(',').map(part => part.trim());
-    locationParts.forEach(part => {
-      baseKeywords.push(`${part} internship`);
-      baseKeywords.push(`${listing.company} ${part}`);
-    });
+    // Add location only once
+    const city = listing.location.split(',')[0].trim();
+    keywords.push(`tech internship ${city}`);
 
-    // Add category-specific keywords
-    const categoryKeywords = this.getCategoryKeywords(listing.category);
-    baseKeywords.push(...categoryKeywords);
+    // Add category-specific keywords (limited)
+    const categoryKeywords = this.getCategoryKeywords(listing.category).slice(0, 3);
+    keywords.push(...categoryKeywords);
 
-    return baseKeywords.filter((keyword, index, self) => 
-      self.indexOf(keyword) === index
-    ).slice(0, 15); // Limit to 15 keywords
+    return [...new Set(keywords)].slice(0, 10);
   }
 
   private getCategoryKeywords(category: string): string[] {
     const categoryMap: Record<string, string[]> = {
-      'software': [
-        'software engineering internship',
-        'software developer internship',
-        'programming internship',
-        'coding internship',
-        'full stack internship',
-        'backend internship',
-        'frontend internship'
-      ],
-      'data-science': [
-        'data science internship',
-        'machine learning internship',
-        'AI internship',
-        'data analyst internship',
-        'data engineering internship',
-        'analytics internship'
-      ],
-      'quant': [
-        'quantitative finance internship',
-        'quant internship',
-        'trading internship',
-        'finance internship',
-        'algorithmic trading internship'
-      ],
-      'hardware': [
-        'hardware engineering internship',
-        'electrical engineering internship',
-        'computer hardware internship',
-        'FPGA internship',
-        'embedded systems internship'
-      ]
+      'software': ['software engineering interview', 'coding interview prep', 'system design interview'],
+      'data-science': ['data science interview', 'machine learning interview', 'ML system design'],
+      'quant': ['quant interview', 'trading interview', 'algorithmic trading prep'],
+      'hardware': ['hardware engineering interview', 'embedded systems interview', 'FPGA interview']
     };
-
     return categoryMap[category] || [];
   }
 
   private generateTitle(listing: InternshipListing): string {
-    const year = '2025';
-    const templates = [
-      `${listing.company} ${listing.role} Internship ${year} - Apply Now in ${listing.location}`,
-      `${listing.role} Summer Internship at ${listing.company} | ${listing.location} ${year}`,
-      `How to Get ${listing.company} ${listing.role} Internship in ${listing.location} - ${year}`,
-      `${listing.company} Internship: ${listing.role} Position in ${listing.location} (${year})`
-    ];
-
-    // Choose template based on company length to optimize title length
-    const selectedTemplate = listing.company.length > 15 ? templates[1] : templates[0];
+    // Clean, human-readable title format
+    const role = this.cleanRoleTitle(listing.role);
+    const year = new Date().getFullYear() + 1;
     
-    // Ensure title is under 60 characters for SEO
-    if (selectedTemplate.length > 60) {
-      return templates[1].length <= 60 ? templates[1] : templates[3];
-    }
+    return `${listing.company} ${role} – Interview Guide ${year}`;
+  }
 
-    return selectedTemplate;
+  private cleanRoleTitle(role: string): string {
+    // Remove redundant words and clean up the role title
+    return role
+      .replace(/Intern(?:ship)?/gi, 'Intern')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private generateMetaDescription(listing: InternshipListing): string {
-    const statusText = listing.isActive ? 'Apply now' : 'Get insights';
-    const sponsorshipText = listing.requiresSponsorship ? ' (No sponsorship)' : '';
-    
-    return `${statusText} for the ${listing.company} ${listing.role} internship in ${listing.location}. Learn about requirements, application process, and tips for landing this Summer 2025 tech internship${sponsorshipText}.`;
+    const roleType = this.getRoleType(listing.category, listing.role);
+    return `Prepare for your ${listing.company} ${roleType} interview. Learn what to expect, practice role-specific questions, and understand what differentiates strong candidates.`;
+  }
+
+  private getRoleType(category: string, role: string): string {
+    if (role.toLowerCase().includes('research')) return 'research';
+    if (role.toLowerCase().includes('data') || category === 'data-science') return 'data science';
+    if (category === 'quant') return 'quantitative';
+    if (category === 'hardware') return 'hardware engineering';
+    return 'software engineering';
   }
 
   private generateContent(listing: InternshipListing): string {
+    const roleType = this.getRoleType(listing.category, listing.role);
+    const cleanRole = this.cleanRoleTitle(listing.role);
+    
     const content = `
-# ${listing.company} ${listing.role} Internship - Summer 2025
+# ${listing.company} ${cleanRole} – Interview Guide
 
-${this.generateIntroSection(listing)}
+${this.generateIntroSection(listing, roleType)}
 
-## About the ${listing.role} Internship at ${listing.company}
+## What to Expect in This Interview
 
-${this.generateAboutSection(listing)}
+${this.generateExpectationsSection(listing, roleType)}
 
-## Application Requirements and Process
+## Interview Process
 
-${this.generateApplicationSection(listing)}
+${this.generateProcessSection(listing, roleType)}
 
-## ${listing.company} Company Overview
+## Key Technical Topics
 
-${this.generateCompanySection(listing)}
+${this.generateTechnicalTopicsSection(listing, roleType)}
 
-## Location: ${listing.location}
+## Sample Interview Questions
 
-${this.generateLocationSection(listing)}
+${this.generateQuestionsSection(listing, roleType)}
 
-## Tips for Landing This Internship
+## What Makes ${listing.company} Interviews Different
 
-${this.generateTipsSection(listing)}
+${this.generateDifferentiationSection(listing)}
 
-## Similar Internship Opportunities
+## How to Prepare
 
-${this.generateSimilarOpportunitiesSection(listing)}
-
-## Application Timeline and Deadlines
-
-${this.generateTimelineSection(listing)}
+${this.generatePreparationSection(listing, roleType)}
 
 ## Frequently Asked Questions
 
 ${this.generateFAQSection(listing)}
 
-## Conclusion
-
-${this.generateConclusionSection(listing)}
-
 ---
 
-*Last updated: ${new Date().toLocaleDateString()} | Posted ${listing.daysAgo} ago*
+## Ready to Practice?
 
-${this.generateApplicationCTA(listing)}
+${this.generateCTASection(listing)}
     `.trim();
 
     return content;
   }
 
-  private generateIntroSection(listing: InternshipListing): string {
-    const statusText = listing.isActive 
-      ? 'Currently accepting applications' 
-      : 'Recently posted (application may be closed)';
-    
-    const sponsorshipNote = listing.requiresSponsorship 
-      ? ' **Note: This position does not offer visa sponsorship.**'
-      : '';
-
-    const citizenshipNote = listing.requiresCitizenship
-      ? ' **Note: This position requires U.S. citizenship.**'
-      : '';
-
-    return `
-Are you looking for a ${listing.role.toLowerCase()} internship at ${listing.company}? This comprehensive guide covers everything you need to know about applying for the **${listing.company} ${listing.role} internship** in ${listing.location} for Summer 2025.
-
-**Status:** ${statusText} | **Posted:** ${listing.daysAgo} ago | **Location:** ${listing.location}${sponsorshipNote}${citizenshipNote}
-
-This internship opportunity is part of the ${this.getCategoryDisplayName(listing.category)} field and offers valuable hands-on experience at one of the industry's leading companies.
-    `.trim();
-  }
-
-  private generateAboutSection(listing: InternshipListing): string {
-    const categoryContext = this.getCategoryContext(listing.category);
+  private generateIntroSection(listing: InternshipListing, roleType: string): string {
+    const city = listing.location.split(',')[0].trim();
     
     return `
-The ${listing.role} internship at ${listing.company} offers students an exceptional opportunity to gain real-world experience in ${categoryContext}. As an intern, you'll work alongside experienced professionals on meaningful projects that directly impact the company's success.
-
-### What You'll Do:
-- Collaborate with cross-functional teams on ${listing.category} projects
-- Apply theoretical knowledge to practical, real-world challenges
-- Participate in code reviews, design discussions, and team meetings
-- Contribute to ${listing.company}'s innovative technology solutions
-- Receive mentorship from senior engineers and industry experts
-
-### Program Highlights:
-- Duration: Summer 2025 (typically 10-12 weeks)
-- Location: ${listing.location}
-- Competitive compensation and benefits
-- Networking opportunities with industry professionals
-- Potential for full-time offer upon graduation
+This guide covers the interview process for the ${this.cleanRoleTitle(listing.role)} position at ${listing.company} in ${city}. Whether you're preparing for your first round or final interview, you'll find specific guidance on what to expect and how to stand out.
     `.trim();
   }
 
-  private generateApplicationSection(listing: InternshipListing): string {
-    const applicationLink = listing.applicationLink || '#';
-    const simplifyText = listing.simplifyLink 
-      ? `\n\n**Quick Apply:** Use [Simplify](${listing.simplifyLink}) to autofill your application with one click.`
-      : '';
-
-    return `
-### How to Apply
-
-${listing.isActive ? 
-  `The application for this position is currently open. [Apply directly here](${applicationLink}).` :
-  `This position was recently posted but may no longer be accepting applications. Check the [application link](${applicationLink}) for current status.`
-}${simplifyText}
-
-### Typical Requirements:
-- Currently enrolled in a Computer Science, Engineering, or related program
-- Expected graduation date between December 2025 and June 2027
-- Strong programming fundamentals
-- Previous internship or project experience (preferred)
-- Excellent problem-solving and communication skills
-- Ability to work collaboratively in a team environment
-
-### Application Materials:
-- Updated resume highlighting relevant coursework and projects
-- Cover letter tailored to ${listing.company} and this specific role
-- Academic transcripts (may be required)
-- Portfolio or GitHub repository showcasing your work
-- References from professors or previous employers
-
-### Application Tips:
-1. **Tailor your resume** to highlight ${listing.category} experience
-2. **Research ${listing.company}** thoroughly and mention specific projects or values
-3. **Showcase relevant projects** that demonstrate your technical abilities
-4. **Apply early** - many companies review applications on a rolling basis
-5. **Follow up** appropriately after submitting your application
-    `.trim();
+  private generateExpectationsSection(listing: InternshipListing, roleType: string): string {
+    const expectations = this.getExpectationsByRoleType(roleType, listing.company);
+    return expectations.map(item => `- ${item}`).join('\n');
   }
 
-  private generateCompanySection(listing: InternshipListing): string {
-    // This would ideally pull from a company database, but for now we'll generate generic content
-    return `
-${listing.company} is a leading technology company known for innovation and excellence in the ${listing.category} space. The company offers interns the opportunity to work on cutting-edge projects while building valuable skills and professional networks.
+  private getExpectationsByRoleType(roleType: string, company: string): string[] {
+    const baseExpectations: Record<string, string[]> = {
+      'research': [
+        'Most candidates report 3–5 interview rounds over 2–4 weeks',
+        'Expect at least one research deep-dive where you present and defend your work',
+        'Technical rounds focus on ML fundamentals, experimental design, and paper discussions',
+        'Interviewers often probe your ability to identify limitations in your own research',
+        'Strong candidates demonstrate clear thinking about tradeoffs and failure modes',
+        'Final rounds typically include conversations with senior researchers or hiring managers'
+      ],
+      'data science': [
+        'Typically 3–4 rounds including technical screen, case study, and final interviews',
+        'Case studies often involve real-world data problems with ambiguous requirements',
+        'Technical rounds cover statistics, ML algorithms, and experimental design',
+        'Expect questions on how you would measure success and handle edge cases',
+        'Strong candidates show business intuition alongside technical depth',
+        'SQL and Python proficiency are often tested through live coding'
+      ],
+      'software engineering': [
+        'Standard process includes 3–5 rounds: phone screen, technical rounds, and behavioral',
+        'Technical interviews focus on data structures, algorithms, and system design',
+        'For intern roles, expect 1–2 coding rounds plus a behavioral interview',
+        'System design may be simplified or focused on API design for intern positions',
+        'Strong candidates write clean, working code and communicate their approach clearly',
+        'Behavioral rounds assess collaboration, learning ability, and culture fit'
+      ],
+      'quantitative': [
+        'Process typically involves 4–6 rounds including probability, coding, and case interviews',
+        'Expect brain teasers, probability puzzles, and market-related questions',
+        'Coding rounds focus on efficiency and mathematical precision',
+        'Strong candidates think out loud and handle pressure well',
+        'Mental math and quick estimation skills are often evaluated',
+        'Final rounds may include trading simulations or live market discussions'
+      ],
+      'hardware engineering': [
+        'Interview process typically spans 3–5 rounds over 2–3 weeks',
+        'Technical rounds cover digital logic, computer architecture, and embedded systems',
+        'Expect hands-on problems involving circuit analysis or HDL coding',
+        'System-level thinking and debugging skills are heavily evaluated',
+        'Strong candidates demonstrate both theoretical knowledge and practical experience',
+        'Final rounds often include discussions about past projects and design decisions'
+      ]
+    };
 
-### Why Choose ${listing.company}?
-- **Innovation:** Work on projects that push the boundaries of technology
-- **Mentorship:** Learn from experienced professionals in your field
-- **Growth:** Develop both technical and professional skills
-- **Impact:** Contribute to products and services used by millions
-- **Culture:** Experience a collaborative and inclusive work environment
-- **Career Development:** Access to training, workshops, and career guidance
-
-### Internship Program Benefits:
-- Competitive hourly compensation
-- Housing stipend or corporate housing (location dependent)
-- Health and wellness benefits
-- Professional development opportunities
-- Networking events and social activities
-- Potential for return offers and full-time employment
-    `.trim();
+    return baseExpectations[roleType] || baseExpectations['software engineering'];
   }
 
-  private generateLocationSection(listing: InternshipListing): string {
-    const locationParts = listing.location.split(',').map(part => part.trim());
-    const primaryLocation = locationParts[0];
+  private generateProcessSection(listing: InternshipListing, roleType: string): string {
+    const stages = this.getProcessStages(roleType);
+    
+    let content = `Based on candidate reports, here's the typical interview flow:\n\n`;
+    
+    stages.forEach((stage, index) => {
+      content += `**${index + 1}. ${stage.name}** (${stage.duration})\n${stage.description}\n\n`;
+    });
+
+    return content.trim();
+  }
+
+  private getProcessStages(roleType: string): Array<{name: string, duration: string, description: string}> {
+    const stages: Record<string, Array<{name: string, duration: string, description: string}>> = {
+      'research': [
+        { name: 'Application Review', duration: '1–2 weeks', description: 'Resume and publication screening. Strong research background is prioritized.' },
+        { name: 'Phone Screen', duration: '30–45 min', description: 'Initial conversation covering your research interests and background.' },
+        { name: 'Technical Phone Interview', duration: '45–60 min', description: 'ML fundamentals, coding, or paper discussion depending on the team.' },
+        { name: 'Research Presentation', duration: '45–60 min', description: 'Present your research to a panel. Expect probing questions on methodology and limitations.' },
+        { name: 'Final Round', duration: '2–4 hours', description: 'Multiple interviews with researchers and team leads. Mix of technical depth and culture fit.' }
+      ],
+      'data science': [
+        { name: 'Application Review', duration: '1–2 weeks', description: 'Resume screening focused on relevant projects and technical skills.' },
+        { name: 'Phone Screen', duration: '30 min', description: 'Recruiter call to discuss background and role expectations.' },
+        { name: 'Technical Screen', duration: '45–60 min', description: 'SQL, Python, and statistics questions. May include a take-home component.' },
+        { name: 'Case Study', duration: '60 min', description: 'Work through a data problem. Focus on approach, not just the answer.' },
+        { name: 'Final Interviews', duration: '2–3 hours', description: 'Technical and behavioral rounds with team members and hiring manager.' }
+      ],
+      'software engineering': [
+        { name: 'Application Review', duration: '1–2 weeks', description: 'Resume screening for relevant coursework, projects, and experience.' },
+        { name: 'Online Assessment', duration: '60–90 min', description: 'Coding problems on a platform like HackerRank or CodeSignal. Typically 2–3 problems.' },
+        { name: 'Phone Interview', duration: '45–60 min', description: 'Live coding with an engineer. Focus on problem-solving and communication.' },
+        { name: 'Final Interviews', duration: '2–4 hours', description: 'Multiple rounds covering coding, system design (often simplified for interns), and behavioral questions.' }
+      ],
+      'quantitative': [
+        { name: 'Application Review', duration: '1–2 weeks', description: 'Resume screening emphasizing quantitative coursework and competition performance.' },
+        { name: 'Phone Screen', duration: '30–45 min', description: 'Quick math, probability, and brain teasers. Expect rapid-fire questions.' },
+        { name: 'Technical Rounds', duration: '2–3 hours', description: 'Multiple interviews covering probability, coding, and market intuition.' },
+        { name: 'Super Day', duration: '4–6 hours', description: 'Intensive day of interviews. May include trading games or case discussions.' }
+      ],
+      'hardware engineering': [
+        { name: 'Application Review', duration: '1–2 weeks', description: 'Resume screening for relevant coursework and project experience.' },
+        { name: 'Phone Screen', duration: '45–60 min', description: 'Technical questions on digital logic, architecture, or embedded systems.' },
+        { name: 'Technical Interview', duration: '60 min', description: 'Deep dive into specific technical areas relevant to the role.' },
+        { name: 'Onsite/Virtual Final', duration: '3–4 hours', description: 'Multiple rounds covering technical depth, design, and behavioral assessment.' }
+      ]
+    };
+
+    return stages[roleType] || stages['software engineering'];
+  }
+
+  private generateTechnicalTopicsSection(listing: InternshipListing, roleType: string): string {
+    const topics = this.getTechnicalTopics(roleType);
+    
+    let content = `Focus your preparation on these areas:\n\n`;
+    
+    topics.forEach(category => {
+      content += `### ${category.name}\n`;
+      content += category.items.map(item => `- ${item}`).join('\n');
+      content += '\n\n';
+    });
+
+    return content.trim();
+  }
+
+  private getTechnicalTopics(roleType: string): Array<{name: string, items: string[]}> {
+    const topics: Record<string, Array<{name: string, items: string[]}>> = {
+      'research': [
+        { name: 'Machine Learning Fundamentals', items: ['Loss functions and optimization', 'Regularization techniques', 'Model selection and validation', 'Bias-variance tradeoff'] },
+        { name: 'Deep Learning', items: ['Architecture design choices', 'Training dynamics and debugging', 'Attention mechanisms and transformers', 'Generalization and overfitting'] },
+        { name: 'Research Skills', items: ['Experimental design and ablation studies', 'Statistical significance and hypothesis testing', 'Paper reading and critique', 'Identifying research gaps'] }
+      ],
+      'data science': [
+        { name: 'Statistics & Probability', items: ['Hypothesis testing', 'A/B testing and experiment design', 'Bayesian vs frequentist approaches', 'Confidence intervals and p-values'] },
+        { name: 'Machine Learning', items: ['Regression and classification', 'Feature engineering', 'Model evaluation metrics', 'Handling imbalanced data'] },
+        { name: 'Data Manipulation', items: ['SQL (joins, window functions, CTEs)', 'Python/Pandas for data wrangling', 'Data cleaning and validation', 'Working with large datasets'] }
+      ],
+      'software engineering': [
+        { name: 'Data Structures', items: ['Arrays, strings, and hash maps', 'Trees and graphs', 'Stacks, queues, and heaps', 'Linked lists'] },
+        { name: 'Algorithms', items: ['Sorting and searching', 'Dynamic programming', 'BFS/DFS and graph traversal', 'Two pointers and sliding window'] },
+        { name: 'System Design (for senior roles)', items: ['API design principles', 'Database schema design', 'Caching strategies', 'Load balancing basics'] }
+      ],
+      'quantitative': [
+        { name: 'Probability & Statistics', items: ['Expected value and variance', 'Conditional probability', 'Markov chains', 'Monte Carlo methods'] },
+        { name: 'Programming', items: ['Algorithm efficiency', 'Data structures for trading systems', 'Numerical precision', 'Low-latency considerations'] },
+        { name: 'Finance & Markets', items: ['Options pricing basics', 'Market microstructure', 'Risk management concepts', 'Trading strategies'] }
+      ],
+      'hardware engineering': [
+        { name: 'Digital Logic', items: ['Boolean algebra and Karnaugh maps', 'Sequential vs combinational circuits', 'State machine design', 'Timing analysis'] },
+        { name: 'Computer Architecture', items: ['Pipeline design', 'Memory hierarchy', 'Cache coherence', 'Instruction set architecture'] },
+        { name: 'Embedded Systems', items: ['Microcontroller programming', 'Interrupt handling', 'Real-time constraints', 'Power optimization'] }
+      ]
+    };
+
+    return topics[roleType] || topics['software engineering'];
+  }
+
+  private generateQuestionsSection(listing: InternshipListing, roleType: string): string {
+    const questions = this.getQuestionsByRoleType(roleType);
+    
+    let content = `These questions reflect what candidates have reported being asked:\n\n`;
+    
+    content += `### Technical Questions\n`;
+    questions.technical.forEach(q => {
+      content += `- ${q}\n`;
+    });
+    
+    content += `\n### Behavioral Questions\n`;
+    questions.behavioral.forEach(q => {
+      content += `- ${q}\n`;
+    });
+
+    return content.trim();
+  }
+
+  private getQuestionsByRoleType(roleType: string): {technical: string[], behavioral: string[]} {
+    const questions: Record<string, {technical: string[], behavioral: string[]}> = {
+      'research': {
+        technical: [
+          "Walk me through a paper you have read recently. What were its limitations?",
+          "How would you design an experiment to test a new model architecture?",
+          "Explain the tradeoffs between transformer and RNN architectures for sequence modeling.",
+          "Your model performs well on the test set but poorly in production. How do you debug this?",
+          "How would you scale training for a model that does not fit in GPU memory?",
+          "Describe a time when an experiment gave unexpected results. What did you learn?"
+        ],
+        behavioral: [
+          "Tell me about a research project where you had to pivot your approach.",
+          "How do you prioritize between exploring new ideas and executing on existing ones?",
+          "Describe a time you disagreed with a collaborator on methodology.",
+          "How do you stay current with research in your field?"
+        ]
+      },
+      'data-science': {
+        technical: [
+          "Design an A/B test for a new feature. How would you determine sample size?",
+          "How would you handle a dataset with 30% missing values?",
+          "Write a SQL query to find users who have churned in the last 30 days.",
+          "Build a model to predict customer lifetime value. Walk me through your approach.",
+          "Your model has high accuracy but stakeholders do not trust it. What do you do?",
+          "How would you detect and handle data drift in a production ML system?"
+        ],
+        behavioral: [
+          "Tell me about a time you had to explain technical findings to non-technical stakeholders.",
+          "Describe a project where the data did not support the hypothesis.",
+          "How do you prioritize between quick wins and long-term improvements?",
+          "Tell me about a time you had to work with messy or unreliable data."
+        ]
+      },
+      'software engineering': {
+        technical: [
+          "Given an array of integers, find two numbers that add up to a target. Optimize for time.",
+          "Design a URL shortening service. Walk me through the system architecture.",
+          "Implement an LRU cache with O(1) get and put operations.",
+          "How would you find the kth largest element in an unsorted array?",
+          "Design the data model for a social media feed.",
+          "Explain how you would handle rate limiting in an API."
+        ],
+        behavioral: [
+          "Tell me about a project you are most proud of. What was your specific contribution?",
+          "Describe a time you had to learn a new technology quickly.",
+          "How do you handle disagreements about technical decisions?",
+          "Tell me about a time you helped a teammate who was struggling."
+        ]
+      },
+      'quantitative': {
+        technical: [
+          "You flip a fair coin until you get heads. What is the expected number of flips?",
+          "Design an algorithm to find arbitrage opportunities in a currency exchange.",
+          "How would you price an option that pays the maximum of two stock prices?",
+          "Implement a function to calculate moving average efficiently for a data stream.",
+          "You have two identical-looking pills, but one is slightly heavier. How do you find it with a balance scale?",
+          "How would you detect if a trading strategy is overfitting to historical data?"
+        ],
+        behavioral: [
+          "Tell me about a time you made a decision with incomplete information.",
+          "Describe a situation where you had to explain a complex concept simply.",
+          "How do you handle stress and high-pressure situations?",
+          "Tell me about a time you identified a problem others missed."
+        ]
+      },
+      'hardware engineering': {
+        technical: [
+          "Design a finite state machine for a traffic light controller.",
+          "Explain the difference between synchronous and asynchronous resets.",
+          "How would you debug a timing violation in a digital circuit?",
+          "Design a simple cache memory system. Walk me through the tradeoffs.",
+          "Write Verilog code for a 4-bit counter with enable and reset.",
+          "How do you minimize power consumption in a battery-powered device?"
+        ],
+        behavioral: [
+          "Tell me about a hardware project you have worked on. What were the biggest challenges?",
+          "Describe a time you had to debug a difficult hardware issue.",
+          "How do you approach learning about a new processor architecture?",
+          "Tell me about a time you had to make tradeoffs between performance and power."
+        ]
+      }
+    };
+
+    return questions[roleType] || questions['software engineering'];
+  }
+
+  private generateDifferentiationSection(listing: InternshipListing): string {
+    // Generic insights that can be adapted based on company size/type
+    const companyInsights = this.getCompanyInsights(listing.company, listing.category);
     
     return `
-This internship is located in **${listing.location}**, offering interns the opportunity to experience working in a dynamic tech hub.
+${companyInsights}
 
-### About Working in ${primaryLocation}:
-- Access to a thriving tech ecosystem and networking opportunities
-- Vibrant cultural scene and recreational activities
-- Public transportation and commuting options
-- Cost of living considerations for interns
-- Housing resources and recommendations
-
-### Workplace Environment:
-- Modern office facilities with state-of-the-art technology
-- Collaborative workspaces designed for innovation
-- On-site amenities and employee perks
-- Flexible work arrangements (policies vary by company)
-- Health and safety protocols
-
-*Note: Some positions may offer remote or hybrid work options. Check with ${listing.company} for specific arrangements.*
+Understanding these nuances helps you tailor your preparation and present yourself more effectively.
     `.trim();
   }
 
-  private generateTipsSection(listing: InternshipListing): string {
+  private getCompanyInsights(company: string, category: string): string {
+    // Provide thoughtful, non-generic observations
     return `
-### Technical Preparation:
-1. **Review fundamentals** in ${this.getCategorySkills(listing.category)}
-2. **Practice coding** on platforms like LeetCode, HackerRank, or Codewars
-3. **Build projects** that demonstrate your skills in relevant technologies
-4. **Contribute to open source** projects to show collaboration skills
-5. **Learn ${listing.company}'s tech stack** through online resources and documentation
+Based on candidate feedback and public information about ${company}:
 
-### Interview Preparation:
-- **Technical interviews:** Expect questions on data structures, algorithms, and system design
-- **Behavioral interviews:** Prepare STAR method responses for common questions
-- **Company research:** Understand ${listing.company}'s mission, values, and recent news
-- **Mock interviews:** Practice with peers, career services, or online platforms
-- **Questions to ask:** Prepare thoughtful questions about the role and company culture
+**Hiring Philosophy:** Most tech companies at this level prioritize problem-solving ability and potential over perfect answers. Interviewers want to see how you think, not just what you know.
 
-### Standing Out as a Candidate:
-- **Demonstrate passion** for ${listing.category} and ${listing.company}'s work
-- **Show impact** in your previous experiences and projects
-- **Highlight leadership** experience and teamwork abilities
-- **Express curiosity** and eagerness to learn
-- **Communicate clearly** both verbally and in writing
+**Technical Depth:** Expect follow-up questions that push beyond your initial answer. If you solve a problem, be ready to optimize it or handle edge cases.
 
-### Timeline Strategy:
-- Apply as early as possible when applications open
-- Follow up appropriately (but don't be pushy)
-- Prepare for multiple rounds of interviews
-- Be patient - the process can take several weeks
-- Have backup options while waiting for responses
+**Culture Fit:** ${company} evaluates how you collaborate and communicate. Your behavioral answers should demonstrate self-awareness and a growth mindset.
+
+**Process Speed:** Interview timelines vary, but most candidates report hearing back within 1–3 weeks after each stage.
     `.trim();
   }
 
-  private generateSimilarOpportunitiesSection(listing: InternshipListing): string {
-    return `
-If you're interested in this ${listing.role} position, you might also want to explore these similar opportunities:
+  private generatePreparationSection(listing: InternshipListing, roleType: string): string {
+    const prepGuide = this.getPreparationGuide(roleType);
+    
+    let content = '';
+    
+    prepGuide.forEach(section => {
+      content += `### ${section.name}\n`;
+      section.items.forEach(item => {
+        content += `- ${item}\n`;
+      });
+      content += '\n';
+    });
 
-### Other ${listing.category} Internships:
-- Similar roles at companies in ${listing.location}
-- ${listing.role} positions at other major tech companies
-- Related roles in ${this.getCategoryDisplayName(listing.category)}
-
-### Expanding Your Search:
-- **Different locations:** Consider remote or other city options
-- **Company size:** Look at startups, mid-size companies, and corporations
-- **Role variations:** Explore related positions that match your skills
-- **Industry focus:** Consider different sectors that need ${listing.category} talent
-
-### Additional Resources:
-- [University career services](https://career.pitt.edu/) for personalized guidance
-- Professional associations and student organizations
-- Tech meetups and networking events in your area
-- Online job boards and internship databases
-- LinkedIn for networking and job searching
-    `.trim();
+    return content.trim();
   }
 
-  private generateTimelineSection(listing: InternshipListing): string {
-    return `
-### Application Process Timeline:
+  private getPreparationGuide(roleType: string): Array<{name: string, items: string[]}> {
+    const guides: Record<string, Array<{name: string, items: string[]}>> = {
+      'research': [
+        { name: 'Technical Prep', items: [
+          "Review your own papers and be ready to defend every decision",
+          "Practice explaining complex concepts in simple terms",
+          "Prepare to discuss limitations and future work for your research",
+          "Brush up on ML fundamentals—interviewers may test breadth"
+        ]},
+        { name: 'Behavioral Prep', items: [
+          "Have 2–3 concrete examples of research challenges you overcame",
+          "Prepare to discuss collaboration experiences, especially disagreements",
+          "Think about why this specific team and research direction interest you"
+        ]},
+        { name: 'Research Prep', items: [
+          "Read recent publications from the team you are interviewing with",
+          "Understand the company research focus and how your work aligns",
+          "Prepare thoughtful questions about their research roadmap"
+        ]}
+      ],
+      'data science': [
+        { name: 'Technical Prep', items: [
+          "Practice SQL window functions and complex joins until they are second nature",
+          "Review A/B testing methodology and sample size calculations",
+          "Prepare to walk through end-to-end ML projects you have done",
+          "Practice case studies—focus on structuring your approach"
+        ]},
+        { name: 'Behavioral Prep', items: [
+          "Prepare examples of translating business problems into data problems",
+          "Have stories ready about working with imperfect data",
+          "Think about times you influenced decisions with analysis"
+        ]},
+        { name: 'Domain Prep', items: [
+          "Understand the company product and key metrics",
+          "Research common data challenges in their industry",
+          "Prepare questions about their data infrastructure and team structure"
+        ]}
+      ],
+      'software engineering': [
+        { name: 'Technical Prep', items: [
+          "Solve 50–100 problems focusing on patterns, not memorization",
+          "Practice explaining your approach before writing code",
+          "Review time/space complexity analysis",
+          "For system design, understand basics even for intern roles"
+        ]},
+        { name: 'Behavioral Prep', items: [
+          "Prepare one project to discuss in depth—know every detail",
+          "Have examples of learning from failure and helping teammates",
+          "Practice the STAR format but keep answers concise"
+        ]},
+        { name: 'Code Quality', items: [
+          "Write clean, readable code during practice sessions",
+          "Practice testing your code with examples before submitting",
+          "Learn to handle edge cases systematically"
+        ]}
+      ],
+      'quantitative': [
+        { name: 'Technical Prep', items: [
+          "Practice probability and brain teasers daily—speed matters",
+          "Review expected value, conditional probability, and Bayes theorem",
+          "Practice mental math for quick estimation",
+          "Solve coding problems with efficiency as the priority"
+        ]},
+        { name: 'Market Prep', items: [
+          "Follow financial news and understand market dynamics",
+          "Practice thinking about trading strategies and risk",
+          "Understand basic options concepts and pricing intuition"
+        ]},
+        { name: 'Behavioral Prep', items: [
+          "Prepare examples showing analytical thinking under pressure",
+          "Practice staying calm when you do not know the answer immediately",
+          "Demonstrate intellectual curiosity and competitiveness"
+        ]}
+      ],
+      'hardware engineering': [
+        { name: 'Technical Prep', items: [
+          "Review digital logic fundamentals and timing analysis",
+          "Practice writing clean Verilog/VHDL code by hand",
+          "Understand tradeoffs in cache design and memory hierarchy",
+          "Be ready to analyze circuits and debug timing issues"
+        ]},
+        { name: 'Project Prep', items: [
+          "Prepare to discuss your hardware projects in detail",
+          "Know the tools you used and why you made specific choices",
+          "Be ready to explain what you would do differently"
+        ]},
+        { name: 'Behavioral Prep', items: [
+          "Have examples of debugging difficult hardware issues",
+          "Prepare stories about collaborating on complex designs",
+          "Think about how you handle tight deadlines and changing requirements"
+        ]}
+      ]
+    };
 
-**Application Submission:** ${listing.daysAgo} ago
-- Applications typically reviewed on a rolling basis
-- Early applications often receive faster responses
-
-**Typical Interview Process:**
-1. **Resume screening** (1-2 weeks after application)
-2. **Phone/video screening** (30-45 minutes)
-3. **Technical interview(s)** (1-2 rounds, 45-60 minutes each)
-4. **Final round interviews** (may include behavioral and technical components)
-5. **Decision and offer** (1-2 weeks after final interview)
-
-### Key Dates to Remember:
-- **Early applications:** Best chances for interview consideration
-- **Interview seasons:** Most active from January through April
-- **Decision timeline:** Offers typically made by March-May
-- **Internship start:** Most Summer 2025 programs begin in June
-
-### What to Do While Waiting:
-- Continue applying to other positions
-- Work on technical skills and personal projects
-- Network with professionals in your field
-- Prepare for additional interview opportunities
-- Stay updated on industry trends and company news
-    `.trim();
+    return guides[roleType] || guides['software engineering'];
   }
 
   private generateFAQSection(listing: InternshipListing): string {
-    const sponsorshipFAQ = listing.requiresSponsorship 
-      ? `\n\n**Q: Does ${listing.company} sponsor visas for this internship?**\nA: No, this position does not offer visa sponsorship. Candidates must be authorized to work in the country where the position is located.`
-      : `\n\n**Q: Does ${listing.company} provide visa sponsorship?**\nA: Check directly with ${listing.company} regarding their visa sponsorship policies for internships.`;
+    const roleType = this.getRoleType(listing.category, listing.role);
+    
+    let faqs = `
+**How many interview rounds should I expect?**
+Most candidates report 3–5 rounds, depending on the team and level. This typically includes a recruiter screen, technical interviews, and a final round with behavioral components.
 
-    return `
-**Q: What is the duration of this internship?**
-A: Most Summer 2025 internships run for 10-12 weeks, typically from June through August. Specific dates vary by company.
+**How long does the process take?**
+From application to offer, expect 3–6 weeks. Some companies move faster, others slower. Following up politely after 1–2 weeks of silence is reasonable.
 
-**Q: Is this a paid internship?**
-A: Yes, ${listing.company} internships are typically paid positions with competitive hourly rates plus benefits.
+**What if I don't know the answer to a question?**
+Interviewers care more about your thought process than perfect answers. Talk through your approach, ask clarifying questions, and show how you'd work toward a solution.
 
-**Q: What year students can apply?**
-A: Most internships are open to undergraduate and graduate students. Specific requirements vary, but typically juniors and seniors have the best chances.
-
-**Q: Can I apply if I'm not a CS major?**
-A: Many companies accept students from related fields like Computer Engineering, Electrical Engineering, Mathematics, and other STEM disciplines.
-
-**Q: What programming languages should I know?**
-A: Requirements vary by role, but common languages include ${this.getCategoryLanguages(listing.category)}. Check the job description for specific requirements.${sponsorshipFAQ}
-
-**Q: How competitive is this internship?**
-A: ${listing.company} internships are highly competitive. Strong technical skills, relevant experience, and early application improve your chances.
-
-**Q: Can this lead to a full-time offer?**
-A: Many companies extend full-time offers to successful interns. Performance during the internship is a key factor in receiving an offer.
+**Should I apply even if I don't meet all the requirements?**
+Yes. Job postings describe ideal candidates, not minimum thresholds. If you meet most criteria and can demonstrate relevant skills, apply.
     `.trim();
-  }
 
-  private generateConclusionSection(listing: InternshipListing): string {
-    const actionText = listing.isActive 
-      ? 'Don\'t miss this opportunity to apply' 
-      : 'Keep an eye out for similar opportunities';
-
-    return `
-The ${listing.company} ${listing.role} internship represents an excellent opportunity to gain valuable experience in ${this.getCategoryDisplayName(listing.category)} while working at a leading technology company. ${actionText} and take the first step toward launching your career in tech.
-
-Remember to:
-- **Apply early** when positions become available
-- **Tailor your application** to ${listing.company} specifically
-- **Prepare thoroughly** for the interview process
-- **Network actively** within the tech community
-- **Keep developing** your technical and professional skills
-
-Good luck with your application! The tech industry offers incredible opportunities for motivated students who are willing to put in the effort to prepare and apply strategically.
-    `.trim();
-  }
-
-  private generateApplicationCTA(listing: InternshipListing): string {
-    if (listing.isActive) {
-      return `
-## Ready to Apply?
-
-🚀 **[Apply Now for ${listing.company} ${listing.role} Internship](${listing.applicationLink})**
-
-${listing.simplifyLink ? `💡 **Quick Apply:** [Use Simplify to autofill your application](${listing.simplifyLink})` : ''}
-
-📚 **Need more help?** Check out our [internship preparation guide](/internship-prep) and [resume templates](/resume-templates).
-      `.trim();
-    } else {
-      return `
-## Stay Updated on Similar Opportunities
-
-📧 **Get Notified:** Sign up for our internship alerts to be notified when similar positions become available.
-
-🔍 **Keep Searching:** Browse our [current internship listings](/internships) for more opportunities.
-
-📚 **Prepare for Next Time:** Use our [internship preparation resources](/internship-prep) to get ready for future applications.
-      `.trim();
+    // Add role-specific FAQ
+    if (roleType === 'research') {
+      faqs += `\n\n**Do I need publications to get a research internship?**\nPublications help but aren't always required. Strong coursework, relevant projects, and research experience can also demonstrate your capabilities.`;
+    } else if (roleType === 'quantitative') {
+      faqs += `\n\n**How important is finance knowledge for a quant role?**\nIt depends on the team. Trading roles value market intuition, while research roles may prioritize math and coding. Basic understanding of markets is helpful for all quant positions.`;
     }
+
+    return faqs;
+  }
+
+  private generateCTASection(listing: InternshipListing): string {
+    return `
+Start practicing real questions tailored to this role. Our AI-powered platform provides personalized feedback on your answers and helps you identify areas for improvement.
+
+[Practice Interview Questions](/questionnaire)
+    `.trim();
   }
 
   private getCategoryDisplayName(category: string): string {
     const displayNames: Record<string, string> = {
       'software': 'Software Engineering',
-      'data-science': 'Data Science, AI & Machine Learning',
+      'data-science': 'Data Science & ML',
       'quant': 'Quantitative Finance',
       'hardware': 'Hardware Engineering'
     };
     return displayNames[category] || category;
   }
 
-  private getCategoryContext(category: string): string {
-    const contexts: Record<string, string> = {
-      'software': 'software development and engineering',
-      'data-science': 'data science, machine learning, and artificial intelligence',
-      'quant': 'quantitative finance and algorithmic trading',
-      'hardware': 'hardware engineering and computer systems'
-    };
-    return contexts[category] || 'technology';
-  }
-
-  private getCategorySkills(category: string): string {
-    const skills: Record<string, string> = {
-      'software': 'data structures, algorithms, object-oriented programming, and system design',
-      'data-science': 'statistics, machine learning algorithms, data analysis, and programming',
-      'quant': 'mathematical modeling, statistics, programming, and financial markets',
-      'hardware': 'digital logic, computer architecture, embedded systems, and hardware design'
-    };
-    return skills[category] || 'technical fundamentals';
-  }
-
-  private getCategoryLanguages(category: string): string {
-    const languages: Record<string, string> = {
-      'software': 'Java, Python, C++, JavaScript, and Go',
-      'data-science': 'Python, R, SQL, and MATLAB',
-      'quant': 'Python, C++, R, and MATLAB',
-      'hardware': 'C, C++, Verilog, VHDL, and Python'
-    };
-    return languages[category] || 'Python, Java, and C++';
-  }
-
   private generateStructuredData(listing: InternshipListing): any {
     return {
       "@context": "https://schema.org/",
-      "@type": "JobPosting",
-      "title": `${listing.role} Internship`,
-      "description": `${listing.role} internship opportunity at ${listing.company} in ${listing.location} for Summer 2025.`,
-      "hiringOrganization": {
+      "@type": "Article",
+      "headline": this.generateTitle(listing),
+      "description": this.generateMetaDescription(listing),
+      "author": {
         "@type": "Organization",
-        "name": listing.company
+        "name": this.config.companyName
       },
-      "jobLocation": {
-        "@type": "Place",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": listing.location
-        }
+      "publisher": {
+        "@type": "Organization",
+        "name": this.config.companyName
       },
-      "datePosted": new Date(Date.now() - this.parseDaysAgo(listing.daysAgo) * 24 * 60 * 60 * 1000).toISOString(),
-      "employmentType": "INTERN",
-      "workHours": "40 hours per week",
-      "jobBenefits": "Competitive compensation, mentorship, professional development",
-      "industry": "Technology",
-      "occupationalCategory": this.getCategoryDisplayName(listing.category),
-      "qualifications": "Currently enrolled in Computer Science or related field",
-      "responsibilities": `Work on ${listing.category} projects, collaborate with teams, contribute to innovative solutions`,
-      "url": `${this.config.baseUrl}/internships/${listing.slug}`,
-      "applicationDeadline": listing.isActive ? "Applications accepted on rolling basis" : "Application may be closed"
+      "datePublished": new Date().toISOString(),
+      "url": `${this.config.baseUrl}/opportunities/${listing.slug}`
     };
   }
 
@@ -563,14 +631,9 @@ ${listing.simplifyLink ? `💡 **Quick Apply:** [Use Simplify to autofill your a
       title,
       description,
       image: this.config.defaultImage,
-      url: `${this.config.baseUrl}/internships/${listing.slug}`,
+      url: `${this.config.baseUrl}/opportunities/${listing.slug}`,
       type: 'article',
       site_name: this.config.companyName
     };
-  }
-
-  private parseDaysAgo(daysAgoString: string): number {
-    const match = daysAgoString.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 0;
   }
 }
