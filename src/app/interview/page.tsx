@@ -5,21 +5,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, RefreshCw, BarChart, Save, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Mic, MicOff, ChevronLeft, ChevronRight, BarChart, Save, User, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { UserAccountDropdown } from '@/components/UserAccountDropdown';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from '@/components/ui/sheet';
+import { DashboardLayout } from '@/components/DashboardLayout';
 import { toast } from "@/components/ui/use-toast";
 import InterviewFeedback from './components/interview-feedback';
 import { generateBehavioralQuestions, transcribeAndAnalyzeAudio } from '@/lib/gemini';
@@ -1165,13 +1156,40 @@ function InterviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-300">{loadingMessage}</p>
-          <p className="mt-2 text-sm text-gray-500">This may take a few moments...</p>
-        </div>
-      </div>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex min-h-screen items-center justify-center" style={{ background: '#0a0e1a' }}>
+            {/* Blue glow effect */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(37,99,235,0.25) 0%, rgba(99,102,241,0.12) 40%, transparent 70%)',
+              }}
+            />
+            <div className="text-center relative z-10">
+              {/* Simple loading spinner */}
+              <div className="relative mx-auto w-12 h-12">
+                <div 
+                  className="absolute inset-0 rounded-full border-2 border-blue-500/30"
+                />
+                <div 
+                  className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 animate-spin"
+                />
+              </div>
+              <p 
+                className="mt-5"
+                style={{ 
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.9rem',
+                  color: '#94a3b8'
+                }}
+              >
+                {loadingMessage}
+              </p>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
     );
   }
 
@@ -1767,39 +1785,37 @@ function InterviewPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#0a0f1e] flex flex-col">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0f1e]/90 backdrop-blur-lg border-b border-gray-800">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href={session ? "/dashboard" : "/"} className="flex items-center gap-2">
-              <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={50} height={50} className="object-contain" />
-              <span className="font-bold text-xl text-white">InterviewSense</span>
-            </Link>
-            <UserAccountDropdown />
-          </div>
-        </header>
+      <DashboardLayout>
+        <div className="min-h-screen flex flex-col relative" style={{ background: '#0a0e1a' }}>
+          {/* Blue glow effect */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at center top, rgba(37,99,235,0.2) 0%, rgba(99,102,241,0.1) 35%, transparent 65%)',
+            }}
+          />
 
-        {/* Safari Compatibility Notice */}
-        {isSafari && (
-          <div className="fixed top-16 left-4 right-4 z-40 max-w-4xl mx-auto">
-            <div className="bg-primary border border-primary rounded-lg p-3 text-center text-white text-sm">
-              <span className="font-medium">🍎 Safari Detected:</span> Using optimized settings for best compatibility. 
-              If you experience issues, try Chrome or Firefox.
+          {/* Safari Compatibility Notice */}
+          {isSafari && (
+            <div className="fixed top-4 left-4 right-4 z-40 max-w-4xl mx-auto">
+              <div className="rounded-lg p-3 text-center text-sm" style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.3)', color: '#93c5fd', fontFamily: "'Inter', sans-serif" }}>
+                <span className="font-medium">Safari Detected:</span> Using optimized settings for best compatibility. 
+                If you experience issues, try Chrome or Firefox.
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Main Interview Area */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-20">
-          <div className="w-full max-w-6xl">
-            {/* Two-column layout for md+ screens, stacked for smaller screens */}
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
-              
-              {/* Left Column: Speaking Circle */}
-              <div className="flex flex-col items-center justify-center space-y-6 md:flex-shrink-0">
-                <div className="relative">
-                  {/* Breathing Dotted Circle Pattern with Enhanced TTS Animation */}
-                  <div className={`w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem] rounded-full relative ${isSpeaking ? 'animate-talking' : 'animate-breathing'}`} 
+          {/* Main Interview Area */}
+          <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
+            <div className="w-full max-w-5xl">
+              {/* Two-column layout for md+ screens, stacked for smaller screens */}
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+                
+                {/* Left Column: Speaking Circle */}
+                <div className="flex flex-col items-center justify-center space-y-6 md:flex-shrink-0">
+                  <div className="relative">
+                    {/* Breathing Dotted Circle Pattern with Enhanced TTS Animation */}
+                    <div className={`w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full relative ${isSpeaking ? 'animate-talking' : 'animate-breathing'}`} 
                        style={isSpeaking ? {
                          transform: `scale(${1 + speakingIntensity * 0.2}) rotate(${speakingIntensity * 3}deg)`,
                          transition: 'transform 0.08s ease-out'
@@ -1874,28 +1890,28 @@ function InterviewPage() {
                 </div>
 
                 {/* Phase Status */}
-                <div className="text-gray-400 text-sm md:text-base text-center">
+                <div className="text-sm md:text-base text-center" style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8' }}>
                   {interviewPhase === 'speaking' && (
                     <div className="flex items-center justify-center gap-2">
                       {elevenLabsStatus === 'generating' && (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                          <span>Generating AI Voice...</span>
+                          <span>Generating Voice...</span>
                         </>
                       )}
                       {elevenLabsStatus === 'loading' && (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin text-green-400" />
-                          <span>Loading Audio...</span>
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                          <span>Speaking...</span>
                         </>
                       )}
                       {elevenLabsStatus === 'playing' && (
                         <>
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                          <span>🔊 ElevenLabs Speaking</span>
+                          <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                          <span>Speaking</span>
                         </>
                       )}
-                      {elevenLabsStatus === 'idle' && "Speaking Question"}
+                      {elevenLabsStatus === 'idle' && "Speaking..."}
                     </div>
                   )}
                   {interviewPhase === 'ready' && "Ready to Record"}
@@ -1908,179 +1924,136 @@ function InterviewPage() {
               {/* Right Column: Question Content and Controls */}
               <div className="flex-1 w-full max-w-2xl md:max-w-none">
                 {/* Question Counter */}
-                <div className="text-xs text-gray-500 mb-3 text-center md:text-left">
+                <div className="text-xs mb-3 text-center md:text-left" style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', letterSpacing: '0.05em' }}>
                   Question {currentQuestionIndex + 1} of {visibleQuestions.length}
                 </div>
 
-                {/* Question Display */}
-                <div className="bg-[#111827] border border-gray-700 rounded-lg p-3 sm:p-4 mb-3">
-                  <p className="text-gray-200 text-xs sm:text-sm leading-relaxed text-center md:text-left">
-                    {/* Show typewriter text when ElevenLabs is playing, or full question otherwise */}
-                    {elevenLabsStatus === 'playing' && isTypewriting ? typewriterText : 
-                     (interviewPhase === 'ready' || interviewPhase === 'feedback') ? 
-                     (currentQuestion ? currentQuestion.question : '') : 
-                     currentTranscript}
+                {/* Question Display - Always show the question */}
+                <div className="rounded-xl p-4 sm:p-5 mb-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <p className="leading-relaxed text-center md:text-left" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', color: '#e2e8f0', lineHeight: '1.7' }}>
+                    {currentQuestion ? currentQuestion.question : ''}
                   </p>
-                  
-                  {/* Replay Question Button */}
-                  {interviewPhase === 'ready' && currentQuestion && (
-                    <div className="mt-2 flex justify-center md:justify-start">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setInterviewPhase('speaking');
-                          speakQuestion(currentQuestion.question);
-                        }}
-                        className="text-gray-400 hover:text-white hover:bg-zinc-800 text-xs px-2 py-1"
-                      >
-                        <RefreshCw className="h-2.5 w-2.5 mr-1" />
-                        Replay Question
-                      </Button>
-                    </div>
-                  )}
                 </div>
 
-                {/* Enhanced waveform visualization when recording */}
+                {/* Minimal recording indicator when recording */}
                 {interviewPhase === 'recording' && (
-                  <div className="mb-3">
-                    <div className="bg-[#111827] border border-gray-700 rounded-lg p-3">
-                      <div className="flex items-end justify-center space-x-1 h-16 bg-[#1f2937] rounded-lg p-3 relative overflow-hidden">
-                        
-                        {/* Waveform bars */}
-                        {audioLevels.map((level, i) => (
-                          <div
-                            key={i}
-                            className="relative transition-all duration-100 ease-out rounded-sm"
-                            style={{
-                              width: '3px',
-                              height: `${Math.max(3, level * 0.9)}px`,
-                              background: level > 25
-                                ? `rgb(59 130 246)`
-                                : `rgb(59 130 246 / 0.6)`,
-                              boxShadow: level > 30 
-                                ? `0 0 8px rgba(59, 130, 246, ${Math.min(0.8, level /100)}), 0 0 16px rgba(59, 130, 246, ${Math.min(0.4, level / 150)})` 
-                                : level > 15 
-                                  ? `0 0 4px rgba(59, 130, 246, ${Math.min(0.6, level / 120)})` 
-                                  : 'none',
-                              transform: level > 40 ? `scaleY(${1 + (level - 40) / 200})` : 'scaleY(1)',
-                              opacity: Math.max(0.4, Math.min(1, level / 60))
-                            }}
-                          >
-                            {/* Peak indicator */}
-                            {level > 50 && (
-                              <div 
-                                className="absolute top-0 left-0 w-full h-1 bg-blue-300 rounded-full animate-pulse"
-                                style={{
-                                  boxShadow: '0 0 6px rgba(147, 197, 253, 0.8)'
-                                }}
-                              ></div>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {/* Center line indicator */}
-                        <div className="absolute inset-x-0 bottom-4 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent opacity-30"></div>
+                  <div className="mb-4 flex items-center justify-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <div className="absolute top-0 left-0 w-2 h-2 bg-red-400 rounded-full animate-ping"></div>
                       </div>
-                      
-                      <div className="flex items-center justify-center mt-2 space-x-2">
-                        <div className="relative">
-                          <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                          <div className="absolute top-0 left-0 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping"></div>
-                        </div>
-                        <p className="text-gray-400 text-xs font-medium">Recording your response...</p>
-                        <div className="flex space-x-1">
-                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></div>
-                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
-                          <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '400ms'}}></div>
-                        </div>
-                      </div>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: '#94a3b8' }}>Recording</span>
+                    </div>
+                    {/* Small waveform bars */}
+                    <div className="flex items-end space-x-0.5 h-4">
+                      {audioLevels.slice(0, 15).map((level, i) => (
+                        <div
+                          key={i}
+                          className="transition-all duration-75 rounded-full"
+                          style={{
+                            width: '2px',
+                            height: `${Math.max(2, level * 0.15)}px`,
+                            background: 'rgb(59 130 246)',
+                            opacity: Math.max(0.4, Math.min(1, level / 60))
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* Answer Display (when available) */}
-                {answer && interviewPhase === 'feedback' && (
-                  <div className="mb-3">
-                    <div className="bg-[#111827] border border-gray-700 rounded-lg p-3">
-                      <div className="text-xs text-gray-500 mb-1">Your Response:</div>
-                      <p className="text-gray-300 text-xs leading-relaxed">{answer}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="space-y-2">
+                {/* Action Buttons - Minimal inline style like technical assessment */}
+                <div className="flex items-center justify-center gap-3 mt-4">
                   {interviewPhase === 'feedback' && answer.trim() !== '' && (
                     <>
-                      <Button
-                        variant="outline"
+                      <button
                         onClick={showFeedback}
                         disabled={isAnalyzingFeedback}
-                        className="w-full border-blue-500 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg py-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ 
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#8892b0',
+                          fontFamily: "'Inter', sans-serif"
+                        }}
                       >
                         {isAnalyzingFeedback ? (
                           <>
-                            <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             Analyzing...
                           </>
                         ) : (
                           <>
-                            <BarChart className="h-2.5 w-2.5 mr-1" /> Get Feedback
+                            <BarChart className="h-3.5 w-3.5" /> Feedback
                           </>
                         )}
-                      </Button>
+                      </button>
                       
-                      <Button
+                      <button
                         onClick={currentQuestionIndex < visibleQuestions.length - 1 ? handleNextQuestion : handleComplete}
                         disabled={isSubmitting}
-                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg py-1.5 text-xs"
+                        className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                          color: '#fff',
+                          fontFamily: "'Inter', sans-serif"
+                        }}
                       >
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             Saving...
                           </>
                         ) : currentQuestionIndex < visibleQuestions.length - 1 ? (
-                          <>Next Question <ChevronRight className="h-2.5 w-2.5 ml-1" /></>
+                          <>Next <ChevronRight className="h-3.5 w-3.5" /></>
                         ) : (
-                          <>Complete Interview <Save className="h-2.5 w-2.5 ml-1" /></>
+                          <>Complete <Save className="h-3.5 w-3.5" /></>
                         )}
-                      </Button>
+                      </button>
                     </>
                   )}
 
                   {interviewPhase === 'ready' && (
-                    <Button
+                    <button
                       onClick={startRecording}
                       disabled={isSettingUpRecording}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-1.5 text-xs"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ 
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#8892b0',
+                        fontFamily: "'Inter', sans-serif"
+                      }}
                     >
                       {isSettingUpRecording ? (
                         <>
-                          <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           Setting up...
                         </>
                       ) : (
                         <>
-                          <Mic className="h-2.5 w-2.5 mr-1" />
-                          Start Recording
+                          <Mic className="h-3.5 w-3.5" />
+                          Record
                         </>
                       )}
-                    </Button>
+                    </button>
                   )}
 
                   {interviewPhase === 'recording' && (
-                    <Button
-                      variant="destructive"
+                    <button
                       onClick={toggleRecording}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white rounded-lg py-1.5 text-xs"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-150"
+                      style={{ 
+                        background: 'rgba(239,68,68,0.08)',
+                        border: '1px solid rgba(239,68,68,0.35)',
+                        color: '#f87171',
+                        fontFamily: "'Inter', sans-serif"
+                      }}
                     >
-                      <MicOff className="h-2.5 w-2.5 animate-pulse mr-1" /> Stop Recording
-                    </Button>
+                      <MicOff className="h-3.5 w-3.5" /> Stop
+                    </button>
                   )}
-
-
                 </div>
               </div>
             </div>
@@ -2092,20 +2065,19 @@ function InterviewPage() {
           <>
             {/* Desktop Popup (md and up) */}
             <div className="hidden md:block fixed inset-y-0 right-0 w-1/2 lg:w-2/5 xl:w-1/3 z-50">
-              <div className="h-full flex flex-col bg-[#0a0f1e] border-l border-gray-800">
-                {                /* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-800">
-                  <h3 className="text-lg font-semibold text-white">Interview Feedback</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+              <div className="h-full flex flex-col" style={{ background: '#0a0e1a', borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+                {/* Header */}
+                <div className="flex items-center justify-between p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 500, color: '#f1f5f9' }}>Feedback</h3>
+                  <button
                     onClick={() => setFeedbackVisible(false)}
-                    className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-1"
+                    className="p-2 rounded-full transition-colors"
+                    style={{ color: '#94a3b8' }}
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                  </Button>
+                  </button>
                 </div>
                 
                 {/* Content */}
@@ -2119,31 +2091,30 @@ function InterviewPage() {
             </div>
 
             {/* Mobile Full Width (sm and below) */}
-            <div className="md:hidden border-t border-gray-800 p-4">
+            <div className="md:hidden p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="max-w-4xl mx-auto">
-                <Card className="bg-[#111827] border border-gray-700 text-white rounded-lg">
-                  <CardHeader className="pb-3">
+                <div className="rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">Interview Feedback</CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', fontWeight: 500, color: '#f1f5f9' }}>Feedback</h3>
+                      <button
                         onClick={() => setFeedbackVisible(false)}
-                        className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-1"
+                        className="p-1.5 rounded-full transition-colors"
+                        style={{ color: '#94a3b8' }}
                       >
                         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </Button>
+                      </button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
+                  </div>
+                  <div className="p-4">
                     <InterviewFeedback 
                       answer={answer} 
                       question={currentQuestion?.question || ''} 
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
             </div>
           </>
@@ -2227,7 +2198,8 @@ function InterviewPage() {
             animation: pulse-slow 3s ease-in-out infinite;
           }
         `}</style>
-      </div>
+        </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }

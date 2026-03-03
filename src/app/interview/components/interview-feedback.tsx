@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { Bookmark, RefreshCw, CheckCircle, AlertCircle, Key, User, Download, Printer, Share2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Bookmark, CheckCircle, AlertCircle, Key, User, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { generateFeedback } from "@/lib/gemini"
 import { toast } from "@/components/ui/use-toast"
-import { exportToPDF, printReport, shareReport } from "@/lib/export"
 
 type FeedbackScore = {
   label: string
@@ -220,74 +219,6 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
     analyzeAnswer();
   }, [answer, question])
 
-  const refreshAnalysis = async () => {
-    // Re-run the analysis
-    setIsLoading(true)
-    
-    if (useSimulatedData) {
-      // If we're using simulated data, just update the scores
-      setTimeout(() => {
-        setScores((prev) =>
-          prev.map((score) => ({
-            ...score,
-            score: Math.min(100, Math.max(50, score.score + (Math.random() > 0.5 ? 5 : -5))),
-          })),
-        )
-        setIsLoading(false)
-      }, 1500)
-    } else {
-      try {
-        // Get job details from localStorage to provide more context
-        const jobDetails = typeof window !== 'undefined' ? {
-          jobTitle: localStorage.getItem('jobTitle') || undefined,
-          company: localStorage.getItem('company') || undefined,
-          industry: localStorage.getItem('interviewType') === 'Behavioral' ? undefined : (localStorage.getItem('industry') || undefined),
-          experienceLevel: localStorage.getItem('experienceLevel') || undefined,
-          interviewType: localStorage.getItem('interviewType') || undefined,
-          interviewStage: localStorage.getItem('interviewStage') || undefined,
-        } : {};
-        
-        // Try to use the Gemini API for feedback generation again with job details and resume
-        const feedback = await generateFeedback(answer, question, jobDetails);
-        
-        setScores(feedback.scores);
-        setKeywordsDetected(feedback.keywordsDetected);
-        setKeywordsMissing(feedback.keywordsMissing);
-        setSuggestions(feedback.suggestions);
-        setFillerWords(feedback.fillerWords);
-        
-        // Show a subtle notification that the feedback has been refreshed
-        toast({
-          title: "Feedback refreshed",
-          description: resumeAvailable 
-            ? "Analysis has been updated based on your response and resume" 
-            : "Analysis has been updated based on your response",
-          variant: "default",
-        });
-      } catch (error) {
-        console.error("Failed to refresh feedback:", error);
-        toast({
-          title: "Failed to refresh feedback",
-          description: "Using simulated data instead",
-          variant: "destructive",
-        });
-        
-        // Fall back to simulated data
-        setUseSimulatedData(true);
-        
-        // Update the simulated scores to create a refresh effect
-        setScores((prev) =>
-          prev.map((score) => ({
-            ...score,
-            score: Math.min(100, Math.max(50, score.score + (Math.random() > 0.5 ? 5 : -5))),
-          })),
-        )
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }
-
   if (isLoading) {
     return (
       <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
@@ -297,7 +228,7 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative">
-              <RefreshCw className="h-12 w-12 text-blue-500 animate-spin" />
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
             </div>
             <p className="text-zinc-400">Our AI is analyzing your answer</p>
             <Progress value={30} className="w-full h-2 bg-zinc-700">
@@ -313,25 +244,15 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
     <div id="feedback-content" className="space-y-6">
       <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur-sm overflow-hidden">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <CardTitle className="text-lg text-white">Response Analysis</CardTitle>
-              {resumeAvailable && (
-                <div className="flex items-center mt-1">
-                  <Badge className="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border-blue-500/30">
-                    Resume-Enhanced Feedback
-                  </Badge>
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refreshAnalysis}
-              className="gap-1 text-zinc-400 hover:text-white hover:bg-zinc-700/50"
-            >
-              <RefreshCw className="h-3 w-3" /> Refresh
-            </Button>
+          <div className="flex flex-col">
+            <CardTitle className="text-lg text-white">Response Analysis</CardTitle>
+            {resumeAvailable && (
+              <div className="flex items-center mt-1">
+                <Badge className="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border-blue-500/30">
+                  Resume-Enhanced Feedback
+                </Badge>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -556,33 +477,6 @@ export default function InterviewFeedback({ answer, question }: FeedbackProps) {
           )}
         </CardContent>
       </Card>
-
-      <div className="flex justify-center gap-2 pt-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
-          onClick={() => exportToPDF('feedback-content', `Interview_Feedback_${new Date().toISOString().split('T')[0]}`)}
-        >
-          <Download className="h-3 w-3" /> Download
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
-          onClick={printReport}
-        >
-          <Printer className="h-3 w-3" /> Print
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800/70 rounded-full"
-          onClick={() => shareReport("Interview Feedback", "Interview feedback for this question")}
-        >
-          <Share2 className="h-3 w-3" /> Share
-        </Button>
-      </div>
     </div>
   )
 }
