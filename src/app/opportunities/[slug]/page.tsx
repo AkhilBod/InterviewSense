@@ -89,11 +89,13 @@ function extractCompanySlug(slug: string): string {
 }
 
 function extractRoleTitle(slug: string, title: string): string {
-  if (title.includes('Intern')) {
-    const match = title.match(/([^:]+Intern[^,]*)/i)
-    return match ? match[1].trim() : 'Software Engineering Intern'
-  }
-  return 'Software Engineering Intern'
+  // Remove company name prefix and trailing "Interview Questions" / "Interview Experience & Questions"
+  const companyName = extractCompanyName(slug)
+  let role = title
+    .replace(new RegExp(`^${companyName}\\s+`, 'i'), '')
+    .replace(/\s*Interview\s+(Questions|Experience\s*&\s*Questions)$/i, '')
+    .trim()
+  return role || 'Software Engineering Intern'
 }
 
 function extractRoleSlug(slug: string): string {
@@ -254,8 +256,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   
   const enhancedPageData = {
     ...pageData,
-    title: `${companyName} ${roleTitle} Interview Questions & Prep Guide ${currentYear}`,
-    description: `Master ${companyName} ${roleTitle} interviews with AI-powered practice questions, coding challenges, and expert insights. Get hired at ${companyName} in ${location}. Updated ${currentYear}.`,
+    title: `${companyName} ${roleTitle} Interview Experience & Questions`,
+    description: `Interview process & tips for ${companyName} ${roleTitle}. See what candidates are asked, difficulty ratings, and how to prepare. Updated ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}.`,
     keyword: `${companyName.toLowerCase()} ${roleTitle.toLowerCase().replace(/\s+/g, ' ')}, ${companyName.toLowerCase()} interview questions, ${roleTitle.toLowerCase()} coding interview, ${location.toLowerCase()} tech internships ${currentYear}`
   }
 

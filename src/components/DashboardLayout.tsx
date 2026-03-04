@@ -317,7 +317,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   disabled={savingProfile}
                   style={{
                     width: '100%', padding: 14,
-                    background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+                    background: '#2563eb',
                     color: '#fff', border: 'none', borderRadius: 10,
                     fontFamily: "'Inter', sans-serif",
                     fontSize: '0.88rem', fontWeight: 500,

@@ -87,8 +87,8 @@ async function generateInternshipData() {
 }
 
 function buildArticleJson(row: ParsedRow, now: string) {
-  const title = `${row.company} ${row.role} Interview Questions`;
-  const desc = `Ace your ${row.company} ${row.role} interview with AI-powered practice questions and feedback. Get ready for your ${row.location} internship.`;
+  const title = `${row.company} ${row.role} Interview Experience & Questions`;
+  const desc = `Interview process & tips for ${row.company} ${row.role} in ${row.location}. See what candidates are asked, difficulty ratings, and how to prepare.`;
 
   return {
     slug: row.slug,
