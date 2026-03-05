@@ -227,9 +227,20 @@ export default function ResumeCheckerPage() {
   const adjustScore = (raw: number) => Math.round(Math.min(100, Math.max(0, raw * scoreScaleFactor)));
 
   const adjustedOverallScore = resumeData ? adjustScore(resumeData.overallScore) : 0;
-  const adjustedImpactScore  = resumeData ? adjustScore(resumeData.impactScore)  : 0;
-  const adjustedStyleScore   = resumeData ? adjustScore(resumeData.styleScore)   : 0;
-  const adjustedSkillsScore  = resumeData ? adjustScore(resumeData.skillsScore)  : 0;
+
+  // Apply scale then normalize: if sub-scores average much higher than overall
+  // (AI often inflates impact/style/skills while giving an honest overall),
+  // bring them proportionally back down so they're consistent.
+  const _rawImpact = resumeData ? adjustScore(resumeData.impactScore) : 0;
+  const _rawStyle  = resumeData ? adjustScore(resumeData.styleScore)  : 0;
+  const _rawSkills = resumeData ? adjustScore(resumeData.skillsScore) : 0;
+  const _avgSub = (_rawImpact + _rawStyle + _rawSkills) / 3;
+  const _subNorm = adjustedOverallScore > 0 && _avgSub > adjustedOverallScore + 5
+    ? adjustedOverallScore / _avgSub
+    : 1;
+  const adjustedImpactScore  = Math.min(100, Math.round(_rawImpact  * _subNorm));
+  const adjustedStyleScore   = Math.min(100, Math.round(_rawStyle   * _subNorm));
+  const adjustedSkillsScore  = Math.min(100, Math.round(_rawSkills  * _subNorm));
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-400";
@@ -763,7 +774,7 @@ export default function ResumeCheckerPage() {
                     </Card>
 
                     {/* Word-Level Analysis - Merged into main results */}
-                    {showWordAnalysis && wordAnalysisData && (
+                    {wordAnalysisData && (
                       <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl overflow-hidden">
                         <CardContent className="p-0">
                           <ResumeWordAnalysis 
