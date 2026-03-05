@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import PracticeButton from './PracticeButton'
 
 interface PageData {
   type: string;
@@ -535,9 +536,13 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
                             Behavioral
                           </span>
                         )}
-                        <Link href="/signup" style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
-                          Practice this →
-                        </Link>
+                        <PracticeButton
+                          question={embeddedQ.question}
+                          type={embeddedQ.type}
+                          topic={embeddedQ.topic}
+                          difficulty={embeddedQ.difficulty}
+                          company={embeddedQ.company}
+                        />
                       </div>
                     )}
                   </div>

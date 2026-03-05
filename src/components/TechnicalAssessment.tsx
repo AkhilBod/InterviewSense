@@ -453,6 +453,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [solutionsGenerated, setSolutionsGenerated] = useState(false);
   const [problemTopics, setProblemTopics] = useState<string[]>([]);
   const [problemId, setProblemId] = useState<number | null>(null);
+  const [questionSaved, setQuestionSaved] = useState(false);
   // Resizable split state: left panel width as percentage
   const [splitPos, setSplitPos] = useState(45);
   const splitDragging = useRef(false);
@@ -717,6 +718,31 @@ public class Solution {
     editorRef.current = editor;
   };
 
+  const handleSaveTechnicalQuestion = async () => {
+    if (!question) return;
+    const lc = parseLeetCodeProblem(question);
+    const questionId = `technical-${lc.number || lc.title.toLowerCase().replace(/\s+/g, '-')}`;
+    try {
+      const res = await fetch('/api/questions/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId,
+          questionText: lc.title || question.slice(0, 200),
+          type: 'TECHNICAL',
+          difficulty: lc.difficulty || difficulty,
+          company: company || undefined,
+        }),
+      });
+      if (res.ok || res.status === 409) {
+        setQuestionSaved(true);
+        toast({ title: 'Question saved', description: 'Added to your saved questions.' });
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save question.', variant: 'destructive' });
+    }
+  };
+
   const runCode = () => {
     toast({
       title: "Code Runner",
@@ -735,6 +761,7 @@ public class Solution {
     try {
       setIsLoading(true);
       setQuestion('');
+      setQuestionSaved(false);
       setSolutions([]);
       setSolutionsGenerated(false);
 
@@ -893,6 +920,7 @@ public class Solution {
     try {
       setIsLoading(true);
       setQuestion('');
+      setQuestionSaved(false);
       setSolutions([]);
       setSolutionsGenerated(false);
 
@@ -2384,6 +2412,20 @@ public class Solution {
               {audioUrl && !isTranscribing && (
                 <span style={{ fontSize: '0.72rem', color: '#34d399', fontFamily: "'Inter', sans-serif" }}>✓ Recorded</span>
               )}
+              {/* Save */}
+              <button
+                onClick={handleSaveTechnicalQuestion}
+                disabled={questionSaved}
+                style={{
+                  ...btnBase,
+                  color: questionSaved ? '#34d399' : '#8892b0',
+                  borderColor: questionSaved ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.1)',
+                  background: questionSaved ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.05)',
+                  cursor: questionSaved ? 'default' : 'pointer',
+                }}
+              >
+                {questionSaved ? '✓ Saved' : '⊕ Save'}
+              </button>
               {/* Submit */}
               <button
                 onClick={handleNext}
