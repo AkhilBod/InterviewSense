@@ -1,62 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { 
-  TrendingUp,
-  Target,
-  BookOpen,
-  Users,
-  Award,
-  CheckCircle
-} from "lucide-react"
+import { useEffect, useState, useRef } from 'react'
+import { TrendingUp, Target, BookOpen, Users, Award, Check } from 'lucide-react'
+import React from 'react'
 
 interface LoadingStep {
-  id: string
+  id: number
+  icon: React.ComponentType<any>
   title: string
-  description: string
-  icon: React.ReactNode
   duration: number
 }
 
 const LOADING_STEPS: LoadingStep[] = [
-  {
-    id: 'analyzing',
-    title: 'Analyzing Current Position',
-    description: 'Evaluating your current role and experience level',
-    icon: <Target className="h-5 w-5" />,
-    duration: 2000
-  },
-  {
-    id: 'planning',
-    title: 'Creating Career Path',
-    description: 'Designing your personalized roadmap phases',
-    icon: <TrendingUp className="h-5 w-5" />,
-    duration: 2500
-  },
-  {
-    id: 'skills',
-    title: 'Mapping Skill Requirements',
-    description: 'Identifying technical and soft skills needed',
-    icon: <BookOpen className="h-5 w-5" />,
-    duration: 2000
-  },
-  {
-    id: 'networking',
-    title: 'Finding Growth Opportunities',
-    description: 'Discovering communities and learning resources',
-    icon: <Users className="h-5 w-5" />,
-    duration: 1800
-  },
-  {
-    id: 'finalizing',
-    title: 'Finalizing Your Roadmap',
-    description: 'Compiling actionable recommendations',
-    icon: <Award className="h-5 w-5" />,
-    duration: 1500
-  }
+  { id: 1, icon: Target,    title: 'Analyzing current position',        duration: 2000 },
+  { id: 2, icon: TrendingUp,title: 'Creating career path phases',        duration: 2500 },
+  { id: 3, icon: BookOpen,  title: 'Mapping skill requirements',         duration: 2000 },
+  { id: 4, icon: Users,     title: 'Finding growth opportunities',       duration: 1800 },
+  { id: 5, icon: Award,     title: 'Finalizing your roadmap',            duration: 1500 },
 ]
+
+const totalDuration = LOADING_STEPS.reduce((sum, s) => sum + s.duration, 0)
 
 interface CareerRoadmapLoadingModalProps {
   isOpen: boolean
@@ -66,145 +29,119 @@ interface CareerRoadmapLoadingModalProps {
 export default function CareerRoadmapLoadingModal({ isOpen, onClose }: CareerRoadmapLoadingModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [completedSteps, setCompletedSteps] = useState<string[]>([])
+  const stepTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const progressTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const startTimeRef = useRef<number>(0)
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
       setCurrentStep(0)
       setProgress(0)
-      setCompletedSteps([])
-      return
-    }
+      startTimeRef.current = Date.now()
 
-    const totalDuration = LOADING_STEPS.reduce((sum, step) => sum + step.duration, 0)
-    let elapsed = 0
-
-    const timer = setInterval(() => {
-      elapsed += 100
-      const newProgress = Math.min((elapsed / totalDuration) * 100, 100)
-      setProgress(newProgress)
-
-      // Update current step based on elapsed time
-      let cumulativeDuration = 0
-      let newCurrentStep = 0
-      const newCompletedSteps: string[] = []
-
-      for (let i = 0; i < LOADING_STEPS.length; i++) {
-        cumulativeDuration += LOADING_STEPS[i].duration
-        if (elapsed >= cumulativeDuration) {
-          newCompletedSteps.push(LOADING_STEPS[i].id)
-        } else if (elapsed >= cumulativeDuration - LOADING_STEPS[i].duration) {
-          newCurrentStep = i
-          break
+      progressTimerRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTimeRef.current
+        setProgress(Math.min((elapsed / totalDuration) * 100, 100))
+        if (elapsed >= totalDuration && progressTimerRef.current) {
+          clearInterval(progressTimerRef.current)
+          progressTimerRef.current = null
         }
-      }
+      }, 50)
 
-      setCurrentStep(newCurrentStep)
-      setCompletedSteps(newCompletedSteps)
-
-      if (elapsed >= totalDuration) {
-        clearInterval(timer)
-      }
-    }, 100)
-
-    return () => clearInterval(timer)
+      progressThroughSteps(0)
+    } else {
+      if (stepTimerRef.current) { clearTimeout(stepTimerRef.current); stepTimerRef.current = null }
+      if (progressTimerRef.current) { clearInterval(progressTimerRef.current); progressTimerRef.current = null }
+    }
   }, [isOpen])
 
-  const getStepStatus = (stepId: string, index: number) => {
-    if (completedSteps.includes(stepId)) return 'completed'
-    if (index === currentStep) return 'current'
+  useEffect(() => {
+    return () => {
+      if (stepTimerRef.current) clearTimeout(stepTimerRef.current)
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current)
+    }
+  }, [])
+
+  const progressThroughSteps = (idx: number) => {
+    if (idx >= LOADING_STEPS.length) return
+    setCurrentStep(idx)
+    stepTimerRef.current = setTimeout(() => progressThroughSteps(idx + 1), LOADING_STEPS[idx].duration)
+  }
+
+  const getStatus = (idx: number) => {
+    if (idx < currentStep) return 'completed'
+    if (idx === currentStep) return 'current'
     return 'pending'
   }
 
+  if (!isOpen) return null
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-zinc-900 border-amber-500/20 text-white">
-        <div className="flex flex-col items-center space-y-6 py-6">
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <div className="mx-auto w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mb-4">
-              <TrendingUp className="h-8 w-8 text-amber-500 animate-pulse" />
-            </div>
-            <h2 className="text-xl font-semibold text-amber-400">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div style={{ position: 'relative', width: '100%', maxWidth: 420, margin: '0 16px' }}>
+        <div style={{
+          background: '#0a0f1a',
+          borderRadius: 16,
+          border: '1px solid rgba(59,130,246,0.15)',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          overflow: 'hidden',
+        }}>
+          <div style={{ padding: '32px 32px 24px', textAlign: 'center' }}>
+            <h2 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.25rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 8 }}>
               Creating Your Career Roadmap
             </h2>
-            <p className="text-sm text-zinc-400">
-              Analyzing your career path and building personalized recommendations
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.875rem', color: '#64748b' }}>
+              {Math.round(progress)}% complete
             </p>
           </div>
 
-          {/* Progress Bar */}
-          <div className="w-full space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">Progress</span>
-              <span className="text-amber-400 font-medium">{Math.round(progress)}%</span>
+          <div style={{ padding: '0 32px 24px' }}>
+            <div style={{ width: '100%', height: 4, background: 'rgba(59,130,246,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${progress}%`, background: '#3b82f6', borderRadius: 2, transition: 'width 0.3s ease-out' }} />
             </div>
-            <Progress 
-              value={progress} 
-              className="h-2 bg-zinc-800"
-            />
           </div>
 
-          {/* Loading Steps */}
-          <div className="w-full space-y-3">
-            {LOADING_STEPS.map((step, index) => {
-              const status = getStepStatus(step.id, index)
-              return (
-                <div
-                  key={step.id}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ${
-                    status === 'completed'
-                      ? 'bg-amber-500/10 border border-amber-500/20'
-                      : status === 'current'
-                      ? 'bg-amber-500/5 border border-amber-500/10 shadow-lg shadow-amber-500/5'
-                      : 'bg-zinc-800/30 border border-zinc-700/50'
-                  }`}
-                >
-                  <div className={`flex-shrink-0 ${
-                    status === 'completed'
-                      ? 'text-amber-400'
-                      : status === 'current'
-                      ? 'text-amber-500 animate-pulse'
-                      : 'text-zinc-500'
-                  }`}>
-                    {status === 'completed' ? (
-                      <CheckCircle className="h-5 w-5" />
-                    ) : (
-                      step.icon
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${
-                      status === 'completed' || status === 'current'
-                        ? 'text-white'
-                        : 'text-zinc-400'
-                    }`}>
+          <div style={{ padding: '0 32px 32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {LOADING_STEPS.map((step, idx) => {
+                const status = getStatus(idx)
+                const StepIcon = step.icon
+                return (
+                  <div key={step.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '12px 16px', borderRadius: 10,
+                    background: status === 'current' ? 'rgba(59,130,246,0.08)' : status === 'completed' ? 'rgba(34,197,94,0.05)' : 'transparent',
+                    border: status === 'current' ? '1px solid rgba(59,130,246,0.2)' : '1px solid transparent',
+                    transition: 'all 0.2s ease',
+                  }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      background: status === 'completed' ? '#22c55e' : status === 'current' ? 'rgba(59,130,246,0.15)' : 'rgba(100,116,139,0.1)',
+                      border: status === 'completed' ? 'none' : status === 'current' ? '1.5px solid #3b82f6' : '1.5px solid rgba(100,116,139,0.3)',
+                      transition: 'all 0.2s ease',
+                    }}>
+                      {status === 'completed'
+                        ? <Check style={{ width: 14, height: 14, color: '#fff' }} strokeWidth={2.5} />
+                        : <StepIcon style={{ width: 14, height: 14, color: status === 'current' ? '#3b82f6' : '#64748b' }} strokeWidth={2} />
+                      }
+                    </div>
+                    <span style={{
+                      fontFamily: 'Inter, sans-serif', fontSize: '0.875rem',
+                      fontWeight: status === 'current' ? 500 : 400,
+                      color: status === 'completed' ? '#22c55e' : status === 'current' ? '#e2e8f0' : '#64748b',
+                      transition: 'color 0.2s ease',
+                    }}>
                       {step.title}
-                    </p>
-                    <p className={`text-xs ${
-                      status === 'completed' || status === 'current'
-                        ? 'text-amber-300/70'
-                        : 'text-zinc-500'
-                    }`}>
-                      {step.description}
-                    </p>
+                    </span>
                   </div>
-                  {status === 'completed' && (
-                    <CheckCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-xs text-zinc-500">
-              This may take a few moments while we analyze market trends and career data
-            </p>
+                )
+              })}
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   )
-} 
+}

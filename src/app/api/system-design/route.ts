@@ -255,6 +255,43 @@ Return ONLY a valid JSON object with this exact structure:
 
 async function analyzeSystemDesign(problem: any, responses: any) {
 
+  // Pre-check: if all responses are empty/blank, return 0 scores immediately
+  const responseFields = ['requirements', 'estimation', 'highlevel', 'detailed', 'scale'];
+  const allEmpty = responseFields.every(field => {
+    const val = responses[field];
+    return !val || typeof val !== 'string' || val.trim().length < 20;
+  });
+
+  if (allEmpty) {
+    return {
+      problemTitle: problem.problem.title,
+      difficulty: 'Medium',
+      overallScore: 0,
+      categoryScores: {
+        requirements: 0,
+        estimation: 0,
+        design: 0,
+        scalability: 0,
+        communication: 0,
+      },
+      feedback: {
+        strengths: [],
+        improvements: [
+          'No responses were provided for any section',
+          'Complete all sections to receive meaningful feedback',
+          'Address requirements, scale estimation, high-level design, detailed design, and scalability',
+        ],
+        recommendations: [
+          'Practice answering all five sections of a system design interview',
+          'Study distributed systems fundamentals before your next attempt',
+        ],
+      },
+      analysis: 'No responses were submitted. A score of 0 has been assigned across all categories. Complete all sections to receive an honest evaluation.',
+      testDuration: 0,
+      completedSteps: 0,
+    };
+  }
+
   const prompt = `
 You are a Staff Engineer at Google/Meta/Amazon conducting a real system design interview. You have high standards and give honest, fair scores — not inflated ones, but not unfairly harsh either. A candidate who puts in solid effort and covers the key areas should score well.
 
@@ -279,7 +316,7 @@ GRADING SCALE (be harsh and realistic):
 - Below 40: Very poor — minimal effort, no real design, almost no content submitted.
 
 SCORING RULES:
-- If ANY section has "No response provided" or under 30 words: that category scores 20-35 max
+- If ANY section has "No response provided" or under 30 words: that category scores 0-35 max
 - Vague answers like "use a database" or "add a load balancer" without specifics: penalize heavily
 - No actual numbers in estimation (DAU, QPS, storage): estimation score 20-40
 - No mention of specific technologies (PostgreSQL vs MongoDB, Redis vs Memcached, Kafka vs RabbitMQ): design score capped at 60

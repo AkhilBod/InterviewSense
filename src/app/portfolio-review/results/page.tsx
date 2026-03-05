@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -58,11 +57,10 @@ interface ResultsData {
 }
 
 const pageStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 `;
 
 export default function PortfolioResultsPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [results, setResults] = useState<ResultsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,22 +118,24 @@ export default function PortfolioResultsPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <style>{pageStyles}</style>
-        <div style={{ minHeight: '100vh', padding: '32px 24px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', background: '#0a0a0f', padding: '40px 24px', fontFamily: 'Inter, sans-serif', color: '#e2e8f0' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
           {/* Header */}
-          <div style={{ marginBottom: 40 }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <h1 style={{
               fontFamily: "'Instrument Serif', serif",
-              fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+              fontSize: 'clamp(2rem, 4vw, 2.75rem)',
               fontWeight: 400,
               color: '#e2e8f0',
-              marginBottom: 8,
+              margin: 0,
             }}>
               Portfolio Analysis
             </h1>
             <p style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: '0.9rem',
+              fontSize: '0.95rem',
               color: '#64748b',
+              marginTop: 8,
             }}>
               Comprehensive review of your portfolio and projects
             </p>
@@ -159,14 +159,14 @@ export default function PortfolioResultsPage() {
               <div style={{
                 fontSize: '3rem',
                 fontWeight: 700,
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'JetBrains Mono', monospace",
                 color: getScoreColor(analysis.overallScore),
                 lineHeight: 1,
                 marginBottom: 8,
               }}>
                 {analysis.overallScore}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Overall Score
               </div>
             </div>
@@ -181,15 +181,15 @@ export default function PortfolioResultsPage() {
             }}>
               <div style={{
                 fontSize: '2.5rem',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontFamily: "'JetBrains Mono', monospace",
                 color: getScoreColor(analysis.portfolioAnalysis.designScore),
                 lineHeight: 1,
                 marginBottom: 8,
               }}>
                 {analysis.portfolioAnalysis.designScore}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Design
               </div>
             </div>
@@ -204,15 +204,15 @@ export default function PortfolioResultsPage() {
             }}>
               <div style={{
                 fontSize: '2.5rem',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontFamily: "'JetBrains Mono', monospace",
                 color: getScoreColor(analysis.technicalSkills.score),
                 lineHeight: 1,
                 marginBottom: 8,
               }}>
                 {analysis.technicalSkills.score}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Technical
               </div>
             </div>
@@ -227,15 +227,15 @@ export default function PortfolioResultsPage() {
             }}>
               <div style={{
                 fontSize: '2.5rem',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                fontFamily: "'JetBrains Mono', monospace",
                 color: getScoreColor(analysis.portfolioAnalysis.contentScore),
                 lineHeight: 1,
                 marginBottom: 8,
               }}>
                 {analysis.portfolioAnalysis.contentScore}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Content
               </div>
             </div>
@@ -571,6 +571,7 @@ export default function PortfolioResultsPage() {
               Back to Dashboard
             </Link>
           </div>
+        </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

@@ -84,100 +84,78 @@ export async function POST(req: Request) {
 
     console.log("File converted to base64. Size:", Math.round(base64File.length / 1024), "KB");
 
-    const textPrompt = `You are a BRUTALLY HONEST, elite resume reviewer who has screened 10,000+ resumes for top companies like Google, Meta, and Goldman Sachs. You have IMPOSSIBLY HIGH STANDARDS. You are reviewing this resume for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+    const textPrompt = `You are an experienced recruiter and career coach reviewing a resume for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Give honest, constructive feedback that helps the candidate improve without being demoralizing.
 
-Your job is to RUTHLESSLY critique this resume. Most resumes are mediocre at best. Be harsh. Be critical. The candidate needs to hear the truth, not sugar-coated feedback.
+GRADING SCALE (be honest and calibrated):
+- 85-100: Strong resume — clear metrics throughout, compelling impact, well-targeted to role
+- 70-84: Good resume — solid fundamentals, most bullets show impact, minor gaps
+- 55-69: Average resume — decent structure but several vague bullets or weak verbs
+- 40-54: Below average — vague descriptions, many weak action verbs, little measurable impact
+- Below 40: Needs significant work — almost no specifics or metrics
 
-GRADING SCALE (be harsh):
-- 90-100: World-class resume (reserved for top 1% — clear metrics everywhere, perfect formatting, compelling narrative)
-- 80-89: Strong resume with minor issues (top 10% — mostly quantified, good verbs, clear impact)
-- 70-79: Decent but needs work (average — some metrics, some vague areas)
-- 60-69: Weak resume with significant issues (below average — many vague bullets, weak verbs)
-- 50-59: Poor resume that needs major revision (problematic — almost no metrics, generic phrases)
-- Below 50: Resume needs complete rewrite (severe issues — would be rejected immediately)
+IMPORTANT: Good resumes SHOULD score 75+. Do not penalize a resume with strong metrics and clear impact just to seem harsh. Likewise, do not inflate a weak resume. Score it accurately.
 
-CRITICAL ISSUES TO FLAG (mark as RED):
-- ANY bullet point without a specific number, percentage, dollar amount, or measurable outcome
-- ANY weak action verb: "worked", "helped", "assisted", "was responsible for", "handled", "managed" (without metrics), "participated", "contributed"
-- ANY generic phrases: "good communication skills", "team player", "fast learner", "detail-oriented", "hard-working"
-- ANY bullet that doesn't show clear IMPACT (so what? why does this matter?)
-- Missing technical skills that are REQUIRED for ${jobTitle}
-- Inconsistent formatting, typos, or grammatical errors
-- Bullet points that are too long (>2 lines) or too short (<10 words)
+SEVERITY GUIDE:
+- RED (Critical): Bullets with NO useful specifics ("helped with projects", "worked on team"), clear weak verbs with zero context ("was responsible for", "assisted with"), or completely missing required skills. Flag these only when they genuinely hurt candidacy.
+- YELLOW (Important): Bullets with some value but missing a key metric or a stronger verb. Most suggestions should be YELLOW.
+- GREEN (Minor): Small wording tweaks, optional polish, minor improvements.
 
-IMPORTANT ISSUES TO FLAG (mark as YELLOW):
-- Bullets with metrics but could be stronger
-- Good action verbs but missing specific context
-- Missing keywords from the job description
-- Skills listed without demonstrated application
+BALANCE RULE: Roughly 25-35% RED, 45-55% YELLOW, 15-20% GREEN. Never flag every bullet as red — that's not useful. Reserve RED for real problems.
 
-${jobDescription ? `\nJob Description Context (check for missing keywords!):\n${jobDescription}\n` : ""}
+${jobDescription ? `\nJob Description Context:\n${jobDescription}\n` : ""}
 
 INSTRUCTIONS:
-- Find AT LEAST 20-30 specific improvements — be thorough
-- The average resume should score 55-65. Only exceptional resumes score 75+
-- Flag EVERY SINGLE bullet point that lacks quantifiable metrics as RED
-- Flag EVERY weak action verb as RED
-- The "original" field MUST contain the EXACT text as it appears in the resume — copy it character-by-character
-- Your overallScore MUST match your severity breakdown: if you have 10+ RED issues, score should be below 65
-- If more than half the bullets lack metrics, score should be below 60
+- Find 12-18 specific improvements — focus on the highest-impact ones
+- The "original" field MUST contain the EXACT text as it appears in the resume
+- Be direct but constructive — explain WHY it's weak and HOW to fix it specifically
 
-SCORING CONSISTENCY RULES:
-- 0-3 RED issues = score 80-100
-- 4-7 RED issues = score 70-79
-- 8-12 RED issues = score 60-69
-- 13-18 RED issues = score 50-59
-- 19+ RED issues = score below 50
-
-Return your analysis in this EXACT JSON format - no additional text, markdown, or formatting:
+Return ONLY this JSON (no markdown, no extra text):
 
 {
   "wordImprovements": [
     {
       "original": "Worked on software projects",
-      "improved": "Architected and deployed 3 microservices handling 50K+ daily requests, reducing system latency by 40% and saving $25K/month in infrastructure costs",
+      "improved": "Built and shipped 3 internal tools that reduced manual reporting time by 60% for the operations team",
       "severity": "red",
       "category": "quantify_impact",
-      "explanation": "CRITICAL: Extremely vague. 'Worked on' is one of the weakest action verbs. No metrics, no impact, no specifics. What projects? What was your role? What was the outcome?"
+      "explanation": "'Worked on' is too vague — a recruiter can't tell what you did or what impact it had. Add what you built and the outcome."
     },
     {
-      "original": "Managed a team",
-      "improved": "Led and mentored a cross-functional team of 8 engineers, delivering 12 features ahead of schedule and improving team velocity by 35%",
-      "severity": "red",
-      "category": "drive",
-      "explanation": "CRITICAL: 'Managed' alone means nothing. How many people? What did you achieve? A manager who shipped nothing is not impressive."
+      "original": "Improved team performance",
+      "improved": "Introduced weekly code review sessions that reduced bug rate by 25% over 3 months",
+      "severity": "yellow",
+      "category": "quantify_impact",
+      "explanation": "Good direction, but 'improved' is vague. Adding a specific metric and timeframe makes this significantly more compelling."
     }
   ],
-  "overallScore": 52,
+  "overallScore": 68,
   "severityBreakdown": {
-    "red": 15,
-    "yellow": 8,
-    "green": 2
+    "red": 4,
+    "yellow": 10,
+    "green": 3
   },
   "categoryBreakdown": {
-    "quantify_impact": 10,
+    "quantify_impact": 7,
     "communication": 4,
-    "length_depth": 3,
-    "drive": 3,
-    "analytical": 2,
-    "general": 3
+    "length_depth": 2,
+    "drive": 2,
+    "analytical": 1,
+    "general": 1
   }
 }
 
 SEVERITY LEVELS:
-- RED (Critical): Immediate fixes needed — these hurt your candidacy severely (vague achievements, weak verbs, no metrics, generic phrases)
-- YELLOW (Important): Should fix before applying — missed opportunities to stand out
-- GREEN (Minor): Good content with small tweaks possible
+- red: Genuine problems that hurt candidacy — only for truly weak content
+- yellow: Good content that could be stronger — most issues should be here
+- green: Minor optional polish
 
 CATEGORIES:
-- quantify_impact: Add specific numbers, percentages, dollar amounts, user counts, timeframes
-- communication: Replace weak verbs with powerful action verbs, clarify unclear descriptions
-- length_depth: Expand thin bullets with context, condense verbose sections
-- drive: Show initiative, leadership, ownership, going above and beyond
-- analytical: Demonstrate problem-solving, data-driven decisions, strategic thinking
-- general: Formatting, keyword optimization, removing clichés and buzzwords
-
-Find 20-30 specific issues. Be BRUTALLY honest. This candidate needs real feedback, not validation. Scan EVERY bullet point — if it lacks a metric, flag it. A hiring manager at ${jobTitle} positions spends 6 seconds on a resume — every weak phrase is a reason to reject.`;
+- quantify_impact: Add numbers, percentages, dollar amounts, user counts, timeframes
+- communication: Replace weak verbs, clarify unclear descriptions
+- length_depth: Expand thin bullets or condense verbose ones
+- drive: Show initiative, leadership, ownership
+- analytical: Demonstrate data-driven decisions, problem-solving
+- general: Formatting, keyword optimization, removing clichés`;
 
     // Prepare messages for OpenAI
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -265,7 +243,23 @@ Find 20-30 specific issues. Be BRUTALLY honest. This candidate needs real feedba
       }
 
       console.log("Successfully parsed word analysis");
-      
+
+      // Derive severityBreakdown from actual item severities (AI sometimes mismatches)
+      const derived = { red: 0, yellow: 0, green: 0 };
+      for (const item of parsedAnalysis.wordImprovements) {
+        if (item.severity === 'red') derived.red++;
+        else if (item.severity === 'yellow') derived.yellow++;
+        else derived.green++;
+      }
+      parsedAnalysis.severityBreakdown = derived;
+
+      // Derive categoryBreakdown from actual items too
+      const cats: Record<string, number> = {};
+      for (const item of parsedAnalysis.wordImprovements) {
+        cats[item.category] = (cats[item.category] || 0) + 1;
+      }
+      parsedAnalysis.categoryBreakdown = cats;
+
       // Convert word improvements to highlights for PDF viewer
       const highlights = convertToHighlights(parsedAnalysis.wordImprovements || []);
       

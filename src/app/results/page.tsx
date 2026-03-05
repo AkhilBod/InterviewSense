@@ -6,7 +6,6 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { generateInterviewSummary, InterviewSummary } from '@/lib/gemini';
 import { toast } from "@/components/ui/use-toast";
-import { exportToPDF, printReport, shareReport, formatInterviewReportForSharing } from "@/lib/export";
 import { useSession } from 'next-auth/react';
 
 const pageStyles = `
@@ -304,34 +303,6 @@ function ResultsPage() {
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 32 }}>
-            <button
-              onClick={() => exportToPDF('interview-results-content', `Interview_${interviewSummary.jobRole.replace(/\s+/g, '_')}_${interviewSummary.company.replace(/\s+/g, '_')}`)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#94a3b8', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#94a3b8'; }}
-            >
-              Download Report
-            </button>
-            <button
-              onClick={printReport}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#94a3b8', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#94a3b8'; }}
-            >
-              Print
-            </button>
-            <button
-              onClick={() => shareReport(`Interview Feedback for ${interviewSummary.jobRole} at ${interviewSummary.company}`, formatInterviewReportForSharing(interviewSummary))}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#94a3b8', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#94a3b8'; }}
-            >
-              Share
-            </button>
-          </div>
-
-          {/* Next Steps */}
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 48 }}>
             <Link href="/start" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px',

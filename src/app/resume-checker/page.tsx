@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Upload, FileText, AlertCircle, MessageSquare, ChevronLeft, RefreshCw, CheckCircle, Brain } from "lucide-react";
+import { Upload, FileText, AlertCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
@@ -17,7 +14,7 @@ import { PrefilledChip } from '@/components/ProfileFormComponents';
 import { useProfileData } from '@/hooks/useProfileData';
 
 const pageStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
   body::after {
     content: '';
     position: fixed;
@@ -254,6 +251,12 @@ export default function ResumeCheckerPage() {
     return "bg-red-500";
   };
 
+  const scoreHex = (score: number) => {
+    if (score >= 70) return '#22c55e';
+    if (score >= 45) return '#eab308';
+    return '#ef4444';
+  };
+
   const getAtsBadgeColor = (ats: string | undefined) => {
     switch (ats) {
       case 'Optimized': return 'bg-green-700 text-green-100';
@@ -264,34 +267,47 @@ export default function ResumeCheckerPage() {
   };
 
   const parseAnalysisContent = (analysisText: string) => {
-    const sections = analysisText.split('\n\n');
+    // Filter out "What's Next" / "Next Steps" / "Refine Resume" / "Practice Interview" sections
+    const filteredText = analysisText
+      .replace(/(?:What['']?s Next\??|NEXT STEPS|Continue your career[^\n]*|Refine Resume[^\n]*|Make edits and get new feedback[^\n]*|Practice Interview[^\n]*|Prepare for your next interview[^\n]*)[\s\S]*?(?=\n[A-Z]{2,}|\n##|\n#|$)/gi, '')
+      .replace(/(?:^|\n)(?:What['']?s Next\??|NEXT STEPS)[^\n]*/gi, '')
+      .replace(/(?:^|\n)(?:Refine Resume|Practice Interview|Make edits|Prepare for your)[^\n]*/gi, '')
+      .trim();
+
+    const sections = filteredText.split('\n\n');
     const parsedElements: JSX.Element[] = [];
 
     sections.forEach((section, index) => {
-      if (section.startsWith('## ')) {
+      const trimmed = section.trim();
+      if (!trimmed) return;
+
+      // Skip any leftover "next steps" text
+      if (/what['']?s next|next steps|refine resume|practice interview|continue your career/i.test(trimmed)) return;
+
+      if (trimmed.startsWith('## ')) {
         parsedElements.push(
-          <h3 key={index} className="font-semibold text-white text-lg mb-2 mt-4">
-            {section.substring(3).trim()}
+          <h3 key={index} style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 600, color: '#e2e8f0', marginTop: 16, marginBottom: 8 }}>
+            {trimmed.substring(3).trim()}
           </h3>
         );
-      } else if (section.startsWith('# ')) {
+      } else if (trimmed.startsWith('# ')) {
         parsedElements.push(
-          <h2 key={index} className="text-xl font-bold text-blue-400 mt-6 mb-3">
-            {section.substring(2).trim()}
+          <h2 key={index} style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', fontWeight: 600, color: '#e2e8f0', marginTop: 20, marginBottom: 10 }}>
+            {trimmed.substring(2).trim()}
           </h2>
         );
-      } else if (section.startsWith('- ') || section.startsWith('* ')) {
-        const listItems = section.split('\n').map((item, itemIndex) => (
-          <li key={`${index}-${itemIndex}`} className="flex items-start gap-2">
-            <span className="text-blue-400 mt-1">•</span>
-            <p className="text-zinc-300 flex-1">{item.substring(2).trim()}</p>
+      } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        const listItems = trimmed.split('\n').map((item, itemIndex) => (
+          <li key={`${index}-${itemIndex}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6', flexShrink: 0, marginTop: 8 }} />
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0, flex: 1 }}>{item.substring(2).trim()}</p>
           </li>
         ));
-        parsedElements.push(<ul key={index} className="list-none pl-0 space-y-1">{listItems}</ul>);
+        parsedElements.push(<ul key={index} style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>{listItems}</ul>);
       } else {
         parsedElements.push(
-          <p key={index} className="text-zinc-300 leading-relaxed mt-2">
-            {section.trim()}
+          <p key={index} style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#cbd5e1', lineHeight: 1.7, marginTop: 8 }}>
+            {trimmed}
           </p>
         );
       }
@@ -488,360 +504,324 @@ export default function ResumeCheckerPage() {
               </div>
             </div>
           ) : (
-            // Resume Analysis Results - Full Width Layout
-            <div className="w-full px-4 py-8">
-              {/* Header with Back Button and Analysis Buttons */}
-              <div className="mb-8 px-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <Button variant="ghost" size="sm" onClick={handleBackToChecker} className="gap-2 text-slate-300 hover:text-white hover:bg-slate-800">
-                    <ChevronLeft className="h-4 w-4" />
-                    Back to Resume Checker
-                  </Button>
-                  
-                  {/* Analysis Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    {/* Remove the separate word analysis button - it's now automatic */}
-                  </div>
-                </div>
-              </div>
-
+            // Resume Analysis Results
+            <div style={{ width: '100%', padding: '32px 16px', fontFamily: 'Inter, sans-serif', color: '#e2e8f0' }}>
               {resumeData && (
                 <>
-                  {/* Optimized Layout - Balanced proportions */}
-                  <div className="grid grid-cols-1 lg:grid-cols-9 gap-8 px-4 max-w-[1900px] mx-auto">
-                    {/* Left Column - Analysis Results (Full width on mobile, 55% on desktop) */}
-                    <div className="lg:col-span-5 space-y-6 order-2 lg:order-1">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }} className="resume-results-grid">
+                    <style>{`
+                      @media (min-width: 1024px) {
+                        .resume-results-grid { grid-template-columns: 5fr 4fr !important; }
+                      }
+                    `}</style>
+                    {/* Left Column */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 900 }}>
+
                       {/* Header */}
-                      <Card className="bg-slate-800 border-slate-700 text-slate-100">
-                        <CardHeader className="text-center py-8">
-                          <CardTitle className="text-3xl">Resume Analysis Report</CardTitle>
-                          <CardDescription className="text-slate-400 text-lg">
-                            For a {resumeData.jobTitle} position{resumeData.company ? ` at ${resumeData.company}` : ""} • {new Date().toLocaleDateString()}
-                          </CardDescription>
-                        </CardHeader>
-                      </Card>
+                      <div style={{ marginBottom: 8 }}>
+                        <h1 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontSize: 'clamp(1.8rem,4vw,2.4rem)', color: '#e2e8f0', margin: 0 }}>
+                          Resume Analysis
+                        </h1>
+                        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#64748b', marginTop: 8 }}>
+                          {resumeData.jobTitle}{resumeData.company ? ` · ${resumeData.company}` : ''} · {new Date().toLocaleDateString()}
+                        </p>
+                      </div>
 
-                      {/* Scores Section */}
-                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                        <CardContent className="p-4 sm:p-8">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-0">
-                            {/* Overall Score with Circular Progress */}
-                            <div className="flex flex-col items-center bg-slate-700/30 rounded-2xl p-6 sm:p-8 min-w-[160px] mx-auto md:mx-0">
-                              <div className="relative w-24 sm:w-28 h-24 sm:h-28 mb-3">
-                                <svg className="w-24 sm:w-28 h-24 sm:h-28 transform -rotate-90" viewBox="0 0 100 100">
-                                  {/* Background circle */}
-                                  <circle
-                                    cx="50"
-                                    cy="50"
-                                    r="42"
-                                    stroke="currentColor"
-                                    strokeWidth="6"
-                                    fill="transparent"
-                                    className="text-slate-600/40"
-                                  />
-                                  {/* Progress circle */}
-                                  <circle
-                                    cx="50"
-                                    cy="50"
-                                    r="42"
-                                    stroke="currentColor"
-                                    strokeWidth="6"
-                                    fill="transparent"
-                                    strokeDasharray={`${2 * Math.PI * 42}`}
-                                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - adjustedOverallScore / 100)}`}
-                                    className={getScoreColor(adjustedOverallScore).replace('text-', 'text-')}
-                                    strokeLinecap="round"
-                                    style={{
-                                      filter: 'drop-shadow(0 0 8px currentColor)',
-                                      transition: 'all 0.3s ease'
-                                    }}
-                                  />
-                                </svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                  <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedOverallScore)}`}>
-                                    {adjustedOverallScore}
-                                  </span>
-                                  <span className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</span>
-                                </div>
-                              </div>
-                              <div className="text-sm sm:text-base font-semibold text-slate-300 tracking-wider">OVERALL</div>
-                            </div>
-
-                            {/* Individual Scores */}
-                            <div className="flex-1 md:ml-10">
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                                {/* Impact Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">IMPACT</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedImpactScore)} mb-1 sm:mb-2`}>
-                                    {adjustedImpactScore}
-                                  </div>
-                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
-                                    <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedImpactScore)}`}
-                                      style={{ width: `${adjustedImpactScore}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-
-                                {/* Style Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">STYLE</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedStyleScore)} mb-1 sm:mb-2`}>
-                                    {adjustedStyleScore}
-                                  </div>
-                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
-                                    <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedStyleScore)}`}
-                                      style={{ width: `${adjustedStyleScore}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-
-                                {/* Skills Score */}
-                                <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
-                                  <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">SKILLS</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedSkillsScore)} mb-1 sm:mb-2`}>
-                                    {adjustedSkillsScore}
-                                  </div>
-                                  <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
-                                  <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
-                                    <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedSkillsScore)}`}
-                                      style={{ width: `${adjustedSkillsScore}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                      {/* Score Cards - matching system design grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16 }}>
+                        {/* Overall Score */}
+                        <div style={{
+                          background: 'rgba(59,130,246,0.06)',
+                          border: '1px solid rgba(59,130,246,0.12)',
+                          borderRadius: 16,
+                          padding: 20,
+                          textAlign: 'center',
+                        }}>
+                          <div style={{
+                            fontSize: '3rem',
+                            fontWeight: 700,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            color: scoreHex(adjustedOverallScore),
+                            lineHeight: 1,
+                            marginBottom: 8,
+                          }}>
+                            {adjustedOverallScore}
                           </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Resume Stats */}
-                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                        <CardHeader className="p-8">
-                          <CardTitle className="text-2xl font-bold text-white">Resume Analytics</CardTitle>
-                          <CardDescription className="text-slate-400 text-lg">
-                            Comprehensive analysis of your resume performance
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-8">
-                          {/* Main Analytics Grid */}
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            {/* Overall Grade */}
-                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
-                              </div>
-                              <div className={`text-4xl font-black ${getScoreColor(adjustedOverallScore)} mb-2`}>
-                                {adjustedOverallScore >= 90 ? 'A' : adjustedOverallScore >= 80 ? 'B+' : adjustedOverallScore >= 70 ? 'B' : adjustedOverallScore >= 60 ? 'C' : 'D'}
-                              </div>
-                              <div className="text-slate-400">
-                                {adjustedOverallScore >= 80 ? 'Strong' : adjustedOverallScore >= 70 ? 'Good' : adjustedOverallScore >= 60 ? 'Average' : 'Needs Work'}
-                              </div>
-                            </div>
-
-                            {/* ATS Ready */}
-                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                <div className="text-xs font-bold text-slate-400 tracking-widest">ATS READY</div>
-                              </div>
-                              <div className="text-4xl mb-2">
-                                {resumeData.atsCompatibility === 'Excellent' ? '✓' : resumeData.atsCompatibility === 'Good' ? '✓' : '✗'}
-                              </div>
-                              <div className="text-slate-400">
-                                {resumeData.atsCompatibility === 'Excellent' ? 'Excellent' : resumeData.atsCompatibility === 'Good' ? 'Excellent' : 'Needs Work'}
-                              </div>
-                            </div>
-
-                            {/* Readability */}
-                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className={`w-3 h-3 rounded-full ${adjustedStyleScore >= 70 ? 'bg-green-500' : adjustedStyleScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-                                <div className="text-xs font-bold text-slate-400 tracking-widest">READABILITY</div>
-                              </div>
-                              <div className={`text-4xl font-black ${getScoreColor(adjustedStyleScore)} mb-2`}>
-                                {adjustedStyleScore}
-                              </div>
-                              <div className="text-slate-400">Style Score</div>
-                            </div>
-
-                            {/* Technical Details */}
-                            <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className="text-xs font-bold text-slate-400 tracking-widest">TECHNICAL DETAILS</div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="text-center">
-                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                                    {resumeData.resumeLength || 1}
-                                  </div>
-                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Pages</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                                    {resumeData.skillsCount || 0}
-                                  </div>
-                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Skills</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                                    {resumeData.strengths.length}
-                                  </div>
-                                  <div className="text-slate-400 text-xs uppercase tracking-wide">Strengths</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="bg-slate-600 text-white px-3 py-2 rounded-lg text-lg font-bold mb-1">
-                                    {resumeData.improvementAreas.length}
-                                  </div>
-                                  <div className="text-slate-400 text-xs uppercase tracking-wide">To Improve</div>
-                                </div>
-                              </div>
-                            </div>
+                          <div style={{
+                            fontSize: '0.72rem',
+                            color: '#64748b',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            fontFamily: "'Inter', sans-serif",
+                            fontWeight: 600,
+                          }}>
+                            Overall Score
                           </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Key Strengths */}
-                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                      <CardHeader>
-                        <CardTitle className="text-xl font-bold flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-6 w-6 text-green-400" />
-                          </div>
-                          <span className="text-white">Key Strengths</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {resumeData.strengths.length > 0 ? resumeData.strengths.map((strength, index) => (
-                            <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
-                              <div className="flex items-start gap-4">
-                                <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-green-500/30 transition-colors">
-                                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                                </div>
-                                <span className="text-slate-200 leading-relaxed flex-1">{strength}</span>
-                              </div>
-                            </div>
-                          )) : (
-                            <div className="text-center py-8">
-                              <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CheckCircle className="h-8 w-8 text-slate-500" />
-                              </div>
-                              <p className="text-slate-400 italic">No specific strengths identified in the analysis.</p>
-                            </div>
-                          )}
                         </div>
-                      </CardContent>
-                    </Card>
 
-                    {/* Areas for Improvement */}
-                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                      <CardHeader>
-                        <CardTitle className="text-xl font-bold flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-600/40 rounded-full flex items-center justify-center">
-                            <AlertCircle className="h-6 w-6 text-yellow-400" />
+                        {/* Category Scores */}
+                        {[
+                          { label: 'Impact', score: adjustedImpactScore },
+                          { label: 'Style', score: adjustedStyleScore },
+                          { label: 'Skills', score: adjustedSkillsScore },
+                        ].map(({ label, score }) => (
+                          <div key={label} style={{
+                            background: 'rgba(255,255,255,0.02)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: 16,
+                            padding: 20,
+                            textAlign: 'center',
+                          }}>
+                            <div style={{
+                              fontSize: '2.4rem',
+                              fontWeight: 600,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              color: scoreHex(score),
+                              lineHeight: 1,
+                              marginBottom: 8,
+                            }}>
+                              {score}
+                            </div>
+                            <div style={{
+                              fontSize: '0.72rem',
+                              color: '#64748b',
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                              fontFamily: "'Inter', sans-serif",
+                              fontWeight: 600,
+                            }}>
+                              {label}
+                            </div>
                           </div>
-                          <span className="text-white">Areas for Improvement</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {resumeData.improvementAreas.length > 0 ? resumeData.improvementAreas.map((area, index) => (
-                            <div key={index} className="group bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 hover:border-slate-500/50 rounded-xl p-4 transition-all duration-300 hover:shadow-lg">
-                              <div className="flex items-start gap-4">
-                                <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center mt-0.5 group-hover:bg-yellow-500/30 transition-colors">
-                                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                                </div>
-                                <span className="text-slate-200 leading-relaxed flex-1">{area}</span>
-                              </div>
-                            </div>
-                          )) : (
-                            <div className="text-center py-8">
-                              <div className="w-16 h-16 bg-slate-600/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <AlertCircle className="h-8 w-8 text-slate-500" />
-                              </div>
-                              <p className="text-slate-400 italic">No specific areas for improvement identified in the analysis.</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                        ))}
+                      </div>
 
-                    {/* Word-Level Analysis - Merged into main results */}
-                    {wordAnalysisData && (
-                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl overflow-hidden">
-                        <CardContent className="p-0">
-                          <ResumeWordAnalysis 
+                      {/* Detailed Analysis */}
+                      {resumeData.analysis && (
+                        <div style={{
+                          background: 'rgba(255,255,255,0.02)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: 16,
+                          padding: 28,
+                        }}>
+                          <h2 style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: '#64748b',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            marginBottom: 16,
+                          }}>
+                            Detailed Analysis
+                          </h2>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#cbd5e1', lineHeight: 1.7 }}>
+                            {parseAnalysisContent(resumeData.analysis)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Category Breakdown Bars */}
+                      <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: 16,
+                        padding: 28,
+                      }}>
+                        <h2 style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: '#64748b',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          marginBottom: 20,
+                        }}>
+                          Category Breakdown
+                        </h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          {[
+                            { label: 'Impact', score: adjustedImpactScore },
+                            { label: 'Style', score: adjustedStyleScore },
+                            { label: 'Skills', score: adjustedSkillsScore },
+                          ].map(({ label, score }) => (
+                            <div key={label}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 500 }}>{label}</span>
+                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem', color: scoreHex(score), fontWeight: 600 }}>{score}/100</span>
+                              </div>
+                              <div style={{ height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ width: `${score}%`, height: '100%', background: scoreHex(score), borderRadius: 3, transition: 'width 0.6s ease' }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Resume Analytics */}
+                      <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: 16,
+                        padding: 28,
+                      }}>
+                        <h2 style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: '#64748b',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          marginBottom: 20,
+                        }}>
+                          Resume Analytics
+                        </h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+                          {[
+                            { label: 'Grade', value: adjustedOverallScore >= 90 ? 'A' : adjustedOverallScore >= 80 ? 'B+' : adjustedOverallScore >= 70 ? 'B' : adjustedOverallScore >= 60 ? 'C' : 'D', sub: adjustedOverallScore >= 80 ? 'Strong' : adjustedOverallScore >= 70 ? 'Good' : adjustedOverallScore >= 60 ? 'Average' : 'Needs Work' },
+                            { label: 'ATS Ready', value: (resumeData.atsCompatibility === 'Excellent' || resumeData.atsCompatibility === 'Good') ? 'Yes' : 'No', sub: resumeData.atsCompatibility || 'Unknown' },
+                            { label: 'Pages', value: String(resumeData.resumeLength || 1), sub: 'Length' },
+                            { label: 'Skills', value: String(resumeData.skillsCount || 0), sub: 'Detected' },
+                          ].map(({ label, value, sub }) => (
+                            <div key={label} style={{
+                              background: 'rgba(255,255,255,0.02)',
+                              borderRadius: 10,
+                              padding: 18,
+                              border: '1px solid rgba(255,255,255,0.04)',
+                            }}>
+                              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.5rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>
+                                {value}
+                              </div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                                {label}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Strengths & Improvements side by side */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20 }}>
+                        {/* Strengths */}
+                        <div style={{
+                          background: 'rgba(34,197,94,0.04)',
+                          border: '1px solid rgba(34,197,94,0.12)',
+                          borderRadius: 16,
+                          padding: 28,
+                        }}>
+                          <h2 style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: '#22c55e',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            marginBottom: 20,
+                          }}>
+                            Strengths
+                          </h2>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {resumeData.strengths.length > 0 ? resumeData.strengths.map((s, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', marginTop: 8, flexShrink: 0 }} />
+                                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>{s}</p>
+                              </div>
+                            )) : <p style={{ color: '#64748b', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>No specific strengths identified.</p>}
+                          </div>
+                        </div>
+
+                        {/* Areas for Improvement */}
+                        <div style={{
+                          background: 'rgba(234,179,8,0.04)',
+                          border: '1px solid rgba(234,179,8,0.12)',
+                          borderRadius: 16,
+                          padding: 28,
+                        }}>
+                          <h2 style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: '#eab308',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            marginBottom: 20,
+                          }}>
+                            Areas for Improvement
+                          </h2>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {resumeData.improvementAreas.length > 0 ? resumeData.improvementAreas.map((a, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#eab308', marginTop: 8, flexShrink: 0 }} />
+                                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>{a}</p>
+                              </div>
+                            )) : <p style={{ color: '#64748b', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>No improvement areas identified.</p>}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Word-Level Analysis */}
+                      {wordAnalysisData && (
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden' }}>
+                          <ResumeWordAnalysis
                             analysis={wordAnalysisData}
                             fileName={resume?.name || profile?.resumeFilename || "Resume"}
                             jobTitle={profile?.targetRole || 'Software Engineer'}
                             company={company}
                           />
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* What's Next */}
-                    <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-                      <CardHeader>
-                        <CardTitle className="text-xl font-bold text-white">What's Next?</CardTitle>
-                        <CardDescription className="text-slate-400">
-                          Continue your career journey
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-4 tracking-wider">NEXT STEPS</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Button 
-                            variant="outline" 
-                            className="h-auto py-4 md:py-6 px-4 md:px-6 flex items-center gap-3 md:gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
-                            onClick={handleBackToChecker}
-                          >
-                            <div className="w-10 md:w-12 h-10 md:h-12 rounded-full flex items-center justify-center transition-colors">
-                              <RefreshCw className="h-5 md:h-6 w-5 md:w-6 text-slate-400" />
-                            </div>
-                            <div className="text-left">
-                              <div className="font-semibold text-sm md:text-base">Refine Resume</div>
-                              <div className="text-xs md:text-sm text-slate-400 group-hover:text-slate-300 hidden md:block">Make edits and get new feedback</div>
-                            </div>
-                          </Button>
-
-                          <Button 
-                            variant="outline" 
-                            className="h-auto py-4 md:py-6 px-4 md:px-6 flex items-center gap-3 md:gap-4 border-slate-600 bg-slate-700/30 text-slate-300 hover:bg-slate-600 hover:text-white transition-all duration-300 hover:shadow-lg justify-start group" 
-                            asChild
-                          >
-                            <Link href="/behavioral-interview">
-                              <div className="w-10 md:w-12 h-10 md:h-12 rounded-full flex items-center justify-center transition-colors">
-                                <MessageSquare className="h-5 md:h-6 w-5 md:w-6 text-slate-400" />
-                              </div>
-                              <div className="text-left">
-                                <div className="font-semibold text-sm md:text-base">Practice Interview</div>
-                                <div className="text-xs md:text-sm text-slate-400 group-hover:text-slate-300 hidden md:block">Prepare for your next interview</div>
-                              </div>
-                            </Link>
-                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
+                      )}
+
+                      {/* Actions */}
+                      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 16 }}>
+                        <button
+                          onClick={handleBackToChecker}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '12px 24px',
+                            background: '#2563eb',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 10,
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
+                          }}
+                        >
+                          Analyze Another Resume
+                        </button>
+                      </div>
+
                     </div>
 
-                    {/* Right Column - Resume Viewer (44% width) - Hidden on mobile */}
-                    <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-6 lg:h-fit order-1 lg:order-2">
-                      <Card className="bg-slate-800 border-slate-700 text-slate-100 flex flex-col min-h-[85vh]">
-                        <CardHeader className="pb-6 flex-shrink-0">
-                          <CardTitle className="text-2xl font-semibold flex items-center gap-3">
-                            <FileText className="h-7 w-7 text-blue-400" />
+                    {/* Right Column - Resume Viewer - Hidden on mobile */}
+                    <div className="hidden lg:block" style={{ position: 'sticky', top: 24, height: 'fit-content' }}>
+                      <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: 16,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: '85vh',
+                      }}>
+                        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          <h2 style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: '#64748b',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            margin: 0,
+                          }}>
                             Resume Preview
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
+                          </h2>
+                        </div>
+                        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                           {resume && (
                             <>
                               {resume.type === 'application/pdf' ? (
@@ -850,22 +830,21 @@ export default function ResumeCheckerPage() {
                                   highlights={wordHighlights}
                                 />
                               ) : (
-                                <div className="p-8 bg-[#111827] text-gray-300 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto border border-gray-700 rounded-lg">
-                                  <div className="flex items-center justify-center h-full">
-                                    <div className="text-center">
-                                      <FileText className="h-24 w-24 text-gray-500 mx-auto mb-8" />
-                                      <p className="text-gray-300 font-medium mb-4 text-xl">{resume.name}</p>
-                                      <p className="text-gray-400 text-lg">File type: {resume.type}</p>
-                                      <p className="text-gray-400 text-lg">Size: {Math.round(resume.size / 1024)} KB</p>
-                                      <p className="text-gray-400 text-base mt-6">Preview not available for this file type</p>
-                                    </div>
+                                <div style={{ padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                                  <div style={{ textAlign: 'center' }}>
+                                    <FileText style={{ width: 48, height: 48, color: '#475569', margin: '0 auto 16px' }} />
+                                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#e2e8f0', marginBottom: 8 }}>{resume.name}</p>
+                                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: '#64748b' }}>
+                                      {resume.type} · {Math.round(resume.size / 1024)} KB
+                                    </p>
+                                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: '#475569', marginTop: 12 }}>Preview not available for this file type</p>
                                   </div>
                                 </div>
                               )}
                             </>
                           )}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </>
@@ -873,15 +852,19 @@ export default function ResumeCheckerPage() {
 
               {/* Error Display for Analysis */}
               {error && error.includes('word analysis') && (
-                <div className="px-4 max-w-[1900px] mx-auto">
-                  <Card className="border-red-500 bg-red-50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-5 w-5 text-red-600" />
-                        <p className="text-red-800">{error}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div style={{ padding: '0 16px', maxWidth: 1900, margin: '0 auto' }}>
+                  <div style={{
+                    background: 'rgba(239,68,68,0.06)',
+                    border: '1px solid rgba(239,68,68,0.15)',
+                    borderRadius: 12,
+                    padding: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}>
+                    <AlertCircle style={{ width: 18, height: 18, color: '#ef4444', flexShrink: 0 }} />
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', color: '#fca5a5', margin: 0 }}>{error}</p>
+                  </div>
                 </div>
               )}
             </div>

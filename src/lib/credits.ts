@@ -53,6 +53,9 @@ export function shouldResetCredits(lastReset: Date): boolean {
   )
 }
 
+// Sentinel value: users with dailyCreditLimit >= this get unlimited access
+const UNLIMITED_SENTINEL = 99999
+
 /**
  * Reset user's daily credits
  */
@@ -64,6 +67,11 @@ export async function resetDailyCredits(userId: string) {
 
   if (!user) {
     throw new Error('User not found')
+  }
+
+  // Unlimited access users — never reset their credits
+  if (user.dailyCreditLimit >= UNLIMITED_SENTINEL) {
+    return { dailyCredits: user.dailyCredits, dailyCreditLimit: user.dailyCreditLimit }
   }
 
   const plan = user.subscription?.plan || SubscriptionPlan.FREE
@@ -100,6 +108,11 @@ export async function checkAndResetCredits(userId: string) {
 
   if (!user) {
     throw new Error('User not found')
+  }
+
+  // Unlimited access users — never reset or deplete
+  if (user.dailyCreditLimit >= UNLIMITED_SENTINEL) {
+    return { dailyCredits: user.dailyCreditLimit, dailyCreditLimit: user.dailyCreditLimit }
   }
 
   // Check if we need to reset credits

@@ -59,6 +59,23 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
 
   return (
     <div style={{ background: 'transparent', minHeight: '100%', padding: '24px', fontFamily: 'Inter, -apple-system, sans-serif', color: '#e5e7eb' }}>
+      <style>{`
+        .word-analysis-comparison {
+          display: grid;
+          grid-template-columns: 1fr 28px 1fr;
+          gap: 10px;
+          align-items: start;
+          margin-bottom: 12px;
+        }
+        .word-analysis-arrow { display: flex; justify-content: center; padding-top: 24px; }
+        @media (max-width: 600px) {
+          .word-analysis-comparison {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+          .word-analysis-arrow { display: none; }
+        }
+      `}</style>
       <div style={{ maxWidth: '100%', margin: '0 auto' }}>
 
         {/* Title */}
@@ -103,7 +120,7 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
         )}
 
         {/* Filter tabs */}
-        <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '1px solid #1f2937' }}>
+        <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '1px solid #1f2937', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
           {tabs.map(tab => (
             <button
               key={tab.key}
@@ -162,14 +179,14 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
                 </div>
                 {/* Body */}
                 <div style={{ padding: '14px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 1fr', gap: '10px', alignItems: 'start', marginBottom: '12px' }}>
+                  <div className="word-analysis-comparison">
                     {/* Original */}
                     <div style={{ background: '#0a0f1e', borderRadius: '6px', padding: '10px 12px', border: '1px solid #1f2937' }}>
                       <div style={{ fontSize: '10px', color: '#4b5563', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: '5px' }}>Original</div>
                       <p style={{ fontSize: '13px', color: '#9ca3af', lineHeight: 1.5, margin: 0, textDecoration: 'line-through', textDecorationColor: cfg.accent }}>{item.original}</p>
                     </div>
                     {/* Arrow */}
-                    <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '24px' }}>
+                    <div className="word-analysis-arrow">
                       <ArrowRight size={14} color="#374151" />
                     </div>
                     {/* Improved */}
