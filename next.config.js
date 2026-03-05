@@ -112,6 +112,16 @@ const nextConfig = {
   // Enable static exports for opportunities
   trailingSlash: true,
   output: 'standalone',
+  outputFileTracingIncludes: {
+    '/opportunities':                   ['./generated-content/articles/**/*.json'],
+    '/opportunities/[slug]':            ['./generated-content/articles/**/*.json'],
+    '/companies/[company-slug]':        ['./generated-content/articles/**/*.json'],
+    '/topics/[topic-slug]':             ['./generated-content/articles/**/*.json'],
+    '/difficulty/[level]':              ['./generated-content/articles/**/*.json'],
+    '/best/[slug]':                     ['./generated-content/articles/**/*.json'],
+    '/compare/[slug]':                  ['./generated-content/articles/**/*.json'],
+    '/sitemap.xml':                     ['./generated-content/articles/**/*.json'],
+  },
   // Ensure all opportunity pages are statically generated
   staticPageGenerationTimeout: 1000,
   // Add opportunity pages to static generation

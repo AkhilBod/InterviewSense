@@ -12,17 +12,27 @@ const publicRoutes = [
   '/reset-password',
   '/contact',
   '/opportunities',
+  '/companies',
+  '/topics',
+  '/difficulty',
+  '/best',
+  '/compare',
   '/api/auth/signup',
   '/api/auth/verify',
   '/api/auth/forgot-password',
   '/api/auth/reset-password'
 ]
 
-// SEO and opportunity routes that should be crawlable
+// SEO and opportunity routes that should be crawlable without auth
 const seoRoutes = [
   '/opportunities/',
   '/internship-opportunities',
-  '/sitemap.xml'
+  '/sitemap.xml',
+  '/companies/',
+  '/topics/',
+  '/difficulty/',
+  '/best/',
+  '/compare/',
 ]
 
 export default async function middleware(request: NextRequestWithAuth) {
@@ -39,8 +49,8 @@ export default async function middleware(request: NextRequestWithAuth) {
   }
 
   // Check if it's a public route
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname === route || pathname.startsWith(route)
+  const isPublicRoute = publicRoutes.some(route =>
+    pathname === route || pathname.startsWith(route + '/')
   )
 
   // Allow public routes and API routes that don't require auth

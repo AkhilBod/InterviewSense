@@ -2,46 +2,53 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
+import { getAllArticles } from '@/lib/articles'
+import { CURRENT_YEAR } from '@/lib/seo-utils'
+import OpportunitiesClient from './opportunities-client'
 
-// Revalidate every hour so newly synced listings appear without a rebuild
-export const revalidate = 3600
+// Fully static — data is refreshed on each Vercel deployment triggered by the cron webhook.
+// ISR caused blank pages because the runtime environment can't read the build-time JSON files.
+export const dynamic = 'force-static'
 
-export const metadata: Metadata = {
-  title: 'Interview Opportunities | InterviewSense',
-  description: 'Browse through hundreds of tech internship interview questions and practice opportunities from top companies.',
-  openGraph: {
-    title: 'Interview Opportunities | InterviewSense',
-    description: 'Browse through hundreds of tech internship interview questions and practice opportunities from top companies.',
-    url: 'https://www.interviewsense.org/opportunities',
-    siteName: 'InterviewSense',
-    type: 'website',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const n     = getAllArticles().length
+  const title = `Internship Interview Prep — ${n.toLocaleString()} Roles | InterviewSense`
+  const desc  = `AI-powered interview prep for ${n.toLocaleString()} internship roles in ${CURRENT_YEAR}. Practice system design, behavioral, and technical questions tailored to each company. Free.`
+  return {
+    title,
+    description: desc,
+    openGraph: { title, description: desc, url: 'https://www.interviewsense.org/opportunities', siteName: 'InterviewSense', type: 'website' },
+  }
 }
 
 function getOpportunities() {
+  const articlesDir = path.join(process.cwd(), 'generated-content', 'articles')
+
+  let filenames: string[]
   try {
-    const articlesDir = path.join(process.cwd(), 'generated-content', 'articles')
-    const filenames = fs.readdirSync(articlesDir)
-    
-    return filenames
-      .filter(name => name.endsWith('.json'))
-      .map((filename) => {
-        const slug = filename.replace('.json', '')
-        const filePath = path.join(articlesDir, filename)
-        const fileContents = fs.readFileSync(filePath, 'utf8')
-        const article = JSON.parse(fileContents)
-        
-        return {
-          slug,
-          title: article.title || `${extractCompanyName(slug)} Interview Questions`,
-          company: extractCompanyName(slug),
-          description: article.metaDescription || `Ace your ${extractCompanyName(slug)} interview with real questions and AI-powered practice.`
-        }
-      })
-      .sort((a, b) => a.company.localeCompare(b.company))
+    filenames = fs.readdirSync(articlesDir).filter(name => name.endsWith('.json'))
   } catch {
     return []
   }
+
+  return filenames
+    .flatMap((filename) => {
+      try {
+        const slug = filename.replace('.json', '')
+        const article = JSON.parse(fs.readFileSync(path.join(articlesDir, filename), 'utf8'))
+        return [{
+          slug,
+          title: article.title || `${extractCompanyName(slug)} Interview Questions`,
+          company: extractCompanyName(slug),
+          description: article.metaDescription || `Ace your ${extractCompanyName(slug)} interview with real questions and focused practice.`,
+          datePosted: article.originalData?.datePosted ?? 0,
+        }]
+      } catch {
+        return []
+      }
+    })
+    // Sort newest first; fall back to alphabetical when timestamps are equal
+    .sort((a, b) => (b.datePosted - a.datePosted) || a.company.localeCompare(b.company))
 }
 
 function extractCompanyName(slug: string): string {
@@ -50,128 +57,136 @@ function extractCompanyName(slug: string): string {
   return companyPart.charAt(0).toUpperCase() + companyPart.slice(1)
 }
 
+const CTA_INTERVAL = 8
+
 export default function OpportunitiesPage() {
   const opportunities = getOpportunities()
-  
-  // Group opportunities by company
+
   const groupedOpportunities = opportunities.reduce((acc, opportunity) => {
     const company = opportunity.company
-    if (!acc[company]) {
-      acc[company] = []
-    }
+    if (!acc[company]) acc[company] = []
     acc[company].push(opportunity)
     return acc
   }, {} as Record<string, typeof opportunities>)
 
-  const companies = Object.keys(groupedOpportunities).sort()
+  // Preserve recency order: first appearance of each company in the sorted array sets its rank
+  const companies = [...new Set(opportunities.map(o => o.company))]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Interview Opportunities
+    <div style={{ background: '#0c0c10', minHeight: '100vh' }}>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital@1&display=swap"
+        rel="stylesheet"
+      />
+
+      {/* ── Hero ── */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute',
+          top: '-120px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '600px',
+          height: '400px',
+          background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.18) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+
+        <div className="max-w-4xl mx-auto px-6 py-24 text-center" style={{ position: 'relative', zIndex: 1 }}>
+
+          {/* Live badge */}
+          <div className="inline-flex items-center gap-2 mb-8" style={{
+            background: 'rgba(59,130,246,0.08)',
+            border: '1px solid rgba(59,130,246,0.25)',
+            borderRadius: '9999px',
+            padding: '6px 16px',
+          }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#60A5FA', display: 'inline-block' }} />
+            <span style={{ color: '#93C5FD', fontSize: '14px', fontFamily: "'DM Sans', sans-serif" }}>
+              {opportunities.length.toLocaleString()} open roles · updated daily
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: 'clamp(2.5rem, 6vw, 3.75rem)',
+            fontWeight: 700,
+            color: '#ffffff',
+            lineHeight: 1.1,
+            letterSpacing: '-0.02em',
+            marginBottom: '20px',
+          }}>
+            <span style={{ fontStyle: 'italic', fontFamily: "'Playfair Display', serif" }}>Find your role.</span><br />
+            <span style={{ color: '#60A5FA', fontStyle: 'italic', fontFamily: "'Playfair Display', serif" }}>Ace the interview.</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Practice with real interview questions from top tech companies. 
-            Get AI-powered feedback and ace your next interview.
+
+          <p style={{
+            color: '#71717a',
+            fontSize: '18px',
+            maxWidth: '580px',
+            margin: '0 auto 36px',
+            lineHeight: 1.6,
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            Browse {companies.length}+ companies hiring right now. Practice with mock interviews tailored to each specific role.
           </p>
-          <div className="mt-6 text-sm text-gray-500">
-            {opportunities.length} opportunities available from {companies.length} companies
-          </div>
-        </div>
 
-        {/* Search and Filter */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Companies
-                </label>
-                <input
-                  type="text"
-                  placeholder="Search by company name..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role Type
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">All Roles</option>
-                  <option value="intern">Internship</option>
-                  <option value="fulltime">Full Time</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option value="">All Locations</option>
-                  <option value="remote">Remote</option>
-                  <option value="onsite">On-site</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Opportunities Grid */}
-        <div className="space-y-8">
-          {companies.map(company => (
-            <div key={company} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-              <div className="bg-gray-50 px-6 py-4 border-b">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {company}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  {groupedOpportunities[company].length} {groupedOpportunities[company].length === 1 ? 'opportunity' : 'opportunities'}
-                </p>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {groupedOpportunities[company].map(opportunity => (
-                    <Link
-                      key={opportunity.slug}
-                      href={`/opportunities/${opportunity.slug}`}
-                      className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200"
-                    >
-                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                        {opportunity.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 line-clamp-3">
-                        {opportunity.description}
-                      </p>
-                      <div className="mt-3 text-sm text-blue-600 font-medium">
-                        View Questions →
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {opportunities.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link
+              href="/signup"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#3b82f6',
+                color: 'white',
+                fontWeight: 500,
+                borderRadius: '8px',
+                padding: '12px 24px',
+                fontSize: '15px',
+                textDecoration: 'none',
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Start Practicing Free
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
-            <p className="text-gray-600">
-              Check back later for new interview opportunities.
-            </p>
+            </Link>
+            <Link
+              href="/dashboard"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#a1a1aa',
+                fontWeight: 500,
+                borderRadius: '8px',
+                padding: '12px 24px',
+                fontSize: '15px',
+                textDecoration: 'none',
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Go to Dashboard
+            </Link>
           </div>
-        )}
+
+
+        </div>
       </div>
+
+      {/* ── Company listings ── */}
+      <OpportunitiesClient
+        opportunities={opportunities}
+        companies={companies}
+        groupedOpportunities={groupedOpportunities}
+        CTA_INTERVAL={CTA_INTERVAL}
+      />
     </div>
   )
 }

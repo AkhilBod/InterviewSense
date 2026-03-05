@@ -18,7 +18,7 @@ const ARTICLES_DIR = path.join(process.cwd(), "generated-content", "articles");
 const TRACKER_DIR = path.join(process.cwd(), "data", "internships");
 const SITEMAP_PATH = path.join(process.cwd(), "public", "sitemap-internships.xml");
 const BASE_URL = "https://www.interviewsense.org";
-const MAX_AGE_DAYS = 30;
+const MAX_AGE_DAYS = 60;
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // allow up to 60 s on Vercel
@@ -81,11 +81,11 @@ export async function GET(req: NextRequest) {
       // Return summary without file operations
       return Response.json({
         synced: rows.length,
-        new: rows.length, // In production, assume all are potentially new since we can't check existing
-        deleted: 0,
+        new: newSlugs.length,
+        deleted: deletedSlugs.length,
         message: 'Production mode: data parsed successfully, rebuild triggered',
-        newSlugs: rows.slice(0, 25).map(r => r.slug),
-        deletedSlugs: [],
+        newSlugs: newSlugs.slice(0, 25),
+        deletedSlugs: deletedSlugs.slice(0, 25),
       });
     }
 
