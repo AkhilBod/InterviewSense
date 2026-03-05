@@ -22,6 +22,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [cancelDone, setCancelDone] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   // Settings form state
@@ -92,12 +94,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const handleCancelSubscription = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription? You will keep access until the end of your current billing period.')) return;
+    setIsCanceling(true);
     try {
-      const response = await fetch('/api/stripe/portal', { method: 'POST' });
+      const response = await fetch('/api/subscription/cancel', { method: 'POST' });
       const data = await response.json();
-      if (data.url) window.location.href = data.url;
+      if (response.ok && data.success) {
+        setCancelDone(true);
+      } else {
+        alert(data.error || 'Failed to cancel subscription. Please try again.');
+      }
     } catch {
-      alert('Failed to access billing portal. Please try again.');
+      alert('Failed to cancel subscription. Please try again.');
+    } finally {
+      setIsCanceling(false);
     }
   };
 
@@ -338,22 +348,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 {/* Cancel subscription */}
                 <button
                   onClick={handleCancelSubscription}
+                  disabled={isCanceling || cancelDone}
                   style={{
                     width: '100%', padding: '16px 0',
                     background: 'none', border: 'none',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
                     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                     fontFamily: "'Inter', sans-serif",
-                    cursor: 'pointer', textAlign: 'left',
+                    cursor: (isCanceling || cancelDone) ? 'default' : 'pointer',
+                    opacity: (isCanceling || cancelDone) ? 0.7 : 1,
+                    textAlign: 'left',
                   }}
-                  onMouseEnter={e => { (e.currentTarget.querySelector('.acct-title') as HTMLElement).style.color = '#dde2f0'; }}
-                  onMouseLeave={e => { (e.currentTarget.querySelector('.acct-title') as HTMLElement).style.color = '#c4cce0'; }}
+                  onMouseEnter={e => { if (!isCanceling && !cancelDone) (e.currentTarget.querySelector('.acct-title') as HTMLElement).style.color = '#dde2f0'; }}
+                  onMouseLeave={e => { if (!isCanceling && !cancelDone) (e.currentTarget.querySelector('.acct-title') as HTMLElement).style.color = '#c4cce0'; }}
                 >
-                  <span className="acct-title" style={{ fontSize: '0.88rem', fontWeight: 500, color: '#c4cce0', marginBottom: 3, transition: 'color 0.15s' }}>
-                    Cancel Subscription
+                  <span className="acct-title" style={{ fontSize: '0.88rem', fontWeight: 500, color: cancelDone ? '#34d399' : '#c4cce0', marginBottom: 3, transition: 'color 0.15s' }}>
+                    {isCanceling ? 'Canceling…' : cancelDone ? '✓ Subscription Canceled' : 'Cancel Subscription'}
                   </span>
                   <span style={{ fontSize: '0.78rem', color: '#4a5370', fontFamily: "'Inter', sans-serif" }}>
-                    Manage your billing via Stripe portal
+                    {cancelDone ? 'Access continues until end of billing period' : 'You keep access until the end of your billing period'}
                   </span>
                 </button>
 
