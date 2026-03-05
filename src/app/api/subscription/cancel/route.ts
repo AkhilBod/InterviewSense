@@ -25,31 +25,47 @@ export async function POST() {
       return NextResponse.json({ error: 'No active subscription found' }, { status: 404 })
     }
 
-    const subId = user.subscription.stripeSubscriptionId
+    const { stripeSubscriptionId, stripeCustomerId } = user.subscription
+
+    let resolvedSubId = stripeSubscriptionId?.startsWith('sub_') ? stripeSubscriptionId : null
+
+    // If we don't have a valid sub ID, look it up from Stripe using the customer ID
+    // (this happens when the webhook hasn't fired yet due to misconfiguration)
+    if (!resolvedSubId && stripeCustomerId) {
+      const subs = await stripe.subscriptions.list({
+        customer: stripeCustomerId,
+        status: 'all',
+        limit: 5,
+      })
+      const active = subs.data.find(s => s.status === 'trialing' || s.status === 'active')
+      if (active) {
+        resolvedSubId = active.id
+        // Backfill the DB so future calls work
+        await prisma.subscription.update({
+          where: { id: user.subscription.id },
+          data: { stripeSubscriptionId: active.id },
+        })
+      }
+    }
 
     let cancelAt: Date | null = null
 
-    // Only call Stripe if we have a valid-looking subscription ID
-    if (subId && subId.startsWith('sub_')) {
+    if (resolvedSubId) {
       try {
-        const stripeSubscription = await stripe.subscriptions.update(subId, {
+        const stripeSubscription = await stripe.subscriptions.update(resolvedSubId, {
           cancel_at_period_end: true,
         })
         cancelAt = stripeSubscription.cancel_at
           ? new Date(stripeSubscription.cancel_at * 1000)
           : null
       } catch (stripeErr: any) {
-        // If Stripe says the subscription doesn't exist, treat it as already gone
-        if (stripeErr?.code !== 'resource_missing') {
-          throw stripeErr
-        }
-        console.warn(`Stripe subscription ${subId} not found — marking DB as canceled anyway`)
+        if (stripeErr?.code !== 'resource_missing') throw stripeErr
+        console.warn(`Stripe subscription ${resolvedSubId} not found — marking DB as canceled anyway`)
       }
     } else {
-      console.warn(`No valid stripeSubscriptionId (got: ${subId}) — canceling in DB only`)
+      console.warn(`No Stripe subscription found for customer ${stripeCustomerId} — canceling in DB only`)
     }
 
-    // Always update the DB
     await prisma.subscription.update({
       where: { id: user.subscription.id },
       data: {

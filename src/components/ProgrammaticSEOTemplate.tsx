@@ -676,6 +676,17 @@ export function ProgrammaticSEOTemplate({ data, questions, relatedPages }: Templ
 
           {/* ── Footer ── */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '24px 0 40px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '16px', fontSize: '0.85rem' }}>
+              <Link href="/terms" style={{ color: '#64748b', textDecoration: 'none' }}>
+                Terms
+              </Link>
+              <Link href="/privacy" style={{ color: '#64748b', textDecoration: 'none' }}>
+                Privacy
+              </Link>
+              <Link href="/contact" style={{ color: '#64748b', textDecoration: 'none' }}>
+                Contact
+              </Link>
+            </div>
             <p style={{ fontSize: '0.78rem', color: '#334155' }}>
               © {currentYear} InterviewSense. Interview data is community-sourced and may not reflect exact processes.
             </p>

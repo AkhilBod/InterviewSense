@@ -71,7 +71,8 @@ async function grantUnlimitedAccess(email: string) {
 async function main() {
   const emails = [
     'akkiisan9@gmail.com',
-    'brownbananaburrito@gmail.com'
+    'brownbananaburrito@gmail.com',
+    'lohith.katari@gmail.com'
   ];
   
   for (const email of emails) {

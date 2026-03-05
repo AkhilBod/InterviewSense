@@ -1489,8 +1489,14 @@ export default function Home() {
 
           {/* Footer Links and Copyright */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 text-sm">
+            <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Privacy Policy
+            </Link>
             <Link href="/contact" className="text-zinc-500 hover:text-zinc-300 transition-colors">
-              Feedback
+              Contact
             </Link>
           </div>
 

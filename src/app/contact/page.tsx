@@ -284,6 +284,17 @@ export default function ContactSupportPage() {
       {/* Footer */}
       <footer className="py-8 border-t border-zinc-800/50 mt-auto bg-black relative z-10">
         <div className="container mx-auto px-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-4 text-sm">
+            <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/contact" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Contact
+            </Link>
+          </div>
           <div className="text-center text-zinc-600 text-sm">
             © {new Date().getFullYear()} InterviewSense. Interview practice that works.
           </div>
