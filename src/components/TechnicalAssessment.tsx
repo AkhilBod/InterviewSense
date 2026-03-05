@@ -418,6 +418,58 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
     if (profile.targetRole && !role) setRole(profile.targetRole);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile.targetCompany, profile.targetRole]);
+
+  // Auto-start with a saved technical question from the dashboard
+  useEffect(() => {
+    const stored = localStorage.getItem('practiceTechnicalQuestion');
+    if (!stored) return;
+    localStorage.removeItem('practiceTechnicalQuestion');
+
+    const { leetcodeNumber, questionText } = JSON.parse(stored) as { leetcodeNumber: number | null; questionText: string };
+
+    const loadQuestion = async (id: number) => {
+      setIsLoading(true);
+      setQuestionSaved(false);
+      try {
+        const res = await fetch('/api/technical-assessment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ useCustomNumber: true, leetcodeNumber: id }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setQuestion(data.question);
+          setProblemTopics(data.topics || []);
+          setProblemId(data.problemId || null);
+        } else {
+          toast({ title: 'Error', description: data.error || 'Failed to load question.', variant: 'destructive' });
+        }
+      } catch {
+        toast({ title: 'Error', description: 'Failed to load question.', variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (leetcodeNumber) {
+      loadQuestion(leetcodeNumber);
+    } else if (questionText) {
+      // Look up by title in the LeetCode problems database
+      fetch(`/api/questions/lookup-leetcode?title=${encodeURIComponent(questionText)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.id) {
+            loadQuestion(data.id);
+          } else {
+            toast({ title: 'Question not found', description: `Could not find "${questionText}" in LeetCode database.`, variant: 'destructive' });
+          }
+        })
+        .catch(() => {
+          toast({ title: 'Error', description: 'Failed to look up question.', variant: 'destructive' });
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Add state for question progression
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);

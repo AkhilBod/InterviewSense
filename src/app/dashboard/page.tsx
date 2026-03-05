@@ -303,8 +303,18 @@ function DashboardPage() {
                       key={q.id}
                       className={`py-3 flex items-center justify-between gap-4 cursor-pointer group ${i > 0 ? 'border-t border-[#1f2937]' : ''}`}
                       onClick={() => {
-                        localStorage.setItem('practiceQuestion', JSON.stringify(q));
-                        router.push('/interview');
+                        if (q.type === 'TECHNICAL') {
+                          const numMatch = q.questionId.match(/^technical-(\d+)$/);
+                          const leetcodeNumber = numMatch ? parseInt(numMatch[1]) : null;
+                          localStorage.setItem('practiceTechnicalQuestion', JSON.stringify({
+                            leetcodeNumber,
+                            questionText: q.questionText,
+                          }));
+                          router.push('/dashboard/technical');
+                        } else {
+                          localStorage.setItem('practiceQuestion', JSON.stringify(q));
+                          router.push('/interview');
+                        }
                       }}
                     >
                       <p className="text-sm text-[#9ca3af] group-hover:text-white transition-colors duration-150 flex-1 truncate">
