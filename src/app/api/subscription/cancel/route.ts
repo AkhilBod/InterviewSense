@@ -18,34 +18,38 @@ export async function POST() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: {
-        subscription: true,
-      },
+      include: { subscription: true },
     })
 
     if (!user || !user.subscription) {
-      return NextResponse.json(
-        { error: 'No active subscription found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'No active subscription found' }, { status: 404 })
     }
 
-    if (!user.subscription.stripeSubscriptionId) {
-      return NextResponse.json(
-        { error: 'Invalid subscription' },
-        { status: 400 }
-      )
-    }
+    const subId = user.subscription.stripeSubscriptionId
 
-    // Cancel the subscription at period end in Stripe
-    const stripeSubscription = await stripe.subscriptions.update(
-      user.subscription.stripeSubscriptionId,
-      {
-        cancel_at_period_end: true,
+    let cancelAt: Date | null = null
+
+    // Only call Stripe if we have a valid-looking subscription ID
+    if (subId && subId.startsWith('sub_')) {
+      try {
+        const stripeSubscription = await stripe.subscriptions.update(subId, {
+          cancel_at_period_end: true,
+        })
+        cancelAt = stripeSubscription.cancel_at
+          ? new Date(stripeSubscription.cancel_at * 1000)
+          : null
+      } catch (stripeErr: any) {
+        // If Stripe says the subscription doesn't exist, treat it as already gone
+        if (stripeErr?.code !== 'resource_missing') {
+          throw stripeErr
+        }
+        console.warn(`Stripe subscription ${subId} not found — marking DB as canceled anyway`)
       }
-    )
+    } else {
+      console.warn(`No valid stripeSubscriptionId (got: ${subId}) — canceling in DB only`)
+    }
 
-    // Update our database
+    // Always update the DB
     await prisma.subscription.update({
       where: { id: user.subscription.id },
       data: {
@@ -57,15 +61,10 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       message: 'Subscription will be canceled at the end of the billing period',
-      cancelAt: stripeSubscription.cancel_at
-        ? new Date(stripeSubscription.cancel_at * 1000)
-        : null,
+      cancelAt,
     })
   } catch (error) {
     console.error('Error canceling subscription:', error)
-    return NextResponse.json(
-      { error: 'Failed to cancel subscription' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to cancel subscription' }, { status: 500 })
   }
 }
