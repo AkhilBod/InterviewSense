@@ -50,6 +50,16 @@ interface UserProgressData {
   };
 }
 
+interface SavedQuestion {
+  id: string;
+  questionId: string;
+  questionText: string;
+  type: 'BEHAVIORAL' | 'TECHNICAL';
+  company?: string;
+  difficulty?: string;
+  category?: string;
+}
+
 function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -57,6 +67,8 @@ function DashboardPage() {
   const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgressData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [savedQuestions, setSavedQuestions] = useState<SavedQuestion[]>([]);
+  const [savedTab, setSavedTab] = useState<'BEHAVIORAL' | 'TECHNICAL'>('BEHAVIORAL');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -69,10 +81,11 @@ function DashboardPage() {
     const fetchDashboard = async () => {
       try {
         setDashboardLoading(true);
-        const [statsRes, sessionsRes, analysesRes] = await Promise.all([
+        const [statsRes, sessionsRes, analysesRes, savedRes] = await Promise.all([
           fetch('/api/user-stats'),
           fetch('/api/interviews/recent'),
-          fetch('/api/analyze-resume/recent')
+          fetch('/api/analyze-resume/recent'),
+          fetch('/api/questions/saved'),
         ]);
 
         if (statsRes.ok) {
@@ -120,6 +133,11 @@ function DashboardPage() {
         if (analysesRes.ok) {
           const analysesData = await analysesRes.json();
           setRecentAnalyses(analysesData.analyses || []);
+        }
+
+        if (savedRes.ok) {
+          const savedData = await savedRes.json();
+          setSavedQuestions(savedData.questions || []);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -242,17 +260,74 @@ function DashboardPage() {
             </div>
           </div>
 
-          {/* Saved Questions - Coming Soon */}
+          {/* Saved Questions */}
           <div className="mb-12">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[11px] uppercase tracking-wider text-[#4b5563]">Saved Questions</h2>
+              <span className="text-xs text-[#4b5563]">{savedQuestions.length} saved</span>
             </div>
-            <div className="bg-[#111827] border border-[#1f2937] rounded-lg p-8 text-center">
-              <div className="text-[#6b7280] text-sm">
-                <p className="mb-2">🔖 Practicing these questions - Coming Soon</p>
-                <p className="text-xs text-[#4b5563]">Save questions during practice sessions to review later</p>
-              </div>
+
+            {/* Tabs */}
+            <div className="flex gap-4 mb-4 border-b border-[#1f2937]">
+              {(['BEHAVIORAL', 'TECHNICAL'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setSavedTab(tab)}
+                  className="pb-2 text-xs font-medium transition-colors duration-150"
+                  style={{
+                    color: savedTab === tab ? '#3b82f6' : '#4b5563',
+                    borderBottom: savedTab === tab ? '2px solid #3b82f6' : '2px solid transparent',
+                    textTransform: 'capitalize',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {tab.charAt(0) + tab.slice(1).toLowerCase()} ({savedQuestions.filter(q => q.type === tab).length})
+                </button>
+              ))}
             </div>
+
+            {/* Question rows */}
+            {(() => {
+              const filtered = savedQuestions.filter(q => q.type === savedTab);
+              if (filtered.length === 0) {
+                return (
+                  <p className="text-xs text-[#4b5563] py-4">
+                    No {savedTab.toLowerCase()} questions saved yet.
+                  </p>
+                );
+              }
+              return (
+                <div className="space-y-0">
+                  {filtered.slice(0, 5).map((q, i) => (
+                    <div
+                      key={q.id}
+                      className={`py-3 flex items-center justify-between gap-4 cursor-pointer group ${i > 0 ? 'border-t border-[#1f2937]' : ''}`}
+                      onClick={() => {
+                        localStorage.setItem('practiceQuestion', JSON.stringify(q));
+                        router.push('/interview');
+                      }}
+                    >
+                      <p className="text-sm text-[#9ca3af] group-hover:text-white transition-colors duration-150 flex-1 truncate">
+                        {q.questionText}
+                      </p>
+                      <span className="text-xs text-[#3b82f6] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        Practice →
+                      </span>
+                    </div>
+                  ))}
+                  {filtered.length > 5 && (
+                    <div className="pt-3 border-t border-[#1f2937]">
+                      <button
+                        onClick={() => router.push('/dashboard/saved-questions')}
+                        className="text-xs text-[#4b5563] hover:text-white transition-colors duration-150"
+                      >
+                        View all {filtered.length} {savedTab.toLowerCase()} questions →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Recent Activity - minimal table */}

@@ -94,6 +94,7 @@ function InterviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('Preparing your interview...');
   const [allAnswers, setAllAnswers] = useState<{[key: number]: string}>({});
+  const [savedQuestionIds, setSavedQuestionIds] = useState<Set<number>>(new Set());
   const { data: session, status } = useSession();
   const router = useRouter();
   
@@ -174,7 +175,20 @@ function InterviewPage() {
     const fetchQuestions = async () => {
       try {
         setLoadingMessage('Generating personalized questions...');
-        // Questions are now generated via server-side API route, no client-side key needed
+
+        // Check if user wants to practice a specific saved question
+        const practiceQuestionStr = localStorage.getItem('practiceQuestion');
+        if (practiceQuestionStr) {
+          localStorage.removeItem('practiceQuestion');
+          const savedQ = JSON.parse(practiceQuestionStr);
+          const singleQuestion = [{ id: 1, question: savedQ.questionText, type: savedQ.type?.toLowerCase() || 'behavioral' }];
+          setQuestions(singleQuestion);
+          setVisibleQuestions(singleQuestion);
+          localStorage.setItem('allQuestions', JSON.stringify(singleQuestion));
+          setIsLoading(false);
+          setInterviewPhase('speaking');
+          return;
+        }
 
         // Get job details from localStorage or state management
         const interviewType = localStorage.getItem('interviewType') || 'Behavioral';
@@ -1670,6 +1684,29 @@ function InterviewPage() {
     setIsTypewriting(false);
   };
 
+  const handleSaveQuestion = async () => {
+    if (!currentQuestion) return;
+    const questionId = `interview-${currentQuestion.id}-${currentQuestion.question.substring(0, 20)}`;
+    try {
+      const res = await fetch('/api/questions/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId,
+          questionText: currentQuestion.question,
+          type: currentQuestion.type === 'behavioral' ? 'BEHAVIORAL' : 'TECHNICAL',
+          category: currentQuestion.type,
+        }),
+      });
+      if (res.ok || res.status === 409) {
+        setSavedQuestionIds(prev => new Set(prev).add(currentQuestion.id));
+        toast({ title: 'Saved', description: 'Question added to your saved list.' });
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Could not save question.', variant: 'destructive' });
+    }
+  };
+
   const handleNextQuestion = () => {
     if (answer.trim() !== '') {
       if (!completedQuestions.includes(currentQuestion.id)) {
@@ -1924,8 +1961,24 @@ function InterviewPage() {
               {/* Right Column: Question Content and Controls */}
               <div className="flex-1 w-full max-w-2xl md:max-w-none">
                 {/* Question Counter */}
-                <div className="text-xs mb-3 text-center md:text-left" style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', letterSpacing: '0.05em' }}>
-                  Question {currentQuestionIndex + 1} of {visibleQuestions.length}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-center md:text-left" style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', letterSpacing: '0.05em' }}>
+                    Question {currentQuestionIndex + 1} of {visibleQuestions.length}
+                  </div>
+                  {session && currentQuestion && (
+                    <button
+                      onClick={handleSaveQuestion}
+                      className="flex items-center gap-1 text-xs transition-colors duration-150"
+                      style={{
+                        color: savedQuestionIds.has(currentQuestion.id) ? '#3b82f6' : '#4b5563',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                      title="Save question"
+                    >
+                      <Save className="h-3 w-3" />
+                      {savedQuestionIds.has(currentQuestion.id) ? 'Saved' : 'Save'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Question Display - Always show the question */}
