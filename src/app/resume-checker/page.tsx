@@ -96,9 +96,23 @@ export default function ResumeCheckerPage() {
   const [wordAnalysisData, setWordAnalysisData] = useState<WordAnalysisData | null>(null);
   const [isWordAnalysisLoading, setIsWordAnalysisLoading] = useState(false);
 
-  // Highlight State
-  const [highlights, setHighlights] = useState<ResumeHighlight[]>([]);
-  const [showPDFHighlights, setShowPDFHighlights] = useState(false);
+  // Highlight State — derived from word analysis; PDFHighlightViewer uses
+  // PDF.js text extraction to find real bounding boxes via textExcerpt matching.
+  const wordHighlights: ResumeHighlight[] = (wordAnalysisData?.wordImprovements || []).map((item, i) => ({
+    id: `wh-${i}`,
+    page: item.textPosition?.pageNumber || 1,
+    x: 0, y: 0, width: 0, height: 0, // ignored — viewer does its own text search
+    color: item.severity as 'red' | 'yellow' | 'green',
+    title: item.category === 'quantify_impact' ? 'Add Metrics'
+      : item.category === 'communication' ? 'Clarify Language'
+      : item.category === 'length_depth' ? 'Adjust Length'
+      : item.category === 'drive' ? 'Show Initiative'
+      : item.category === 'analytical' ? 'Add Analysis'
+      : 'Suggestion',
+    feedback: item.explanation,
+    suggestion: item.improved,
+    textExcerpt: item.original, // this is what PDFHighlightViewer uses to locate text
+  }));
 
   // Pre-fill company from profile
   useEffect(() => {
@@ -128,7 +142,9 @@ export default function ResumeCheckerPage() {
         const resp = await fetch(profile.resumeUrl);
         const blob = await resp.blob();
         const filename = profile.resumeFilename || 'resume.pdf';
-        resolvedResume = new File([blob], filename, { type: blob.type });
+        resolvedResume = new File([blob], filename, { type: blob.type || 'application/pdf' });
+        // Update the resume state so the preview can display
+        setResume(resolvedResume);
       } catch {
         setError("Could not load your saved resume. Please upload it manually.");
         setIsLoading(false);
@@ -180,10 +196,6 @@ export default function ResumeCheckerPage() {
       if (data.wordAnalysis) {
         setWordAnalysisData(data.wordAnalysis);
         setShowWordAnalysis(true);
-        if (data.wordAnalysis.highlights) {
-          setHighlights(data.wordAnalysis.highlights);
-          setShowPDFHighlights(true);
-        }
       }
 
       setShowResults(true);
@@ -200,9 +212,24 @@ export default function ResumeCheckerPage() {
     setError(null);
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
-    setShowPDFHighlights(false);
-    setHighlights([]);
   };
+
+  // When word analysis is available, scale ALL scores proportionally so they're consistent.
+  // The word analysis score is more granular and honest — use it as the anchor.
+  const scoreScaleFactor = (() => {
+    if (!resumeData || !wordAnalysisData?.overallScore) return 1;
+    const rawOverall = resumeData.overallScore;
+    if (rawOverall === 0) return 1;
+    // Scale factor to bring inflated main-analysis scores in line with word-analysis reality
+    return wordAnalysisData.overallScore / rawOverall;
+  })();
+
+  const adjustScore = (raw: number) => Math.round(Math.min(100, Math.max(0, raw * scoreScaleFactor)));
+
+  const adjustedOverallScore = resumeData ? adjustScore(resumeData.overallScore) : 0;
+  const adjustedImpactScore  = resumeData ? adjustScore(resumeData.impactScore)  : 0;
+  const adjustedStyleScore   = resumeData ? adjustScore(resumeData.styleScore)   : 0;
+  const adjustedSkillsScore  = resumeData ? adjustScore(resumeData.skillsScore)  : 0;
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-400";
@@ -510,8 +537,8 @@ export default function ResumeCheckerPage() {
                                     strokeWidth="6"
                                     fill="transparent"
                                     strokeDasharray={`${2 * Math.PI * 42}`}
-                                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - resumeData.overallScore / 100)}`}
-                                    className={getScoreColor(resumeData.overallScore).replace('text-', 'text-')}
+                                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - adjustedOverallScore / 100)}`}
+                                    className={getScoreColor(adjustedOverallScore).replace('text-', 'text-')}
                                     strokeLinecap="round"
                                     style={{
                                       filter: 'drop-shadow(0 0 8px currentColor)',
@@ -520,8 +547,8 @@ export default function ResumeCheckerPage() {
                                   />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                  <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.overallScore)}`}>
-                                    {resumeData.overallScore}
+                                  <span className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedOverallScore)}`}>
+                                    {adjustedOverallScore}
                                   </span>
                                   <span className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</span>
                                 </div>
@@ -535,14 +562,14 @@ export default function ResumeCheckerPage() {
                                 {/* Impact Score */}
                                 <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
                                   <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">IMPACT</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.impactScore)} mb-1 sm:mb-2`}>
-                                    {resumeData.impactScore}
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedImpactScore)} mb-1 sm:mb-2`}>
+                                    {adjustedImpactScore}
                                   </div>
                                   <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
                                   <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.impactScore)}`}
-                                      style={{ width: `${resumeData.impactScore}%` }}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedImpactScore)}`}
+                                      style={{ width: `${adjustedImpactScore}%` }}
                                     ></div>
                                   </div>
                                 </div>
@@ -550,14 +577,14 @@ export default function ResumeCheckerPage() {
                                 {/* Style Score */}
                                 <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
                                   <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">STYLE</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.styleScore)} mb-1 sm:mb-2`}>
-                                    {resumeData.styleScore}
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedStyleScore)} mb-1 sm:mb-2`}>
+                                    {adjustedStyleScore}
                                   </div>
                                   <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
                                   <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.styleScore)}`}
-                                      style={{ width: `${resumeData.styleScore}%` }}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedStyleScore)}`}
+                                      style={{ width: `${adjustedStyleScore}%` }}
                                     ></div>
                                   </div>
                                 </div>
@@ -565,14 +592,14 @@ export default function ResumeCheckerPage() {
                                 {/* Skills Score */}
                                 <div className="text-center bg-slate-700/20 rounded-xl p-4 sm:p-6 border border-slate-600/30 hover:bg-slate-700/30 transition-all duration-300">
                                   <div className="text-sm sm:text-base font-bold text-slate-300 mb-2 sm:mb-3 tracking-wider">SKILLS</div>
-                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(resumeData.skillsScore)} mb-1 sm:mb-2`}>
-                                    {resumeData.skillsScore}
+                                  <div className={`text-2xl sm:text-3xl font-bold ${getScoreColor(adjustedSkillsScore)} mb-1 sm:mb-2`}>
+                                    {adjustedSkillsScore}
                                   </div>
                                   <div className="text-xs sm:text-sm text-slate-400 font-medium">/ 100</div>
                                   <div className="mt-3 sm:mt-4 w-full bg-slate-600/30 rounded-full h-2 sm:h-3">
                                     <div 
-                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(resumeData.skillsScore)}`}
-                                      style={{ width: `${resumeData.skillsScore}%` }}
+                                      className={`h-2 sm:h-3 rounded-full transition-all duration-500 ${getBarColor(adjustedSkillsScore)}`}
+                                      style={{ width: `${adjustedSkillsScore}%` }}
                                     ></div>
                                   </div>
                                 </div>
@@ -599,11 +626,11 @@ export default function ResumeCheckerPage() {
                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                                 <div className="text-xs font-bold text-slate-400 tracking-widest">OVERALL GRADE</div>
                               </div>
-                              <div className={`text-4xl font-black ${getScoreColor(resumeData.overallScore)} mb-2`}>
-                                {resumeData.overallScore >= 80 ? 'B' : resumeData.overallScore >= 70 ? 'B' : resumeData.overallScore >= 60 ? 'C' : 'D'}
+                              <div className={`text-4xl font-black ${getScoreColor(adjustedOverallScore)} mb-2`}>
+                                {adjustedOverallScore >= 90 ? 'A' : adjustedOverallScore >= 80 ? 'B+' : adjustedOverallScore >= 70 ? 'B' : adjustedOverallScore >= 60 ? 'C' : 'D'}
                               </div>
                               <div className="text-slate-400">
-                                {resumeData.overallScore >= 70 ? 'Good' : resumeData.overallScore >= 60 ? 'Average' : 'Needs Work'}
+                                {adjustedOverallScore >= 80 ? 'Strong' : adjustedOverallScore >= 70 ? 'Good' : adjustedOverallScore >= 60 ? 'Average' : 'Needs Work'}
                               </div>
                             </div>
 
@@ -624,11 +651,11 @@ export default function ResumeCheckerPage() {
                             {/* Readability */}
                             <div className="bg-slate-700/40 rounded-2xl p-6 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-300 hover:shadow-xl group">
                               <div className="flex items-center gap-3 mb-4">
-                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <div className={`w-3 h-3 rounded-full ${adjustedStyleScore >= 70 ? 'bg-green-500' : adjustedStyleScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                                 <div className="text-xs font-bold text-slate-400 tracking-widest">READABILITY</div>
                               </div>
-                              <div className={`text-4xl font-black text-green-400 mb-2`}>
-                                85
+                              <div className={`text-4xl font-black ${getScoreColor(adjustedStyleScore)} mb-2`}>
+                                {adjustedStyleScore}
                               </div>
                               <div className="text-slate-400">Style Score</div>
                             </div>
@@ -735,6 +762,20 @@ export default function ResumeCheckerPage() {
                       </CardContent>
                     </Card>
 
+                    {/* Word-Level Analysis - Merged into main results */}
+                    {showWordAnalysis && wordAnalysisData && (
+                      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl overflow-hidden">
+                        <CardContent className="p-0">
+                          <ResumeWordAnalysis 
+                            analysis={wordAnalysisData}
+                            fileName={resume?.name || profile?.resumeFilename || "Resume"}
+                            jobTitle={profile?.targetRole || 'Software Engineer'}
+                            company={company}
+                          />
+                        </CardContent>
+                      </Card>
+                    )}
+
                     {/* What's Next */}
                     <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
                       <CardHeader>
@@ -795,7 +836,7 @@ export default function ResumeCheckerPage() {
                               {resume.type === 'application/pdf' ? (
                                 <PDFHighlightViewer
                                   file={resume}
-                                  highlights={highlights}
+                                  highlights={wordHighlights}
                                 />
                               ) : (
                                 <div className="p-8 bg-[#111827] text-gray-300 h-[65vh] lg:h-[65vh] xl:h-[70vh] overflow-y-auto border border-gray-700 rounded-lg">
@@ -830,18 +871,6 @@ export default function ResumeCheckerPage() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              )}
-
-              {/* Word Analysis Section */}
-              {showWordAnalysis && wordAnalysisData && (
-                <div className="px-4 max-w-[1900px] mx-auto mt-8">
-                  <ResumeWordAnalysis 
-                    analysis={wordAnalysisData}
-                    fileName={resume?.name || profile?.resumeFilename || "Resume"}
-                    jobTitle={profile?.targetRole || 'Software Engineer'}
-                    company={company}
-                  />
                 </div>
               )}
             </div>

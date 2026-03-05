@@ -333,32 +333,42 @@ export async function PUT(req: Request) {
 - Efficient implementation`
     };
 
-    const prompt = `You are an expert code reviewer analyzing a ${language} solution to this LeetCode problem:
+    const prompt = `You are a senior engineer at a FAANG company doing a real technical interview. You have high standards and give honest, fair scores. You are grading this ${language} solution to a LeetCode problem.
 
+PROBLEM:
 ${question}
 
-The submitted solution is:
-
+SUBMITTED CODE:
 ${code}
 
-The candidate's explanation is:
-
+CANDIDATE'S EXPLANATION:
 ${explanation}
 
-Analyze the solution for:
-1. Correctness - Does it solve the problem and handle edge cases?
-2. Time & Space Complexity - Is it optimal?
-3. Code Quality - Following these ${language} best practices:
+GRADING RULES — be strict and realistic:
+- Most candidates score 50-70. Only exceptional solutions score 80+.
+- A solution that is WRONG or has major bugs: codeScore 20-40, overallScore 30-50
+- A correct brute-force solution (working but not optimal): codeScore 55-65, overallScore 50-65
+- A correct optimal solution with minor issues: codeScore 70-80, overallScore 65-75
+- A correct optimal solution well-explained with clean code: codeScore 80-90, overallScore 75-85
+- A perfect solution with edge cases handled, optimal complexity, clean code: codeScore 90-100, overallScore 85-95
+- If no code was submitted or code is trivially wrong: codeScore 10-25
+- If explanation is missing or vague: explanationScore 20-40
+- explanationScore should reflect how clearly they communicated their approach, trade-offs, and complexity
+
+${language} best practices to evaluate:
 ${languageBestPractices[language as keyof typeof languageBestPractices]}
 
-Provide your analysis in this JSON format (no other text):
+Return ONLY this JSON (no other text):
 {
   "isCorrect": boolean,
-  "correctnessAnalysis": "Detailed analysis of solution correctness",
-  "timeComplexity": "Big O notation with explanation",
-  "spaceComplexity": "Big O notation with explanation",
-  "codeQuality": "Analysis of code quality and best practices",
-  "suggestedImprovements": "Specific suggestions for improvement"
+  "overallScore": number (0-100, follow the grading rules above),
+  "codeScore": number (0-100, based on correctness + quality + optimality),
+  "explanationScore": number (0-100, based on clarity of explanation),
+  "correctnessAnalysis": "Was the solution correct? Does it handle edge cases? What bugs exist?",
+  "timeComplexity": "O(?) — explain why",
+  "spaceComplexity": "O(?) — explain why",
+  "codeQuality": "Critique of code style, naming, structure, and language-specific best practices",
+  "suggestedImprovements": "Concrete, specific improvements the candidate should make"
 }`;
 
     // Generate the response
@@ -387,18 +397,18 @@ Provide your analysis in this JSON format (no other text):
       // Transform the API response to match frontend expectations
       const transformedResponse = {
         success: true,
-        overallScore: analysis.isCorrect ? 85 : 45, // Base score on correctness
+        overallScore: analysis.overallScore ?? (analysis.isCorrect ? 70 : 40),
         strengths: analysis.codeQuality ? 
-          analysis.codeQuality.split('.').filter(s => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
+          (analysis.codeQuality as string).split('.').filter((s: string) => s.trim() && !s.toLowerCase().includes('improvement')).slice(0, 3) :
           ["Code submitted successfully"],
         improvementAreas: analysis.suggestedImprovements ? 
-          analysis.suggestedImprovements.split('.').filter(s => s.trim()).slice(0, 3) :
+          (analysis.suggestedImprovements as string).split('.').filter((s: string) => s.trim()).slice(0, 3) :
           ["Consider reviewing the solution"],
         codeFeedback: analysis.correctnessAnalysis || "Solution analyzed",
         explanationFeedback: `Time Complexity: ${analysis.timeComplexity || "Not analyzed"}. Space Complexity: ${analysis.spaceComplexity || "Not analyzed"}`,
-        codeScore: analysis.isCorrect ? 80 : 40,
-        explanationScore: 75, // Default score
-        analysis: analysis // Keep original analysis for detailed view
+        codeScore: analysis.codeScore ?? (analysis.isCorrect ? 70 : 35),
+        explanationScore: analysis.explanationScore ?? 50,
+        analysis: analysis
       };
 
       // AI was used to analyze the submission — charge 1.5 credits
@@ -411,13 +421,13 @@ Provide your analysis in this JSON format (no other text):
       // Return a fallback response instead of throwing an error
       return NextResponse.json({
         success: true,
-        overallScore: 50,
+        overallScore: 35,
         strengths: ["Code submitted successfully"],
-        improvementAreas: ["Consider reviewing and optimizing the solution"],
+        improvementAreas: ["Could not auto-analyze — please review your solution manually."],
         codeFeedback: "Unable to analyze code automatically. Please review manually.",
         explanationFeedback: "Unable to analyze explanation automatically.",
-        codeScore: 50,
-        explanationScore: 50
+        codeScore: 35,
+        explanationScore: 35
       });
     }
   } catch (error) {

@@ -256,7 +256,7 @@ Return ONLY a valid JSON object with this exact structure:
 async function analyzeSystemDesign(problem: any, responses: any) {
 
   const prompt = `
-You are an expert system design interviewer. Analyze the following system design interview performance:
+You are a Staff Engineer at Google/Meta/Amazon conducting a real system design interview. You have high standards and give honest, fair scores — not inflated ones, but not unfairly harsh either. A candidate who puts in solid effort and covers the key areas should score well.
 
 PROBLEM:
 Title: ${problem.problem.title}
@@ -264,19 +264,34 @@ Description: ${problem.problem.description}
 Requirements: ${problem.problem.requirements.join(', ')}
 Constraints: ${problem.problem.constraints.join(', ')}
 
-USER RESPONSES:
+CANDIDATE RESPONSES:
 Requirements Clarification: ${responses.requirements || 'No response provided'}
 Scale Estimation: ${responses.estimation || 'No response provided'}
 High-Level Design: ${responses.highlevel || 'No response provided'}
 Detailed Design: ${responses.detailed || 'No response provided'}
 Scalability Considerations: ${responses.scale || 'No response provided'}
 
-Please provide a comprehensive analysis in the following JSON format:
+GRADING SCALE (be harsh and realistic):
+- 85-100: Exceptional — would pass a FAANG senior/staff interview. Covered all components, right tech choices, clear trade-offs, solid estimation. Reserved for top 5%.
+- 70-84: Strong — solid fundamentals, mostly complete, minor gaps. Would pass most mid-level interviews.
+- 55-69: Average — hit some key points but missed critical components, vague on trade-offs or scaling. Needs significant improvement.
+- 40-54: Weak — surface-level answers, missing core components, no real estimation, vague hand-waving. Would fail most interviews.
+- Below 40: Very poor — minimal effort, no real design, almost no content submitted.
+
+SCORING RULES:
+- If ANY section has "No response provided" or under 30 words: that category scores 20-35 max
+- Vague answers like "use a database" or "add a load balancer" without specifics: penalize heavily
+- No actual numbers in estimation (DAU, QPS, storage): estimation score 20-40
+- No mention of specific technologies (PostgreSQL vs MongoDB, Redis vs Memcached, Kafka vs RabbitMQ): design score capped at 60
+- Missing failure handling, replication, or partitioning strategies: scalability score max 50
+- The overallScore must be a WEIGHTED AVERAGE of category scores, not higher than the average
+
+Return ONLY this JSON (no other text):
 
 {
   "problemTitle": "${problem.problem.title}",
   "difficulty": "Easy|Medium|Hard",
-  "overallScore": number (0-100),
+  "overallScore": number (0-100, must equal weighted average of category scores),
   "categoryScores": {
     "requirements": number (0-100),
     "estimation": number (0-100),
@@ -285,23 +300,14 @@ Please provide a comprehensive analysis in the following JSON format:
     "communication": number (0-100)
   },
   "feedback": {
-    "strengths": ["strength1", "strength2", ...],
-    "improvements": ["improvement1", "improvement2", ...],
-    "recommendations": ["recommendation1", "recommendation2", ...]
+    "strengths": ["specific strength 1", "specific strength 2"],
+    "improvements": ["specific missing component 1", "specific gap 2", "specific gap 3"],
+    "recommendations": ["actionable recommendation 1", "actionable recommendation 2"]
   },
-  "analysis": "Detailed written analysis in 2-3 paragraphs",
-  "testDuration": number (estimated minutes spent),
-  "completedSteps": number (1-5, how many steps had meaningful responses)
+  "analysis": "Honest 2-3 paragraph critique. Name specifically what was missing or wrong. Do not pad with encouragement.",
+  "testDuration": number,
+  "completedSteps": number
 }
-
-Rate based on:
-- Requirements: How well they clarified requirements and scope
-- Estimation: Quality of scale/capacity calculations and assumptions
-- Design: Architecture clarity, component identification, data flow
-- Scalability: Understanding of bottlenecks, scaling strategies, performance
-- Communication: Clarity and structure of explanations
-
-Provide constructive feedback focused on interview performance improvement.
 `;
 
   const completion = await openai.chat.completions.create({
@@ -335,34 +341,32 @@ Provide constructive feedback focused on interview performance improvement.
     return {
       problemTitle: problem.problem.title,
       difficulty: 'Medium',
-      overallScore: 75,
+      overallScore: 45,
       categoryScores: {
-        requirements: 80,
-        estimation: 70,
-        design: 85,
-        scalability: 65,
-        communication: 75
+        requirements: 50,
+        estimation: 40,
+        design: 50,
+        scalability: 40,
+        communication: 45
       },
       feedback: {
         strengths: [
-          "Clear problem understanding",
-          "Good architectural thinking",
-          "Systematic approach to design"
+          "Attempted the problem"
         ],
         improvements: [
-          "More detailed capacity planning",
-          "Consider additional failure scenarios",
-          "Expand on technology choices"
+          "Provide specific numbers in your scale estimation (DAU, QPS, storage)",
+          "Name specific technologies and justify your choices",
+          "Address failure scenarios, replication, and partitioning"
         ],
         recommendations: [
-          "Practice scale estimation with real examples",
-          "Study distributed systems patterns",
-          "Review database design principles"
+          "Practice scale estimation with real examples (1M DAU = ~12 QPS baseline)",
+          "Study distributed systems patterns: consistent hashing, CQRS, event sourcing",
+          "Review database selection criteria: when to use SQL vs NoSQL"
         ]
       },
-      analysis: "Your system design approach shows good foundational understanding. You demonstrated clear thinking about the problem requirements and proposed a reasonable architecture. To improve, focus on providing more detailed justifications for technology choices and consider edge cases more thoroughly. Practice with time constraints to improve your explanation efficiency.",
+      analysis: "The response lacked the depth expected for this level of system design problem. Key areas were either missing or too vague to evaluate properly. Focus on being specific: name technologies, provide numbers, and explain trade-offs clearly.",
       testDuration: 40,
-      completedSteps: Object.values(responses).filter(r => r && typeof r === 'string' && r.trim().length > 20).length
+      completedSteps: Object.values(responses).filter((r: unknown) => r && typeof r === 'string' && (r as string).trim().length > 20).length
     };
   }
 }

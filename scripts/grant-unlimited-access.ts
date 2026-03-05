@@ -72,7 +72,8 @@ async function main() {
   const emails = [
     'akkiisan9@gmail.com',
     'brownbananaburrito@gmail.com',
-    'lohith.katari@gmail.com'
+    'lohith.katari@gmail.com',
+    'ericliu2006@gmail.com'
   ];
   
   for (const email of emails) {

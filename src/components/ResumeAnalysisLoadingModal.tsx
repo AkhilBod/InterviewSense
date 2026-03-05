@@ -26,25 +26,25 @@ const analysisSteps: AnalysisStep[] = [
     id: 1,
     icon: FileText,
     title: "Processing your resume",
-    duration: 2000,
+    duration: 8000,
   },
   {
     id: 2,
     icon: Brain,
-    title: "Analyzing content",
-    duration: 2500,
+    title: "Analyzing content & word choices",
+    duration: 10000,
   },
   {
     id: 3,
     icon: Target,
     title: "Checking role match",
-    duration: 2000,
+    duration: 8000,
   },
   {
     id: 4,
     icon: TrendingUp,
-    title: "Generating scores",
-    duration: 1500,
+    title: "Generating scores & suggestions",
+    duration: 6000,
   }
 ];
 

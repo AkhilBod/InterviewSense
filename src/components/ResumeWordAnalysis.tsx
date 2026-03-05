@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from '@/components/ui/button';
-import { Brain, Copy, Check, MessageSquare } from 'lucide-react';
+import { Copy, Check, AlertTriangle, AlertCircle, Lightbulb, ArrowRight } from 'lucide-react';
 import { WordAnalysisData } from '@/types/resume';
 
 interface ResumeWordAnalysisProps {
@@ -15,6 +13,7 @@ interface ResumeWordAnalysisProps {
 
 export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, company }: ResumeWordAnalysisProps) {
   const [copiedItems, setCopiedItems] = useState<Set<number>>(new Set());
+  const [filter, setFilter] = useState<'all' | 'red' | 'yellow' | 'green'>('all');
 
   const copyToClipboard = async (text: string, index: number) => {
     try {
@@ -28,174 +27,191 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
         });
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('Failed to copy:', err);
     }
   };
 
+  const filteredImprovements = filter === 'all'
+    ? analysis.wordImprovements
+    : analysis.wordImprovements.filter(i => i.severity === filter);
+
+  const categoryLabels: Record<string, string> = {
+    quantify_impact: 'Add Metrics',
+    communication: 'Clarify Language',
+    length_depth: 'Adjust Length',
+    drive: 'Show Initiative',
+    analytical: 'Add Analysis',
+    general: 'General',
+  };
+
+  const severityConfigs = {
+    red:    { border: '#ef4444', accent: '#ef4444', dim: 'rgba(239,68,68,0.08)',  Icon: AlertCircle,   label: 'Critical'  },
+    yellow: { border: '#eab308', accent: '#eab308', dim: 'rgba(234,179,8,0.08)',  Icon: AlertTriangle, label: 'Important' },
+    green:  { border: '#22c55e', accent: '#22c55e', dim: 'rgba(34,197,94,0.08)', Icon: Lightbulb,     label: 'Minor'     },
+  };
+
+  const tabs = [
+    { key: 'all',    label: 'All',       count: analysis.wordImprovements.length },
+    { key: 'red',    label: 'Critical',  count: analysis.severityBreakdown?.red    || 0 },
+    { key: 'yellow', label: 'Important', count: analysis.severityBreakdown?.yellow || 0 },
+    { key: 'green',  label: 'Minor',     count: analysis.severityBreakdown?.green  || 0 },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-slate-800 border-slate-700 text-slate-100">
-        <CardHeader className="text-center py-8">
-          <CardTitle className="text-3xl flex items-center justify-center gap-3">
-            <Brain className="h-8 w-8 text-blue-400" />
-            Word-Level Analysis Report
-          </CardTitle>
-          <div className="text-slate-400 text-lg mt-2">
-            <p>For a {jobTitle} position{company && ` at ${company}`} • {new Date().toLocaleDateString()}</p>
-          </div>
-        </CardHeader>
-      </Card>
+    <div style={{ background: 'transparent', minHeight: '100%', padding: '24px', fontFamily: 'Inter, -apple-system, sans-serif', color: '#e5e7eb' }}>
+      <div style={{ maxWidth: '100%', margin: '0 auto' }}>
 
-      {/* Summary */}
-      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-slate-100 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Analysis Summary
-          </CardTitle>
-          <div className="text-slate-400 text-lg">
-            {analysis.wordImprovements.length} specific improvements identified
-          </div>
-        </CardHeader>
-        <CardContent className="p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Critical Issues */}
-            <div className="text-center bg-red-900/20 border border-red-500/30 rounded-xl p-6 transition-all duration-300">
-              <div className="text-4xl font-bold text-red-400 mb-2">{analysis.severityBreakdown.red}</div>
-              <div className="text-slate-400 text-lg">Critical Issues</div>
-              <div className="text-xs text-red-300 mt-2">Urgent fixes needed</div>
+        {/* Title */}
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#ffffff', margin: 0, marginBottom: '4px' }}>
+            Word-Level Analysis
+          </h2>
+          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+            Line-by-line suggestions to strengthen your resume
+          </p>
+        </div>
+
+        {/* Severity breakdown row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+          {[
+            { count: analysis.severityBreakdown?.red    || 0, color: '#ef4444', label: 'Critical'  },
+            { count: analysis.severityBreakdown?.yellow || 0, color: '#eab308', label: 'Important' },
+            { count: analysis.severityBreakdown?.green  || 0, color: '#22c55e', label: 'Minor'     },
+          ].map((s) => (
+            <div key={s.label} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '10px', padding: '16px', textAlign: 'center' as const }}>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: s.color, fontFamily: 'ui-monospace, monospace', lineHeight: 1 }}>{s.count}</div>
+              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{s.label}</div>
             </div>
-            
-            {/* Important Items */}
-            <div className="text-center bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-6 transition-all duration-300">
-              <div className="text-4xl font-bold text-yellow-400 mb-2">{analysis.severityBreakdown.yellow}</div>
-              <div className="text-slate-400 text-lg">Important Items</div>
-              <div className="text-xs text-yellow-300 mt-2">Should be addressed</div>
+          ))}
+        </div>
+
+        {/* Category tags */}
+        {analysis.categoryBreakdown && (
+          <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
+            <div style={{ fontSize: '11px', color: '#4b5563', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '12px' }}>By Category</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
+              {Object.entries(analysis.categoryBreakdown)
+                .filter(([, v]) => (v as number) > 0)
+                .map(([cat, count]) => (
+                  <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: '#0a0f1e', border: '1px solid #1f2937', borderRadius: '5px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#9ca3af' }}>{count as number}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{categoryLabels[cat] || cat}</span>
+                  </div>
+                ))}
             </div>
-            
-            {/* Minor Improvements */}
-            <div className="text-center bg-green-900/20 border border-green-500/30 rounded-xl p-6 transition-all duration-300">
-              <div className="text-4xl font-bold text-green-400 mb-2">{analysis.severityBreakdown.green}</div>
-              <div className="text-slate-400 text-lg">Minor Improvements</div>
-              <div className="text-xs text-green-300 mt-2">Nice to have fixes</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Word Improvements */}
-      <div className="space-y-4">
-        <Card className="bg-slate-800 border-slate-700 text-slate-100">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-              <MessageSquare className="h-6 w-6 text-blue-400" />
-              Word & Phrase Improvements ({analysis.wordImprovements.length})
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        
-        {/* Help Text */}
-        <Card className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30 text-slate-100">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              <MessageSquare className="h-6 w-6 text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-slate-200">
-                <p className="font-medium mb-3 text-slate-100">How to use these suggestions:</p>
-                <p className="text-slate-300">
-                  Replace the highlighted words and phrases with the improved versions to make your resume more impactful. 
-                  Focus on quantifying achievements with specific numbers, percentages, and impact metrics.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {analysis.wordImprovements.length === 0 ? (
-          <Card className="bg-slate-800 border-slate-700 text-slate-100">
-            <CardContent className="text-center py-8">
-              <p className="text-slate-400">No word improvements found.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {analysis.wordImprovements.map((improvement, index) => {
-              const getSeverityColor = (severity: string) => {
-                switch (severity) {
-                  case 'red': return 'border-red-500/50';
-                  case 'yellow': return 'border-yellow-500/50';
-                  case 'green': return 'border-green-500/50';
-                  default: return 'border-slate-600/50';
-                }
-              };
-
-              const getSeverityBadgeColor = (severity: string) => {
-                switch (severity) {
-                  case 'red': return 'bg-red-900/30 text-red-300 border-red-500/50';
-                  case 'yellow': return 'bg-yellow-900/30 text-yellow-300 border-yellow-500/50';
-                  case 'green': return 'bg-green-900/30 text-green-300 border-green-500/50';
-                  default: return 'bg-slate-700 text-slate-300 border-slate-600';
-                }
-              };
-
-              const getSeverityLabel = (severity: string) => {
-                switch (severity) {
-                  case 'red': return 'Critical';
-                  case 'yellow': return 'Important';
-                  case 'green': return 'Minor';
-                  default: return 'Unknown';
-                }
-              };
-
-              return (
-                <Card key={index} className={`bg-slate-800 border-slate-700 text-slate-100 border-l-4 ${getSeverityColor(improvement.severity)}`}>
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      {/* Priority Badge */}
-                      <div className="flex justify-between items-start">
-                        <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getSeverityBadgeColor(improvement.severity)}`}>
-                          {getSeverityLabel(improvement.severity)}
-                        </div>
-                      </div>
-
-                      {/* Before/After in compact format */}
-                      <div className="space-y-3">
-                        <div>
-                          <span className="text-xs font-medium text-red-400 mb-1 block">Replace:</span>
-                          <div className="p-2 rounded-lg bg-red-900/20 border border-red-500/30">
-                            <span className="text-red-300 text-sm">"{improvement.original}"</span>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <span className="text-xs font-medium text-green-400 mb-1 block">With:</span>
-                          <div className="p-2 rounded-lg bg-green-900/20 border border-green-500/30 relative group">
-                            <span className="text-green-300 text-sm">"{improvement.improved}"</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 hover:bg-green-800/50"
-                              onClick={() => copyToClipboard(improvement.improved, index)}
-                            >
-                              {copiedItems.has(index) ? (
-                                <Check className="h-3 w-3 text-green-400" />
-                              ) : (
-                                <Copy className="h-3 w-3 text-green-400" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-slate-300 bg-slate-700/40 p-2 rounded-lg border border-slate-600/50">
-                        <strong className="text-slate-200">Why:</strong> {improvement.explanation}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
           </div>
         )}
+
+        {/* Filter tabs */}
+        <div style={{ display: 'flex', gap: '0', marginBottom: '20px', borderBottom: '1px solid #1f2937' }}>
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key as typeof filter)}
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: filter === tab.key ? '2px solid #3b82f6' : '2px solid transparent',
+                color: filter === tab.key ? '#3b82f6' : '#6b7280',
+                fontSize: '13px',
+                fontWeight: filter === tab.key ? 600 : 400,
+                cursor: 'pointer',
+                marginBottom: '-1px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {tab.label}
+              <span style={{
+                fontSize: '11px',
+                background: filter === tab.key ? '#1d4ed8' : '#1f2937',
+                color: filter === tab.key ? '#93c5fd' : '#6b7280',
+                padding: '1px 6px',
+                borderRadius: '4px',
+              }}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Issues list */}
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
+          {filteredImprovements.map((item, index) => {
+            const cfg = severityConfigs[item.severity as keyof typeof severityConfigs] || severityConfigs.green;
+            const { Icon } = cfg;
+            return (
+              <div
+                key={index}
+                style={{
+                  background: '#111827',
+                  border: '1px solid #1f2937',
+                  borderLeft: '3px solid ' + cfg.border,
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderBottom: '1px solid #1f2937' }}>
+                  <Icon size={13} color={cfg.accent} />
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: cfg.accent, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{cfg.label}</span>
+                  <span style={{ fontSize: '11px', color: '#4b5563' }}>{categoryLabels[item.category] || item.category}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#374151' }}>#{index + 1}</span>
+                </div>
+                {/* Body */}
+                <div style={{ padding: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 1fr', gap: '10px', alignItems: 'start', marginBottom: '12px' }}>
+                    {/* Original */}
+                    <div style={{ background: '#0a0f1e', borderRadius: '6px', padding: '10px 12px', border: '1px solid #1f2937' }}>
+                      <div style={{ fontSize: '10px', color: '#4b5563', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: '5px' }}>Original</div>
+                      <p style={{ fontSize: '13px', color: '#9ca3af', lineHeight: 1.5, margin: 0, textDecoration: 'line-through', textDecorationColor: cfg.accent }}>{item.original}</p>
+                    </div>
+                    {/* Arrow */}
+                    <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '24px' }}>
+                      <ArrowRight size={14} color="#374151" />
+                    </div>
+                    {/* Improved */}
+                    <div style={{ background: cfg.dim, borderRadius: '6px', padding: '10px 12px', border: '1px solid ' + cfg.border + '40' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <div style={{ fontSize: '10px', color: cfg.accent, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Suggested Fix</div>
+                        <button
+                          onClick={() => copyToClipboard(item.improved, index)}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6b7280', padding: '2px 4px', borderRadius: '4px' }}
+                        >
+                          {copiedItems.has(index)
+                            ? <><Check size={11} color="#22c55e" /><span style={{ color: '#22c55e' }}>Copied</span></>
+                            : <><Copy size={11} />Copy</>}
+                        </button>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#e5e7eb', lineHeight: 1.5, margin: 0 }}>{item.improved}</p>
+                    </div>
+                  </div>
+                  {/* Explanation */}
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.6, borderTop: '1px solid #1f2937', paddingTop: '10px' }}>
+                    {item.explanation}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Empty state */}
+        {filteredImprovements.length === 0 && (
+          <div style={{ textAlign: 'center' as const, padding: '48px 24px', background: '#111827', borderRadius: '8px', border: '1px solid #1f2937' }}>
+            <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>No {filter !== 'all' ? filter : ''} issues found.</p>
+          </div>
+        )}
+
+        {/* Footer note */}
+        <div style={{ marginTop: '28px', padding: '14px 18px', background: '#111827', borderRadius: '8px', border: '1px solid #1f2937', borderLeft: '3px solid #3b82f6' }}>
+          <p style={{ fontSize: '13px', color: '#9ca3af', lineHeight: 1.6, margin: 0 }}>
+            Fix <span style={{ color: '#ef4444', fontWeight: 600 }}>critical</span> issues first, then <span style={{ color: '#eab308', fontWeight: 600 }}>important</span> ones. Click copy on any suggestion to paste directly into your resume.
+          </p>
+        </div>
+
       </div>
     </div>
   );

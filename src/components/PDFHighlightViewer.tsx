@@ -385,19 +385,55 @@ export default function PDFHighlightViewer({
                 className="absolute top-0 left-0 pointer-events-none"
                 style={{ width: TARGET_WIDTH, height: TARGET_HEIGHT }}
               >
-                {highlightBoxes.map(box => (
-                  <div
-                    key={box.id}
-                    className="absolute transition-all"
-                    style={{
-                      left: box.x, top: box.y, width: box.width, height: box.height,
-                      ...getColorStyle(box.highlight.color),
-                      borderBottomWidth: '2px', borderRadius: '2px', pointerEvents: 'auto',
-                    }}
-                    onMouseEnter={() => setHoveredId(box.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                  />
-                ))}
+                {highlightBoxes.map(box => {
+                  const isHovered = hoveredId === box.id;
+                  return (
+                    <div key={box.id}>
+                      <div
+                        className="absolute transition-all cursor-pointer"
+                        style={{
+                          left: box.x, top: box.y, width: box.width, height: box.height,
+                          ...getColorStyle(box.highlight.color),
+                          borderBottomWidth: '2px', borderRadius: '2px', pointerEvents: 'auto',
+                        }}
+                        onMouseEnter={() => setHoveredId(box.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                      />
+                      {/* Tooltip */}
+                      {isHovered && (
+                        <div
+                          className="absolute z-50 pointer-events-none"
+                          style={{
+                            left: Math.min(box.x, TARGET_WIDTH - 300),
+                            top: box.y + box.height + 6,
+                            width: 280,
+                          }}
+                        >
+                          <div style={{
+                            background: '#1e293b',
+                            border: `1px solid ${COLOR_MAP[box.highlight.color]?.border || '#3b82f6'}`,
+                            borderRadius: 8,
+                            padding: '10px 12px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                          }}>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: COLOR_MAP[box.highlight.color]?.border || '#3b82f6', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {box.highlight.title}
+                            </div>
+                            <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: box.highlight.suggestion ? 8 : 0 }}>
+                              {box.highlight.feedback}
+                            </div>
+                            {box.highlight.suggestion && (
+                              <div style={{ fontSize: 12, color: '#93c5fd', lineHeight: 1.5, borderTop: '1px solid #334155', paddingTop: 6 }}>
+                                <span style={{ fontWeight: 600, fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggestion: </span>
+                                {box.highlight.suggestion}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

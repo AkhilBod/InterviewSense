@@ -58,7 +58,8 @@ export async function GET(
         break;
     }
 
-    return new NextResponse(fileBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `inline; filename="${filename}"`,

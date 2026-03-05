@@ -171,6 +171,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     marginBottom: 7,
   };
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-[#0a0f1e] text-white">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');`}</style>
@@ -397,8 +399,70 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       )}
 
-      {/* Fixed Left Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-[#0f1117] border-r border-[#1f2937] flex flex-col z-50">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#0f1117] border-b border-[#1f2937] z-50 flex items-center justify-between px-4">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Image src="https://i.ibb.co/hJC8n6NB/Generated-Image-February-20-2026-7-04-PM-Photoroom.png" alt="InterviewSense" width={28} height={28} className="object-contain" />
+          <span className="font-bold text-sm text-white">InterviewSense</span>
+        </Link>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-gray-400 hover:text-white transition-colors"
+        >
+          {isMobileMenuOpen ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          ) : (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="absolute top-14 left-0 right-0 bg-[#0f1117] border-b border-[#1f2937] p-4 max-h-[70vh] overflow-y-auto">
+            <nav className="flex flex-col gap-1">
+              {navItems.map((item) => {
+                const active = isActive(item.matchPath);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                      active
+                        ? 'bg-[#1a1f2e] text-white border-l-[3px] border-[#3b82f6]'
+                        : 'text-[#6b7280] hover:text-[#d1d5db]'
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="mt-4 pt-4 border-t border-[#1f2937] flex flex-col gap-2">
+              <button
+                onClick={() => { setShowSettings(true); setIsMobileMenuOpen(false); }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#6b7280] hover:text-white transition-colors text-sm font-medium"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-[#6b7280] hover:text-[#c4cce0] transition-colors text-sm font-medium"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fixed Left Sidebar — hidden on mobile */}
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[220px] bg-[#0f1117] border-r border-[#1f2937] flex-col z-50">
         {/* Logo */}
         <div className="p-6">
           <Link href="/dashboard" className="flex items-center gap-2">
@@ -518,8 +582,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="ml-[220px] flex-1">
+      {/* Main Content — offset for sidebar on desktop, full-width on mobile */}
+      <div className="lg:ml-[220px] flex-1 pt-14 lg:pt-0">
         {children}
       </div>
     </div>
