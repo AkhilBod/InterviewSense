@@ -596,31 +596,6 @@ export default function ResumeCheckerPage() {
                         ))}
                       </div>
 
-                      {/* Detailed Analysis */}
-                      {resumeData.analysis && (
-                        <div style={{
-                          background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid rgba(255,255,255,0.06)',
-                          borderRadius: 16,
-                          padding: 28,
-                        }}>
-                          <h2 style={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            color: '#64748b',
-                            letterSpacing: '0.1em',
-                            textTransform: 'uppercase',
-                            marginBottom: 16,
-                          }}>
-                            Detailed Analysis
-                          </h2>
-                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.95rem', color: '#cbd5e1', lineHeight: 1.7 }}>
-                            {parseAnalysisContent(resumeData.analysis)}
-                          </div>
-                        </div>
-                      )}
-
                       {/* Category Breakdown Bars */}
                       <div style={{
                         background: 'rgba(255,255,255,0.02)',
