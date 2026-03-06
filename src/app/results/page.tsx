@@ -99,6 +99,17 @@ function ResultsPage() {
   const strokeDashoffset = circumference * (1 - interviewSummary.overallScore / 100);
   const keywordMatchRate = Math.round((interviewSummary.keywordStats.matched / (interviewSummary.keywordStats.matched + interviewSummary.keywordStats.missed)) * 100);
 
+  // Normalize strengths & improvements — the backend may return a string or array.
+  const normalizeList = (input: string[] | string | undefined) => {
+    if (!input) return [] as string[];
+    if (Array.isArray(input)) return input.filter(Boolean).map(i => String(i).trim());
+    // if a delimited string, split on newlines, commas, or semicolons
+    return String(input).split(/\r?\n|,|;/).map(s => s.trim()).filter(Boolean);
+  };
+
+  const strengthsList = normalizeList(interviewSummary.strengthAreas);
+  const improvementsList = normalizeList(interviewSummary.improvementAreas);
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -182,14 +193,14 @@ function ResultsPage() {
               <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 600, color: '#22c55e', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20 }}>
                 Key Strengths
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {interviewSummary.strengthAreas.map((strength, index) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', marginTop: 8, flexShrink: 0 }} />
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6 }}>{strength}</p>
-                  </div>
-                ))}
-              </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {strengthsList.length > 0 ? strengthsList.map((strength, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', marginTop: 8, flexShrink: 0 }} />
+                      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>{strength}</p>
+                    </div>
+                  )) : <p style={{ color: '#64748b', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>No strengths identified.</p>}
+                </div>
             </div>
 
             <div style={{ background: 'rgba(234,179,8,0.04)', border: '1px solid rgba(234,179,8,0.12)', borderRadius: 16, padding: 28 }}>
@@ -197,12 +208,12 @@ function ResultsPage() {
                 Areas for Growth
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {interviewSummary.improvementAreas.map((area, index) => (
+                {improvementsList.length > 0 ? improvementsList.map((area, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#eab308', marginTop: 8, flexShrink: 0 }} />
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6 }}>{area}</p>
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>{area}</p>
                   </div>
-                ))}
+                )) : <p style={{ color: '#64748b', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>No improvement areas identified.</p>}
               </div>
             </div>
           </div>
@@ -277,27 +288,26 @@ function ResultsPage() {
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.7 }}>
-                Based on your mock interview for <strong style={{ color: '#e2e8f0' }}>{interviewSummary.jobRole}</strong> at <strong style={{ color: '#e2e8f0' }}>{interviewSummary.company}</strong>, here are observations and recommendations:
+                Here's a constructive summary of your mock interview for <strong style={{ color: '#e2e8f0' }}>{interviewSummary.jobRole}</strong> at <strong style={{ color: '#e2e8f0' }}>{interviewSummary.company}</strong>, with suggestions to help you improve further:
               </p>
               <div>
                 <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 8 }}>Strengths:</h3>
                 <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Your technical knowledge came across clearly with good problem-solving skills.</li>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>You articulated thoughts well and maintained good communication throughout.</li>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Your answers to behavioral questions followed a logical structure.</li>
+                  {strengthsList.length > 0 ? strengthsList.map((s, i) => (
+                    <li key={i} style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>{s}</li>
+                  )) : <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>No specific strengths identified.</li>}
                 </ul>
               </div>
               <div>
                 <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 8 }}>Areas for Improvement:</h3>
                 <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Include more examples of leadership and initiative in your responses.</li>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Try to quantify achievements with specific metrics and numbers.</li>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Practice being more concise while still being thorough.</li>
-                  <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>Watch for filler words like &quot;{interviewSummary.fillerWordStats.mostCommon}&quot;.</li>
+                  {improvementsList.length > 0 ? improvementsList.map((a, i) => (
+                    <li key={i} style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>{a}</li>
+                  )) : <li style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6 }}>No specific improvement areas identified.</li>}
                 </ul>
               </div>
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.7 }}>
-                For a <strong style={{ color: '#e2e8f0' }}>{interviewSummary.jobRole}</strong> position, emphasize your experience with system design, algorithms, and collaborative problem-solving. Prepare more specific examples that demonstrate how your technical skills translated to business impact.
+                Consider emphasizing examples of system design, algorithmic trade-offs, and collaborative problem-solving. Prepare specific stories that show how your technical work produced measurable impact for the business.
               </p>
             </div>
           </div>
