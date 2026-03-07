@@ -1971,20 +1971,6 @@ public class Solution {
 
   return (
     <div className="container mx-auto p-4 pt-8 space-y-6">
-      <style>{`
-        /* Hide scrollbars in technical assessment */
-        .container ::-webkit-scrollbar {
-          display: none;
-        }
-        .container {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .monaco-editor .overflow-guard > .decorationsOverviewRuler,
-        .monaco-editor .overflow-guard .monaco-scrollable-element > .scrollbar {
-          display: none !important;
-        }
-      `}</style>
       {/* ── Setup Form ────────────────────────────────────────────── */}
       {!question && (
         <div style={{ maxWidth: 560, margin: '0 auto', padding: '52px 24px 0' }}>

@@ -605,7 +605,7 @@ export default function Home() {
                       border: 'none',
                       display: 'block'
                     }}
-                    src="https://player.vimeo.com/video/1098880047?share=copy&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
+                    src="https://player.vimeo.com/video/1171183131?fl=pl&fe=cm&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
                     title="InterviewSense Demo"
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowFullScreen
@@ -666,7 +666,7 @@ export default function Home() {
                     border: 'none',
                     display: 'block'
                   }}
-                  src="https://player.vimeo.com/video/1098880047?share=copy&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
+                  src="https://player.vimeo.com/video/1171183131?fl=pl&fe=cm&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1&autopause=0&dnt=1&playsinline=1"
                   title="InterviewSense Demo"
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
@@ -1489,6 +1489,9 @@ export default function Home() {
 
           {/* Footer Links and Copyright */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 mb-6 text-sm">
+            <Link href="/blog" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Blog
+            </Link>
             <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 transition-colors">
               Terms of Service
             </Link>
