@@ -136,12 +136,13 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
 .animate-slide-left {
-  animation: slide-left 15s linear infinite;
+  animation: slide-left 25s linear infinite;
+  will-change: transform;
 }
 
 /* Pause animation on hover */
