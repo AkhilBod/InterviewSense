@@ -8,7 +8,7 @@ import { CheckCircle2 } from 'lucide-react';
 const plans = [
   {
     name: 'Monthly',
-    price: 25,
+    price: 9.99,
     priceId: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID,
     interval: 'month',
     features: [
@@ -21,7 +21,7 @@ const plans = [
   },
   {
     name: 'Annual',
-    price: 199,
+    price: 80,
     priceId: process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID,
     interval: 'year',
     savings: '33%',
