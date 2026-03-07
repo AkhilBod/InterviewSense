@@ -28,7 +28,19 @@ interface SystemDesignResults {
 }
 
 const pageStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 340px;
+    background: radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
 `;
 
 export default function SystemDesignFinalResultsPage() {
@@ -101,12 +113,6 @@ export default function SystemDesignFinalResultsPage() {
     loadResults();
   }, [router]);
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return '#22c55e';
-    if (score >= 60) return '#eab308';
-    return '#ef4444';
-  };
-
   const handleBackToTest = () => {
     sessionStorage.removeItem('systemDesignTest');
     sessionStorage.removeItem('systemDesignResponses');
@@ -139,122 +145,52 @@ export default function SystemDesignFinalResultsPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <style>{pageStyles}</style>
-        <div style={{ minHeight: '100vh', padding: '32px 24px', maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', padding: '80px 24px 120px', maxWidth: 720, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
           {/* Header */}
-          <div style={{ marginBottom: 40 }}>
+          <div style={{ marginBottom: 48 }}>
             <h1 style={{
               fontFamily: "'Instrument Serif', serif",
               fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
               fontWeight: 400,
-              color: '#e2e8f0',
+              color: '#f8fafc',
               marginBottom: 8,
             }}>
               System Design Results
             </h1>
             <p style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: '0.9rem',
-              color: '#64748b',
+              fontSize: '0.85rem',
+              color: 'hsl(215, 15%, 55%)',
             }}>
-              {results.problemTitle} &middot; {results.difficulty} &middot; {results.testDuration} min &middot; {results.completedSteps}/5 steps &middot; {new Date().toLocaleDateString()}
+              {results.problemTitle} · {results.difficulty} · {results.testDuration} min · {results.completedSteps}/5 steps · {new Date().toLocaleDateString()}
             </p>
           </div>
 
-          {/* Score Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: 16,
-            marginBottom: 40,
-          }}>
-            {/* Overall Score */}
-            <div style={{
-              background: 'rgba(59, 130, 246, 0.06)',
-              border: '1px solid rgba(59, 130, 246, 0.12)',
-              borderRadius: 16,
-              padding: 20,
-              textAlign: 'center',
-            }}>
-              <div style={{
-                fontSize: '3rem',
-                fontWeight: 700,
-                fontFamily: "'JetBrains Mono', monospace",
-                color: getScoreColor(results.overallScore),
-                lineHeight: 1,
-                marginBottom: 8,
-              }}>
-                {results.overallScore}
-              </div>
-              <div style={{
-                fontSize: '0.72rem',
-                color: '#64748b',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 600,
-              }}>
-                Overall Score
-              </div>
+          {/* Scores */}
+          <div style={{ display: 'flex', gap: 48, flexWrap: 'wrap', marginBottom: 56 }}>
+            <div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>Overall</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '2.4rem', fontWeight: 600, color: '#3b82f6', lineHeight: 1 }}>{results.overallScore}</div>
             </div>
-
-            {/* Category Scores */}
             {categories.map((cat) => (
-              <div key={cat.key} style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: 16,
-                padding: 20,
-                textAlign: 'center',
-              }}>
-                <div style={{
-                  fontSize: '2.4rem',
-                  fontWeight: 600,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: getScoreColor(results.categoryScores[cat.key]),
-                  lineHeight: 1,
-                  marginBottom: 8,
-                }}>
-                  {results.categoryScores[cat.key]}
-                </div>
-                <div style={{
-                  fontSize: '0.72rem',
-                  color: '#64748b',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 600,
-                }}>
-                  {cat.label}
-                </div>
+              <div key={cat.key}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{cat.label}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.6rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1 }}>{results.categoryScores[cat.key]}</div>
               </div>
             ))}
           </div>
 
-          {/* Analysis Summary */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: 16,
-            padding: 28,
-            marginBottom: 32,
-          }}>
-            <h2 style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#64748b',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginBottom: 16,
-            }}>
+          {/* Analysis */}
+          <div style={{ marginBottom: 56 }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 16 }}>
               Detailed Analysis
-            </h2>
+            </div>
             <p style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: '0.95rem',
-              color: '#cbd5e1',
-              lineHeight: 1.7,
+              fontSize: '0.92rem',
+              color: 'hsl(215, 15%, 75%)',
+              lineHeight: 1.8,
               whiteSpace: 'pre-wrap',
               margin: 0,
             }}>
@@ -262,61 +198,22 @@ export default function SystemDesignFinalResultsPage() {
             </p>
           </div>
 
-          {/* Score Breakdown Bars */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: 16,
-            padding: 28,
-            marginBottom: 32,
-          }}>
-            <h2 style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#64748b',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}>
+          {/* Category Breakdown */}
+          <div style={{ marginBottom: 56 }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 20 }}>
               Category Breakdown
-            </h2>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {categories.map((cat) => {
                 const score = results.categoryScores[cat.key];
                 return (
                   <div key={cat.key}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: '0.85rem',
-                        color: '#e2e8f0',
-                        fontWeight: 500,
-                      }}>
-                        {cat.label}
-                      </span>
-                      <span style={{
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: '0.85rem',
-                        color: getScoreColor(score),
-                        fontWeight: 600,
-                      }}>
-                        {score}/100
-                      </span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: '#f8fafc', fontWeight: 500 }}>{cat.label}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.78rem', color: 'hsl(215, 15%, 55%)', fontWeight: 500 }}>{score}/100</span>
                     </div>
-                    <div style={{
-                      height: 6,
-                      background: 'rgba(255, 255, 255, 0.04)',
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                    }}>
-                      <div style={{
-                        width: `${score}%`,
-                        height: '100%',
-                        background: getScoreColor(score),
-                        borderRadius: 3,
-                        transition: 'width 0.6s ease',
-                      }} />
+                    <div style={{ height: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ width: `${score}%`, height: '100%', background: '#3b82f6', borderRadius: 3, transition: 'width 0.6s ease' }} />
                     </div>
                   </div>
                 );
@@ -325,62 +222,30 @@ export default function SystemDesignFinalResultsPage() {
           </div>
 
           {/* Strengths & Improvements */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 32 }}>
-            {/* Strengths */}
-            <div style={{
-              background: 'rgba(34, 197, 94, 0.04)',
-              border: '1px solid rgba(34, 197, 94, 0.12)',
-              borderRadius: 16,
-              padding: 28,
-            }}>
-              <h2 style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#22c55e',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: 20,
-              }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, marginBottom: 56 }}>
+            <div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 20 }}>
                 Strengths
-              </h2>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {results.feedback.strengths.map((item, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', marginTop: 8, flexShrink: 0 }} />
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>
-                      {item}
-                    </p>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#3b82f6', marginTop: 8, flexShrink: 0 }} />
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'hsl(215, 15%, 75%)', lineHeight: 1.65, margin: 0 }}>{item}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Areas for Improvement */}
-            <div style={{
-              background: 'rgba(234, 179, 8, 0.04)',
-              border: '1px solid rgba(234, 179, 8, 0.12)',
-              borderRadius: 16,
-              padding: 28,
-            }}>
-              <h2 style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#eab308',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: 20,
-              }}>
+            <div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 20 }}>
                 Areas for Improvement
-              </h2>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {results.feedback.improvements.map((item, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#eab308', marginTop: 8, flexShrink: 0 }} />
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>
-                      {item}
-                    </p>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'hsl(215, 15%, 35%)', marginTop: 8, flexShrink: 0 }} />
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'hsl(215, 15%, 75%)', lineHeight: 1.65, margin: 0 }}>{item}</p>
                   </div>
                 ))}
               </div>
@@ -388,44 +253,24 @@ export default function SystemDesignFinalResultsPage() {
           </div>
 
           {/* Recommendations */}
-          <div style={{
-            background: 'rgba(59, 130, 246, 0.04)',
-            border: '1px solid rgba(59, 130, 246, 0.12)',
-            borderRadius: 16,
-            padding: 28,
-            marginBottom: 32,
-          }}>
-            <h2 style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#3b82f6',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}>
+          <div style={{ marginBottom: 56 }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 20 }}>
               Recommendations
-            </h2>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {results.feedback.recommendations.map((item, index) => (
                 <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                   <span style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    background: 'rgba(59, 130, 246, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.75rem',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.72rem',
                     fontWeight: 600,
                     color: '#3b82f6',
                     flexShrink: 0,
+                    marginTop: 2,
                   }}>
-                    {index + 1}
+                    {index + 1}.
                   </span>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'hsl(215, 15%, 75%)', lineHeight: 1.65, margin: 0 }}>
                     {item}
                   </p>
                 </div>
@@ -434,99 +279,46 @@ export default function SystemDesignFinalResultsPage() {
           </div>
 
           {/* Test Summary */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: 16,
-            padding: 28,
-            marginBottom: 32,
-          }}>
-            <h2 style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: '#64748b',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginBottom: 20,
-            }}>
+          <div style={{ marginBottom: 56 }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 20 }}>
               Test Summary
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderRadius: 10,
-                padding: 18,
-                border: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.5rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>
-                  {results.testDuration}m
+            </div>
+            <div style={{ display: 'flex', gap: 48, flexWrap: 'wrap' }}>
+              {[
+                { label: 'Duration', value: `${results.testDuration}m` },
+                { label: 'Steps', value: `${results.completedSteps}/5` },
+                { label: 'Difficulty', value: results.difficulty },
+                { label: 'Performance', value: results.overallScore >= 80 ? 'Strong' : results.overallScore >= 60 ? 'Good' : 'Needs Work' },
+              ].map(s => (
+                <div key={s.label}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.4rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1 }}>{s.value}</div>
                 </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Duration
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderRadius: 10,
-                padding: 18,
-                border: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.5rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>
-                  {results.completedSteps}/5
-                </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Steps Completed
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderRadius: 10,
-                padding: 18,
-                border: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.5rem', fontWeight: 600, color: '#e2e8f0', marginBottom: 4 }}>
-                  {results.difficulty}
-                </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Difficulty
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderRadius: 10,
-                padding: 18,
-                border: '1px solid rgba(255, 255, 255, 0.04)',
-              }}>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.5rem', fontWeight: 600, color: getScoreColor(results.overallScore), marginBottom: 4 }}>
-                  {results.overallScore >= 80 ? 'Strong' : results.overallScore >= 60 ? 'Good' : 'Needs Work'}
-                </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Performance
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 48 }}>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 56 }}>
             <button
               onClick={handleBackToTest}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                padding: '12px 24px',
-                background: '#2563eb',
+                padding: '14px 28px',
+                background: '#3b82f6',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
                 fontFamily: "'Inter', sans-serif",
-                fontSize: '0.9rem',
-                fontWeight: 500,
+                fontSize: '0.88rem',
+                fontWeight: 600,
                 cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
+                transition: 'background 0.15s, transform 0.15s',
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.transform = 'none'; }}
             >
               Try Another Problem
             </button>
@@ -536,15 +328,16 @@ export default function SystemDesignFinalResultsPage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                padding: '12px 24px',
+                padding: '14px 28px',
                 background: 'transparent',
-                color: '#94a3b8',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'hsl(215, 20%, 65%)',
+                border: '1px solid hsl(220, 20%, 18%)',
                 borderRadius: 10,
                 fontFamily: "'Inter', sans-serif",
-                fontSize: '0.9rem',
+                fontSize: '0.88rem',
                 fontWeight: 500,
                 textDecoration: 'none',
+                transition: 'background 0.15s',
               }}
             >
               Back to Dashboard

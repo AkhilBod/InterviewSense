@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const type = url.searchParams.get('type');
     const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = 10;
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 200);
     const skip = (page - 1) * limit;
 
     const where: any = { userId: user.id };

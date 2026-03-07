@@ -35,6 +35,9 @@ interface UserStats {
   sdAvgScore?: number;
   portfolioTotalReviews?: number;
   portfolioBestScore?: number;
+  weeklyGoal?: number;
+  weeklyProgress?: number;
+  scoreImprovement?: number;
 }
 
 interface ActivityItem {
@@ -165,6 +168,130 @@ function ActivityHeatmap({ activities }: { activities: ActivityItem[] }) {
   );
 }
 
+/* ───────── Score Over Time Graph ───────── */
+
+const TYPE_LABELS: Record<string, string> = {
+  behavioral: 'Behavioral',
+  technical: 'Technical',
+  resume: 'Resume',
+  system_design: 'Sys Design',
+  portfolio: 'Portfolio',
+  career: 'Career',
+};
+
+function ScoreGraph({ activities }: { activities: ActivityItem[] }) {
+  const scored = useMemo(() =>
+    activities.filter(a => a.score != null && a.score > 0)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
+    [activities]
+  );
+
+  if (scored.length < 2) {
+    return (
+      <div style={{ padding: '32px 0', textAlign: 'center', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)' }}>
+        Complete more sessions to see your score trend.
+      </div>
+    );
+  }
+
+  const W = 680, H = 200, PX = 40, PY = 24, PB = 28;
+  const plotW = W - PX * 2, plotH = H - PY - PB;
+  const minScore = Math.max(0, Math.min(...scored.map(s => s.score!)) - 10);
+  const maxScore = Math.min(100, Math.max(...scored.map(s => s.score!)) + 10);
+  const range = maxScore - minScore || 1;
+
+  const points = scored.map((s, i) => ({
+    x: PX + (i / (scored.length - 1)) * plotW,
+    y: PY + plotH - ((s.score! - minScore) / range) * plotH,
+    score: s.score!,
+    type: s.activityType,
+    date: new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  }));
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  const areaPath = `${linePath} L${points[points.length - 1].x},${PY + plotH} L${points[0].x},${PY + plotH} Z`;
+
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => {
+    const val = Math.round(minScore + range * pct);
+    const y = PY + plotH - pct * plotH;
+    return { val, y };
+  });
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
+      {gridLines.map((g, i) => (
+        <g key={i}>
+          <line x1={PX} y1={g.y} x2={W - PX} y2={g.y} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />
+          <text x={PX - 8} y={g.y + 3.5} textAnchor="end" fill="hsl(215, 15%, 38%)" fontSize={9} fontFamily="'JetBrains Mono', monospace">{g.val}</text>
+        </g>
+      ))}
+      <path d={areaPath} fill="url(#scoreGradient)" />
+      <defs>
+        <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(59,130,246,0.15)" />
+          <stop offset="100%" stopColor="rgba(59,130,246,0)" />
+        </linearGradient>
+      </defs>
+      <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      {points.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r={4} fill="#3b82f6" stroke="hsl(222.2, 84%, 4.9%)" strokeWidth={2} />
+          <title>{`${p.date} \u00B7 ${TYPE_LABELS[p.type] || p.type} \u00B7 ${p.score}`}</title>
+        </g>
+      ))}
+      {[0, Math.floor(points.length / 2), points.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(idx => (
+        <text key={idx} x={points[idx].x} y={H - 4} textAnchor="middle" fill="hsl(215, 15%, 38%)" fontSize={9} fontFamily="'Inter', sans-serif">{points[idx].date}</text>
+      ))}
+    </svg>
+  );
+}
+
+/* ───────── Topic Bars ───────── */
+
+function TopicBars({ data }: { data: Record<string, { solved: number; correct: number }> }) {
+  const entries = Object.entries(data).sort((a, b) => b[1].solved - a[1].solved);
+  if (entries.length === 0) return (
+    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '12px 0' }}>No topic data yet.</div>
+  );
+  const maxSolved = Math.max(...entries.map(([, v]) => v.solved));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {entries.slice(0, 8).map(([topic, { solved, correct }]) => {
+        const pct = maxSolved > 0 ? (solved / maxSolved) * 100 : 0;
+        const acc = solved > 0 ? Math.round((correct / solved) * 100) : 0;
+        return (
+          <div key={topic}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: 'hsl(215, 15%, 65%)' }}>{topic}</span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem', color: 'hsl(215, 15%, 45%)' }}>{solved} solved · {acc}%</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.04)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 3, width: `${pct}%`, background: 'rgba(59,130,246,0.45)', transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ───────── Helpers ───────── */
+
+function formatDuration(sec: number): string {
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
+function formatMinutes(min: number): string {
+  if (min < 60) return `${Math.round(min)}m`;
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 /* ───────── Main Page ───────── */
 
 function ProgressPage() {
@@ -182,7 +309,7 @@ function ProgressPage() {
       try {
         const [s, h] = await Promise.all([
           fetch('/api/user-stats'),
-          fetch('/api/stats/history?page=1&type=all'),
+          fetch('/api/stats/history?page=1&type=all&limit=100'),
         ]);
         if (s.ok) { const d = await s.json(); setStats(d.stats || {}); }
         if (h.ok) { const d = await h.json(); setActivities(d.activities || []); }
@@ -191,13 +318,13 @@ function ProgressPage() {
     })();
   }, [session, status, router]);
 
-  const correct = stats?.techTotalCorrect || 0;
   const solved = stats?.techTotalSolved || 0;
-  const score = Math.round(stats?.averageScore || 0);
-  const sessions = (stats?.totalInterviews || 0) + (stats?.totalResumeChecks || stats?.resumeChecks || 0);
-  const streak = stats?.currentStreak || stats?.dailyStreak || 0;
-  const bestStreak = stats?.longestStreak || 0;
+  const correct = stats?.techTotalCorrect || 0;
   const accuracy = solved > 0 ? Math.round((correct / solved) * 100) : 0;
+  const totalTime = stats?.totalTimeMinutes || 0;
+  const weeklyGoal = stats?.weeklyGoal || 3;
+  const weeklyProgress = stats?.weeklyProgress || 0;
+  const weeklyPct = Math.min(100, Math.round((weeklyProgress / weeklyGoal) * 100));
 
   if (status === 'loading' || loading) {
     return (
@@ -211,10 +338,14 @@ function ProgressPage() {
   }
   if (!session) return null;
 
+  const techByTopic = (stats?.techByTopic && typeof stats.techByTopic === 'object') ? stats.techByTopic : {};
+  const techByDiff = (stats?.techByDifficulty && typeof stats.techByDifficulty === 'object') ? stats.techByDifficulty : {};
+
   return (
     <DashboardLayout>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
       <main style={{ flex: 1, overflowY: 'auto', background: 'hsl(222.2, 84%, 4.9%)', position: 'relative' }}>
         {/* Aurora */}
@@ -230,15 +361,13 @@ function ProgressPage() {
             Track your preparation across every feature.
           </p>
 
-          {/* Top Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16, marginBottom: 48 }}>
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap', marginBottom: 48 }}>
             {[
-              { label: 'Sessions', value: String(sessions) },
-              { label: 'Avg Score', value: score > 0 ? String(score) : '\u2014' },
-              { label: 'Solved', value: String(solved) },
-              { label: 'Streak', value: `${streak}d` },
-              { label: 'Best', value: `${bestStreak}d` },
-              { label: 'Accuracy', value: correct > 0 ? `${accuracy}%` : '\u2014' },
+              { label: 'Time Practiced', value: totalTime > 0 ? formatMinutes(totalTime) : '\u2014' },
+              { label: 'Problems Solved', value: String(solved) },
+              { label: 'Accuracy', value: accuracy > 0 ? `${accuracy}%` : '\u2014' },
+              { label: 'Weekly Goal', value: `${weeklyProgress}/${weeklyGoal}` },
             ].map(s => (
               <div key={s.label}>
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{s.label}</div>
@@ -247,13 +376,34 @@ function ProgressPage() {
             ))}
           </div>
 
+          {/* Weekly Goal Bar */}
+          {weeklyGoal > 0 && (
+            <div style={{ marginBottom: 48 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: 'hsl(215, 15%, 55%)' }}>
+                  {weeklyProgress >= weeklyGoal ? 'Weekly goal reached!' : `${weeklyGoal - weeklyProgress} more to hit your goal`}
+                </span>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem', color: '#3b82f6' }}>{weeklyPct}%</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.04)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 3, width: `${weeklyPct}%`, background: '#3b82f6', transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+          )}
+
+          {/* Score Over Time */}
+          <SectionLabel>Score Trend</SectionLabel>
+          <div style={{ marginBottom: 48, overflowX: 'auto' }}>
+            <ScoreGraph activities={activities} />
+          </div>
+
           {/* Heatmap */}
           <SectionLabel>Activity</SectionLabel>
           <div style={{ marginBottom: 48, overflowX: 'auto' }}>
             <ActivityHeatmap activities={activities} />
           </div>
 
-          {/* Feature Breakdown — blue-only */}
+          {/* Feature Breakdown */}
           <SectionLabel>Breakdown</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 48 }}>
             {[
@@ -270,6 +420,91 @@ function ProgressPage() {
               </div>
             ))}
           </div>
+
+          {/* Best Scores */}
+          <SectionLabel>Best Scores</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 48 }}>
+            {[
+              { label: 'Interview', value: stats?.bestInterviewScore || 0 },
+              { label: 'Behavioral', value: stats?.bestBehavioralScore || 0 },
+              { label: 'Technical', value: stats?.bestTechnicalScore || 0 },
+              { label: 'Resume', value: stats?.bestResumeScore || 0 },
+            ].map(b => (
+              <div key={b.label}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 8, whiteSpace: 'nowrap' }}>{b.label}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.4rem', fontWeight: 600, color: b.value > 0 ? '#3b82f6' : 'hsl(215, 15%, 30%)', lineHeight: 1 }}>
+                  {b.value > 0 ? Math.round(b.value) : '\u2014'}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Technical: Difficulty Breakdown */}
+          {Object.keys(techByDiff).length > 0 && (
+            <>
+              <SectionLabel>Difficulty</SectionLabel>
+              <div style={{ display: 'flex', gap: 48, marginBottom: 48 }}>
+                {(['easy', 'medium', 'hard'] as const).filter(d => techByDiff[d]).map(d => {
+                  const { solved: s, correct: c } = techByDiff[d]!;
+                  return (
+                    <div key={d}>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{d}</div>
+                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.6rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1 }}>{s}<span style={{ fontSize: '0.85rem', color: 'hsl(215, 15%, 40%)' }}> solved</span></div>
+                      {c > 0 && <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: 'hsl(215, 15%, 45%)', marginTop: 4 }}>{Math.round((c / s) * 100)}% correct</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Technical: Topic Breakdown */}
+          {Object.keys(techByTopic).length > 0 && (
+            <>
+              <SectionLabel>Topics</SectionLabel>
+              <div style={{ marginBottom: 48 }}>
+                <TopicBars data={techByTopic} />
+              </div>
+            </>
+          )}
+
+          {/* Recent Activity Feed */}
+          <SectionLabel>Recent Sessions</SectionLabel>
+          {activities.length > 0 ? (
+            <div style={{ marginBottom: 48 }}>
+              {activities.slice(0, 15).map((a, i) => (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: '#f8fafc', fontWeight: 500 }}>
+                        {TYPE_LABELS[a.activityType] || a.activityType}
+                      </span>
+                      {a.problemTitle && (
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: 'hsl(215, 15%, 50%)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {a.problemTitle}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 2 }}>
+                      {a.topic && <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', color: 'hsl(215, 15%, 40%)' }}>{a.topic}</span>}
+                      {a.difficulty && <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', color: 'hsl(215, 15%, 45%)' }}>{a.difficulty}</span>}
+                      {a.durationSec != null && a.durationSec > 0 && <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', color: 'hsl(215, 15%, 40%)' }}>{formatDuration(a.durationSec)}</span>}
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.68rem', color: 'hsl(215, 15%, 40%)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                    {new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.82rem', fontWeight: 600, color: a.score ? '#3b82f6' : 'hsl(215, 15%, 30%)', minWidth: 32, textAlign: 'right', flexShrink: 0 }}>
+                    {a.score ? Math.round(a.score) : a.isCorrect != null ? (a.isCorrect ? '\u2713' : '\u2717') : '\u2014'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '16px 0', marginBottom: 48 }}>
+              No sessions yet. Start practicing to build your history.
+            </p>
+          )}
 
         </div>
       </main>

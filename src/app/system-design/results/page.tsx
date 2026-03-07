@@ -8,6 +8,35 @@ import { toast } from "@/components/ui/use-toast";
 import { testMicrophone } from '@/lib/microphone';
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
 import SystemDesignCanvas, { DesignNode, DesignConnection } from '@/components/SystemDesignCanvas';
+import OnboardingDialog from '@/components/OnboardingDialog';
+
+const SD_ONBOARDING_STEPS = [
+  {
+    icon: '🧩',
+    title: 'Place Components',
+    description: 'Drag components from the toolbar onto the canvas to build your architecture. Click a component to select it, then drag to reposition.',
+  },
+  {
+    icon: '↗️',
+    title: 'Draw Connections',
+    description: 'Click and drag from one component\'s edge to another to create arrows showing data flow between services.',
+  },
+  {
+    icon: '🎙️',
+    title: 'Record Your Explanation',
+    description: 'Use the voice panel on the right to record yourself explaining each step — just like a real interview. Your speech is transcribed automatically.',
+  },
+  {
+    icon: '📋',
+    title: 'Work Through the Steps',
+    description: 'Follow the 5 steps on the left: Requirements → Estimation → High-Level → Detailed → Scale. Click "Next Step" to advance, or click any step to jump back.',
+  },
+  {
+    icon: '⏱️',
+    title: 'Watch the Timer',
+    description: 'Hit play on the timer to simulate real interview pressure (45 min). When you\'re done, click "Finish Test" to get your AI evaluation.',
+  },
+];
 
 interface SystemDesignTest {
   problem: { title: string; description: string; requirements: string[]; constraints: string[]; estimatedTime: string; };
@@ -86,12 +115,12 @@ export default function SystemDesignTestPage() {
     const x = ((cX - rect.left) / rect.width) * canvas.width;
     const y = ((cY - rect.top) / rect.height) * canvas.height;
     const ctx = canvas.getContext('2d');
-    if (ctx) { ctx.lineWidth = drawingTool === 'pen' ? 2 : 20; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = drawingTool === 'pen' ? '#94a3b8' : '#0f1117'; ctx.globalCompositeOperation = drawingTool === 'pen' ? 'source-over' : 'destination-out'; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+    if (ctx) { ctx.lineWidth = drawingTool === 'pen' ? 2 : 20; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = drawingTool === 'pen' ? '#94a3b8' : '#131928'; ctx.globalCompositeOperation = drawingTool === 'pen' ? 'source-over' : 'destination-out'; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
   };
   const stopDrawing = () => { setIsDrawing(false); const ctx = canvasRef.current?.getContext('2d'); if (ctx) ctx.beginPath(); };
-  const clearCanvas = () => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, canvas.width, canvas.height); } };
+  const clearCanvas = () => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#131928'; ctx.fillRect(0, 0, canvas.width, canvas.height); } };
 
-  useEffect(() => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.fillStyle = '#0f1117'; ctx.fillRect(0, 0, canvas.width, canvas.height); } }, [testData]);
+  useEffect(() => { const canvas = canvasRef.current; if (!canvas) return; const ctx = canvas.getContext('2d'); if (ctx) { ctx.fillStyle = '#131928'; ctx.fillRect(0, 0, canvas.width, canvas.height); } }, [testData]);
 
   const startRecording = async () => {
     try {
@@ -120,30 +149,31 @@ export default function SystemDesignTestPage() {
   };
 
   if (isLoading || !testData) {
-    return (<ProtectedRoute><DashboardLayout><div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b', fontFamily: "'Inter', sans-serif" }}>Loading test...</p></div></DashboardLayout></ProtectedRoute>);
+    return (<ProtectedRoute><DashboardLayout><div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: 'hsl(215, 15%, 45%)', fontFamily: "'Inter', sans-serif" }}>Loading test...</p></div></DashboardLayout></ProtectedRoute>);
   }
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
+        <OnboardingDialog activityType="system_design" steps={SD_ONBOARDING_STEPS} />
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', userSelect: isResizing ? 'none' : 'auto', overflow: 'hidden' }}>
           {/* Top Bar */}
-          <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117', flexShrink: 0 }}>
+          <div style={{ padding: '12px 20px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(222, 40%, 8%)', flexShrink: 0 }}>
             <div>
-              <h1 style={{ color: '#e2e8f0', fontSize: '0.95rem', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{testData.problem.title}</h1>
-              <p style={{ color: '#64748b', fontSize: '0.78rem', marginTop: 2, fontFamily: "'Inter', sans-serif" }}>Step {currentStep + 1} of {STEPS.length} — {currentStepData.title}</p>
+              <h1 style={{ color: '#f8fafc', fontSize: '0.95rem', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{testData.problem.title}</h1>
+              <p style={{ color: 'hsl(215, 15%, 45%)', fontSize: '0.78rem', marginTop: 2, fontFamily: "'Inter', sans-serif" }}>Step {currentStep + 1} of {STEPS.length} — {currentStepData.title}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ color: timeRemaining < 300 ? '#ef4444' : '#e2e8f0', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
-                <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 28, height: 28, borderRadius: 6, background: isTimerRunning ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${isTimerRunning ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)'}`, color: isTimerRunning ? '#f87171' : '#4ade80', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', padding: '8px 14px', borderRadius: 8, border: '1px solid hsl(220, 20%, 18%)' }}>
+                <span style={{ color: timeRemaining < 300 ? '#3b82f6' : '#f8fafc', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
+                <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 28, height: 28, borderRadius: 6, background: isTimerRunning ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.1)', border: `1px solid ${isTimerRunning ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.2)'}`, color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isTimerRunning ? <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg> : <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9"/></svg>}
                 </button>
               </div>
               {currentStep < STEPS.length - 1 ? (
-                <button onClick={handleStepComplete} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>Next Step</button>
+                <button onClick={handleStepComplete} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer' }}>Next Step</button>
               ) : (
-                <button onClick={handleFinishTest} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Finish Test</button>
+                <button onClick={handleFinishTest} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer' }}>Finish Test</button>
               )}
             </div>
           </div>
@@ -151,27 +181,27 @@ export default function SystemDesignTestPage() {
           {/* Main */}
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
             {/* Left Panel */}
-            <div style={{ width: `${instructionsWidth}px`, minWidth: 240, maxWidth: 480, borderRight: '1px solid rgba(255,255,255,0.06)', background: '#0a0e18', overflow: 'auto', flexShrink: 0 }}>
+            <div style={{ width: `${instructionsWidth}px`, minWidth: 240, maxWidth: 480, borderRight: '1px solid hsl(220, 20%, 18%)', background: 'hsl(222.2, 84%, 4.9%)', overflow: 'auto', flexShrink: 0 }}>
               <div style={{ padding: 20 }}>
                 <div style={{ background: 'rgba(59,130,246,0.04)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid rgba(59,130,246,0.1)' }}>
                   <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#3b82f6', fontSize: '0.7rem', fontWeight: 600, marginBottom: 10, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Problem</h3>
-                  <p style={{ fontFamily: "'Inter', sans-serif", color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.65, marginBottom: 14 }}>{testData.problem.description}</p>
-                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: '#22c55e', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Requirements</h4>
+                  <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 75%)', fontSize: '0.82rem', lineHeight: 1.65, marginBottom: 14 }}>{testData.problem.description}</p>
+                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: '#3b82f6', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Requirements</h4>
                   <ul style={{ margin: '0 0 14px 0', paddingLeft: 16 }}>{testData.problem.requirements.map((r, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 4, lineHeight: 1.5 }}>{r}</li>)}</ul>
-                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: '#f59e0b', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Constraints</h4>
+                  <h4 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 55%)', fontSize: '0.68rem', fontWeight: 600, marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Constraints</h4>
                   <ul style={{ margin: 0, paddingLeft: 16 }}>{testData.problem.constraints.map((c, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 4, lineHeight: 1.5 }}>{c}</li>)}</ul>
                 </div>
 
-                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Progress</h3>
+                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid hsl(220, 20%, 18%)' }}>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.7rem', fontWeight: 600, marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Progress</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {STEPS.map((step, index) => (
                       <div key={step.id} onClick={() => setCurrentStep(index)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: index === currentStep ? 'rgba(59,130,246,0.08)' : 'transparent', border: index === currentStep ? '1px solid rgba(59,130,246,0.15)' : '1px solid transparent', transition: 'all 0.15s' }}>
-                        <div style={{ width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontFamily: "'Inter', sans-serif", fontWeight: 600, background: completedSteps.includes(index) ? '#22c55e' : 'transparent', border: completedSteps.includes(index) ? 'none' : '1.5px solid rgba(100,116,139,0.3)', color: completedSteps.includes(index) ? '#fff' : '#64748b' }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontFamily: "'Inter', sans-serif", fontWeight: 600, background: completedSteps.includes(index) ? '#3b82f6' : 'transparent', border: completedSteps.includes(index) ? 'none' : '1.5px solid hsl(215, 15%, 35%)', color: completedSteps.includes(index) ? '#fff' : 'hsl(215, 15%, 45%)' }}>
                           {completedSteps.includes(index) ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : index + 1}
                         </div>
-                        <span style={{ flex: 1, fontFamily: "'Inter', sans-serif", color: index === currentStep ? '#e2e8f0' : '#94a3b8', fontSize: '0.78rem', fontWeight: index === currentStep ? 500 : 400 }}>{step.title}</span>
-                        <span style={{ fontFamily: "monospace", color: '#475569', fontSize: '0.68rem' }}>{step.duration}m</span>
+                        <span style={{ flex: 1, fontFamily: "'Inter', sans-serif", color: index === currentStep ? '#f8fafc' : 'hsl(215, 15%, 55%)', fontSize: '0.78rem', fontWeight: index === currentStep ? 500 : 400 }}>{step.title}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", color: 'hsl(215, 15%, 35%)', fontSize: '0.68rem' }}>{step.duration}m</span>
                       </div>
                     ))}
                   </div>
@@ -180,8 +210,8 @@ export default function SystemDesignTestPage() {
                 {showInstructions ? (
                   <div style={{ background: 'rgba(59,130,246,0.04)', borderRadius: 12, padding: 18, border: '1px solid rgba(59,130,246,0.08)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                      <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Guidance</h3>
-                      <button onClick={() => setShowInstructions(false)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem' }}>Hide</button>
+                      <h3 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.7rem', fontWeight: 600, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Guidance</h3>
+                      <button onClick={() => setShowInstructions(false)} style={{ background: 'none', border: 'none', color: 'hsl(215, 15%, 35%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem' }}>Hide</button>
                     </div>
                     <ul style={{ margin: 0, paddingLeft: 16 }}>{testData.guidance.approach.map((t, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 6, lineHeight: 1.55 }}>{t}</li>)}</ul>
                   </div>
@@ -197,15 +227,15 @@ export default function SystemDesignTestPage() {
             {/* Canvas */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {/* Mode toggle toolbar */}
-              <div style={{ padding: '6px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f1117' }}>
-                <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingMode === 'components' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'components' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Components</button>
-                <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingMode === 'freehand' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'freehand' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Freehand</button>
+              <div style={{ padding: '6px 16px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', alignItems: 'center', gap: 8, background: 'hsl(222, 40%, 8%)' }}>
+                <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#3b82f6' : 'rgba(255,255,255,0.04)', color: drawingMode === 'components' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'components' ? 'none' : '1px solid hsl(220, 20%, 18%)' }}>Components</button>
+                <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#3b82f6' : 'rgba(255,255,255,0.04)', color: drawingMode === 'freehand' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'freehand' ? 'none' : '1px solid hsl(220, 20%, 18%)' }}>Freehand</button>
                 {drawingMode === 'freehand' && (
                   <>
-                    <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.06)' }} />
-                    <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#60a5fa' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.06)' }}>Pen</button>
-                    <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#60a5fa' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.06)' }}>Eraser</button>
-                    <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: '#f87171', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
+                    <div style={{ width: 1, height: 20, background: 'hsl(220, 20%, 18%)' }} />
+                    <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid hsl(220, 20%, 18%)' }}>Pen</button>
+                    <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid hsl(220, 20%, 18%)' }}>Eraser</button>
+                    <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.12)', color: '#3b82f6', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
                   </>
                 )}
               </div>
@@ -221,8 +251,8 @@ export default function SystemDesignTestPage() {
 
               {/* Freehand drawing canvas (fallback) */}
               {drawingMode === 'freehand' && (
-                <div style={{ flex: 1, padding: 12, background: '#0a0e18' }}>
-                  <div style={{ height: '100%', background: '#0f1117', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, padding: 12, background: 'hsl(222.2, 84%, 4.9%)' }}>
+                  <div style={{ height: '100%', background: 'hsl(222, 40%, 8%)', borderRadius: 10, border: '1px solid hsl(220, 20%, 18%)', overflow: 'hidden' }}>
                     <canvas ref={canvasRef} width={1200} height={800} style={{ width: '100%', height: '100%', cursor: drawingTool === 'pen' ? 'crosshair' : 'cell', touchAction: 'none' }} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={(e) => { e.preventDefault(); startDrawing(e); }} onTouchMove={(e) => { e.preventDefault(); draw(e); }} onTouchEnd={(e) => { e.preventDefault(); stopDrawing(); }} />
                   </div>
                 </div>
@@ -230,17 +260,17 @@ export default function SystemDesignTestPage() {
             </div>
 
             {/* Right Panel */}
-            <div style={{ width: 280, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0a0e18', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+            <div style={{ width: 280, borderLeft: '1px solid hsl(220, 20%, 18%)', background: 'hsl(222.2, 84%, 4.9%)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
               <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.7rem', fontWeight: 600, marginBottom: 14, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Voice Explanation</h3>
-                <button onClick={isRecording ? stopRecording : startRecording} disabled={isTranscribing} style={{ width: '100%', padding: 12, borderRadius: 8, background: isRecording ? 'rgba(239,68,68,0.1)' : 'rgba(59,130,246,0.08)', color: isRecording ? '#f87171' : '#3b82f6', border: `1px solid ${isRecording ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.15)'}`, cursor: isTranscribing ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, marginBottom: 14, opacity: isTranscribing ? 0.5 : 1, transition: 'all 0.15s' }}>{isRecording ? 'Stop Recording' : 'Record Explanation'}</button>
-                {isTranscribing && <p style={{ fontFamily: "'Inter', sans-serif", color: '#64748b', fontSize: '0.75rem', textAlign: 'center', marginBottom: 14 }}>Transcribing...</p>}
-                <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: 14, overflow: 'auto', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  {stepExplanations[currentStepData.id] ? <p style={{ fontFamily: "'Inter', sans-serif", color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{stepExplanations[currentStepData.id]}</p> : <p style={{ fontFamily: "'Inter', sans-serif", color: '#475569', fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>Record your explanation for this step</p>}
+                <h3 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.7rem', fontWeight: 600, marginBottom: 14, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Voice Explanation</h3>
+                <button onClick={isRecording ? stopRecording : startRecording} disabled={isTranscribing} style={{ width: '100%', padding: 12, borderRadius: 8, background: isRecording ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.08)', color: '#3b82f6', border: `1px solid ${isRecording ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.15)'}`, cursor: isTranscribing ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, marginBottom: 14, opacity: isTranscribing ? 0.5 : 1, transition: 'all 0.15s' }}>{isRecording ? 'Stop Recording' : 'Record Explanation'}</button>
+                {isTranscribing && <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.75rem', textAlign: 'center', marginBottom: 14 }}>Transcribing...</p>}
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: 14, overflow: 'auto', border: '1px solid hsl(220, 20%, 18%)' }}>
+                  {stepExplanations[currentStepData.id] ? <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 75%)', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{stepExplanations[currentStepData.id]}</p> : <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 35%)', fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>Record your explanation for this step</p>}
                 </div>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontFamily: "'Inter', sans-serif", color: '#475569', fontSize: '0.72rem' }}>{stepExplanations[currentStepData.id] ? 'Recorded' : 'Not recorded'}</span>
-                  {stepExplanations[currentStepData.id] && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />}
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid hsl(220, 20%, 18%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 35%)', fontSize: '0.72rem' }}>{stepExplanations[currentStepData.id] ? 'Recorded' : 'Not recorded'}</span>
+                  {stepExplanations[currentStepData.id] && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />}
                 </div>
               </div>
             </div>

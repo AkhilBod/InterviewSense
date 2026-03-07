@@ -20,6 +20,30 @@ import { MicrophonePermissionGuide } from '@/components/MicrophonePermissionGuid
 import { MicrophoneTest } from '@/components/MicrophoneTest';
 import { testMicrophone } from '@/lib/microphone';
 import CodeEditor from '@/components/CodeEditor';
+import OnboardingDialog from '@/components/OnboardingDialog';
+
+const BEHAVIORAL_ONBOARDING_STEPS = [
+  {
+    icon: '🎤',
+    title: 'Listen, Then Respond',
+    description: 'The AI interviewer will ask you a question out loud. Once it finishes speaking, click the microphone button or press anywhere to start recording your answer.',
+  },
+  {
+    icon: '⏺️',
+    title: 'Record Your Answer',
+    description: 'Speak naturally as if you\'re in a real interview. When you\'re done, click stop — your answer is transcribed and saved automatically.',
+  },
+  {
+    icon: '📊',
+    title: 'Get Instant Feedback',
+    description: 'After each answer, click "Get Feedback" to see AI-powered analysis of your response — including what you did well and how to improve.',
+  },
+  {
+    icon: '➡️',
+    title: 'Navigate Questions',
+    description: 'Use the arrows at the top to move between questions. Answer them in any order — your progress is saved throughout the session.',
+  },
+];
 
 const mockQuestions = [
   {
@@ -1823,6 +1847,7 @@ function InterviewPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
+        <OnboardingDialog activityType="behavioral" steps={BEHAVIORAL_ONBOARDING_STEPS} />
         <div className="min-h-screen flex flex-col relative" style={{ background: '#0a0e1a' }}>
           {/* Blue glow effect */}
           <div 

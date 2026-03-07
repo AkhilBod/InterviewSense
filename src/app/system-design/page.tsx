@@ -76,7 +76,7 @@ export default function SystemDesignPage() {
             fontFamily: "'Instrument Serif', serif",
             fontWeight: 400,
             fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
-            color: '#dde2f0',
+            color: '#f8fafc',
             marginBottom: 8,
             marginTop: 0,
           }}>
@@ -85,7 +85,7 @@ export default function SystemDesignPage() {
           <p style={{
             fontFamily: "'Inter', sans-serif",
             fontSize: '0.88rem',
-            color: '#5a6380',
+            color: 'hsl(215, 15%, 55%)',
             marginBottom: 36,
             marginTop: 0,
           }}>
@@ -102,7 +102,7 @@ export default function SystemDesignPage() {
                 fontWeight: 600,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase' as const,
-                color: '#8892b0',
+                color: 'hsl(215, 20%, 65%)',
                 marginBottom: 7,
               }}>
                 Difficulty
@@ -140,17 +140,16 @@ export default function SystemDesignPage() {
                 width: '100%',
                 marginTop: 32,
                 padding: 14,
-                background: '#2563eb',
+                background: '#3b82f6',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
                 fontFamily: "'Inter', sans-serif",
                 fontSize: '0.88rem',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: isLoading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
                 opacity: isLoading ? 0.5 : 1,
-                transition: 'opacity 0.2s, transform 0.15s',
+                transition: 'opacity 0.2s, transform 0.15s, background 0.15s',
               }}
               onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
               onMouseLeave={e => { e.currentTarget.style.opacity = isLoading ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}

@@ -797,20 +797,22 @@ export default function Home() {
                 className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
                 style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
               >
-                {/* Testimonial Card 1 - Meta Blue */}
+                {/* Testimonial Card 1 - IBM Blue */}
                 <div className="snap-start flex-shrink-0 w-full lg:w-[calc(50%-12px)] bg-[#0668E1] rounded-3xl p-10 lg:p-14 flex flex-col justify-between min-h-[480px]">
                   <p className="text-2xl lg:text-[28px] xl:text-3xl font-normal text-white leading-relaxed mb-12" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    &quot;InterviewSense&apos;s behavioral module was a game-changer. I drilled STAR responses until they felt natural.&quot;
+                    &quot;InterviewSense behavioral practices were really cool. I didn&apos;t know I said so many filler words and rambled a lot so this really helped me get more feedback and improve a lot in a short time.&quot;
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="text-white text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-base">Siddharth Trivedi</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
-                        </svg>
+                        <span className="font-semibold text-base">Eric Yu</span>
+                        <a href="https://linkedin.com/in/seung-y" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="#000000">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.731-2.004 1.439-.103.25-.129.599-.129.948v5.418h-3.554s.05-8.746 0-9.637h3.554v1.364c.429-.659 1.191-1.575 2.897-1.575 2.113 0 3.695 1.36 3.695 4.286v5.562zM5.337 8.855c-1.144 0-1.915-.758-1.915-1.707 0-.968.777-1.708 1.974-1.708 1.196 0 1.914.74 1.944 1.708 0 .949-.748 1.707-1.977 1.707zm1.652 11.597H3.679V9.815h3.31v10.637zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z"/>
+                          </svg>
+                        </a>
                       </div>
-                      <span className="opacity-90">SWE Intern, Meta</span>
+                      <span className="opacity-90">SWE Intern, IBM</span>
                     </div>
                   </div>
                 </div>
