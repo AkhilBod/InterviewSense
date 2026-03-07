@@ -1,6 +1,5 @@
 "use client"
 
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
@@ -9,16 +8,10 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 
 /* ───────── Types ───────── */
 
-interface RecentSession {
+interface ActivityItem {
   id: string;
-  type: string;
-  score: number;
-  completedAt: string;
-}
-
-interface RecentAnalysis {
-  id: string;
-  score: number;
+  activityType: string;
+  score: number | null;
   createdAt: string;
 }
 
@@ -70,8 +63,7 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
 function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
-  const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgressData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [savedQuestions, setSavedQuestions] = useState<SavedQuestion[]>([]);
@@ -84,10 +76,9 @@ function DashboardPage() {
     (async () => {
       setDashboardLoading(true);
       try {
-        const [statsRes, sessionsRes, analysesRes, savedRes] = await Promise.all([
+        const [statsRes, activityRes, savedRes] = await Promise.all([
           fetch('/api/user-stats'),
-          fetch('/api/interviews/recent'),
-          fetch('/api/analyze-resume/recent'),
+          fetch('/api/stats/history'),
           fetch('/api/questions/saved'),
         ]);
 
@@ -113,8 +104,7 @@ function DashboardPage() {
           });
         }
 
-        if (sessionsRes.ok) { const d = await sessionsRes.json(); setRecentSessions(d.recentSessions || []); }
-        if (analysesRes.ok) { const d = await analysesRes.json(); setRecentAnalyses(d.analyses || []); }
+        if (activityRes.ok) { const d = await activityRes.json(); setRecentActivity(d.activities || []); }
         if (savedRes.ok) { const d = await savedRes.json(); setSavedQuestions(d.questions || []); }
       } catch (e) { console.error(e); }
       finally { setDashboardLoading(false); }
@@ -147,10 +137,12 @@ function DashboardPage() {
   const avgScore = Math.round(userProgress?.averageScore || 0);
   const activeDays = userProgress?.totalActiveDays || 0;
 
-  const allActivity = [
-    ...recentSessions.slice(0, 5).map(s => ({ id: s.id, type: s.type, score: s.score, date: s.completedAt })),
-    ...recentAnalyses.slice(0, 5).map(a => ({ id: a.id, type: 'resume', score: a.score, date: a.createdAt })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
+  const allActivity = recentActivity.slice(0, 6).map(a => ({
+    id: a.id,
+    type: a.activityType,
+    score: a.score,
+    date: a.createdAt,
+  }));
 
   const filteredSaved = savedQuestions.filter(q => q.type === savedTab);
 
@@ -192,25 +184,6 @@ function DashboardPage() {
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{s.label}</div>
                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.6rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1 }}>{s.value}</div>
               </div>
-            ))}
-          </div>
-
-          {/* Quick Actions */}
-          <SectionLabel>Practice</SectionLabel>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 48 }}>
-            {[
-              { label: 'Behavioral', href: '/interview' },
-              { label: 'Technical', href: '/dashboard/technical' },
-              { label: 'System Design', href: '/dashboard/system-design' },
-              { label: 'Resume', href: '/dashboard/resume' },
-              { label: 'Portfolio', href: '/dashboard/portfolio' },
-            ].map(a => (
-              <Link key={a.label} href={a.href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 12px', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, color: 'hsl(215, 15%, 65%)', textDecoration: 'none', transition: 'all 0.15s ease', background: 'rgba(255,255,255,0.02)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(59,130,246,0.3)'; (e.currentTarget as HTMLElement).style.color = '#f8fafc'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'hsl(215, 15%, 65%)'; }}
-              >
-                {a.label}
-              </Link>
             ))}
           </div>
 
