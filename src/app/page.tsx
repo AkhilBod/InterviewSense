@@ -32,7 +32,7 @@ const structuredData = {
   "operatingSystem": "Web Browser",
   "offers": {
     "@type": "Offer",
-    "price": "25",
+    "price": "9.99",
     "priceCurrency": "USD"
   },
   "author": {
@@ -107,7 +107,7 @@ const faqStructuredData = {
       "name": "What plans does InterviewSense offer?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "InterviewSense offers flexible subscription plans starting at $25/month or $199/year. All plans include access to unlimited coding practice, behavioral interview prep, resume analysis, and AI feedback with a 3-day free trial."
+        "text": "InterviewSense offers flexible subscription plans starting at $9.99/month or $80/year. All plans include access to unlimited coding practice, behavioral interview prep, resume analysis, and AI feedback with a 3-day free trial."
       }
     }
   ]
@@ -1392,7 +1392,7 @@ export default function Home() {
                     <tr>
                       <td className="py-4 px-6 text-zinc-300 text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Cost</td>
                       <td className="py-4 px-6 text-center">
-                        <span className="text-sm font-semibold text-blue-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$25/mo</span>
+                        <span className="text-sm font-semibold text-blue-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$9.99/mo</span>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <span className="text-sm text-zinc-400" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>$35/mo</span>

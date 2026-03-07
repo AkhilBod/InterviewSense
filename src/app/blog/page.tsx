@@ -167,10 +167,11 @@ export default function BlogIndexPage() {
                 <h2
                   style={{
                     fontFamily: "'Instrument Serif', serif",
-                    fontSize: "1.4rem",
+                    fontSize: "clamp(1.15rem, 4vw, 1.4rem)",
                     fontWeight: 400,
                     color: "#e2e8f0",
                     marginBottom: 10,
+                    lineHeight: 1.3,
                   }}
                 >
                   {post.title}
@@ -178,7 +179,7 @@ export default function BlogIndexPage() {
                 <p
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "0.88rem",
+                    fontSize: "clamp(0.8rem, 2.5vw, 0.88rem)",
                     color: "#94a3b8",
                     lineHeight: 1.65,
                     margin: 0,

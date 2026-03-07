@@ -459,12 +459,12 @@ function PaymentScreen({
       <div style={{ display: 'flex', gap: 16, width: '100%', maxWidth: 720 }}>
         {[
           {
-            id: 'monthly', label: 'Monthly', price: '$25', per: '/month', badge: null,
+            id: 'monthly', label: 'Monthly', price: '$9.99', per: '/month', badge: null,
             priceId: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID,
             features: ['All 6 practice modes', 'AI-powered feedback', 'Resume & cover letter tools', 'LeetCode-style problems', '5% off coaching'],
           },
           {
-            id: 'annual', label: 'Annual', price: '$199', per: '/year', badge: 'Save 33%',
+            id: 'annual', label: 'Annual', price: '$80', per: '/year', badge: 'Save 33%',
             priceId: process.env.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID,
             features: ['All 6 practice modes', 'AI-powered feedback', 'Resume & cover letter tools', 'LeetCode-style problems', '15% off coaching', 'Premium community access'],
           },

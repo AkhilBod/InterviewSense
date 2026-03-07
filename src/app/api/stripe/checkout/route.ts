@@ -53,6 +53,15 @@ export async function POST(req: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       subscription_data: {
         trial_period_days: 3,
+        metadata: {
+          userId: session.user.id,
+          source: 'interviewsense_checkout',
+        },
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
+      metadata: {
+        userId: session.user.id,
       },
     });
 
