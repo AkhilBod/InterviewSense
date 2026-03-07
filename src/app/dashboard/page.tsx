@@ -187,6 +187,9 @@ function DashboardPage() {
             ))}
           </div>
 
+          {/* ── Bottom sections ── */}
+          <div style={{ marginTop: 40 }} />
+
           {/* Saved Questions */}
           <SectionLabel>Saved Questions · {savedQuestions.length}</SectionLabel>
 

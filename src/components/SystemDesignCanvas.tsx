@@ -367,22 +367,6 @@ export default function SystemDesignCanvas({
         </button>
       </div>
 
-      {/* Help text */}
-      <div
-        style={{
-          padding: "5px 14px",
-          background: "rgba(59,130,246,0.03)",
-          borderBottom: "1px solid hsl(220, 20%, 18%)",
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-        }}
-      >
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: "hsl(215, 15%, 35%)" }}>
-          Drag to move • Right-click drag to connect • Double-click to rename • Delete/Backspace to remove • Click &ldquo;Text&rdquo; then click canvas to add labels
-        </span>
-      </div>
-
       {/* Canvas area */}
       <div
         ref={containerRef}

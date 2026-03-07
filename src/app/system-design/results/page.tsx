@@ -12,24 +12,24 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const SD_ONBOARDING_STEPS = [
   {
-    title: 'Place Components',
-    description: 'Drag components from the toolbar onto the canvas to build your architecture. Click a component to select it, then drag to reposition.',
+    title: 'The Component Palette',
+    description: 'The toolbar at the top has drag-and-drop components like Server, Database, Cache, and CDN. Drag them onto the canvas to build your architecture diagram.',
   },
   {
-    title: 'Draw Connections',
-    description: 'Right-click and drag from one component to another to create arrows showing data flow between services.',
+    title: 'Drawing Connections',
+    description: 'Right-click on any component and drag to another to draw an arrow showing data flow. Double-click any component to rename it.',
   },
   {
-    title: 'Record Your Explanation',
-    description: 'Use the voice panel on the right to record yourself explaining each step — just like a real interview. Your speech is transcribed automatically.',
+    title: 'The Freehand Canvas',
+    description: 'Switch to Freehand mode in the toolbar above the canvas to sketch freely with the pen tool. Use the eraser to clean up mistakes.',
   },
   {
-    title: 'Work Through the Steps',
-    description: 'Follow the 5 steps on the left: Requirements, Estimation, High-Level, Detailed, and Scale. Click "Next Step" to advance, or click any step to jump back.',
+    title: 'Recording Your Explanation',
+    description: 'The microphone button in the top-right records your verbal explanation for the current step — just like explaining to an interviewer. Each step saves separately.',
   },
   {
-    title: 'Watch the Timer',
-    description: 'Hit play on the timer to simulate real interview pressure. When you\'re done, click "Finish Test" to get your AI evaluation.',
+    title: 'Steps & Timer',
+    description: 'The left panel tracks your progress through 5 steps. The timer in the top bar simulates real interview pressure. Click "Next Step" or "Finish Test" when ready.',
   },
 ];
 
@@ -153,18 +153,48 @@ export default function SystemDesignTestPage() {
         <OnboardingDialog activityType="system_design" steps={SD_ONBOARDING_STEPS} />
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', userSelect: isResizing ? 'none' : 'auto', overflow: 'hidden' }}>
           {/* Top Bar */}
-          <div style={{ padding: '12px 20px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(222, 40%, 8%)', flexShrink: 0 }}>
+          <div style={{ padding: '10px 20px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(222, 40%, 8%)', flexShrink: 0 }}>
             <div>
               <h1 style={{ color: '#f8fafc', fontSize: '0.95rem', fontWeight: 600, margin: 0, fontFamily: "'Inter', sans-serif" }}>{testData.problem.title}</h1>
               <p style={{ color: 'hsl(215, 15%, 45%)', fontSize: '0.78rem', marginTop: 2, fontFamily: "'Inter', sans-serif" }}>Step {currentStep + 1} of {STEPS.length} — {currentStepData.title}</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.03)', padding: '8px 14px', borderRadius: 8, border: '1px solid hsl(220, 20%, 18%)' }}>
-                <span style={{ color: timeRemaining < 300 ? '#3b82f6' : '#f8fafc', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.88rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
-                <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 28, height: 28, borderRadius: 6, background: isTimerRunning ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.1)', border: `1px solid ${isTimerRunning ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.2)'}`, color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Timer */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', padding: '7px 12px', borderRadius: 8, border: '1px solid hsl(220, 20%, 18%)' }}>
+                <span style={{ color: timeRemaining < 300 ? '#3b82f6' : '#f8fafc', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
+                <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isTimerRunning ? <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg> : <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9"/></svg>}
                 </button>
               </div>
+
+              {/* Record button */}
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isTranscribing}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '7px 14px', borderRadius: 8,
+                  background: isRecording ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isRecording ? 'rgba(59,130,246,0.35)' : 'hsl(220, 20%, 18%)'}`,
+                  color: isRecording ? '#60a5fa' : 'hsl(215, 15%, 55%)',
+                  cursor: isTranscribing ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500,
+                  opacity: isTranscribing ? 0.5 : 1,
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isRecording ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" opacity="0.3" /><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                )}
+                {isTranscribing ? 'Transcribing...' : isRecording ? 'Stop' : `Record`}
+                {stepExplanations[currentStepData.id] && !isRecording && (
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />
+                )}
+              </button>
+
+              {/* Next / Finish */}
               {currentStep < STEPS.length - 1 ? (
                 <button onClick={handleStepComplete} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer' }}>Next Step</button>
               ) : (
@@ -222,15 +252,24 @@ export default function SystemDesignTestPage() {
             {/* Canvas */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {/* Mode toggle toolbar */}
-              <div style={{ padding: '6px 16px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', alignItems: 'center', gap: 8, background: 'hsl(222, 40%, 8%)' }}>
-                <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#3b82f6' : 'rgba(255,255,255,0.04)', color: drawingMode === 'components' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'components' ? 'none' : '1px solid hsl(220, 20%, 18%)' }}>Components</button>
-                <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#3b82f6' : 'rgba(255,255,255,0.04)', color: drawingMode === 'freehand' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'freehand' ? 'none' : '1px solid hsl(220, 20%, 18%)' }}>Freehand</button>
+              <div style={{ padding: '5px 16px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', alignItems: 'center', gap: 4, background: 'hsl(222, 40%, 8%)' }}>
+                <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#3b82f6' : 'transparent', color: drawingMode === 'components' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.76rem', fontWeight: 500, border: 'none' }}>Components</button>
+                <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#3b82f6' : 'transparent', color: drawingMode === 'freehand' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.76rem', fontWeight: 500, border: 'none' }}>Freehand</button>
                 {drawingMode === 'freehand' && (
                   <>
-                    <div style={{ width: 1, height: 20, background: 'hsl(220, 20%, 18%)' }} />
-                    <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid hsl(220, 20%, 18%)' }}>Pen</button>
-                    <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid hsl(220, 20%, 18%)' }}>Eraser</button>
-                    <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.12)', color: '#3b82f6', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
+                    <div style={{ width: 1, height: 18, background: 'hsl(220, 20%, 18%)', margin: '0 4px' }} />
+                    {/* Pen icon */}
+                    <button onClick={() => setDrawingTool('pen')} title="Pen" style={{ width: 32, height: 32, borderRadius: 6, background: drawingTool === 'pen' ? 'rgba(59,130,246,0.15)' : 'transparent', color: drawingTool === 'pen' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
+                    {/* Eraser icon */}
+                    <button onClick={() => setDrawingTool('eraser')} title="Eraser" style={{ width: 32, height: 32, borderRadius: 6, background: drawingTool === 'eraser' ? 'rgba(59,130,246,0.15)' : 'transparent', color: drawingTool === 'eraser' ? '#60a5fa' : 'hsl(215, 15%, 55%)', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+                    </button>
+                    {/* Clear icon */}
+                    <button onClick={clearCanvas} title="Clear canvas" style={{ width: 32, height: 32, borderRadius: 6, background: 'transparent', color: 'hsl(215, 15%, 55%)', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
                   </>
                 )}
               </div>
@@ -254,21 +293,7 @@ export default function SystemDesignTestPage() {
               )}
             </div>
 
-            {/* Right Panel */}
-            <div style={{ width: 280, borderLeft: '1px solid hsl(220, 20%, 18%)', background: 'hsl(222.2, 84%, 4.9%)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-              <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.7rem', fontWeight: 600, marginBottom: 14, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Voice Explanation</h3>
-                <button onClick={isRecording ? stopRecording : startRecording} disabled={isTranscribing} style={{ width: '100%', padding: 12, borderRadius: 8, background: isRecording ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.08)', color: '#3b82f6', border: `1px solid ${isRecording ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.15)'}`, cursor: isTranscribing ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 500, marginBottom: 14, opacity: isTranscribing ? 0.5 : 1, transition: 'all 0.15s' }}>{isRecording ? 'Stop Recording' : 'Record Explanation'}</button>
-                {isTranscribing && <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.75rem', textAlign: 'center', marginBottom: 14 }}>Transcribing...</p>}
-                <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: 14, overflow: 'auto', border: '1px solid hsl(220, 20%, 18%)' }}>
-                  {stepExplanations[currentStepData.id] ? <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 75%)', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{stepExplanations[currentStepData.id]}</p> : <p style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 35%)', fontSize: '0.82rem', textAlign: 'center', margin: 0 }}>Record your explanation for this step</p>}
-                </div>
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid hsl(220, 20%, 18%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 35%)', fontSize: '0.72rem' }}>{stepExplanations[currentStepData.id] ? 'Recorded' : 'Not recorded'}</span>
-                  {stepExplanations[currentStepData.id] && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />}
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
       </DashboardLayout>
