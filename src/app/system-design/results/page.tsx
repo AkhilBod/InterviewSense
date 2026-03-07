@@ -12,24 +12,34 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const SD_ONBOARDING_STEPS = [
   {
-    title: 'Drag components from the top bar',
-    description: 'The toolbar above the canvas has Server, Database, Cache, Load Balancer, and more. Drag any of them onto the canvas to start building your architecture.',
+    title: 'Drag components onto the canvas',
+    description: 'This toolbar has Server, Database, Cache, and more. Drag any component onto the canvas below to start building your architecture.',
+    target: '[data-onboarding="sd-palette"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Connect components with right-click',
-    description: 'Right-click on any component and drag to another to draw a data-flow arrow. Double-click any component to rename it — label everything clearly for the interviewer.',
+    title: 'Switch to Freehand mode',
+    description: 'Toggle between the component canvas and freehand sketching. Pen, eraser, and clear tools appear when you switch to Freehand.',
+    target: '[data-onboarding="sd-mode-toggle"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Switch to Freehand to sketch freely',
-    description: 'See "Components" and "Freehand" above the canvas? Toggle to Freehand to draw with the pen tool. The pen, eraser, and clear icons appear when you switch.',
+    title: 'Record your explanation',
+    description: 'Tap to record your voice for this step. Each of the 5 steps saves its own recording — explain your reasoning as you design.',
+    target: '[data-onboarding="sd-record"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Record your explanation per step',
-    description: 'The microphone button in the top-right records your voice for the current step. Each of the 5 steps saves its own recording — explain your reasoning as you go.',
+    title: 'Follow the steps',
+    description: 'Your progress through the 5 design steps is tracked here. Click any step to jump to it, or use "Next Step" in the top bar.',
+    target: '[data-onboarding="sd-steps"]',
+    position: 'right' as const,
   },
   {
-    title: 'Follow the 5 steps on the left',
-    description: 'The left sidebar tracks your progress: Requirements, Scale, High-Level Design, Deep Dive, and Tradeoffs. The timer in the top bar keeps you honest. Click "Next Step" to advance.',
+    title: 'Watch the timer',
+    description: 'The countdown keeps you honest — just like a real interview. Pause it if you need a break, then hit play to resume.',
+    target: '[data-onboarding="sd-timer"]',
+    position: 'bottom' as const,
   },
 ];
 
@@ -160,7 +170,7 @@ export default function SystemDesignTestPage() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {/* Timer */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', padding: '7px 12px', borderRadius: 8, border: '1px solid hsl(220, 20%, 18%)' }}>
+              <div data-onboarding="sd-timer" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', padding: '7px 12px', borderRadius: 8, border: '1px solid hsl(220, 20%, 18%)' }}>
                 <span style={{ color: timeRemaining < 300 ? '#3b82f6' : '#f8fafc', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem', fontWeight: 500, letterSpacing: '0.05em' }}>{formatTime(timeRemaining)}</span>
                 <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isTimerRunning ? <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg> : <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9"/></svg>}
@@ -169,6 +179,7 @@ export default function SystemDesignTestPage() {
 
               {/* Record button */}
               <button
+                data-onboarding="sd-record"
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isTranscribing}
                 style={{
@@ -217,7 +228,7 @@ export default function SystemDesignTestPage() {
                   <ul style={{ margin: 0, paddingLeft: 16 }}>{testData.problem.constraints.map((c, i) => <li key={i} style={{ fontFamily: "'Inter', sans-serif", color: '#94a3b8', fontSize: '0.78rem', marginBottom: 4, lineHeight: 1.5 }}>{c}</li>)}</ul>
                 </div>
 
-                <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid hsl(220, 20%, 18%)' }}>
+                <div data-onboarding="sd-steps" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 18, marginBottom: 16, border: '1px solid hsl(220, 20%, 18%)' }}>
                   <h3 style={{ fontFamily: "'Inter', sans-serif", color: 'hsl(215, 15%, 45%)', fontSize: '0.7rem', fontWeight: 600, marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Progress</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {STEPS.map((step, index) => (
@@ -252,7 +263,7 @@ export default function SystemDesignTestPage() {
             {/* Canvas */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               {/* Mode toggle toolbar */}
-              <div style={{ padding: '5px 16px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', alignItems: 'center', gap: 4, background: 'hsl(222, 40%, 8%)' }}>
+              <div data-onboarding="sd-mode-toggle" style={{ padding: '5px 16px', borderBottom: '1px solid hsl(220, 20%, 18%)', display: 'flex', alignItems: 'center', gap: 4, background: 'hsl(222, 40%, 8%)' }}>
                 <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#3b82f6' : 'transparent', color: drawingMode === 'components' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.76rem', fontWeight: 500, border: 'none' }}>Components</button>
                 <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#3b82f6' : 'transparent', color: drawingMode === 'freehand' ? '#fff' : 'hsl(215, 15%, 55%)', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.76rem', fontWeight: 500, border: 'none' }}>Freehand</button>
                 {drawingMode === 'freehand' && (

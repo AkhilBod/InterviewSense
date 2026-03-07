@@ -496,7 +496,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3">
+        <nav data-onboarding="dash-nav" className="flex-1 px-3">
           {navItems.map((item) => {
             const active = isActive(item.matchPath);
             return (

@@ -9,16 +9,22 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const DASHBOARD_ONBOARDING_STEPS = [
   {
-    title: 'This is your home base',
-    description: 'Your dashboard shows your session count, best score, streak, and active days at the top. These update every time you finish a practice session.',
+    title: 'Your stats at a glance',
+    description: 'Sessions, best score, streak, and active days — all updated every time you finish a practice round. This is your progress snapshot.',
+    target: '[data-onboarding="dash-stats"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Start practicing from the sidebar',
-    description: 'The left sidebar has Behavioral, Technical, System Design, Resume, and more. Click any of them to jump straight into a practice session.',
+    title: 'Start practicing from here',
+    description: 'The sidebar has Behavioral, Technical, System Design, Resume, and more. Click any to jump straight into a session.',
+    target: '[data-onboarding="dash-nav"]',
+    position: 'right' as const,
   },
   {
-    title: 'Saved questions live here',
-    description: 'Scroll down to see your bookmarked questions. Tap any saved question to jump right back into practicing it — behavioral and technical tabs keep them organized.',
+    title: 'Your saved questions',
+    description: 'Bookmarked questions show up here. Tap any one to jump right back into practicing it.',
+    target: '[data-onboarding="dash-saved"]',
+    position: 'top' as const,
   },
 ];
 
@@ -189,7 +195,7 @@ function DashboardPage() {
 
           {/* Stats Row */}
           <SectionLabel>Overview</SectionLabel>
-          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 64 }}>
+          <div data-onboarding="dash-stats" style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 64 }}>
             {[
               { label: 'Sessions', value: String(totalSessions) },
               { label: 'Best Score', value: bestScore > 0 ? String(Math.round(bestScore)) : '\u2014' },
@@ -208,6 +214,7 @@ function DashboardPage() {
           <div style={{ marginTop: 40 }} />
 
           {/* Saved Questions */}
+          <div data-onboarding="dash-saved">
           <SectionLabel>Saved Questions · {savedQuestions.length}</SectionLabel>
 
           <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid hsl(220, 20%, 18%)' }}>
@@ -279,6 +286,7 @@ function DashboardPage() {
               )}
             </div>
           )}
+          </div>
 
           {/* Recent Activity */}
           <SectionLabel>Recent Activity</SectionLabel>

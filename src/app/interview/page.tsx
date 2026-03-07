@@ -24,20 +24,28 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const BEHAVIORAL_ONBOARDING_STEPS = [
   {
-    title: 'The animated circle is your interviewer',
-    description: 'The dotted circle on the left is the AI interviewer speaking to you. Watch it pulse as it reads your question aloud — wait for it to finish before you respond.',
+    title: 'This is your AI interviewer',
+    description: 'The animated circle speaks your question aloud. Watch it pulse — once it stops, you\'re up. It simulates a real interviewer reading the question to you.',
+    target: '[data-onboarding="bh-circle"]',
+    position: 'right' as const,
   },
   {
-    title: 'Tap Record to answer',
-    description: 'When the circle stops pulsing, hit the "Record" button below the question. Speak naturally — your voice is transcribed in real time. Hit "Stop" when you\'re done.',
+    title: 'Tap here to record your answer',
+    description: 'When the circle stops, this button activates. Speak naturally — your voice is transcribed automatically. Hit "Stop" when you\'re done.',
+    target: '[data-onboarding="bh-controls"]',
+    position: 'top' as const,
   },
   {
-    title: 'Get Feedback on every answer',
-    description: 'After recording, a "Feedback" button appears next to "Next". Click it to open the feedback panel on the right — it scores your STAR structure, clarity, and depth.',
+    title: 'Your question appears here',
+    description: 'Read along as the AI speaks. After recording, "Feedback" and "Next" buttons appear below — click Feedback for a detailed STAR-method analysis of your answer.',
+    target: '[data-onboarding="bh-question"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Save questions you want to revisit',
-    description: 'See the "Save" link next to the question counter at the top? Tap it to bookmark any question. It shows up on your dashboard under Saved Questions.',
+    title: 'Save questions to revisit later',
+    description: 'Tap "Save" to bookmark this question. It shows up on your dashboard under Saved Questions so you can practice it again anytime.',
+    target: '[data-onboarding="bh-save"]',
+    position: 'bottom' as const,
   },
 ];
 
@@ -1870,7 +1878,7 @@ function InterviewPage() {
               <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
                 
                 {/* Left Column: Speaking Circle */}
-                <div className="flex flex-col items-center justify-center space-y-6 md:flex-shrink-0">
+                <div data-onboarding="bh-circle" className="flex flex-col items-center justify-center space-y-6 md:flex-shrink-0">
                   <div className="relative">
                     {/* Breathing Dotted Circle Pattern with Enhanced TTS Animation */}
                     <div className={`w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full relative ${isSpeaking ? 'animate-talking' : 'animate-breathing'}`} 
@@ -1988,6 +1996,7 @@ function InterviewPage() {
                   </div>
                   {session && currentQuestion && (
                     <button
+                      data-onboarding="bh-save"
                       onClick={handleSaveQuestion}
                       className="flex items-center gap-1 text-xs transition-colors duration-150"
                       style={{
@@ -2003,7 +2012,7 @@ function InterviewPage() {
                 </div>
 
                 {/* Question Display - Always show the question */}
-                <div className="rounded-xl p-4 sm:p-5 mb-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div data-onboarding="bh-question" className="rounded-xl p-4 sm:p-5 mb-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
                   <p className="leading-relaxed text-center md:text-left" style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', color: '#e2e8f0', lineHeight: '1.7' }}>
                     {currentQuestion ? currentQuestion.question : ''}
                   </p>
@@ -2038,7 +2047,7 @@ function InterviewPage() {
                 )}
 
                 {/* Action Buttons - Minimal inline style like technical assessment */}
-                <div className="flex items-center justify-center gap-3 mt-4">
+                <div data-onboarding="bh-controls" className="flex items-center justify-center gap-3 mt-4">
                   {interviewPhase === 'feedback' && answer.trim() !== '' && (
                     <>
                       <button

@@ -37,20 +37,28 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const TECH_ONBOARDING_STEPS = [
   {
-    title: 'Your code editor is on the right',
-    description: 'The right panel is a full code editor — type your solution there. The left panel shows the problem description, examples, and constraints. Drag the divider to resize.',
+    title: 'Your code editor',
+    description: 'Write your solution here — it works just like a real coding interview. Type, paste, and edit freely. Drag the divider on the left to resize the panels.',
+    target: '[data-onboarding="tech-editor"]',
+    position: 'left' as const,
   },
   {
-    title: 'Pick your language from the top bar',
-    description: 'See the language dropdown above the editor? Switch between Python, JavaScript, Java, C++, and more. The starter template updates when you change it.',
+    title: 'Pick your language',
+    description: 'Switch between Python, JavaScript, Java, C++, and more. The starter template updates when you change it.',
+    target: '[data-onboarding="tech-lang"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Hit Record to explain while you code',
-    description: 'The blue "Record Explanation" button in the top bar captures your voice as you think out loud. Interviewers grade your thought process — this is how you practice it.',
+    title: 'Explain while you code',
+    description: 'This records your voice as you think out loud — interviewers grade your thought process. Tap to start, tap again to stop.',
+    target: '[data-onboarding="tech-record"]',
+    position: 'bottom' as const,
   },
   {
-    title: 'Submit when you\'re ready',
-    description: 'Click the blue "Submit" button in the top-right to get your AI evaluation. Stuck? Switch to the "Solutions" tab on the left panel for walkthroughs after you\'ve tried.',
+    title: 'Submit for AI evaluation',
+    description: 'When you\'re done, hit Submit to get scored on correctness, time complexity, and code quality. Check the Solutions tab on the left if you get stuck.',
+    target: '[data-onboarding="tech-submit"]',
+    position: 'bottom' as const,
   },
 ];
 
@@ -2531,6 +2539,7 @@ public class Solution {
               </button>
               {/* Record - Highlighted to be more visible */}
               <button
+                data-onboarding="tech-record"
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isTranscribing}
                 style={{
@@ -2580,6 +2589,7 @@ public class Solution {
               </button>
               {/* Submit */}
               <button
+                data-onboarding="tech-submit"
                 onClick={handleNext}
                 disabled={isSubmitting || !code}
                 style={{
@@ -2709,9 +2719,9 @@ public class Solution {
               />
 
               {/* RIGHT: Code editor */}
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0a0e1a' }}>
+              <div data-onboarding="tech-editor" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0a0e1a' }}>
                 {/* Language bar */}
-                <div style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#0d1117' }}>
+                <div data-onboarding="tech-lang" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, background: '#0d1117' }}>
                   <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger style={{ width: 140, height: 28, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 5, color: '#8892b0', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>
                       <SelectValue />

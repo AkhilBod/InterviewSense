@@ -284,6 +284,7 @@ export default function SystemDesignCanvas({
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Component palette */}
       <div
+        data-onboarding="sd-palette"
         style={{
           padding: "10px 14px",
           borderBottom: "1px solid hsl(220, 20%, 18%)",
