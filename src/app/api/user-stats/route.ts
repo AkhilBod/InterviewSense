@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { resolveUser } from '@/lib/resolve-user'
 
 // GET - Fetch user stats
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
+    const user = await resolveUser(session.user)
+    if (!user) {
+      return NextResponse.json({ error: 'User not found. Please log out and log back in.' }, { status: 404 })
+    }
+    const userId = user.id
 
     // Get or create user stats
     let userStats = await prisma.userStats.findUnique({
@@ -108,11 +111,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
+    const user = await resolveUser(session.user)
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    const userId = user.id
     const body = await request.json()
     const { sessionType, score, duration, completed = true, improvements } = body
 

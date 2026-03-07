@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { put } from '@vercel/blob'
+import { resolveUser } from '@/lib/resolve-user'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -36,20 +38,45 @@ export async function POST(req: Request) {
       )
     }
 
+    // Resolve user — JWT id may be stale after DB reset, fall back to email
+    const user = await resolveUser(session.user)
+    if (!user) {
+      return NextResponse.json({ error: 'User not found. Please log out and log back in.' }, { status: 404 })
+    }
+
     const ext = resume.name.split('.').pop()?.toLowerCase() || 'pdf'
-    const filename = `resumes/${session.user.id}-onboarding-resume.${ext}`
-    const blob = await put(filename, resume, { access: 'public', allowOverwrite: true })
+    const filename = `${user.id}-onboarding-resume.${ext}`
+    let url = ''
+
+    // Try Vercel Blob first (production), fall back to local filesystem (dev)
+    try {
+      const { put } = await import('@vercel/blob')
+      const blob = await put(`resumes/${filename}`, resume, {
+        access: 'public',
+        allowOverwrite: true,
+      })
+      url = blob.url
+    } catch (blobError) {
+      console.warn('Vercel Blob upload failed, falling back to local storage:', blobError)
+      // Local filesystem fallback for development
+      const uploadsDir = path.join(process.cwd(), 'uploads', 'resumes')
+      await mkdir(uploadsDir, { recursive: true })
+      const bytes = await resume.arrayBuffer()
+      const filePath = path.join(uploadsDir, filename)
+      await writeFile(filePath, Buffer.from(bytes))
+      url = `/uploads/resumes/${filename}`
+    }
 
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: {
-        resumeUrl: blob.url,
+        resumeUrl: url,
         resumeFilename: resume.name,
         resumeUploadedAt: new Date(),
       },
     })
 
-    return NextResponse.json({ success: true, url: blob.url, filename: resume.name })
+    return NextResponse.json({ success: true, url, filename: resume.name })
   } catch (error) {
     console.error('Resume upload error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -55,6 +55,7 @@ model User {
   targetRole              String?
   targetCompany           String?
   jobDescription          String?
+  preferredCodingLanguage String?
   onboardingCompletedAt   DateTime?
   accounts                Account[]
   featureUsage            FeatureUsage[]
@@ -64,6 +65,7 @@ model User {
   sessions            Session[]
   subscription        Subscription?
   userStats           UserStats?
+  activityLogs        ActivityLog[]
   verificationTokens  VerificationToken[]
 
   @@index([stripeCustomerId])
@@ -116,6 +118,21 @@ model UserStats {
   streakImprovement   Int       @default(0)
   strongestArea       String?
   improvementArea     String?
+  // Technical-specific aggregated stats
+  techTotalSolved     Int       @default(0)
+  techTotalCorrect    Int       @default(0)
+  techAvgScore        Float     @default(0)
+  techByTopic         Json      @default("{}")
+  techByDifficulty    Json      @default("{}")
+  // Behavioral aggregated
+  behavTotalSessions  Int       @default(0)
+  behavAvgScore       Float     @default(0)
+  // System Design aggregated
+  sdTotalSessions     Int       @default(0)
+  sdAvgScore          Float     @default(0)
+  // Portfolio aggregated
+  portfolioTotalReviews Int     @default(0)
+  portfolioBestScore    Int     @default(0)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -123,6 +140,27 @@ model UserStats {
   @@index([dailyStreak])
   @@index([weeklyProgress])
   @@index([bestInterviewScore])
+}
+
+model ActivityLog {
+  id            String    @id @default(cuid())
+  userId        String
+  activityType  String    // 'technical', 'behavioral', 'system_design', 'resume', 'portfolio', 'career'
+  problemId     Int?      // LeetCode number (only for technical)
+  problemTitle  String?   // only for technical
+  topic         String?   // e.g., "Arrays & Hashing" (only for technical)
+  difficulty    String?   // "Easy", "Medium", "Hard" (only for technical)
+  language      String?   // "python", "javascript" (only for technical)
+  isCorrect     Boolean?  // only for technical
+  score         Int?      // 0-100 score from any feature
+  durationSec   Int?      // how long the session took
+  metadata      Json?     // flexible bucket for feature-specific extras
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, activityType])
+  @@index([userId, createdAt])
+  @@index([userId, topic])
 }
 
 model PracticeSession {

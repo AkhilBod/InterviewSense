@@ -72,8 +72,8 @@ export default function PortfolioReviewPage() {
     setIsLoading(true);
     setError(null);
     
-    if (!portfolioData.portfolioUrl || !portfolioData.targetRole) {
-      setError("Please provide your portfolio URL.");
+    if (!portfolioData.githubUrl || !portfolioData.targetRole) {
+      setError("Please provide your GitHub profile URL.");
       setIsLoading(false);
       return;
     }
@@ -139,16 +139,16 @@ export default function PortfolioReviewPage() {
           </p>
 
           <form onSubmit={handleSubmit}>
-            {/* Portfolio URL */}
+            {/* GitHub URL — required */}
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>
-                Portfolio URL
+                GitHub Profile
               </label>
               <input
                 type="url"
-                placeholder="https://yourportfolio.com"
-                value={portfolioData.portfolioUrl}
-                onChange={(e) => setPortfolioData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                placeholder="https://github.com/yourusername"
+                value={portfolioData.githubUrl}
+                onChange={(e) => setPortfolioData(prev => ({ ...prev, githubUrl: e.target.value }))}
                 required
                 style={inputStyle}
                 onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
@@ -156,16 +156,16 @@ export default function PortfolioReviewPage() {
               />
             </div>
 
-            {/* GitHub URL */}
+            {/* Portfolio URL — optional */}
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>
-                GitHub Profile <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                Portfolio URL <span style={{ color: '#4a5370', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
               </label>
               <input
                 type="url"
-                placeholder="https://github.com/yourusername"
-                value={portfolioData.githubUrl}
-                onChange={(e) => setPortfolioData(prev => ({ ...prev, githubUrl: e.target.value }))}
+                placeholder="https://yourportfolio.com"
+                value={portfolioData.portfolioUrl}
+                onChange={(e) => setPortfolioData(prev => ({ ...prev, portfolioUrl: e.target.value }))}
                 style={inputStyle}
                 onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
                 onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -212,7 +212,7 @@ export default function PortfolioReviewPage() {
 
             <button
               type="submit"
-              disabled={isLoading || !portfolioData.portfolioUrl}
+              disabled={isLoading || !portfolioData.githubUrl}
               style={{
                 width: '100%',
                 marginTop: 32,
@@ -224,13 +224,13 @@ export default function PortfolioReviewPage() {
                 fontFamily: "'Inter', sans-serif",
                 fontSize: '0.88rem',
                 fontWeight: 500,
-                cursor: (isLoading || !portfolioData.portfolioUrl) ? 'not-allowed' : 'pointer',
+                cursor: (isLoading || !portfolioData.githubUrl) ? 'not-allowed' : 'pointer',
                 boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
-                opacity: (isLoading || !portfolioData.portfolioUrl) ? 0.5 : 1,
+                opacity: (isLoading || !portfolioData.githubUrl) ? 0.5 : 1,
                 transition: 'opacity 0.2s, transform 0.15s',
               }}
-              onMouseEnter={e => { if (!isLoading && portfolioData.portfolioUrl) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = (isLoading || !portfolioData.portfolioUrl) ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
+              onMouseEnter={e => { if (!isLoading && portfolioData.githubUrl) { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = (isLoading || !portfolioData.githubUrl) ? '0.5' : '1'; e.currentTarget.style.transform = 'none'; }}
             >
               {isLoading ? 'Analyzing Portfolio…' : 'Get Portfolio Review'}
             </button>

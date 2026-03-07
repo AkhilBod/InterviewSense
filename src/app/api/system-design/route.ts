@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { hasEnoughCredits, deductCredits } from '@/lib/credits';
+import { logActivity } from '@/lib/activity-logger';
 import { FeatureType } from '@prisma/client';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
@@ -462,6 +463,26 @@ export async function POST(request: NextRequest) {
       const { problem, responses } = requestData;
       
       const analysisResult = await analyzeSystemDesign(problem, responses);
+
+      // Log activity (fire-and-forget)
+      try {
+        const session = await getServerSession(authOptions);
+        if (session?.user?.email) {
+          const u = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true },
+          });
+          if (u) {
+            logActivity(u.id, {
+              activityType: 'system_design',
+              score: analysisResult.overallScore ?? null,
+              metadata: { problem: problem?.title || null },
+            });
+          }
+        }
+      } catch (logErr) {
+        console.error('Activity log error (system_design):', logErr);
+      }
       
       return NextResponse.json(analysisResult);
     } else {

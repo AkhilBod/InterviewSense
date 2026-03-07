@@ -50,6 +50,7 @@ export default function StartPage() {
 
   const [company, setCompany] = useState('')
   const [overridingCompany, setOverridingCompany] = useState(false)
+  const [interviewType, setInterviewType] = useState('behavioral')
   const [showMicSetup, setShowMicSetup] = useState(false)
   const [micState, setMicState] = useState<MicrophoneState>({
     devices: [],
@@ -104,7 +105,7 @@ export default function StartPage() {
     localStorage.setItem('company', company)
     localStorage.setItem('industry', '')
     localStorage.setItem('experienceLevel', 'Mid-level')
-    localStorage.setItem('interviewType', 'Behavioral')
+    localStorage.setItem('interviewType', interviewType === 'recruiter_screen' ? 'Recruiter Screen' : interviewType === 'technical' ? 'Technical' : interviewType === 'mix' ? 'Mix' : 'Behavioral')
     localStorage.setItem('interviewStage', 'Initial Screening')
     localStorage.setItem('jobDescription', '')
     localStorage.setItem('numberOfQuestions', '5')
@@ -205,6 +206,49 @@ export default function StartPage() {
                 }}
               />
             )}
+          </div>
+
+          {/* Interview Type dropdown */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{
+              display: 'block',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.68rem',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#8892b0',
+              marginBottom: 7,
+            }}>
+              Interview Type
+            </label>
+            <select
+              value={interviewType}
+              onChange={e => setInterviewType(e.target.value)}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.88rem',
+                color: '#dde2f0',
+                outline: 'none',
+                cursor: 'pointer',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%238892b0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 14px center',
+              }}
+            >
+              <option value="recruiter_screen" style={{ background: '#18181b', color: '#dde2f0' }}>Recruiter Screen</option>
+              <option value="behavioral" style={{ background: '#18181b', color: '#dde2f0' }}>Behavioral</option>
+              <option value="technical" style={{ background: '#18181b', color: '#dde2f0' }}>Technical</option>
+              <option value="mix" style={{ background: '#18181b', color: '#dde2f0' }}>Mix (All Types)</option>
+            </select>
           </div>
 
           {/* Start button */}

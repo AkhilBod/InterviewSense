@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import Image from 'next/image';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import { DashboardLayout } from '@/components/DashboardLayout';
+
+/* ───────── Types ───────── */
 
 interface RecentSession {
   id: string;
@@ -32,22 +33,11 @@ interface UserProgressData {
   technicalInterviews: number;
   resumeChecks: number;
   totalSessions: number;
-  recentSessions: RecentSession[];
-  averageFillerWords: number;
-  bestFillerWordCount: number;
   currentStreak: number;
   longestStreak: number;
   totalActiveDays: number;
   lastActivityDate: string | null;
-  totalXP: number;
-  level: number;
   hasActivityToday: boolean;
-  quickStats: {
-    practiceStreak: number;
-    weeklyProgress: string;
-    improvementRate: string;
-    activeDays: number;
-  };
 }
 
 interface SavedQuestion {
@@ -60,6 +50,23 @@ interface SavedQuestion {
   category?: string;
 }
 
+/* ───────── Helpers ───────── */
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 16 }}>
+    {children}
+  </div>
+);
+
+const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+  behavioral: 'Behavioral',
+  technical: 'Technical',
+  resume: 'Resume',
+  system_design: 'System Design',
+  portfolio: 'Portfolio',
+  career_roadmap: 'Career Roadmap',
+};
+
 function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -71,16 +78,12 @@ function DashboardPage() {
   const [savedTab, setSavedTab] = useState<'BEHAVIORAL' | 'TECHNICAL'>('BEHAVIORAL');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-      return;
-    }
-
+    if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'loading' || !session?.user?.id) return;
 
-    const fetchDashboard = async () => {
+    (async () => {
+      setDashboardLoading(true);
       try {
-        setDashboardLoading(true);
         const [statsRes, sessionsRes, analysesRes, savedRes] = await Promise.all([
           fetch('/api/user-stats'),
           fetch('/api/interviews/recent'),
@@ -89,64 +92,33 @@ function DashboardPage() {
         ]);
 
         if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          const mappedProgress = {
-            dailyStreak: statsData.stats?.dailyStreak || 0,
-            weeklyGoal: statsData.stats?.weeklyGoal || 3,
-            weeklyProgress: statsData.stats?.weeklyProgress || 0,
-            bestScore: Math.max(
-              statsData.stats?.bestInterviewScore || 0,
-              statsData.stats?.bestResumeScore || 0,
-              statsData.stats?.bestScore || 0
-            ),
-            averageScore: statsData.stats?.averageScore || 0,
-            totalInterviews: statsData.stats?.totalInterviews || 0,
-            behavioralInterviews: statsData.stats?.behavioralInterviews || 0,
-            technicalInterviews: statsData.stats?.technicalInterviews || 0,
-            resumeChecks: statsData.stats?.resumeChecks || 0,
-            totalSessions: (statsData.stats?.totalInterviews || 0) + (statsData.stats?.resumeChecks || 0),
-            recentSessions: statsData.recentSessions || [],
-            averageFillerWords: statsData.stats?.averageFillerWords || 0,
-            bestFillerWordCount: statsData.stats?.bestFillerWordCount || 0,
-            currentStreak: statsData.stats?.currentStreak || 0,
-            longestStreak: statsData.stats?.longestStreak || 0,
-            totalActiveDays: statsData.stats?.totalActiveDays || 0,
-            lastActivityDate: statsData.stats?.lastActivityDate || null,
-            totalXP: statsData.stats?.totalXP || 0,
-            level: statsData.stats?.level || 1,
-            hasActivityToday: statsData.stats?.hasActivityToday || false,
-            quickStats: {
-              practiceStreak: statsData.stats?.dailyStreak || 0,
-              weeklyProgress: `${statsData.stats?.weeklyProgress || 0}/${statsData.stats?.weeklyGoal || 3}`,
-              improvementRate: statsData.stats?.improvementRate || 'N/A',
-              activeDays: statsData.stats?.totalActiveDays || 0
-            }
-          };
-          setUserProgress(mappedProgress);
+          const d = await statsRes.json();
+          const s = d.stats || {};
+          setUserProgress({
+            dailyStreak: s.dailyStreak || 0,
+            weeklyGoal: s.weeklyGoal || 3,
+            weeklyProgress: s.weeklyProgress || 0,
+            bestScore: Math.max(s.bestInterviewScore || 0, s.bestResumeScore || 0, s.bestScore || 0),
+            averageScore: s.averageScore || 0,
+            totalInterviews: s.totalInterviews || 0,
+            behavioralInterviews: s.behavioralInterviews || 0,
+            technicalInterviews: s.technicalInterviews || 0,
+            resumeChecks: s.resumeChecks || 0,
+            totalSessions: (s.totalInterviews || 0) + (s.resumeChecks || 0),
+            currentStreak: s.currentStreak || 0,
+            longestStreak: s.longestStreak || 0,
+            totalActiveDays: s.totalActiveDays || 0,
+            lastActivityDate: s.lastActivityDate || null,
+            hasActivityToday: s.hasActivityToday || false,
+          });
         }
 
-        if (sessionsRes.ok) {
-          const sessionsData = await sessionsRes.json();
-          setRecentSessions(sessionsData.recentSessions || []);
-        }
-
-        if (analysesRes.ok) {
-          const analysesData = await analysesRes.json();
-          setRecentAnalyses(analysesData.analyses || []);
-        }
-
-        if (savedRes.ok) {
-          const savedData = await savedRes.json();
-          setSavedQuestions(savedData.questions || []);
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setDashboardLoading(false);
-      }
-    };
-
-    fetchDashboard();
+        if (sessionsRes.ok) { const d = await sessionsRes.json(); setRecentSessions(d.recentSessions || []); }
+        if (analysesRes.ok) { const d = await analysesRes.json(); setRecentAnalyses(d.analyses || []); }
+        if (savedRes.ok) { const d = await savedRes.json(); setSavedQuestions(d.questions || []); }
+      } catch (e) { console.error(e); }
+      finally { setDashboardLoading(false); }
+    })();
   }, [session, status, router]);
 
   const getGreeting = () => {
@@ -158,230 +130,191 @@ function DashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading your dashboard...</p>
+      <DashboardLayout>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(222.2, 84%, 4.9%)' }}>
+          <div style={{ width: 32, height: 32, border: '2px solid transparent', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
-  if (!session) {
-    return null;
-  }
+  if (!session) return null;
+
+  const streak = userProgress?.currentStreak || userProgress?.dailyStreak || 0;
+  const totalSessions = userProgress?.totalSessions || 0;
+  const bestScore = userProgress?.bestScore || 0;
+  const avgScore = Math.round(userProgress?.averageScore || 0);
+  const activeDays = userProgress?.totalActiveDays || 0;
+
+  const allActivity = [
+    ...recentSessions.slice(0, 5).map(s => ({ id: s.id, type: s.type, score: s.score, date: s.completedAt })),
+    ...recentAnalyses.slice(0, 5).map(a => ({ id: a.id, type: 'resume', score: a.score, date: a.createdAt })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
+
+  const filteredSaved = savedQuestions.filter(q => q.type === savedTab);
 
   return (
     <DashboardLayout>
-      {/* Top Bar with Stats */}
-      <header className="h-12 bg-[#0a0f1e] border-b border-[#1f2937] flex items-center justify-end px-6 gap-4">
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-[13px] text-[#9ca3af]">
-          <div className="flex items-center gap-2">
-            <span>Streak</span>
-            <span className="font-semibold text-white">{userProgress?.dailyStreak || 0}</span>
-          </div>
-          <div className="w-px h-4 bg-[#1f2937]"></div>
-          <div className="flex items-center gap-2">
-            <span>Score</span>
-            <span className="font-semibold text-white">{userProgress?.bestScore ? userProgress.bestScore.toFixed(0) : '0'}</span>
-          </div>
-        </div>
-        {/* Avatar */}
-        {session?.user?.image ? (
-          <Image src={session.user.image} alt="Profile" width={24} height={24} className="rounded-full" />
-        ) : (
-          <div className="w-6 h-6 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-semibold">
-            {session?.user?.name?.charAt(0) || 'U'}
-          </div>
-        )}
-      </header>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+      <main style={{ flex: 1, overflowY: 'auto', background: 'hsl(222.2, 84%, 4.9%)', position: 'relative' }}>
+        {/* Aurora */}
+        <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '80vw', height: 340, background: 'radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-5xl mx-auto">
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 720, margin: '0 auto', padding: '80px 24px 60px' }}>
+
           {/* Greeting */}
-          <h1 className="text-2xl font-semibold text-white mb-6">
-            {getGreeting()}, {session?.user?.name?.split(' ')[0] || 'Interviewer'}.
+          <h1 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', color: '#f8fafc', margin: 0, lineHeight: 1.15 }}>
+            {getGreeting()}, {session?.user?.name?.split(' ')[0] || 'there'}.
           </h1>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'hsl(215, 15%, 55%)', marginTop: 8, marginBottom: 48 }}>
+            {totalSessions === 0
+              ? 'Start your first practice session today.'
+              : streak > 0
+              ? `${streak}-day streak — keep it going.`
+              : 'Pick up where you left off.'}
+          </p>
 
-          {/* Daily Goal - inline */}
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-xs uppercase tracking-wide text-[#6b7280]">Daily goal</span>
-            <div className="flex gap-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={`w-8 h-8 rounded ${
-                    i <= (userProgress?.weeklyProgress || 0) ? 'bg-[#3b82f6]' : 'bg-[#1f2937]'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-sm text-[#6b7280]">
-              {userProgress?.weeklyProgress || 0} / {userProgress?.weeklyGoal || 3}
-            </span>
+          {/* Stats Row */}
+          <SectionLabel>Overview</SectionLabel>
+          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 48 }}>
+            {[
+              { label: 'Sessions', value: String(totalSessions) },
+              { label: 'Best Score', value: bestScore > 0 ? String(Math.round(bestScore)) : '\u2014' },
+              { label: 'Avg Score', value: avgScore > 0 ? String(avgScore) : '\u2014' },
+              { label: 'Streak', value: `${streak}d` },
+              { label: 'Active Days', value: String(activeDays) },
+            ].map(s => (
+              <div key={s.label}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'hsl(215, 15%, 45%)', marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.6rem', fontWeight: 600, color: '#f8fafc', lineHeight: 1 }}>{s.value}</div>
+              </div>
+            ))}
           </div>
 
-          {/* Continue CTA */}
-          {recentSessions.length > 0 && (
-            <div className="mb-12">
-              <Link
-                href={`/start?type=${recentSessions[0]?.type || 'behavioral'}`}
-                className="inline-flex items-center gap-2 bg-[#3b82f6] hover:bg-[#2563eb] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-150"
+          {/* Quick Actions */}
+          <SectionLabel>Practice</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 48 }}>
+            {[
+              { label: 'Behavioral', href: '/interview' },
+              { label: 'Technical', href: '/dashboard/technical' },
+              { label: 'System Design', href: '/dashboard/system-design' },
+              { label: 'Resume', href: '/dashboard/resume' },
+              { label: 'Portfolio', href: '/dashboard/portfolio' },
+            ].map(a => (
+              <Link key={a.label} href={a.href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 12px', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, color: 'hsl(215, 15%, 65%)', textDecoration: 'none', transition: 'all 0.15s ease', background: 'rgba(255,255,255,0.02)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(59,130,246,0.3)'; (e.currentTarget as HTMLElement).style.color = '#f8fafc'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'hsl(215, 15%, 65%)'; }}
               >
-                → Continue {recentSessions[0]?.type ? recentSessions[0].type.charAt(0).toUpperCase() + recentSessions[0].type.slice(1) : 'Behavioral'} Practice
+                {a.label}
               </Link>
-              <div className="mt-2 text-sm text-[#6b7280]">
-                Last session: {recentSessions[0]?.score?.toFixed(0) || 0} / 100 ·{' '}
-                {new Date(recentSessions[0]?.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </div>
-            </div>
-          )}
-
-          {/* Your Stats - flat numbers */}
-          <div className="mb-12">
-            <h2 className="text-[11px] uppercase tracking-wider text-[#4b5563] mb-4">Stats</h2>
-            <div className="flex items-start gap-8">
-              <div>
-                <div className="text-[28px] font-bold text-white mb-1">{userProgress?.dailyStreak || 0} days</div>
-                <div className="text-xs text-[#6b7280]">Practice Streak</div>
-              </div>
-              <div className="w-px h-12 bg-[#1f2937]"></div>
-              <div>
-                <div className="text-[28px] font-bold text-white mb-1">{userProgress?.totalSessions || 0}</div>
-                <div className="text-xs text-[#6b7280]">Total Sessions</div>
-              </div>
-              <div className="w-px h-12 bg-[#1f2937]"></div>
-              <div>
-                <div className="text-[28px] font-bold text-white mb-1">{userProgress?.bestScore ? userProgress.bestScore.toFixed(0) : '0'}</div>
-                <div className="text-xs text-[#6b7280]">Best Score</div>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Saved Questions */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[11px] uppercase tracking-wider text-[#4b5563]">Saved Questions</h2>
-              <span className="text-xs text-[#4b5563]">{savedQuestions.length} saved</span>
-            </div>
+          <SectionLabel>Saved Questions · {savedQuestions.length}</SectionLabel>
 
-            {/* Tabs */}
-            <div className="flex gap-4 mb-4 border-b border-[#1f2937]">
-              {(['BEHAVIORAL', 'TECHNICAL'] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setSavedTab(tab)}
-                  className="pb-2 text-xs font-medium transition-colors duration-150"
-                  style={{
-                    color: savedTab === tab ? '#3b82f6' : '#4b5563',
-                    borderBottom: savedTab === tab ? '2px solid #3b82f6' : '2px solid transparent',
-                    textTransform: 'capitalize',
-                    letterSpacing: '0.05em',
+          <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            {(['BEHAVIORAL', 'TECHNICAL'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setSavedTab(tab)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer', paddingBottom: 10,
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.68rem', fontWeight: 500,
+                  letterSpacing: '0.06em', textTransform: 'capitalize',
+                  color: savedTab === tab ? '#3b82f6' : 'hsl(215, 15%, 40%)',
+                  borderBottom: savedTab === tab ? '2px solid #3b82f6' : '2px solid transparent',
+                  transition: 'color 0.15s ease',
+                }}
+              >
+                {tab.charAt(0) + tab.slice(1).toLowerCase()} ({savedQuestions.filter(q => q.type === tab).length})
+              </button>
+            ))}
+          </div>
+
+          {filteredSaved.length === 0 ? (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '16px 0', marginBottom: 48 }}>
+              No {savedTab.toLowerCase()} questions saved yet.
+            </p>
+          ) : (
+            <div style={{ marginBottom: 48 }}>
+              {filteredSaved.slice(0, 5).map((q, i) => (
+                <div
+                  key={q.id}
+                  onClick={() => {
+                    if (q.type === 'TECHNICAL') {
+                      const numMatch = q.questionId.match(/^technical-(\d+)$/);
+                      const leetcodeNumber = numMatch ? parseInt(numMatch[1]) : null;
+                      localStorage.setItem('practiceTechnicalQuestion', JSON.stringify({ leetcodeNumber, questionText: q.questionText }));
+                      router.push('/dashboard/technical');
+                    } else {
+                      localStorage.setItem('practiceQuestion', JSON.stringify(q));
+                      router.push('/interview');
+                    }
                   }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+                    padding: '12px 0', cursor: 'pointer',
+                    borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  }}
+                  onMouseEnter={e => { const t = e.currentTarget; const qt = t.querySelector<HTMLElement>('.q-text'); const qa = t.querySelector<HTMLElement>('.q-arrow'); if (qt) qt.style.color = '#f8fafc'; if (qa) qa.style.opacity = '1'; }}
+                  onMouseLeave={e => { const t = e.currentTarget; const qt = t.querySelector<HTMLElement>('.q-text'); const qa = t.querySelector<HTMLElement>('.q-arrow'); if (qt) qt.style.color = 'hsl(215, 15%, 55%)'; if (qa) qa.style.opacity = '0'; }}
                 >
-                  {tab.charAt(0) + tab.slice(1).toLowerCase()} ({savedQuestions.filter(q => q.type === tab).length})
-                </button>
+                  <span className="q-text" style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: 'hsl(215, 15%, 55%)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.15s ease' }}>
+                    {q.questionText}
+                  </span>
+                  <span className="q-arrow" style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#3b82f6', flexShrink: 0, opacity: 0, transition: 'opacity 0.15s ease' }}>
+                    Practice →
+                  </span>
+                </div>
+              ))}
+              {filteredSaved.length > 5 && (
+                <div style={{ paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                  <button
+                    onClick={() => router.push('/dashboard/saved-questions')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: 'hsl(215, 15%, 40%)', padding: 0, transition: 'color 0.15s ease' }}
+                    onMouseEnter={e => { (e.target as HTMLElement).style.color = '#f8fafc'; }}
+                    onMouseLeave={e => { (e.target as HTMLElement).style.color = 'hsl(215, 15%, 40%)'; }}
+                  >
+                    View all {filteredSaved.length} →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Recent Activity */}
+          <SectionLabel>Recent Activity</SectionLabel>
+          {dashboardLoading ? (
+            <div style={{ padding: '32px 0', textAlign: 'center' }}>
+              <div style={{ width: 20, height: 20, border: '2px solid transparent', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+            </div>
+          ) : allActivity.length > 0 ? (
+            <div style={{ marginBottom: 48 }}>
+              {allActivity.map((item, i) => (
+                <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: '#f8fafc', flex: 1 }}>
+                    {ACTIVITY_TYPE_LABELS[item.type] || item.type} {item.type === 'resume' ? 'Review' : 'Practice'}
+                  </span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: 'hsl(215, 15%, 40%)', flex: 1, textAlign: 'center' }}>
+                    {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.82rem', fontWeight: 600, color: '#3b82f6', minWidth: 36, textAlign: 'right' }}>
+                    {item.score ? Math.round(item.score) : '\u2014'}
+                  </span>
+                </div>
               ))}
             </div>
+          ) : (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '16px 0' }}>
+              No recent activity. Start practicing to see your history.
+            </p>
+          )}
 
-            {/* Question rows */}
-            {(() => {
-              const filtered = savedQuestions.filter(q => q.type === savedTab);
-              if (filtered.length === 0) {
-                return (
-                  <p className="text-xs text-[#4b5563] py-4">
-                    No {savedTab.toLowerCase()} questions saved yet.
-                  </p>
-                );
-              }
-              return (
-                <div className="space-y-0">
-                  {filtered.slice(0, 5).map((q, i) => (
-                    <div
-                      key={q.id}
-                      className={`py-3 flex items-center justify-between gap-4 cursor-pointer group ${i > 0 ? 'border-t border-[#1f2937]' : ''}`}
-                      onClick={() => {
-                        if (q.type === 'TECHNICAL') {
-                          const numMatch = q.questionId.match(/^technical-(\d+)$/);
-                          const leetcodeNumber = numMatch ? parseInt(numMatch[1]) : null;
-                          localStorage.setItem('practiceTechnicalQuestion', JSON.stringify({
-                            leetcodeNumber,
-                            questionText: q.questionText,
-                          }));
-                          router.push('/dashboard/technical');
-                        } else {
-                          localStorage.setItem('practiceQuestion', JSON.stringify(q));
-                          router.push('/interview');
-                        }
-                      }}
-                    >
-                      <p className="text-sm text-[#9ca3af] group-hover:text-white transition-colors duration-150 flex-1 truncate">
-                        {q.questionText}
-                      </p>
-                      <span className="text-xs text-[#3b82f6] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                        Practice →
-                      </span>
-                    </div>
-                  ))}
-                  {filtered.length > 5 && (
-                    <div className="pt-3 border-t border-[#1f2937]">
-                      <button
-                        onClick={() => router.push('/dashboard/saved-questions')}
-                        className="text-xs text-[#4b5563] hover:text-white transition-colors duration-150"
-                      >
-                        View all {filtered.length} {savedTab.toLowerCase()} questions →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* Recent Activity - minimal table */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[11px] uppercase tracking-wider text-[#4b5563]">Recent Activity</h2>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-xs text-[#6b7280] hover:text-white transition-colors duration-150"
-              >
-                Refresh
-              </button>
-            </div>
-            {dashboardLoading ? (
-              <div className="py-8 text-center text-[#6b7280] text-sm">
-                Loading...
-              </div>
-            ) : recentSessions.length > 0 || recentAnalyses.length > 0 ? (
-              <div className="space-y-0">
-                {[...recentSessions.slice(0, 5).map(s => ({ ...s, sessionType: s.type, date: s.completedAt })), ...recentAnalyses.slice(0, 5).map(a => ({ ...a, sessionType: 'resume', date: a.createdAt }))]
-                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                  .slice(0, 5)
-                  .map((item, i) => (
-                    <div key={item.id} className={`py-3 flex items-center justify-between ${i > 0 ? 'border-t border-[#1f2937]' : ''}`}>
-                      <div className="flex-1">
-                        <span className="text-sm text-white capitalize">{item.sessionType} {item.sessionType === 'resume' ? 'Analysis' : 'Practice'}</span>
-                      </div>
-                      <div className="flex-1 text-center">
-                        <span className="text-sm text-[#6b7280]">
-                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </span>
-                      </div>
-                      <div className="flex-1 text-right">
-                        <span className="text-sm text-[#3b82f6] font-semibold">{item.score?.toFixed(0) || 'N/A'}</span>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center text-[#6b7280] text-sm">
-                No recent activity. Start practicing to see your history.
-              </div>
-            )}
-          </div>
         </div>
       </main>
     </DashboardLayout>
@@ -392,11 +325,9 @@ export default function DashboardPageWithSuspense() {
   return (
     <SubscriptionGate>
       <Suspense fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-400">Loading...</p>
-          </div>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(222.2, 84%, 4.9%)' }}>
+          <div style={{ width: 32, height: 32, border: '2px solid transparent', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       }>
         <DashboardPage />

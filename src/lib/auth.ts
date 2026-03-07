@@ -126,6 +126,18 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.picture = user.image;
       }
+      // If token.id doesn't match a DB user (e.g. after DB reset), re-resolve by email
+      if (token.id && token.email) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
+        if (!dbUser) {
+          const byEmail = await prisma.user.findUnique({ where: { email: token.email as string } });
+          if (byEmail) {
+            token.id = byEmail.id;
+            token.name = byEmail.name;
+            token.picture = byEmail.image;
+          }
+        }
+      }
       return token;
     },
   },

@@ -102,7 +102,9 @@ class ElevenLabsService {
       }
 
       const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      // Safari fix: ensure blob has correct MIME type
+      const typedBlob = audioBlob.type === 'audio/mpeg' ? audioBlob : new Blob([audioBlob], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(typedBlob);
       
       console.log('✅ ElevenLabs TTS successful with Ethan voice');
       
@@ -202,12 +204,16 @@ const elevenLabsTTS = new ElevenLabsService(
 );
 
 /**
- * Utility function to play audio from URL
+ * Utility function to play audio from URL (Safari-compatible)
  */
 export function playAudioFromUrl(audioUrl: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const audio = new Audio(audioUrl);
-    
+    const audio = new Audio();
+
+    // Safari fix: set source before attaching event listeners
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
+
     audio.onloadeddata = () => {
       console.log('🎵 Audio loaded, duration:', audio.duration, 'seconds');
     };
@@ -225,21 +231,47 @@ export function playAudioFromUrl(audioUrl: string): Promise<void> {
       console.error('❌ Audio playback error:', error);
       reject(new Error('Failed to play audio'));
     };
-    
-    // Set volume and start playback
+
+    // Safari fix: set src after listeners, then load explicitly
+    audio.src = audioUrl;
     audio.volume = 1.0;
-    audio.play().catch(reject);
+    audio.load();
+
+    // Safari sometimes needs a small delay after load() before play()
+    const tryPlay = () => {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          // Safari autoplay policy: retry once after short delay
+          console.warn('Play blocked, retrying...', err);
+          setTimeout(() => {
+            audio.play().catch(reject);
+          }, 100);
+        });
+      }
+    };
+
+    // If already loaded enough, play immediately; otherwise wait for canplaythrough
+    if (audio.readyState >= 3) {
+      tryPlay();
+    } else {
+      audio.oncanplaythrough = () => tryPlay();
+    }
   });
 }
 
 /**
- * Utility function to play audio blob
+ * Utility function to play audio blob (Safari-compatible)
  */
 export function playAudioBlob(audioBlob: Blob): Promise<void> {
   return new Promise((resolve, reject) => {
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    
+    // Safari fix: ensure MIME type is set for blob URLs
+    const safariBlob = audioBlob.type ? audioBlob : new Blob([audioBlob], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(safariBlob);
+    const audio = new Audio();
+
+    audio.preload = 'auto';
+
     audio.onloadeddata = () => {
       console.log('🎵 Audio loaded, duration:', audio.duration, 'seconds');
     };
@@ -259,10 +291,28 @@ export function playAudioBlob(audioBlob: Blob): Promise<void> {
       URL.revokeObjectURL(audioUrl);
       reject(new Error('Failed to play audio'));
     };
-    
-    // Set volume and start playback
+
+    audio.src = audioUrl;
     audio.volume = 1.0;
-    audio.play().catch(reject);
+    audio.load();
+
+    const tryPlay = () => {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Play blocked, retrying...', err);
+          setTimeout(() => {
+            audio.play().catch(reject);
+          }, 100);
+        });
+      }
+    };
+
+    if (audio.readyState >= 3) {
+      tryPlay();
+    } else {
+      audio.oncanplaythrough = () => tryPlay();
+    }
   });
 }
 

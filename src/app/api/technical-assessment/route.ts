@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProgressService } from "@/lib/progress";
 import { hasEnoughCredits, deductCredits } from '@/lib/credits';
+import { logActivity } from '@/lib/activity-logger';
 import { FeatureType } from '@prisma/client';
 import path from 'path';
 import fs from 'fs';
@@ -21,6 +21,9 @@ interface LCProblem {
   hints?: string[];
   topics?: string[];
   paidOnly?: boolean;
+  solution_code_python?: string | null;
+  solution_code_java?: string | null;
+  solution_code_cpp?: string | null;
 }
 
 let _problemsCache: LCProblem[] | null = null;
@@ -63,11 +66,16 @@ function stripHtml(html: string): string {
 
 /** Format a problem entry into the markdown format the rest of the app expects */
 function formatProblemFromJson(p: LCProblem): string {
-  const desc = stripHtml(p.description || '');
+  const desc = p.description
+    ? stripHtml(p.description)
+    : '*This is a premium LeetCode problem. The full description is not available, but you can attempt it based on the title and hints below.*';
   const hints = (p.hints || []).length > 0
     ? '\n\n**Hints:**\n' + p.hints!.map(h => `• ${stripHtml(h)}`).join('\n')
     : '';
-  return `# ${p.frontendQuestionId}. ${p.title}\n\n**Difficulty:** ${p.difficulty}\n\n${desc}${hints}`;
+  const topics = (p.topics || []).length > 0
+    ? '\n\n**Topics:** ' + p.topics!.join(', ')
+    : '';
+  return `# ${p.frontendQuestionId}. ${p.title}\n\n**Difficulty:** ${p.difficulty}\n\n${desc}${topics}${hints}`;
 }
 
 /** Look up problem by ID. Returns formatted string or null if not found. */
@@ -89,6 +97,98 @@ const languageTemplates: Record<string, string> = {
   rust: "impl Solution {\n    pub fn solution(params: Type) -> ReturnType {\n        // Implementation\n    }\n}",
   csharp: "public class Solution {\n    public Type Solution(params) {\n        // Implementation\n    }\n}"
 };
+
+/** Extract function signature from solution code and generate language-specific code templates */
+function generateCodeTemplates(problem: LCProblem): Record<string, string> | null {
+  // Try to parse function signatures from the Python solution (most reliable)
+  const pyCode = problem.solution_code_python;
+  if (!pyCode) return null;
+
+  // Match Python class method: def methodName(self, param1: Type, ...) -> ReturnType:
+  const pyMatch = pyCode.match(/def\s+(\w+)\s*\(\s*self\s*,?\s*([^)]*)\)\s*(?:->\s*(.+?))?\s*:/);
+  if (!pyMatch) return null;
+
+  const funcName = pyMatch[1];
+  const pyParams = pyMatch[2].trim();
+  const pyReturnType = pyMatch[3]?.trim() || 'None';
+
+  // Parse parameters
+  const params: { name: string; pyType: string }[] = [];
+  if (pyParams) {
+    for (const part of pyParams.split(',')) {
+      const trimmed = part.trim();
+      if (!trimmed) continue;
+      const [pName, pType] = trimmed.includes(':') ? trimmed.split(':').map(s => s.trim()) : [trimmed, 'any'];
+      params.push({ name: pName, pyType: pType });
+    }
+  }
+
+  // Type mapping helpers
+  const pyToJs = (t: string): string => {
+    if (/^List\[int\]$/.test(t)) return 'number[]';
+    if (/^List\[str\]$/.test(t)) return 'string[]';
+    if (/^List\[List\[int\]\]$/.test(t)) return 'number[][]';
+    if (/^List\[List\[str\]\]$/.test(t)) return 'string[][]';
+    if (/^List\[/.test(t)) return 'any[]';
+    if (t === 'int' || t === 'float') return 'number';
+    if (t === 'str') return 'string';
+    if (t === 'bool') return 'boolean';
+    if (t === 'Optional[TreeNode]' || t === 'TreeNode') return 'TreeNode | null';
+    if (t === 'Optional[ListNode]' || t === 'ListNode') return 'ListNode | null';
+    return 'any';
+  };
+
+  const pyToJava = (t: string): string => {
+    if (/^List\[int\]$/.test(t)) return 'int[]';
+    if (/^List\[str\]$/.test(t)) return 'String[]';
+    if (/^List\[List\[int\]\]$/.test(t)) return 'List<List<Integer>>';
+    if (/^List\[List\[str\]\]$/.test(t)) return 'List<List<String>>';
+    if (/^List\[/.test(t)) return 'List<Object>';
+    if (t === 'int') return 'int';
+    if (t === 'float') return 'double';
+    if (t === 'str') return 'String';
+    if (t === 'bool') return 'boolean';
+    if (t === 'None' || t === 'void') return 'void';
+    if (t === 'TreeNode' || t === 'Optional[TreeNode]') return 'TreeNode';
+    if (t === 'ListNode' || t === 'Optional[ListNode]') return 'ListNode';
+    return 'Object';
+  };
+
+  const pyToCpp = (t: string): string => {
+    if (/^List\[int\]$/.test(t)) return 'vector<int>';
+    if (/^List\[str\]$/.test(t)) return 'vector<string>';
+    if (/^List\[List\[int\]\]$/.test(t)) return 'vector<vector<int>>';
+    if (/^List\[List\[str\]\]$/.test(t)) return 'vector<vector<string>>';
+    if (/^List\[/.test(t)) return 'vector<int>';
+    if (t === 'int') return 'int';
+    if (t === 'float') return 'double';
+    if (t === 'str') return 'string';
+    if (t === 'bool') return 'bool';
+    if (t === 'None' || t === 'void') return 'void';
+    if (t === 'TreeNode' || t === 'Optional[TreeNode]') return 'TreeNode*';
+    if (t === 'ListNode' || t === 'Optional[ListNode]') return 'ListNode*';
+    return 'int';
+  };
+
+  const jsParams = params.map(p => p.name).join(', ');
+  const tsParams = params.map(p => `${p.name}: ${pyToJs(p.pyType)}`).join(', ');
+  const javaParams = params.map(p => `${pyToJava(p.pyType)} ${p.name}`).join(', ');
+  const cppParams = params.map(p => `${pyToCpp(p.pyType)} ${p.name}`).join(', ');
+  const javaReturn = pyToJava(pyReturnType);
+  const cppReturn = pyToCpp(pyReturnType);
+  const tsReturn = pyToJs(pyReturnType);
+
+  return {
+    javascript: `/**\n * @param {${params.map(p => pyToJs(p.pyType)).join(', ')}} ${params.map(p => p.name).join(', ')}\n * @return {${pyToJs(pyReturnType)}}\n */\nvar ${funcName} = function(${jsParams}) {\n    // Write your solution here\n    \n};`,
+    python: `class Solution:\n    def ${funcName}(self${pyParams ? ', ' + pyParams : ''})${pyReturnType !== 'None' ? ' -> ' + pyReturnType : ''}:\n        # Write your solution here\n        pass`,
+    java: `class Solution {\n    public ${javaReturn} ${funcName}(${javaParams}) {\n        // Write your solution here\n        \n    }\n}`,
+    cpp: `class Solution {\npublic:\n    ${cppReturn} ${funcName}(${cppParams}) {\n        // Write your solution here\n        \n    }\n};`,
+    typescript: `function ${funcName}(${tsParams}): ${tsReturn} {\n    // Write your solution here\n    \n}`,
+    go: `func ${funcName}(${params.map(p => p.name + ' ' + pyToJs(p.pyType).replace('[]', '')).join(', ')}) ${pyToJs(pyReturnType)} {\n    // Write your solution here\n    \n}`,
+    rust: `impl Solution {\n    pub fn ${funcName}(${params.map(p => p.name + ': ' + pyToJs(p.pyType)).join(', ')}) -> ${pyToJs(pyReturnType)} {\n        // Write your solution here\n        \n    }\n}`,
+    csharp: `public class Solution {\n    public ${javaReturn} ${funcName.charAt(0).toUpperCase() + funcName.slice(1)}(${javaParams}) {\n        // Write your solution here\n        \n    }\n}`
+  };
+}
 
 
 // Generate a technical interview question
@@ -131,53 +231,12 @@ export async function POST(req: Request) {
       prompt: customPrompt,
     } = await req.json();
 
-    // ── Solution generation (still uses AI) ───────────────────────────────
+    // ── Solution generation — disabled, solutions come from CSV/local data only ──
     if (generateSolutions) {
-      const prompt = `You are an expert software engineer providing multiple solution approaches for this LeetCode problem:
-
-${customPrompt}
-
-Generate exactly 3 different solution approaches, from brute force to optimal. For each approach, provide:
-1. A clear description of the approach and algorithm
-2. Precise time and space complexity
-3. Complete, runnable code implementation in ${language}
-4. Key insights and trade-offs
-
-Use this template for the ${language} solution:
-${languageTemplates[language] || languageTemplates['javascript']}
-
-Return ONLY a JSON array in this exact format (no other text):
-[
-  {
-    "approach": "Detailed description",
-    "timeComplexity": "O(n)",
-    "spaceComplexity": "O(1)",
-    "code": "Complete runnable code in ${language}",
-    "insights": "Key insights and trade-offs"
-  }
-]`;
-
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_completion_tokens: 2048,
-      });
-
-      let responseText = (completion.choices[0].message.content || '').trim()
-        .replace(/```json\s*|\s*```/g, '');
-
-      const solutions = JSON.parse(responseText);
-      if (!Array.isArray(solutions) || solutions.length < 2) {
-        throw new Error('Failed to generate valid solutions.');
-      }
-
-      const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
       return NextResponse.json({
-        success: true,
-        question: responseText,
-        creditsRemaining: deduction.remainingCredits,
-      });
+        success: false,
+        error: 'AI solution generation is disabled. Solutions are loaded from the local problem database.',
+      }, { status: 400 });
     }
 
     // ── Specific problem: look up by ID from local JSON, no AI call ───────
@@ -203,6 +262,7 @@ Return ONLY a JSON array in this exact format (no other text):
         question: problem,
         problemId: id,
         topics: lcProblem.topics || [],
+        codeTemplates: generateCodeTemplates(lcProblem),
         creditsRemaining: null,
       });
     }
@@ -243,6 +303,7 @@ Respond with ONLY the integer problem number. No explanation. No text. Just the 
       question: problem,
       problemId: chosenId,
       topics: chosenProblem.topics || [],
+      codeTemplates: generateCodeTemplates(chosenProblem),
       creditsRemaining: deduction.remainingCredits,
     });
 
@@ -413,6 +474,18 @@ Return ONLY this JSON (no other text):
 
       // AI was used to analyze the submission — charge 1.5 credits
       const deduction = await deductCredits(user.id, FeatureType.TECHNICAL_INTERVIEW, 0.3);
+
+      // Log activity (fire-and-forget)
+      const titleMatch = (question || '').match(/^#\s*(\d+)\.\s*(.+)/m);
+      logActivity(user.id, {
+        activityType: 'technical',
+        problemId: titleMatch ? parseInt(titleMatch[1]) : null,
+        problemTitle: titleMatch ? titleMatch[2].trim() : null,
+        difficulty: difficulty || null,
+        language,
+        isCorrect: analysis.isCorrect ?? false,
+        score: transformedResponse.overallScore,
+      });
 
       return NextResponse.json({ ...transformedResponse, creditsRemaining: deduction.remainingCredits });
     } catch (error) {

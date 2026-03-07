@@ -30,6 +30,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [settingsTab, setSettingsTab] = useState<'profile' | 'account'>('profile');
   const [settingsRole, setSettingsRole] = useState('');
   const [settingsCompany, setSettingsCompany] = useState('');
+  const [settingsCodingLang, setSettingsCodingLang] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -45,6 +46,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         .then(data => {
           setSettingsRole(data.targetRole || '');
           setSettingsCompany(data.targetCompany || '');
+          setSettingsCodingLang(data.preferredCodingLanguage || '');
           setResumeFilename(data.resumeFilename || '');
           setResumeUrl(data.resumeUrl || '');
         })
@@ -136,7 +138,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       await fetch('/api/onboarding/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetRole: settingsRole, targetCompany: settingsCompany }),
+        body: JSON.stringify({ targetRole: settingsRole, targetCompany: settingsCompany, preferredCodingLanguage: settingsCodingLang || null }),
       });
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 2500);
@@ -311,7 +313,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
 
                 {/* Target Company */}
-                <div style={{ marginBottom: 32 }}>
+                <div style={{ marginBottom: 20 }}>
                   <label style={settingsLabelStyle}>Target Company</label>
                   <input
                     type="text"
@@ -322,6 +324,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
                     onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   />
+                </div>
+
+                {/* Preferred Coding Language */}
+                <div style={{ marginBottom: 32 }}>
+                  <label style={settingsLabelStyle}>Preferred Coding Language</label>
+                  <select
+                    value={settingsCodingLang}
+                    onChange={e => setSettingsCodingLang(e.target.value)}
+                    style={{ ...settingsInputStyle, cursor: 'pointer', appearance: 'none' as const, backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%234a5370' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.12)'; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <option value="">Select language</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="csharp">C#</option>
+                  </select>
                 </div>
 
                 <button
@@ -549,6 +573,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                   </svg>
                   Settings
+                </DropdownMenuItem>
+
+                {/* Progress */}
+                <DropdownMenuItem
+                  onClick={() => router.push('/dashboard/progress')}
+                  className="cursor-pointer hover:bg-[#1a1f2e] focus:bg-[#1a1f2e] text-[#c4cce0] hover:text-white focus:text-white rounded-lg mx-1 my-0.5 px-3 py-2.5"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="mr-2.5 flex-shrink-0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                  Progress
                 </DropdownMenuItem>
 
                 {/* Contact Support */}

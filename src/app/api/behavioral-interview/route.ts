@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProgressService } from "@/lib/progress";
+import { logActivity } from "@/lib/activity-logger";
 
 // Initialize OpenAI API
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
@@ -16,20 +16,41 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { company, role, numberOfQuestions = 5 } = await req.json();
+    const { company, role, numberOfQuestions = 5, interviewType = 'behavioral' } = await req.json();
 
-    // Prompt for generating behavioral questions
-    const prompt = `Generate ${numberOfQuestions} behavioral interview questions for a ${role} position at ${company}.
-The questions should be relevant to the role and company culture, focusing on past experiences and situations that demonstrate key competencies for the position.
-Format the response as a JSON array of questions.
-Each question should be challenging but fair, and should help the interviewer understand the candidate's soft skills, problem-solving abilities, teamwork, leadership, and adaptability.
-Return ONLY the array of questions with no additional text.`;
+    // Prompt for generating behavioral questions based on interview type
+    const prompt = `Generate ${numberOfQuestions} interview questions for a ${role} position at ${company}.
+
+INTERVIEW TYPE: ${interviewType}
+
+QUESTION STYLE BY TYPE:
+
+If interviewType is "recruiter_screen":
+- Focus on: motivation for applying, career goals, salary expectations, availability, high-level experience overview, culture fit, "tell me about yourself", why this company, why this role
+- Tone: conversational, screening-level, not deeply technical
+- Examples: "Walk me through your resume.", "What interests you about this role at ${company}?", "Where do you see yourself in 3 years?"
+
+If interviewType is "behavioral":
+- Focus on: STAR-method questions about past experiences — leadership, conflict resolution, teamwork, failure, ambiguity, prioritization, delivering under pressure
+- Every question must start with "Tell me about a time..." or "Describe a situation where..." or "Give me an example of..."
+- Examples: "Tell me about a time you disagreed with your manager. How did you handle it?", "Describe a situation where you had to deliver results with incomplete information."
+
+If interviewType is "technical":
+- Focus on: fundamental technical concepts relevant to ${role}, system design reasoning, debugging scenarios, technical decision-making, architecture trade-offs
+- These are NOT coding questions — they are verbal technical questions asked in interviews
+- Examples: "Explain the difference between SQL and NoSQL databases and when you'd use each.", "How would you debug a production service that's returning 500 errors intermittently?", "What happens when you type a URL into a browser?"
+
+If interviewType is "mix":
+- Generate a balanced mix: ~25% recruiter screen, ~40% behavioral, ~35% technical
+- Order them as they would appear in a real interview: start with screen questions, then behavioral, then technical
+
+Return ONLY a JSON array of question strings. No other text.`;
 
     // Generate the questions
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
+      temperature: 0.7,
       max_completion_tokens: 1024,
     });
 
@@ -73,7 +94,8 @@ export async function PUT(req: Request) {
       company,
       role,
       questions,
-      answers
+      answers,
+      interviewType = 'behavioral'
     } = await req.json();
 
     // Prepare the Q&A pairs for analysis
@@ -81,18 +103,34 @@ export async function PUT(req: Request) {
 
     // Prompt for answers analysis
     const analysisPrompt = `
-You are a behavioral interview expert for ${company} evaluating a candidate for a ${role} position.
-The candidate has provided answers to the following behavioral interview questions:
+You are an interview coach evaluating a candidate for a ${role} position at ${company}.
+Interview type: ${interviewType}
+
+The candidate answered the following questions:
 
 ${qaPairs}
 
-Please analyze the answers and provide:
-1. A score for each answer (0-100) based on clarity, relevance, structure (STAR method), and specificity
-2. Overall score (0-100)
-3. 2-3 specific strengths demonstrated across all answers
-4. 2-3 specific areas for improvement
-5. Detailed feedback on each answer
-6. General advice to improve behavioral interviewing skills
+EVALUATION CRITERIA BY TYPE:
+
+For recruiter_screen questions:
+- Did they clearly articulate their background and motivation?
+- Was their answer concise and engaging (not rambling)?
+- Did they show genuine interest in the company/role?
+- Were salary/timeline expectations handled professionally?
+
+For behavioral questions:
+- Did they use the STAR method (Situation, Task, Action, Result)?
+- Were examples specific with measurable outcomes?
+- Did they demonstrate the competency the question was targeting?
+- Was the story relevant to the role?
+
+For technical questions:
+- Was the technical explanation accurate?
+- Did they demonstrate depth of understanding (not just surface-level)?
+- Did they discuss trade-offs?
+- Could they explain complex concepts clearly?
+
+Score each answer 0-100 based on these criteria. A decent answer covering the basics gets 60-70. A strong, specific answer with good structure gets 75-85. Exceptional gets 85+.
 
 Format your response as valid JSON with the following structure:
 {
@@ -109,7 +147,7 @@ Format your response as valid JSON with the following structure:
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: analysisPrompt }],
-      temperature: 0.5,
+      temperature: 0.3,
       max_completion_tokens: 2048,
     });
 
@@ -252,6 +290,12 @@ Format your response as valid JSON with the following structure:
             }
           });
           console.log('🎯 New stats system updated for behavioral interview');
+
+          // Also create ActivityLog entry for dashboard heatmap/feed
+          logActivity(user.id, {
+            activityType: 'behavioral',
+            score,
+          });
         }
       } catch (progressError) {
         console.error('Error tracking progress with new stats system:', progressError);

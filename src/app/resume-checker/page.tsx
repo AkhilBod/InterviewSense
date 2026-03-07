@@ -653,7 +653,7 @@ export default function ResumeCheckerPage() {
                         </h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
                           {[
-                            { label: 'Grade', value: adjustedOverallScore >= 90 ? 'A' : adjustedOverallScore >= 80 ? 'B+' : adjustedOverallScore >= 70 ? 'B' : adjustedOverallScore >= 60 ? 'C' : 'D', sub: adjustedOverallScore >= 80 ? 'Strong' : adjustedOverallScore >= 70 ? 'Good' : adjustedOverallScore >= 60 ? 'Average' : 'Needs Work' },
+                            { label: 'Grade', value: adjustedOverallScore >= 97 ? 'A+' : adjustedOverallScore >= 93 ? 'A' : adjustedOverallScore >= 90 ? 'A-' : adjustedOverallScore >= 87 ? 'B+' : adjustedOverallScore >= 83 ? 'B' : adjustedOverallScore >= 80 ? 'B-' : adjustedOverallScore >= 77 ? 'C+' : adjustedOverallScore >= 73 ? 'C' : adjustedOverallScore >= 70 ? 'C-' : adjustedOverallScore >= 67 ? 'D+' : adjustedOverallScore >= 60 ? 'D' : 'F', sub: adjustedOverallScore >= 90 ? 'Excellent' : adjustedOverallScore >= 80 ? 'Strong' : adjustedOverallScore >= 70 ? 'Above Average' : adjustedOverallScore >= 60 ? 'Average' : 'Needs Work' },
                             { label: 'ATS Ready', value: (resumeData.atsCompatibility === 'Excellent' || resumeData.atsCompatibility === 'Good') ? 'Yes' : 'No', sub: resumeData.atsCompatibility || 'Unknown' },
                             { label: 'Pages', value: String(resumeData.resumeLength || 1), sub: 'Length' },
                             { label: 'Skills', value: String(resumeData.skillsCount || 0), sub: 'Detected' },

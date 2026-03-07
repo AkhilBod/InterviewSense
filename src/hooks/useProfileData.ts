@@ -9,6 +9,7 @@ export interface ProfileData {
   targetRole: string | null
   targetCompany: string | null
   jobDescription: string | null
+  preferredCodingLanguage: string | null
   onboardingCompleted: boolean
 }
 
@@ -18,6 +19,7 @@ const defaultProfile: ProfileData = {
   targetRole: null,
   targetCompany: null,
   jobDescription: null,
+  preferredCodingLanguage: null,
   onboardingCompleted: false,
 }
 
@@ -37,6 +39,7 @@ export function useProfileData() {
           targetRole: data.targetRole ?? null,
           targetCompany: data.targetCompany ?? null,
           jobDescription: data.jobDescription ?? null,
+          preferredCodingLanguage: data.preferredCodingLanguage ?? null,
           onboardingCompleted: data.onboardingCompleted ?? false,
         })
       })

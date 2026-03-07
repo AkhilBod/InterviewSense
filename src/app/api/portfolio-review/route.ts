@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { logActivity } from '@/lib/activity-logger';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
@@ -64,87 +68,91 @@ async function analyzePortfolioWithAI(data: PortfolioReviewData, repos: GitHubRe
   }));
 
   const prompt = `
-As a senior software engineer and technical reviewer, analyze this portfolio and provide detailed feedback.
+You are a **senior engineering manager** who has reviewed hundreds of portfolios and GitHub profiles when evaluating candidates. Provide an expert-level portfolio and GitHub review.
 
-**IMPORTANT: Please visit and analyze the portfolio website at ${data.portfolioUrl} to understand the projects, skills, experience, and overall presentation. Examine the content, design, projects showcased, and technical skills displayed.**
+## Subject
+- **Target Role:** ${data.targetRole}
+- **Experience Level:** ${data.experience || 'Not specified'}
+- **GitHub Profile:** ${data.githubUrl}
+${data.portfolioUrl ? `- **Portfolio Website:** ${data.portfolioUrl}` : '- **Portfolio Website:** Not provided'}
+${data.specificFeedback ? `- **Specific Feedback Requested:** ${data.specificFeedback}` : ''}
 
-**Portfolio Information:**
-- Portfolio URL: ${data.portfolioUrl}
-- Target Role: ${data.targetRole}
-- Experience Level: ${data.experience}
-- GitHub Profile: ${data.githubUrl || 'Not provided'}
-- Specific Feedback Areas: ${data.specificFeedback || 'General review'}
+## GitHub Repositories (${repoDetails.length} found):
+${repoDetails.length > 0 ? JSON.stringify(repoDetails, null, 2) : 'No public repositories found — address this!'}
 
-**GitHub Repositories:**
-${repoDetails.length > 0 ? JSON.stringify(repoDetails, null, 2) : 'No repositories found'}
+## Analysis Instructions
 
-Based on your analysis of the portfolio website content and GitHub repositories, please provide a comprehensive portfolio review in the following JSON format:
+### GitHub Deep-Dive (this is the primary signal):
+- **Code quality patterns:** Based on repo names, descriptions, topics, and languages — what does the tech stack tell us about this candidate? Are they using modern, production-grade tools or outdated ones?
+- **Project ambition:** Do the repos show real-world, non-trivial projects or just tutorial follow-alongs? Look for signs of originality.
+- **Consistency:** How recently were repos updated? Is there a pattern of regular commits or long gaps?
+- **Documentation quality:** Do repos have meaningful descriptions and topics? This signals professionalism.
+- **Breadth vs depth:** Are they a specialist in one area or spread thin across too many technologies?
+
+${data.portfolioUrl ? `### Portfolio Website Analysis:
+- **Visual design:** Is it modern, clean, and professional? Does it reflect current design trends?
+- **UX/Interaction:** How is the navigation, typography hierarchy, whitespace usage, and responsiveness?
+- **Content strategy:** Are projects presented with context (problem → solution → impact)? Are there case studies?
+- **Technical presentation:** Does the portfolio itself demonstrate technical skill (animations, performance, accessibility)?
+- **Personal branding:** Is there a clear narrative about who this person is and what they bring?
+` : ''}
+
+### Role Alignment:
+- For a **${data.targetRole}** role, what specific skills or project types are missing?
+- What would make a hiring manager at a top company excited about this candidate?
+
+## Required JSON Output:
 
 {
-  "overallScore": 85,
-  "overallFeedback": "Brief overall assessment...",
-  "strengths": [
-    "Strong point 1",
-    "Strong point 2",
-    "Strong point 3"
-  ],
-  "weaknesses": [
-    "Area for improvement 1",
-    "Area for improvement 2"
-  ],
-  "recommendations": [
-    "Specific recommendation 1",
-    "Specific recommendation 2",
-    "Specific recommendation 3"
-  ],
+  "overallScore": <0-100>,
+  "overallFeedback": "<2-3 sentences: the elevator pitch of this candidate's portfolio>",
+  "strengths": ["<specific strength with evidence>", ...],
+  "weaknesses": ["<specific weakness with evidence>", ...],
+  "recommendations": ["<actionable, specific recommendation>", ...],
   "portfolioAnalysis": {
-    "designScore": 80,
-    "designFeedback": "Detailed feedback on portfolio design and UX...",
-    "contentScore": 75,
-    "contentFeedback": "Feedback on portfolio content and presentation..."
+    "designScore": <0-100>,
+    "designFeedback": "<3+ sentences on visual design, UX, typography, color, layout>",
+    "contentScore": <0-100>,
+    "contentFeedback": "<3+ sentences on content strategy, project presentation, storytelling>"
   },
   "projectAnalysis": [
     {
-      "name": "Project Name",
-      "score": 85,
-      "feedback": "Detailed project feedback...",
-      "techStack": ["React", "Node.js"],
-      "highlights": ["Good use of modern frameworks"],
-      "improvements": ["Add more documentation"]
+      "name": "<repo or project name>",
+      "score": <0-100>,
+      "feedback": "<2+ sentences of specific, constructive feedback>",
+      "techStack": ["<tech>", ...],
+      "highlights": ["<what's good>"],
+      "improvements": ["<what could be better>"]
     }
   ],
   "technicalSkills": {
-    "score": 88,
-    "feedback": "Assessment of technical skills based on projects...",
-    "strengths": ["Clean code", "Good architecture"],
-    "gaps": ["Testing coverage", "Documentation"]
+    "score": <0-100>,
+    "feedback": "<assessment based on actual code patterns, not just claimed skills>",
+    "strengths": ["<demonstrated skill>", ...],
+    "gaps": ["<missing skill for target role>", ...]
   },
   "roleAlignment": {
-    "score": 82,
-    "feedback": "How well the portfolio aligns with the target role...",
-    "missingSkills": ["Skill 1", "Skill 2"],
-    "relevantProjects": ["Project 1", "Project 2"]
+    "score": <0-100>,
+    "feedback": "<how well does this portfolio position them for ${data.targetRole}>",
+    "missingSkills": ["<skill they need>", ...],
+    "relevantProjects": ["<project that helps>", ...]
   }
 }
 
-**ANALYSIS REQUIREMENTS:**
-1. Visit the portfolio website and extract information about all projects shown
-2. For projectAnalysis, include ALL projects found on the website with their details
-3. Analyze the website design, user experience, and content presentation
-4. Consider both the website content and GitHub repositories in your assessment
-5. Rate each section on a scale of 0-100
-6. Be constructive and specific in your feedback
-7. Focus on actionable advice that will help improve their portfolio for their target role
-
-Make sure to analyze projects like InterviewSense, Orbit, Price2Produce, SafeWalker and any other projects displayed on the portfolio website.
+**Rules:**
+- Analyze ALL repos/projects found, not just a subset.
+- Be honest but constructive — point out real gaps, not just give praise.
+- Every piece of feedback must reference something specific (a repo name, a design choice, etc).
+- Scores should be realistic: 50 = mediocre, 70 = solid, 85+ = excellent.
+- Return ONLY valid JSON.
 `;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_completion_tokens: 3072,
+      temperature: 0.3,
+      max_completion_tokens: 4096,
     });
 
     const text = completion.choices[0].message.content || '';
@@ -166,22 +174,39 @@ export async function POST(request: NextRequest) {
   try {
     const data: PortfolioReviewData = await request.json();
 
-    // Validate required fields
-    if (!data.portfolioUrl || !data.targetRole) {
+    // Validate required fields — GitHub is now required, portfolio URL is optional
+    if (!data.githubUrl || !data.targetRole) {
       return NextResponse.json(
-        { error: 'Portfolio URL and target role are required' },
+        { error: 'GitHub profile URL and target role are required' },
         { status: 400 }
       );
     }
 
-    // Fetch GitHub repositories if GitHub URL is provided
-    let repos: GitHubRepo[] = [];
-    if (data.githubUrl) {
-      repos = await fetchGitHubRepos(data.githubUrl);
-    }
+    // Fetch GitHub repositories (always — it's now required)
+    const repos = await fetchGitHubRepos(data.githubUrl);
 
     // Analyze portfolio with AI
     const analysis = await analyzePortfolioWithAI(data, repos);
+
+    // Log activity (fire-and-forget)
+    try {
+      const session = await getServerSession(authOptions);
+      if (session?.user?.email) {
+        const user = await prisma.user.findUnique({
+          where: { email: session.user.email },
+          select: { id: true },
+        });
+        if (user) {
+          logActivity(user.id, {
+            activityType: 'portfolio',
+            score: analysis.overallScore ?? null,
+            metadata: { targetRole: data.targetRole, githubUrl: data.githubUrl },
+          });
+        }
+      }
+    } catch (logErr) {
+      console.error('Activity log error (portfolio):', logErr);
+    }
 
     return NextResponse.json({
       success: true,

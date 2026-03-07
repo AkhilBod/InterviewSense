@@ -163,7 +163,6 @@ export default function CareerRoadmapResultsPage() {
   }
 
   const sc = scoreColor(analysis.overallScore)
-  const circumference = 2 * Math.PI * 40
 
   return (
     <ProtectedRoute>
@@ -183,26 +182,28 @@ export default function CareerRoadmapResultsPage() {
               <p style={{ color: '#64748b', marginTop: 8, fontSize: '0.95rem' }}>Personalized guidance for your career journey</p>
             </div>
 
-            {/* Overall Score + Summary */}
-            <div style={{ ...card, background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.12)', marginBottom: 24, display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minWidth: 120 }}>
-                <svg width={96} height={96} viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                  <circle cx={50} cy={50} r={40} stroke="rgba(255,255,255,0.06)" strokeWidth={8} fill="transparent" />
-                  <circle cx={50} cy={50} r={40} stroke={sc} strokeWidth={8} fill="transparent"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={circumference * (1 - analysis.overallScore / 100)}
-                    style={{ transition: 'stroke-dashoffset 1s ease', filter: `drop-shadow(0 0 6px ${sc})` }}
-                  />
-                </svg>
-                <div style={{ textAlign: 'center', marginTop: -8 }}>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: '2.5rem', color: sc, lineHeight: 1 }}>
-                    {analysis.overallScore}
-                  </span>
-                  <span style={{ color: '#64748b', fontSize: '0.85rem' }}>/100</span>
-                  <p style={{ ...sectionLabel, marginTop: 4, marginBottom: 0 }}>Achievability</p>
-                </div>
+            {/* Overall Score + Summary — inline progress bar instead of circular SVG */}
+            <div style={{ ...card, background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.12)', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: '2rem', color: sc, lineHeight: 1 }}>
+                  {analysis.overallScore}
+                </span>
+                <span style={{ color: '#64748b', fontSize: '0.85rem' }}>/100</span>
+                <span style={{ ...sectionLabel, margin: 0, color: '#64748b' }}>Achievability</span>
+                <div style={{ flex: 1 }} />
               </div>
-              <div style={{ flex: 1, minWidth: 240 }}>
+              {/* Progress bar */}
+              <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, marginBottom: 20, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${analysis.overallScore}%`,
+                  background: sc,
+                  borderRadius: 3,
+                  transition: 'width 1s ease',
+                  boxShadow: `0 0 8px ${sc}40`,
+                }} />
+              </div>
+              <div>
                 <p style={{ ...sectionLabel }}>Career Path Summary</p>
                 <p style={{ color: '#cbd5e1', lineHeight: 1.7, margin: 0, fontSize: '0.95rem' }}>{analysis.summary}</p>
               </div>

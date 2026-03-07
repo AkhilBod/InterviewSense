@@ -1,32 +1,29 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { resolveUser } from '@/lib/resolve-user';
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
+    const user = await resolveUser(session.user);
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      // Return default instead of 404 so the UI doesn't break
+      return NextResponse.json({
+        questionnaireCompleted: false
+      });
     }
 
-    // Access questionnaireCompleted field
-    const questionnaireCompleted = (user as any).questionnaireCompleted || false;
+    const questionnaireCompleted = user.questionnaireCompleted || false;
 
     return NextResponse.json({
       questionnaireCompleted

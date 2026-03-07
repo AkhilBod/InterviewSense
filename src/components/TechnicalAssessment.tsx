@@ -407,17 +407,19 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [thoughtProcess, setThoughtProcess] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const isTranscribingRef = useRef(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
   const { profile } = useProfileData();
 
-  // Pre-fill company and role from profile on first load
+  // Pre-fill company, role, and coding language from profile on first load
   useEffect(() => {
     if (profile.targetCompany && !company) setCompany(profile.targetCompany);
     if (profile.targetRole && !role) setRole(profile.targetRole);
+    if (profile.preferredCodingLanguage) setLanguage(profile.preferredCodingLanguage);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile.targetCompany, profile.targetRole]);
+  }, [profile.targetCompany, profile.targetRole, profile.preferredCodingLanguage]);
 
   // Auto-start with a saved technical question from the dashboard
   useEffect(() => {
@@ -441,6 +443,7 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
           setQuestion(data.question);
           setProblemTopics(data.topics || []);
           setProblemId(data.problemId || null);
+          if (data.codeTemplates) setApiCodeTemplates(data.codeTemplates);
         } else {
           toast({ title: 'Error', description: data.error || 'Failed to load question.', variant: 'destructive' });
         }
@@ -506,9 +509,40 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [problemTopics, setProblemTopics] = useState<string[]>([]);
   const [problemId, setProblemId] = useState<number | null>(null);
   const [questionSaved, setQuestionSaved] = useState(false);
+  // API-returned code templates (with real function signatures)
+  const [apiCodeTemplates, setApiCodeTemplates] = useState<Record<string, string> | null>(null);
   // Resizable split state: left panel width as percentage
   const [splitPos, setSplitPos] = useState(45);
   const splitDragging = useRef(false);
+
+  // Client-side duration timer
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const timerStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start timer when a question loads
+  useEffect(() => {
+    if (question) {
+      // Reset and start
+      timerStartRef.current = Date.now();
+      setElapsedSec(0);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = setInterval(() => {
+        if (timerStartRef.current) {
+          setElapsedSec(Math.floor((Date.now() - timerStartRef.current) / 1000));
+        }
+      }, 1000);
+    }
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [question]);
+
+  const formatElapsed = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
   
   // Monaco Editor ref
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -737,17 +771,27 @@ public class Solution {
 
   // Update code when language changes
   useEffect(() => {
-    if (!code || Object.values(languageTemplates).includes(code)) {
-      setCode(languageTemplates[language]);
+    const templates = apiCodeTemplates || languageTemplates;
+    const allGenericTemplates = Object.values(languageTemplates);
+    if (!code || allGenericTemplates.includes(code) || (apiCodeTemplates && Object.values(apiCodeTemplates).includes(code))) {
+      setCode(templates[language] || languageTemplates[language]);
     }
-  }, [language, code, languageTemplates]);
+  }, [language, code, languageTemplates, apiCodeTemplates]);
 
   // Initialize with default template
   useEffect(() => {
     if (!code) {
-      setCode(languageTemplates[language]);
+      const templates = apiCodeTemplates || languageTemplates;
+      setCode(templates[language] || languageTemplates[language]);
     }
-  }, [code, language, languageTemplates]);
+  }, [code, language, languageTemplates, apiCodeTemplates]);
+
+  // When apiCodeTemplates arrive, update the editor code
+  useEffect(() => {
+    if (apiCodeTemplates && apiCodeTemplates[language]) {
+      setCode(apiCodeTemplates[language]);
+    }
+  }, [apiCodeTemplates]);
 
   // Reset solutions when question changes
   useEffect(() => {
@@ -759,12 +803,14 @@ public class Solution {
     }
   }, [question]);
 
-  // Auto-generate solutions when switching to solutions tab
+  // Auto-load solutions when switching to solutions tab — use fallback data, NO AI call
   useEffect(() => {
     if (activeTab === 'solutions' && question && !solutionsGenerated && !solutionsLoading) {
-      generateSolutions();
+      // Load from local fallback data — no AI call
+      setSolutions(getFallbackSolutions());
+      setSolutionsGenerated(true);
     }
-  }, [activeTab, question, solutionsGenerated, solutionsLoading, generateSolutions]);
+  }, [activeTab, question, solutionsGenerated, solutionsLoading]);
 
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
@@ -814,6 +860,7 @@ public class Solution {
       setIsLoading(true);
       setQuestion('');
       setQuestionSaved(false);
+      setApiCodeTemplates(null);
       setSolutions([]);
       setSolutionsGenerated(false);
 
@@ -839,6 +886,7 @@ public class Solution {
 
       if (data.success) {
         setQuestion(data.question);
+        if (data.codeTemplates) setApiCodeTemplates(data.codeTemplates);
       } else {
         toast({
           title: "Error",
@@ -909,6 +957,25 @@ public class Solution {
 
       // If the user is still recording, stop first so we save a clean audio file
       try { stopRecording(); } catch (e) { /* swallow if recorder not initialized */ }
+
+      // Wait for any ongoing transcription to finish before sending to API
+      if (isTranscribingRef.current) {
+        toast({ title: "Finishing transcription…", description: "Waiting for audio to finish processing." });
+        await new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            if (!isTranscribingRef.current) { clearInterval(checkInterval); resolve(); }
+          }, 200);
+          // Safety timeout: don't wait forever
+          setTimeout(() => { clearInterval(checkInterval); resolve(); }, 15000);
+        });
+      }
+
+      // Save preferred coding language in the background
+      fetch('/api/onboarding/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferredCodingLanguage: language }),
+      }).catch(() => {});
 
       // Get analysis of current solution
       const response = await fetch('/api/technical-assessment', {
@@ -1029,6 +1096,7 @@ public class Solution {
         setQuestion(data.question);
         setProblemTopics(data.topics || []);
         setProblemId(data.problemId || null);
+        if (data.codeTemplates) setApiCodeTemplates(data.codeTemplates);
         toast({
           title: "Problem Loaded",
           description: problemId
@@ -1329,6 +1397,7 @@ public class Solution {
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true);
+      isTranscribingRef.current = true;
       toast({
         title: "Transcribing audio",
         description: "This may take a few moments...",
@@ -1392,6 +1461,7 @@ public class Solution {
       });
     } finally {
       setIsTranscribing(false);
+      isTranscribingRef.current = false;
     }
   };
 
@@ -2242,7 +2312,7 @@ public class Solution {
 
                   {/* Topic grid */}
                   {!selectedCategory ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
                       {Object.keys(selectedPreset === 'neetcode75' ? BLIND75_PROBLEMS : NEETCODE_150_PROBLEMS).map(cat => (
                         <button
                           key={cat}
@@ -2424,6 +2494,10 @@ public class Solution {
               {problemTopics.slice(0, 3).map(t => (
                 <span key={t} style={{ padding: '2px 8px', borderRadius: 5, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', color: '#5a6380', whiteSpace: 'nowrap' as const }}>{t}</span>
               ))}
+              {/* Duration timer */}
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.78rem', color: '#5a6380', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+                <Clock size={13} /> {formatElapsed(elapsedSec)}
+              </span>
               <div style={{ flex: 1 }} />
               {/* Run */}
               <button

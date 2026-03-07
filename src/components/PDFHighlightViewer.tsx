@@ -236,32 +236,53 @@ export default function PDFHighlightViewer({
     const query = search.toLowerCase().trim();
     if (!query) return null;
 
+    // Truncate very long excerpts — the AI often returns full bullet points.
+    // We only need enough to locate the right line, not highlight the whole paragraph.
+    const maxQueryLen = 80;
+    const trimmedQuery = query.length > maxQueryLen ? query.substring(0, maxQueryLen) : query;
+
     // Strategy 1: Find a single text item that contains the full query
     for (const item of items) {
       const itemText = item.str.toLowerCase();
-      if (itemText.includes(query)) {
-        return { x: item.x, y: item.y, width: item.width, height: item.height };
+      if (itemText.includes(trimmedQuery)) {
+        // Only highlight the portion of the item that matches
+        const idx = itemText.indexOf(trimmedQuery);
+        const charWidth = item.width / Math.max(item.str.length, 1);
+        return {
+          x: item.x + idx * charWidth,
+          y: item.y,
+          width: Math.min(trimmedQuery.length * charWidth, item.width - idx * charWidth),
+          height: item.height,
+        };
       }
     }
 
-    // Strategy 2: Find consecutive items whose combined text contains the query
-    // Build a running window of consecutive items
+    // Strategy 2: Find consecutive items whose combined text contains the query.
+    // Only include the items that actually overlap with the matched substring.
     for (let i = 0; i < items.length; i++) {
       let combined = '';
-      let endIdx = i;
+      const spans: { idx: number; start: number; end: number }[] = [];
       for (let j = i; j < Math.min(i + 8, items.length); j++) {
+        const start = combined.length + (j > i ? 1 : 0);
         combined += (j > i ? ' ' : '') + items[j].str;
-        endIdx = j;
-        if (combined.toLowerCase().includes(query)) {
-          // Found it — bounding box spans items[i] through items[endIdx]
-          const first = items[i];
-          const last = items[endIdx];
-          const top = Math.min(...items.slice(i, endIdx + 1).map(t => t.y));
-          const bottom = Math.max(...items.slice(i, endIdx + 1).map(t => t.y + t.height));
+        spans.push({ idx: j, start, end: combined.length });
+
+        const matchPos = combined.toLowerCase().indexOf(trimmedQuery);
+        if (matchPos !== -1) {
+          const matchEnd = matchPos + trimmedQuery.length;
+          // Only include items that overlap with the matched range
+          const overlapping = spans.filter(s => s.end > matchPos && s.start < matchEnd);
+          if (overlapping.length === 0) break;
+
+          const firstItem = items[overlapping[0].idx];
+          const lastItem = items[overlapping[overlapping.length - 1].idx];
+          const top = Math.min(...overlapping.map(s => items[s.idx].y));
+          const bottom = Math.max(...overlapping.map(s => items[s.idx].y + items[s.idx].height));
+
           return {
-            x: first.x,
+            x: firstItem.x,
             y: top,
-            width: (last.x + last.width) - first.x,
+            width: (lastItem.x + lastItem.width) - firstItem.x,
             height: bottom - top,
           };
         }
@@ -269,25 +290,33 @@ export default function PDFHighlightViewer({
     }
 
     // Strategy 3: Match the first few significant words of the query
-    // (the AI excerpt may be a long phrase; try matching at least the first 3+ words)
-    const queryWords = query.split(/\s+/).filter(w => w.length > 2);
+    const queryWords = trimmedQuery.split(/\s+/).filter(w => w.length > 2);
     if (queryWords.length >= 2) {
-      // Try progressively shorter prefixes: first 5 words, then 4, then 3, then 2
-      for (let wordCount = Math.min(5, queryWords.length); wordCount >= 2; wordCount--) {
+      for (let wordCount = Math.min(4, queryWords.length); wordCount >= 2; wordCount--) {
         const partial = queryWords.slice(0, wordCount).join(' ');
         for (let i = 0; i < items.length; i++) {
           let combined = '';
-          for (let j = i; j < Math.min(i + 8, items.length); j++) {
+          const spans: { idx: number; start: number; end: number }[] = [];
+          for (let j = i; j < Math.min(i + 6, items.length); j++) {
+            const start = combined.length + (j > i ? 1 : 0);
             combined += (j > i ? ' ' : '') + items[j].str;
-            if (combined.toLowerCase().includes(partial)) {
-              const first = items[i];
-              const last = items[j];
-              const top = Math.min(...items.slice(i, j + 1).map(t => t.y));
-              const bottom = Math.max(...items.slice(i, j + 1).map(t => t.y + t.height));
+            spans.push({ idx: j, start, end: combined.length });
+
+            const matchPos = combined.toLowerCase().indexOf(partial);
+            if (matchPos !== -1) {
+              const matchEnd = matchPos + partial.length;
+              const overlapping = spans.filter(s => s.end > matchPos && s.start < matchEnd);
+              if (overlapping.length === 0) break;
+
+              const firstItem = items[overlapping[0].idx];
+              const lastItem = items[overlapping[overlapping.length - 1].idx];
+              const top = Math.min(...overlapping.map(s => items[s.idx].y));
+              const bottom = Math.max(...overlapping.map(s => items[s.idx].y + items[s.idx].height));
+
               return {
-                x: first.x,
+                x: firstItem.x,
                 y: top,
-                width: (last.x + last.width) - first.x,
+                width: (lastItem.x + lastItem.width) - firstItem.x,
                 height: bottom - top,
               };
             }
@@ -297,7 +326,6 @@ export default function PDFHighlightViewer({
     }
 
     // Strategy 4: Match any single item that contains a significant word (4+ chars)
-    // Only as a last resort — pick the first significant word from the query
     for (const word of queryWords) {
       if (word.length < 4) continue;
       for (const item of items) {

@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { toast } from "@/components/ui/use-toast";
 import { testMicrophone } from '@/lib/microphone';
 import { transcribeAndAnalyzeAudio } from '@/lib/gemini';
+import SystemDesignCanvas, { DesignNode, DesignConnection } from '@/components/SystemDesignCanvas';
 
 interface SystemDesignTest {
   problem: { title: string; description: string; requirements: string[]; constraints: string[]; estimatedTime: string; };
@@ -33,6 +34,8 @@ export default function SystemDesignTestPage() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [instructionsWidth, setInstructionsWidth] = useState(320);
+  const canvasNodesRef = useRef<{ nodes: DesignNode[]; connections: DesignConnection[] }>({ nodes: [], connections: [] });
+  const [drawingMode, setDrawingMode] = useState<'components' | 'freehand'>('components');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingTool, setDrawingTool] = useState<'pen' | 'eraser'>('pen');
@@ -109,7 +112,12 @@ export default function SystemDesignTestPage() {
   };
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
   const handleStepComplete = () => { if (!completedSteps.includes(currentStep)) setCompletedSteps([...completedSteps, currentStep]); if (currentStep < STEPS.length - 1) setCurrentStep(currentStep + 1); };
-  const handleFinishTest = () => { sessionStorage.setItem('systemDesignResponses', JSON.stringify(stepExplanations)); router.push('/system-design/final-results'); };
+  const handleFinishTest = () => {
+    sessionStorage.setItem('systemDesignResponses', JSON.stringify(stepExplanations));
+    // Also store the design diagram data
+    sessionStorage.setItem('systemDesignDiagram', JSON.stringify(canvasNodesRef.current));
+    router.push('/system-design/final-results');
+  };
 
   if (isLoading || !testData) {
     return (<ProtectedRoute><DashboardLayout><div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#64748b', fontFamily: "'Inter', sans-serif" }}>Loading test...</p></div></DashboardLayout></ProtectedRoute>);
@@ -188,17 +196,37 @@ export default function SystemDesignTestPage() {
 
             {/* Canvas */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f1117' }}>
-                <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingTool === 'pen' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Pen</button>
-                <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingTool === 'eraser' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Eraser</button>
-                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.06)' }} />
-                <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: '#f87171', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
+              {/* Mode toggle toolbar */}
+              <div style={{ padding: '6px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, background: '#0f1117' }}>
+                <button onClick={() => setDrawingMode('components')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'components' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingMode === 'components' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'components' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Components</button>
+                <button onClick={() => setDrawingMode('freehand')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingMode === 'freehand' ? '#2563eb' : 'rgba(255,255,255,0.04)', color: drawingMode === 'freehand' ? '#fff' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: drawingMode === 'freehand' ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>Freehand</button>
+                {drawingMode === 'freehand' && (
+                  <>
+                    <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.06)' }} />
+                    <button onClick={() => setDrawingTool('pen')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'pen' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'pen' ? '#60a5fa' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.06)' }}>Pen</button>
+                    <button onClick={() => setDrawingTool('eraser')} style={{ padding: '6px 14px', borderRadius: 6, background: drawingTool === 'eraser' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)', color: drawingTool === 'eraser' ? '#60a5fa' : '#94a3b8', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.06)' }}>Eraser</button>
+                    <button onClick={clearCanvas} style={{ padding: '6px 14px', borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: '#f87171', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 500 }}>Clear</button>
+                  </>
+                )}
               </div>
-              <div style={{ flex: 1, padding: 12, background: '#0a0e18' }}>
-                <div style={{ height: '100%', background: '#0f1117', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                  <canvas ref={canvasRef} width={1200} height={800} style={{ width: '100%', height: '100%', cursor: drawingTool === 'pen' ? 'crosshair' : 'cell', touchAction: 'none' }} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={(e) => { e.preventDefault(); startDrawing(e); }} onTouchMove={(e) => { e.preventDefault(); draw(e); }} onTouchEnd={(e) => { e.preventDefault(); stopDrawing(); }} />
+
+              {/* Draggable component canvas (default) */}
+              {drawingMode === 'components' && (
+                <SystemDesignCanvas
+                  onNodesChange={(nodes, connections) => {
+                    canvasNodesRef.current = { nodes, connections };
+                  }}
+                />
+              )}
+
+              {/* Freehand drawing canvas (fallback) */}
+              {drawingMode === 'freehand' && (
+                <div style={{ flex: 1, padding: 12, background: '#0a0e18' }}>
+                  <div style={{ height: '100%', background: '#0f1117', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <canvas ref={canvasRef} width={1200} height={800} style={{ width: '100%', height: '100%', cursor: drawingTool === 'pen' ? 'crosshair' : 'cell', touchAction: 'none' }} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={(e) => { e.preventDefault(); startDrawing(e); }} onTouchMove={(e) => { e.preventDefault(); draw(e); }} onTouchEnd={(e) => { e.preventDefault(); stopDrawing(); }} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Right Panel */}

@@ -3,8 +3,8 @@ import OpenAI from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProgressService } from "@/lib/progress";
 import { convertToHighlights } from "@/lib/highlight-converter";
+import { logActivity } from "@/lib/activity-logger";
 
 // Initialize OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
@@ -70,29 +70,45 @@ export async function POST(req: Request) {
             return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        console.log("Converting file to base64...");
+        console.log("Converting file to buffer...");
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const base64File = buffer.toString('base64');
 
-        const textPrompt = `You are a brutally honest, senior hiring manager and resume expert who has reviewed thousands of resumes for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. You are NOT a cheerleader — your job is to give candidates an honest, unsparing assessment so they know exactly where they stand against top applicants competing for this same role.
+        // Extract text from PDF using pdf-parse for higher accuracy & lower token usage
+        let pdfText: string | null = null;
+        if (file.type === 'application/pdf') {
+          try {
+            const pdfParse = (await import('pdf-parse')).default;
+            const pdfData = await pdfParse(buffer);
+            if (pdfData.text && pdfData.text.trim().length > 50) {
+              pdfText = pdfData.text;
+              console.log(`PDF text extracted: ${pdfText.length} characters`);
+            }
+          } catch (pdfErr) {
+            console.warn("pdf-parse extraction failed, falling back to vision:", pdfErr);
+          }
+        }
+
+        const textPrompt = `You are a senior hiring manager and resume expert who has reviewed thousands of resumes for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Your job is to give honest, constructive, and specific feedback. Do not be artificially harsh or artificially generous — be accurate.
 ${jobDescription ? `\nJob description to evaluate against:\n---\n${jobDescription}\n---\n` : ""}
 
 SCORING CALIBRATION — read carefully before assigning any score:
 - 90-100: Exceptional. This resume would immediately land interviews at top-tier companies. Nearly flawless for this role.
-- 75-89: Strong. Competitive candidate but with clear gaps that would get it filtered out at selective companies.
-- 60-74: Average. Passes basic screening but lacks the depth, specificity, or impact that strong candidates show.
-- 40-59: Weak. Significant gaps in content, measurable results, or role alignment. Needs major rework.
-- Below 40: Poor. Fundamental issues that would cause immediate rejection.
+- 80-89: Strong. Most bullets quantified, good action verbs, clear impact. Minor improvements possible.
+- 70-79: Good but improvable. Some bullets lack metrics, a few vague areas, but overall solid.
+- 60-69: Needs significant work. Many vague bullets, weak verbs, unclear impact.
+- 50-59: Weak. Almost no quantification, generic phrasing throughout.
+- Below 50: Needs a full rewrite. Would be auto-rejected.
 
-Most resumes submitted by students or early-career candidates score in the 40-65 range. A score above 80 should be genuinely rare and earned. Be as critical as you would be if your own reputation depended on recommending only the best candidates. Do NOT inflate scores to be encouraging.
+A solid resume with relevant experience and some metrics should score 70-79. A great resume with quantified impact throughout scores 80+. Be as accurate as possible.
 
 Please analyze the resume below and respond using ONLY this exact structure, with plain text and no markdown:
 
 RESUME ANALYSIS REPORT FOR ${jobTitle.toUpperCase()} POSITION
 
 OVERALL ASSESSMENT
-Give an honest, direct evaluation. Start with: "Overall Score: XX/100 - " then explain why, calling out specific weaknesses you see. Do not soften the critique.
+Give an honest, direct evaluation. Start with: "Overall Score: XX/100 - " then explain why, calling out specific areas of strength and weakness.
 
 Impact Score: XX/100 (Are achievements quantified with real numbers? Or are they vague duty lists? Dock heavily for bullet points like "helped with" or "worked on" with no metrics.)
 Style Score: XX/100 (Is formatting clean, consistent, and ATS-friendly? Are fonts, spacing, and section headers professional?)
@@ -135,8 +151,14 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
                     }
                 ]
             });
+        } else if (file.type.includes('pdf') && pdfText) {
+            // PDFs with extracted text — send as plain text (much cheaper, more accurate)
+            messages.push({
+                role: 'user',
+                content: `${textPrompt}\n\n--- RESUME TEXT ---\n${pdfText}\n--- END RESUME TEXT ---`
+            });
         } else if (file.type.includes('pdf')) {
-            // PDFs: send as base64-encoded file input so the model reads actual content
+            // PDFs where text extraction failed — fallback to base64 file input
             messages.push({
                 role: 'user',
                 content: [
@@ -162,7 +184,7 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o',
             messages,
-            temperature: 0.9,
+            temperature: 0.3,
             max_completion_tokens: 4096,
         });
 
@@ -196,7 +218,7 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
         console.log("Starting automatic word analysis...");
         let wordAnalysisData = null;
         try {
-            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, null, base64File);
+            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, null, base64File, pdfText);
             wordAnalysisData = wordAnalysisResult;
             console.log("Word analysis completed successfully");
         } catch (wordError) {
@@ -234,6 +256,13 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
               improvements: structuredAnalysis.improvements?.slice(0, 3) || []
             });
             console.log('🎯 New stats system updated for resume analysis');
+
+            // Log activity for dashboard
+            logActivity(user.id, {
+              activityType: 'resume',
+              score: structuredAnalysis.overallScore || 0,
+              metadata: { jobTitle, company },
+            });
           }
         } catch (progressError) {
           console.error('Error tracking progress with new stats system:', progressError);
@@ -460,103 +489,58 @@ function calculateKeywordMatch(analysisText: string, jobDescription: string): nu
 }
 
 // Helper function to generate word analysis automatically
-async function generateWordAnalysis(file: File, jobTitle: string, company: string | null, jobDescription: string | null, _unused: any, base64File: string) {
+async function generateWordAnalysis(file: File, jobTitle: string, company: string | null, jobDescription: string | null, _unused: any, base64File: string, pdfText?: string | null) {
     console.log("Generating word analysis...");
 
-    const wordAnalysisPrompt = `You are a BRUTALLY HONEST, elite resume reviewer who has screened 10,000+ resumes for top companies like Google, Meta, and Goldman Sachs. You have IMPOSSIBLY HIGH STANDARDS. You are reviewing this resume for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
+    const wordAnalysisPrompt = `You are a senior resume reviewer with experience screening resumes for top tech companies. You are reviewing this resume for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
-Your job is to RUTHLESSLY critique this resume. Most resumes are mediocre at best. Be harsh. Be critical. The candidate needs to hear the truth, not sugar-coated feedback.
+Your job is to give honest, constructive, and specific feedback. Do not be artificially harsh or artificially generous — be accurate. A solid resume with good metrics and relevant experience should score in the 70-85 range. A great resume scores 85+. A weak resume scores below 60.
 
-GRADING SCALE (be harsh):
-- 90-100: World-class resume (reserved for top 1% — clear metrics everywhere, perfect formatting, compelling narrative)
-- 80-89: Strong resume with minor issues (top 10% — mostly quantified, good verbs, clear impact)
-- 70-79: Decent but needs work (average — some metrics, some vague areas)
-- 60-69: Weak resume with significant issues (below average — many vague bullets, weak verbs)
-- 50-59: Poor resume that needs major revision (problematic — almost no metrics, generic phrases)
-- Below 50: Resume needs complete rewrite (severe issues — would be rejected immediately)
+SCORING GUIDE:
+- 90-100: Exceptional. Every bullet is quantified, compelling narrative, perfect role alignment. Top 1%.
+- 80-89: Strong. Most bullets quantified, good action verbs, clear impact. Minor improvements possible.
+- 70-79: Good but improvable. Some bullets lack metrics, a few vague areas, but overall solid.
+- 60-69: Needs significant work. Many vague bullets, weak verbs, unclear impact.
+- 50-59: Weak. Almost no quantification, generic phrasing throughout.
+- Below 50: Needs a full rewrite. Would be auto-rejected.
 
-CRITICAL ISSUES TO FLAG (mark as RED):
-- ANY bullet point without a specific number, percentage, dollar amount, or measurable outcome
-- ANY weak action verb: "worked", "helped", "assisted", "was responsible for", "handled", "managed" (without metrics), "participated", "contributed"
-- ANY generic phrases: "good communication skills", "team player", "fast learner", "detail-oriented", "hard-working"
-- ANY bullet that doesn't show clear IMPACT (so what? why does this matter?)
-- Missing technical skills that are REQUIRED for ${jobTitle}
-- Inconsistent formatting, typos, or grammatical errors
-- Bullet points that are too long (>2 lines) or too short (<10 words)
+${jobDescription ? `\nJob Description Context:\n${jobDescription}\n` : ""}
 
-IMPORTANT ISSUES TO FLAG (mark as YELLOW):
-- Bullets with metrics but could be stronger
-- Good action verbs but missing specific context
-- Missing keywords from the job description
-- Skills listed without demonstrated application
+ANALYSIS RULES:
+1. For EVERY item in wordImprovements, the "original" field must be the EXACT text of ONE bullet point or ONE short phrase from the resume — NOT a full paragraph or multiple lines. Keep it under 100 characters. Quote just the specific line that needs improvement.
+2. For each improvement, explain WHY it matters specifically for the "${jobTitle}" role, not in generic terms.
+3. The "improved" version must be a realistic rewrite the candidate could actually use — not an exaggerated fantasy with made-up numbers.
+4. Assign severity accurately:
+   - "red": The bullet has NO measurable outcome AND uses a weak/vague verb (e.g., "helped", "worked on", "responsible for"). Or there is a formatting/grammar error.
+   - "yellow": The bullet has SOME specificity but is missing a key element (metric, context, or impact). Or uses an acceptable verb that could be stronger.
+   - "green": The bullet is solid and only has a minor enhancement opportunity.
+5. Assign each item exactly ONE category from: "quantify_impact", "communication", "length_depth", "drive", "analytical", "general".
+6. For strengths and weaknesses: reference SPECIFIC lines or sections of the resume. Do not say generic things like "good use of action verbs" — say exactly which bullets are strong and why.
 
-${jobDescription ? `\nJob Description Context (check for missing keywords!):\n${jobDescription}\n` : ""}
-
-INSTRUCTIONS:
-- Find AT LEAST 20-30 specific improvements — be thorough
-- The average resume should score 55-65. Only exceptional resumes score 75+
-- Flag EVERY SINGLE bullet point that lacks quantifiable metrics as RED
-- Flag EVERY weak action verb as RED
-- The "original" field MUST contain the EXACT text as it appears in the resume — copy it character-by-character
-- Your overallScore MUST match your severity breakdown: if you have 10+ RED issues, score should be below 65
-- If more than half the bullets lack metrics, score should be below 60
-
-SCORING CONSISTENCY RULES:
-- 0-3 RED issues = score 80-100
-- 4-7 RED issues = score 70-79
-- 8-12 RED issues = score 60-69
-- 13-18 RED issues = score 50-59
-- 19+ RED issues = score below 50
+DO NOT include severityBreakdown or categoryBreakdown in your response. Only return the wordImprovements array, overallScore, strengths, and weaknesses.
 
 Return your analysis in this EXACT JSON format - no additional text, markdown, or formatting:
 
 {
   "wordImprovements": [
     {
-      "original": "Worked on software projects",
-      "improved": "Architected and deployed 3 microservices handling 50K+ daily requests, reducing system latency by 40% and saving $25K/month in infrastructure costs",
-      "severity": "red",
-      "category": "quantify_impact",
-      "explanation": "CRITICAL: Extremely vague. 'Worked on' is one of the weakest action verbs. No metrics, no impact, no specifics. What projects? What was your role? What was the outcome?"
-    },
-    {
-      "original": "Managed a team",
-      "improved": "Led and mentored a cross-functional team of 8 engineers, delivering 12 features ahead of schedule and improving team velocity by 35%",
-      "severity": "red",
-      "category": "drive",
-      "explanation": "CRITICAL: 'Managed' alone means nothing. How many people? What did you achieve? A manager who shipped nothing is not impressive."
+      "original": "Helped with database migration project",
+      "improved": "Realistic rewritten version with actual metrics",
+      "severity": "red | yellow | green",
+      "category": "quantify_impact | communication | length_depth | drive | analytical | general",
+      "explanation": "Specific explanation tied to the target role, referencing the exact text"
     }
   ],
-  "overallScore": 52,
-  "severityBreakdown": {
-    "red": 15,
-    "yellow": 8,
-    "green": 2
-  },
-  "categoryBreakdown": {
-    "quantify_impact": 10,
-    "communication": 4,
-    "length_depth": 3,
-    "drive": 3,
-    "analytical": 2,
-    "general": 3
-  }
-}
-
-SEVERITY LEVELS:
-- RED (Critical): Immediate fixes needed — these hurt your candidacy severely (vague achievements, weak verbs, no metrics, generic phrases)
-- YELLOW (Important): Should fix before applying — missed opportunities to stand out
-- GREEN (Minor): Good content with small tweaks possible
-
-CATEGORIES:
-- quantify_impact: Add specific numbers, percentages, dollar amounts, user counts, timeframes
-- communication: Replace weak verbs with powerful action verbs, clarify unclear descriptions
-- length_depth: Expand thin bullets with context, condense verbose sections
-- drive: Show initiative, leadership, ownership, going above and beyond
-- analytical: Demonstrate problem-solving, data-driven decisions, strategic thinking
-- general: Formatting, keyword optimization, removing clichés and buzzwords
-
-Find 20-30 specific issues. Be BRUTALLY honest. This candidate needs real feedback, not validation. Scan EVERY bullet point — if it lacks a metric, flag it. A hiring manager at ${jobTitle} positions spends 6 seconds on a resume — every weak phrase is a reason to reject.`;
+  "overallScore": 72,
+  "strengths": [
+    "Your bullet about deploying the payment microservice is strong because it includes latency reduction (40%) and cost savings ($12K/mo), which directly maps to backend engineering impact metrics.",
+    "The project management section clearly shows leadership with team size (8 engineers) and delivery timeline (2 weeks ahead of schedule)."
+  ],
+  "weaknesses": [
+    "Your second work experience section has 4 bullets that all start with 'Responsible for...' — this passive phrasing hides your actual contributions. Rewrite with active verbs and outcomes.",
+    "No mention of testing or CI/CD anywhere, which is a core requirement for this role."
+  ]
+}`;
 
     // Prepare messages for OpenAI
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -577,8 +561,14 @@ Find 20-30 specific issues. Be BRUTALLY honest. This candidate needs real feedba
                 }
             ]
         });
+    } else if (file.type.includes('pdf') && pdfText) {
+        // PDFs with extracted text — send as plain text
+        messages.push({
+            role: 'user',
+            content: `${wordAnalysisPrompt}\n\n--- RESUME TEXT ---\n${pdfText}\n--- END RESUME TEXT ---`
+        });
     } else if (file.type.includes('pdf')) {
-        // For PDFs, send as file input so the model reads actual content
+        // PDFs where text extraction failed — fallback to base64 file input
         messages.push({
             role: 'user',
             content: [
@@ -635,6 +625,23 @@ Find 20-30 specific issues. Be BRUTALLY honest. This candidate needs real feedba
         if (!parsedAnalysis.wordImprovements || !Array.isArray(parsedAnalysis.wordImprovements)) {
             throw new Error("Invalid word analysis response structure");
         }
+
+        // Compute severityBreakdown and categoryBreakdown from the actual array
+        // Do NOT trust the AI's counts — compute them ourselves
+        const severityBreakdown = { red: 0, yellow: 0, green: 0 };
+        const categoryBreakdown: Record<string, number> = {};
+
+        for (const item of parsedAnalysis.wordImprovements) {
+          if (item.severity in severityBreakdown) {
+            severityBreakdown[item.severity as keyof typeof severityBreakdown]++;
+          }
+          if (item.category) {
+            categoryBreakdown[item.category] = (categoryBreakdown[item.category] || 0) + 1;
+          }
+        }
+
+        parsedAnalysis.severityBreakdown = severityBreakdown;
+        parsedAnalysis.categoryBreakdown = categoryBreakdown;
 
         // Convert word improvements to highlights for PDF viewer
         const highlights = convertToHighlights(parsedAnalysis.wordImprovements);
