@@ -31,12 +31,35 @@ function OnboardingContent() {
   const [jobDescription, setJobDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [verifyingSubscription, setVerifyingSubscription] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ── auth guards ────────────────────────────────────────────────
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
+
+  // Verify user has active subscription before allowing onboarding
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    
+    const fromCheckout = searchParams.get('from') === 'checkout'
+    
+    // Only allow onboarding if coming from checkout or if user has subscription
+    fetch('/api/user/subscription')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.hasActiveSubscription && !fromCheckout) {
+          // No subscription and not from checkout - redirect to pricing
+          router.push('/pricing')
+          return
+        }
+        setVerifyingSubscription(false)
+      })
+      .catch(() => {
+        router.push('/pricing')
+      })
+  }, [status, router, searchParams])
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -50,6 +73,15 @@ function OnboardingContent() {
       })
       .catch(() => {})
   }, [status, router, searchParams])
+
+  // Show loading while verifying subscription
+  if (verifyingSubscription) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a0e1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 26, height: 26, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'onb-spin 0.7s linear infinite' }} />
+      </div>
+    )
+  }
 
   // ── file handlers ──────────────────────────────────────────────
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
