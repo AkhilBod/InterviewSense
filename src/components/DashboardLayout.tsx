@@ -541,13 +541,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <DropdownMenu>
             <DropdownMenuTrigger className="w-full">
               <div className="flex items-center gap-3 px-2 hover:bg-[#1a1f2e] rounded-lg transition-colors duration-150 py-2 cursor-pointer">
-                {session?.user?.image ? (
-                  <Image src={session.user.image} alt="Profile" width={32} height={32} className="rounded-full" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-sm font-semibold">
-                    {session?.user?.name?.charAt(0) || 'U'}
-                  </div>
-                )}
+                <div className="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-sm font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {session?.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium text-white truncate">{session?.user?.name || 'User'}</div>
                 </div>

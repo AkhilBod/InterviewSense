@@ -21,18 +21,18 @@ export interface DesignConnection {
 }
 
 const COMPONENT_PALETTE: { type: string; label: string; icon: string; color: string; w: number; h: number; shape?: string }[] = [
-  { type: "client", label: "Client", icon: "client", color: "#3b82f6", w: 120, h: 50 },
-  { type: "server", label: "Server", icon: "server", color: "#8b5cf6", w: 130, h: 64, shape: "rack" },
-  { type: "api", label: "API Gateway", icon: "api", color: "#6366f1", w: 140, h: 44, shape: "pill" },
-  { type: "loadbalancer", label: "Load Balancer", icon: "loadbalancer", color: "#14b8a6", w: 100, h: 100, shape: "diamond" },
-  { type: "database", label: "Database", icon: "database", color: "#f59e0b", w: 90, h: 74, shape: "cylinder" },
-  { type: "cache", label: "Cache", icon: "cache", color: "#ef4444", w: 88, h: 68, shape: "cylinder" },
-  { type: "queue", label: "Message Queue", icon: "queue", color: "#ec4899", w: 160, h: 44, shape: "pipe" },
-  { type: "storage", label: "Object Store", icon: "storage", color: "#06b6d4", w: 110, h: 70, shape: "cylinder" },
-  { type: "cdn", label: "CDN", icon: "cdn", color: "#10b981", w: 90, h: 90, shape: "circle" },
-  { type: "service", label: "Microservice", icon: "service", color: "#a855f7", w: 110, h: 64, shape: "hex" },
-  { type: "worker", label: "Worker", icon: "worker", color: "#64748b", w: 100, h: 56 },
-  { type: "dns", label: "DNS", icon: "dns", color: "#84cc16", w: 80, h: 80, shape: "circle" },
+  { type: "client", label: "Client", icon: "client", color: "#60a5fa", w: 120, h: 54 },
+  { type: "server", label: "Server", icon: "server", color: "#818cf8", w: 130, h: 64, shape: "rack" },
+  { type: "api", label: "API Gateway", icon: "api", color: "#818cf8", w: 140, h: 48, shape: "pill" },
+  { type: "loadbalancer", label: "Load Balancer", icon: "loadbalancer", color: "#38bdf8", w: 100, h: 100, shape: "diamond" },
+  { type: "database", label: "Database", icon: "database", color: "#60a5fa", w: 90, h: 74, shape: "cylinder" },
+  { type: "cache", label: "Cache", icon: "cache", color: "#38bdf8", w: 88, h: 68, shape: "cylinder" },
+  { type: "queue", label: "Message Queue", icon: "queue", color: "#a78bfa", w: 160, h: 48, shape: "pipe" },
+  { type: "storage", label: "Object Store", icon: "storage", color: "#38bdf8", w: 110, h: 70, shape: "cylinder" },
+  { type: "cdn", label: "CDN", icon: "cdn", color: "#60a5fa", w: 90, h: 90, shape: "circle" },
+  { type: "service", label: "Microservice", icon: "service", color: "#a78bfa", w: 110, h: 64, shape: "hex" },
+  { type: "worker", label: "Worker", icon: "worker", color: "#94a3b8", w: 100, h: 56 },
+  { type: "dns", label: "DNS", icon: "dns", color: "#60a5fa", w: 80, h: 80, shape: "circle" },
 ];
 
 // ── SVG Icons (Figma-style line icons) ──────────────────────────────────
@@ -285,28 +285,29 @@ export default function SystemDesignCanvas({
       {/* Component palette */}
       <div
         style={{
-          padding: "8px 12px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "10px 14px",
+          borderBottom: "1px solid hsl(220, 20%, 18%)",
           display: "flex",
           alignItems: "center",
-          gap: 6,
-          background: "#0f1117",
+          gap: 8,
+          background: "hsl(222, 40%, 8%)",
           flexWrap: "wrap",
-          minHeight: 46,
+          minHeight: 48,
         }}
       >
         <span
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: "0.68rem",
-            color: "#64748b",
+            fontSize: "0.65rem",
+            color: "hsl(215, 15%, 45%)",
             fontWeight: 600,
-            letterSpacing: "0.08em",
+            letterSpacing: "0.1em",
             textTransform: "uppercase",
-            marginRight: 4,
+            marginRight: 6,
+            flexShrink: 0,
           }}
         >
-          Drag →
+          Components
         </span>
         {COMPONENT_PALETTE.map((comp) => (
           <div
@@ -317,35 +318,38 @@ export default function SystemDesignCanvas({
               e.dataTransfer.setData("component-label", comp.label);
             }}
             style={{
-              padding: "4px 10px",
+              padding: "5px 12px",
               borderRadius: 6,
-              background: `${comp.color}15`,
-              border: `1px solid ${comp.color}30`,
-              color: comp.color,
+              background: "rgba(59,130,246,0.06)",
+              border: "1px solid hsl(220, 20%, 18%)",
+              color: "#f8fafc",
               cursor: "grab",
               fontFamily: "'Inter', sans-serif",
               fontSize: "0.72rem",
               fontWeight: 500,
               display: "flex",
               alignItems: "center",
-              gap: 4,
+              gap: 5,
               userSelect: "none",
               whiteSpace: "nowrap",
+              transition: "border-color 0.15s, background 0.15s",
             }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)'; e.currentTarget.style.background = 'rgba(59,130,246,0.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'hsl(220, 20%, 18%)'; e.currentTarget.style.background = 'rgba(59,130,246,0.06)'; }}
           >
-            <span style={{ display: "flex", alignItems: "center" }}><ComponentIcon type={comp.type} color={comp.color} size={13} /></span>
+            <span style={{ display: "flex", alignItems: "center", opacity: 0.7 }}><ComponentIcon type={comp.type} color={comp.color} size={13} /></span>
             {comp.label}
           </div>
         ))}
-        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.08)", margin: "0 2px" }} />
+        <div style={{ width: 1, height: 20, background: "hsl(220, 20%, 18%)", margin: "0 2px" }} />
         <button
           onClick={() => setAddingText(!addingText)}
           style={{
-            padding: "4px 10px",
+            padding: "5px 12px",
             borderRadius: 6,
-            background: addingText ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)",
-            border: addingText ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.08)",
-            color: addingText ? "#60a5fa" : "#94a3b8",
+            background: addingText ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.06)",
+            border: addingText ? "1px solid rgba(59,130,246,0.3)" : "1px solid hsl(220, 20%, 18%)",
+            color: addingText ? "#60a5fa" : "#f8fafc",
             cursor: "pointer",
             fontFamily: "'Inter', sans-serif",
             fontSize: "0.72rem",
@@ -366,15 +370,15 @@ export default function SystemDesignCanvas({
       {/* Help text */}
       <div
         style={{
-          padding: "4px 12px",
-          background: "rgba(59,130,246,0.04)",
-          borderBottom: "1px solid rgba(255,255,255,0.04)",
+          padding: "5px 14px",
+          background: "rgba(59,130,246,0.03)",
+          borderBottom: "1px solid hsl(220, 20%, 18%)",
           display: "flex",
           alignItems: "center",
           gap: 16,
         }}
       >
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: "#475569" }}>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.68rem", color: "hsl(215, 15%, 35%)" }}>
           Drag to move • Right-click drag to connect • Double-click to rename • Delete/Backspace to remove • Click &ldquo;Text&rdquo; then click canvas to add labels
         </span>
       </div>
@@ -390,7 +394,7 @@ export default function SystemDesignCanvas({
         style={{
           flex: 1,
           position: "relative",
-          background: "#0a0e18",
+          background: "hsl(222.2, 84%, 4.9%)",
           overflow: "hidden",
           cursor: addingText ? "text" : connecting ? "crosshair" : "default",
         }}
@@ -399,7 +403,7 @@ export default function SystemDesignCanvas({
         <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
           <defs>
             <pattern id="grid-dots" width="30" height="30" patternUnits="userSpaceOnUse">
-              <circle cx="1" cy="1" r="0.6" fill="rgba(100,116,139,0.15)" />
+              <circle cx="1" cy="1" r="0.5" fill="rgba(59,130,246,0.08)" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid-dots)" />
@@ -414,7 +418,7 @@ export default function SystemDesignCanvas({
         >
           <defs>
             <marker id="arrow" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L12,4 L0,8 Z" fill="#475569" />
+              <path d="M0,0 L12,4 L0,8 Z" fill="hsl(215, 15%, 45%)" />
             </marker>
           </defs>
           {connections.map((conn) => {
@@ -437,7 +441,7 @@ export default function SystemDesignCanvas({
                   y1={from.y}
                   x2={ax}
                   y2={ay}
-                  stroke="#475569"
+                  stroke="hsl(215, 15%, 45%)"
                   strokeWidth={1.5}
                   markerEnd="url(#arrow)"
                   strokeDasharray="6 3"
@@ -495,27 +499,27 @@ export default function SystemDesignCanvas({
                 width: isText ? "auto" : node.width,
                 height: isText ? "auto" : node.height,
                 minWidth: isText ? 40 : undefined,
-                background: isText ? "transparent" : `${color}12`,
+                background: isText ? "transparent" : "hsl(222, 40%, 8%)",
                 border: isText
                   ? (isSelected ? `1px dashed ${color}60` : "1px dashed transparent")
-                  : `1.5px solid ${isSelected ? color : color + "40"}`,
+                  : `1.5px solid ${isSelected ? color : 'hsl(220, 20%, 20%)'}`,
                 borderRadius: isText ? 4 : borderRadius,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: isText ? 0 : 2,
+                gap: isText ? 0 : 3,
                 cursor: dragging?.id === node.id ? "grabbing" : "grab",
                 boxShadow: isText
                   ? "none"
                   : isSelected
-                    ? `0 0 0 2px ${color}30, 0 4px 16px rgba(0,0,0,0.3)`
-                    : "0 2px 8px rgba(0,0,0,0.2)",
-                transition: dragging?.id === node.id ? "none" : "box-shadow 0.15s",
+                    ? `0 0 0 2px ${color}25, 0 8px 24px rgba(0,0,0,0.4)`
+                    : "0 2px 12px rgba(0,0,0,0.3)",
+                transition: dragging?.id === node.id ? "none" : "box-shadow 0.15s, border-color 0.15s",
                 transform,
                 userSelect: "none",
                 zIndex: dragging?.id === node.id ? 100 : isSelected ? 50 : 1,
-                padding: isText ? "4px 8px" : "6px 8px",
+                padding: isText ? "4px 8px" : "8px 10px",
               }}
             >
               <div style={{ transform: innerTransform, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: isText ? 0 : 2, width: "100%", height: "100%" }}>
@@ -534,9 +538,9 @@ export default function SystemDesignCanvas({
                   }}
                   style={{
                     background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.15)",
+                    border: "1px solid rgba(59,130,246,0.3)",
                     borderRadius: 4,
-                    color: "#e2e8f0",
+                    color: "#f8fafc",
                     fontSize: "0.72rem",
                     fontFamily: "'Inter', sans-serif",
                     textAlign: "center",
@@ -551,7 +555,7 @@ export default function SystemDesignCanvas({
                     fontFamily: "'Inter', sans-serif",
                     fontSize: "0.72rem",
                     fontWeight: 500,
-                    color: "#e2e8f0",
+                    color: "#f8fafc",
                     textAlign: "center",
                     lineHeight: 1.2,
                     maxWidth: "100%",
@@ -583,7 +587,7 @@ export default function SystemDesignCanvas({
             <p
               style={{
                 fontFamily: "'Inter', sans-serif",
-                color: "#334155",
+                color: "hsl(215, 15%, 35%)",
                 fontSize: "0.95rem",
                 fontWeight: 500,
                 margin: "0 0 6px",
@@ -591,7 +595,7 @@ export default function SystemDesignCanvas({
             >
               Drag components here to design your system
             </p>
-            <p style={{ fontFamily: "'Inter', sans-serif", color: "#1e293b", fontSize: "0.78rem" }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", color: "hsl(215, 15%, 25%)", fontSize: "0.78rem" }}>
               Right-click drag between components to draw connections
             </p>
           </div>

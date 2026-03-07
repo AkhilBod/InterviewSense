@@ -152,17 +152,17 @@ function DashboardPage() {
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
-      <main style={{ flex: 1, overflowY: 'auto', background: 'hsl(222.2, 84%, 4.9%)', position: 'relative' }}>
+      <main style={{ flex: 1, overflowY: 'auto', background: 'hsl(222.2, 84%, 4.9%)', position: 'relative', minHeight: '100vh' }}>
         {/* Aurora */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '80vw', height: 340, background: 'radial-gradient(ellipse at bottom center, rgba(37,99,235,0.13) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 720, margin: '0 auto', padding: '80px 24px 60px' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 720, margin: '0 auto', padding: '80px 24px 120px' }}>
 
           {/* Greeting */}
           <h1 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', color: '#f8fafc', margin: 0, lineHeight: 1.15 }}>
             {getGreeting()}, {session?.user?.name?.split(' ')[0] || 'there'}.
           </h1>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'hsl(215, 15%, 55%)', marginTop: 8, marginBottom: 48 }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'hsl(215, 15%, 55%)', marginTop: 8, marginBottom: 56 }}>
             {totalSessions === 0
               ? 'Start your first practice session today.'
               : streak > 0
@@ -172,7 +172,7 @@ function DashboardPage() {
 
           {/* Stats Row */}
           <SectionLabel>Overview</SectionLabel>
-          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 48 }}>
+          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 64 }}>
             {[
               { label: 'Sessions', value: String(totalSessions) },
               { label: 'Best Score', value: bestScore > 0 ? String(Math.round(bestScore)) : '\u2014' },
@@ -190,7 +190,7 @@ function DashboardPage() {
           {/* Saved Questions */}
           <SectionLabel>Saved Questions · {savedQuestions.length}</SectionLabel>
 
-          <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid hsl(220, 20%, 18%)' }}>
             {(['BEHAVIORAL', 'TECHNICAL'] as const).map(tab => (
               <button
                 key={tab}
@@ -210,11 +210,11 @@ function DashboardPage() {
           </div>
 
           {filteredSaved.length === 0 ? (
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '16px 0', marginBottom: 48 }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', color: 'hsl(215, 15%, 38%)', padding: '16px 0', marginBottom: 64 }}>
               No {savedTab.toLowerCase()} questions saved yet.
             </p>
           ) : (
-            <div style={{ marginBottom: 48 }}>
+            <div style={{ marginBottom: 64 }}>
               {filteredSaved.slice(0, 5).map((q, i) => (
                 <div
                   key={q.id}
@@ -267,7 +267,7 @@ function DashboardPage() {
               <div style={{ width: 20, height: 20, border: '2px solid transparent', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }} />
             </div>
           ) : allActivity.length > 0 ? (
-            <div style={{ marginBottom: 48 }}>
+            <div style={{ marginBottom: 64 }}>
               {allActivity.map((item, i) => (
                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                   <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: '#f8fafc', flex: 1 }}>

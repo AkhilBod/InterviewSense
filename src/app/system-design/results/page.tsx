@@ -12,29 +12,24 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const SD_ONBOARDING_STEPS = [
   {
-    icon: '🧩',
     title: 'Place Components',
     description: 'Drag components from the toolbar onto the canvas to build your architecture. Click a component to select it, then drag to reposition.',
   },
   {
-    icon: '↗️',
     title: 'Draw Connections',
-    description: 'Click and drag from one component\'s edge to another to create arrows showing data flow between services.',
+    description: 'Right-click and drag from one component to another to create arrows showing data flow between services.',
   },
   {
-    icon: '🎙️',
     title: 'Record Your Explanation',
     description: 'Use the voice panel on the right to record yourself explaining each step — just like a real interview. Your speech is transcribed automatically.',
   },
   {
-    icon: '📋',
     title: 'Work Through the Steps',
-    description: 'Follow the 5 steps on the left: Requirements → Estimation → High-Level → Detailed → Scale. Click "Next Step" to advance, or click any step to jump back.',
+    description: 'Follow the 5 steps on the left: Requirements, Estimation, High-Level, Detailed, and Scale. Click "Next Step" to advance, or click any step to jump back.',
   },
   {
-    icon: '⏱️',
     title: 'Watch the Timer',
-    description: 'Hit play on the timer to simulate real interview pressure (45 min). When you\'re done, click "Finish Test" to get your AI evaluation.',
+    description: 'Hit play on the timer to simulate real interview pressure. When you\'re done, click "Finish Test" to get your AI evaluation.',
   },
 ];
 
