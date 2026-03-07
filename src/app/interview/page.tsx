@@ -24,20 +24,20 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const BEHAVIORAL_ONBOARDING_STEPS = [
   {
-    title: 'Listen, Then Respond',
-    description: 'The AI interviewer will ask you a question out loud. Once it finishes speaking, click the microphone button or press anywhere to start recording your answer.',
+    title: 'The animated circle is your interviewer',
+    description: 'The dotted circle on the left is the AI interviewer speaking to you. Watch it pulse as it reads your question aloud — wait for it to finish before you respond.',
   },
   {
-    title: 'Record Your Answer',
-    description: 'Speak naturally as if you\'re in a real interview. When you\'re done, click stop — your answer is transcribed and saved automatically.',
+    title: 'Tap Record to answer',
+    description: 'When the circle stops pulsing, hit the "Record" button below the question. Speak naturally — your voice is transcribed in real time. Hit "Stop" when you\'re done.',
   },
   {
-    title: 'Get Instant Feedback',
-    description: 'After each answer, click "Get Feedback" to see AI-powered analysis of your response — including what you did well and how to improve.',
+    title: 'Get Feedback on every answer',
+    description: 'After recording, a "Feedback" button appears next to "Next". Click it to open the feedback panel on the right — it scores your STAR structure, clarity, and depth.',
   },
   {
-    title: 'Navigate Questions',
-    description: 'Use the arrows at the top to move between questions. Answer them in any order — your progress is saved throughout the session.',
+    title: 'Save questions you want to revisit',
+    description: 'See the "Save" link next to the question counter at the top? Tap it to bookmark any question. It shows up on your dashboard under Saved Questions.',
   },
 ];
 

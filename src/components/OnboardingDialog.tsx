@@ -60,7 +60,9 @@ export default function OnboardingDialog({ activityType, steps, forceShow }: Onb
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(0,0,0,0.55)',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           zIndex: 9998,
           animation: 'obFadeIn 0.2s ease',
         }}
@@ -74,44 +76,58 @@ export default function OnboardingDialog({ activityType, steps, forceShow }: Onb
         transform: 'translate(-50%, -50%)',
         zIndex: 9999,
         width: '100%',
-        maxWidth: 400,
+        maxWidth: 420,
         padding: '0 20px',
         animation: 'obSlideUp 0.25s ease',
       }}>
         <div style={{
-          background: '#ffffff',
+          background: 'hsl(222, 40%, 8%)',
           borderRadius: 14,
-          padding: '28px 28px 22px',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.35), 0 4px 20px rgba(0,0,0,0.15)',
+          padding: '32px 30px 24px',
+          border: '1px solid hsl(220, 20%, 18%)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(59,130,246,0.06)',
         }}>
-          {/* Close */}
+          {/* Skip */}
           <button
             onClick={handleDismiss}
             style={{
               position: 'absolute',
-              top: 16,
-              right: 36,
+              top: 18,
+              right: 38,
               background: 'none',
               border: 'none',
-              fontSize: '1.1rem',
-              color: '#9ca3af',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '0.72rem',
+              color: 'hsl(215, 15%, 35%)',
               cursor: 'pointer',
-              padding: 4,
-              lineHeight: 1,
+              padding: '4px 8px',
+              letterSpacing: '0.03em',
             }}
           >
-            ×
+            Skip
           </button>
+
+          {/* Step counter */}
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.68rem',
+            fontWeight: 500,
+            color: '#3b82f6',
+            marginBottom: 14,
+            letterSpacing: '0.08em',
+          }}>
+            {currentStep + 1} / {steps.length}
+          </div>
 
           {/* Title */}
           <h2 style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 700,
-            fontSize: '1.15rem',
-            color: '#111827',
+            fontFamily: "'Instrument Serif', serif",
+            fontWeight: 400,
+            fontSize: '1.35rem',
+            color: '#f8fafc',
             margin: '0 0 10px',
-            lineHeight: 1.3,
-            paddingRight: 24,
+            lineHeight: 1.25,
+            paddingRight: 40,
           }}>
             {step.title}
           </h2>
@@ -119,69 +135,78 @@ export default function OnboardingDialog({ activityType, steps, forceShow }: Onb
           {/* Description */}
           <p style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: '0.88rem',
-            color: '#6b7280',
-            lineHeight: 1.6,
-            margin: '0 0 28px',
+            fontSize: '0.84rem',
+            color: 'hsl(215, 15%, 55%)',
+            lineHeight: 1.65,
+            margin: '0 0 30px',
           }}>
             {step.description}
           </p>
 
+          {/* Progress bar */}
+          <div style={{
+            height: 2,
+            background: 'hsl(220, 20%, 14%)',
+            borderRadius: 1,
+            marginBottom: 20,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${((currentStep + 1) / steps.length) * 100}%`,
+              background: '#3b82f6',
+              borderRadius: 1,
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
+
           {/* Footer */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* Step counter */}
-            <span style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.78rem',
-              color: '#3b82f6',
-              fontWeight: 500,
-            }}>
-              {currentStep + 1} of {steps.length}
-            </span>
+            {/* Back */}
+            <button
+              onClick={handleBack}
+              disabled={isFirst}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.8rem',
+                color: isFirst ? 'hsl(220, 20%, 20%)' : 'hsl(215, 15%, 45%)',
+                cursor: isFirst ? 'default' : 'pointer',
+                padding: '6px 0',
+                fontWeight: 500,
+                transition: 'color 0.15s',
+              }}
+            >
+              Back
+            </button>
 
-            {/* Nav buttons */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button
-                onClick={handleBack}
-                disabled={isFirst}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.82rem',
-                  color: isFirst ? '#d1d5db' : '#9ca3af',
-                  cursor: isFirst ? 'default' : 'pointer',
-                  padding: '6px 10px',
-                  fontWeight: 500,
-                }}
-              >
-                ← Back
-              </button>
-              <button
-                onClick={handleNext}
-                style={{
-                  background: '#111827',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '9px 22px',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#1f2937')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#111827')}
-              >
-                {isLast ? 'Got it' : 'Next →'}
-              </button>
-            </div>
+            {/* Next / Done */}
+            <button
+              onClick={handleNext}
+              style={{
+                background: '#3b82f6',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '9px 24px',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#2563eb')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#3b82f6')}
+            >
+              {isLast ? 'Get Started' : 'Next'}
+            </button>
           </div>
         </div>
       </div>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
         @keyframes obFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes obSlideUp { from { opacity: 0; transform: translate(-50%, -46%); } to { opacity: 1; transform: translate(-50%, -50%); } }
       `}</style>

@@ -37,20 +37,20 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const TECH_ONBOARDING_STEPS = [
   {
-    title: 'Write Your Solution',
-    description: 'The code editor is on the right. Write your solution there — it works just like a real coding interview. You can type, paste, and edit freely.',
+    title: 'Your code editor is on the right',
+    description: 'The right panel is a full code editor — type your solution there. The left panel shows the problem description, examples, and constraints. Drag the divider to resize.',
   },
   {
-    title: 'Change Language',
-    description: 'Use the language dropdown at the top of the editor to switch between Python, JavaScript, Java, C++, and more. The template updates automatically.',
+    title: 'Pick your language from the top bar',
+    description: 'See the language dropdown above the editor? Switch between Python, JavaScript, Java, C++, and more. The starter template updates when you change it.',
   },
   {
-    title: 'Explain Your Thinking',
-    description: 'Click "Record" to explain your approach out loud while you code — interviewers want to hear your thought process. Your speech is transcribed and graded.',
+    title: 'Hit Record to explain while you code',
+    description: 'The blue "Record Explanation" button in the top bar captures your voice as you think out loud. Interviewers grade your thought process — this is how you practice it.',
   },
   {
-    title: 'Use Hints & Solutions',
-    description: 'Stuck? Check the "Hints" tab for guidance, or look at "Solutions" after you\'ve tried. When you\'re done, click "Submit" to get your AI evaluation.',
+    title: 'Submit when you\'re ready',
+    description: 'Click the blue "Submit" button in the top-right to get your AI evaluation. Stuck? Switch to the "Solutions" tab on the left panel for walkthroughs after you\'ve tried.',
   },
 ];
 

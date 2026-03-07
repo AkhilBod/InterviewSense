@@ -5,6 +5,22 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import OnboardingDialog from '@/components/OnboardingDialog';
+
+const DASHBOARD_ONBOARDING_STEPS = [
+  {
+    title: 'This is your home base',
+    description: 'Your dashboard shows your session count, best score, streak, and active days at the top. These update every time you finish a practice session.',
+  },
+  {
+    title: 'Start practicing from the sidebar',
+    description: 'The left sidebar has Behavioral, Technical, System Design, Resume, and more. Click any of them to jump straight into a practice session.',
+  },
+  {
+    title: 'Saved questions live here',
+    description: 'Scroll down to see your bookmarked questions. Tap any saved question to jump right back into practicing it — behavioral and technical tabs keep them organized.',
+  },
+];
 
 /* ───────── Types ───────── */
 
@@ -148,6 +164,7 @@ function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <OnboardingDialog activityType="dashboard" steps={DASHBOARD_ONBOARDING_STEPS} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }

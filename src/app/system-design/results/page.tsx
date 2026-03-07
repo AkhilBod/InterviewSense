@@ -12,24 +12,24 @@ import OnboardingDialog from '@/components/OnboardingDialog';
 
 const SD_ONBOARDING_STEPS = [
   {
-    title: 'The Component Palette',
-    description: 'The toolbar at the top has drag-and-drop components like Server, Database, Cache, and CDN. Drag them onto the canvas to build your architecture diagram.',
+    title: 'Drag components from the top bar',
+    description: 'The toolbar above the canvas has Server, Database, Cache, Load Balancer, and more. Drag any of them onto the canvas to start building your architecture.',
   },
   {
-    title: 'Drawing Connections',
-    description: 'Right-click on any component and drag to another to draw an arrow showing data flow. Double-click any component to rename it.',
+    title: 'Connect components with right-click',
+    description: 'Right-click on any component and drag to another to draw a data-flow arrow. Double-click any component to rename it — label everything clearly for the interviewer.',
   },
   {
-    title: 'The Freehand Canvas',
-    description: 'Switch to Freehand mode in the toolbar above the canvas to sketch freely with the pen tool. Use the eraser to clean up mistakes.',
+    title: 'Switch to Freehand to sketch freely',
+    description: 'See "Components" and "Freehand" above the canvas? Toggle to Freehand to draw with the pen tool. The pen, eraser, and clear icons appear when you switch.',
   },
   {
-    title: 'Recording Your Explanation',
-    description: 'The microphone button in the top-right records your verbal explanation for the current step — just like explaining to an interviewer. Each step saves separately.',
+    title: 'Record your explanation per step',
+    description: 'The microphone button in the top-right records your voice for the current step. Each of the 5 steps saves its own recording — explain your reasoning as you go.',
   },
   {
-    title: 'Steps & Timer',
-    description: 'The left panel tracks your progress through 5 steps. The timer in the top bar simulates real interview pressure. Click "Next Step" or "Finish Test" when ready.',
+    title: 'Follow the 5 steps on the left',
+    description: 'The left sidebar tracks your progress: Requirements, Scale, High-Level Design, Deep Dive, and Tradeoffs. The timer in the top bar keeps you honest. Click "Next Step" to advance.',
   },
 ];
 
