@@ -42,10 +42,8 @@ export async function POST(req: Request) {
               : 'MONTHLY';
           console.log(`  Plan: ${plan}`);
 
-          // Set credit limit based on plan
           const creditLimit = DAILY_CREDIT_LIMITS[plan];
 
-          // Find existing subscription by customer ID
           const existingSub = await prisma.subscription.findUnique({
             where: { stripeCustomerId: customerId },
           });
@@ -54,11 +52,9 @@ export async function POST(req: Request) {
 
           if (!existingSub) {
             console.error(`❌ No subscription record found for customer ${customerId}`);
-            console.error('   This means checkout API did not create the subscription record!');
             break;
           }
 
-          // Update subscription
           await prisma.subscription.update({
             where: { stripeCustomerId: customerId },
             data: {
@@ -66,8 +62,8 @@ export async function POST(req: Request) {
               stripePriceId: stripeSubscription.items.data[0].price.id,
               plan,
               status: stripeSubscription.status.toUpperCase() as any,
-              currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-              currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+              currentPeriodStart: new Date(stripeSubscription.items.data[0].current_period_start * 1000),
+              currentPeriodEnd: new Date(stripeSubscription.items.data[0].current_period_end * 1000),
               trialStart: stripeSubscription.trial_start
                 ? new Date(stripeSubscription.trial_start * 1000)
                 : null,
@@ -78,7 +74,6 @@ export async function POST(req: Request) {
           });
           console.log('  ✅ Subscription updated');
 
-          // Update user's credit limits
           const subscription = await prisma.subscription.findUnique({
             where: { stripeCustomerId: customerId },
             select: { userId: true },
@@ -89,12 +84,11 @@ export async function POST(req: Request) {
               where: { id: subscription.userId },
               data: {
                 dailyCreditLimit: creditLimit,
-                dailyCredits: creditLimit, // Reset to full credits on new subscription
+                dailyCredits: creditLimit,
                 lastCreditReset: new Date(),
-                stripeCustomerId: customerId, // Also set on user
+                stripeCustomerId: customerId,
               },
             });
-
             console.log(`✅ Credits set for user ${subscription.userId}: ${creditLimit} (${plan} plan)`);
           }
         }
@@ -109,27 +103,33 @@ export async function POST(req: Request) {
             ? 'ANNUAL'
             : 'MONTHLY';
 
-        // Set credit limit based on plan
         const creditLimit = DAILY_CREDIT_LIMITS[plan];
 
-        // Update subscription
-        const dbSubscription = await prisma.subscription.update({
+        const dbSubscription = await prisma.subscription.findUnique({
+          where: { stripeSubscriptionId: subscription.id },
+        });
+
+        if (!dbSubscription) {
+          console.warn(`⚠️ customer.subscription.updated: no DB record for ${subscription.id}, skipping`);
+          break;
+        }
+
+        await prisma.subscription.update({
           where: { stripeSubscriptionId: subscription.id },
           data: {
             status: subscription.status.toUpperCase() as any,
             plan,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodStart: new Date(subscription.items.data[0].current_period_start * 1000),
+            currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
           },
         });
 
-        // Update user's credit limits if plan changed
         await prisma.user.update({
           where: { id: dbSubscription.userId },
           data: {
             dailyCreditLimit: creditLimit,
-            dailyCredits: creditLimit, // Reset to full credits on plan change
+            dailyCredits: creditLimit,
             lastCreditReset: new Date(),
           },
         });
@@ -141,7 +141,16 @@ export async function POST(req: Request) {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
 
-        const dbSubscription = await prisma.subscription.update({
+        const dbSubscription = await prisma.subscription.findUnique({
+          where: { stripeSubscriptionId: subscription.id },
+        });
+
+        if (!dbSubscription) {
+          console.warn(`⚠️ customer.subscription.deleted: no DB record for ${subscription.id}, skipping`);
+          break;
+        }
+
+        await prisma.subscription.update({
           where: { stripeSubscriptionId: subscription.id },
           data: {
             status: 'CANCELED',
@@ -167,10 +176,13 @@ export async function POST(req: Request) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
+        const subId = typeof invoice.parent?.subscription_details?.subscription === 'string'
+          ? invoice.parent.subscription_details.subscription
+          : invoice.parent?.subscription_details?.subscription?.id;
 
-        if (invoice.subscription) {
+        if (subId) {
           const subscription = await prisma.subscription.findUnique({
-            where: { stripeSubscriptionId: invoice.subscription as string },
+            where: { stripeSubscriptionId: subId },
           });
 
           if (subscription) {
@@ -191,12 +203,20 @@ export async function POST(req: Request) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
+        const subId = typeof invoice.parent?.subscription_details?.subscription === 'string'
+          ? invoice.parent.subscription_details.subscription
+          : invoice.parent?.subscription_details?.subscription?.id;
 
-        if (invoice.subscription) {
-          await prisma.subscription.update({
-            where: { stripeSubscriptionId: invoice.subscription as string },
-            data: { status: 'PAST_DUE' },
+        if (subId) {
+          const dbSub = await prisma.subscription.findUnique({
+            where: { stripeSubscriptionId: subId },
           });
+          if (dbSub) {
+            await prisma.subscription.update({
+              where: { stripeSubscriptionId: subId },
+              data: { status: 'PAST_DUE' },
+            });
+          }
         }
         break;
       }

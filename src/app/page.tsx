@@ -747,7 +747,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center justify-center h-16 w-44 opacity-60 hover:opacity-100 transition-opacity">
                     <img 
-                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/2560px-SAP_2011_logo.svg.png" 
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SAP_2011_logo.svg/3840px-SAP_2011_logo.svg.png" 
                       alt="SAP" 
                       className="h-10 w-auto max-w-[120px] object-contain"
                     />
@@ -765,7 +765,6 @@ export default function Home() {
                       src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/2560px-IBM_logo.svg.png" 
                       alt="IBM" 
                       className="h-10 w-auto max-w-[120px] object-contain"
-                      style={{filter: 'brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(1.2) contrast(1)'}}
                     />
                   </div>
                 </div>
