@@ -4,6 +4,21 @@
 User-agent: Googlebot
 Allow: /
 
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Video
+Allow: /
+
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Storebot-Google
+Allow: /
+
 User-agent: Bingbot
 Allow: /
 
