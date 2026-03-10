@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { put } from '@vercel/blob'
+import { cache, cacheKeys } from '@/lib/cache'
 
 export async function POST(req: Request) {
   try {
@@ -62,6 +63,9 @@ export async function POST(req: Request) {
       where: { id: session.user.id },
       data: updateData,
     })
+
+    // Invalidate onboarding cache after save
+    await cache.del(cacheKeys.onboardingStatus(session.user.id))
 
     return NextResponse.json({ success: true })
   } catch (error) {

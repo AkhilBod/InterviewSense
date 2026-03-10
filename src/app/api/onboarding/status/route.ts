@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { resolveUser } from '@/lib/resolve-user'
+import { cache, cacheKeys } from '@/lib/cache'
 
 export async function GET() {
   try {
@@ -27,7 +28,14 @@ export async function GET() {
       })
     }
 
-    return NextResponse.json({
+    // ── Try cache first ──
+    const cacheKey = cacheKeys.onboardingStatus(user.id)
+    const cached = await cache.get<Record<string, unknown>>(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
+
+    const payload = {
       onboardingCompleted: user.onboardingCompleted,
       resumeUrl: user.resumeUrl,
       resumeFilename: user.resumeFilename,
@@ -38,7 +46,12 @@ export async function GET() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       preferredCodingLanguage: (user as any).preferredCodingLanguage ?? null,
       onboardingCompletedAt: user.onboardingCompletedAt,
-    })
+    }
+
+    // Cache for 60 seconds
+    await cache.set(cacheKey, payload, 60)
+
+    return NextResponse.json(payload)
   } catch (error) {
     console.error('Onboarding status error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -70,6 +83,9 @@ export async function POST(req: NextRequest) {
       where: { id: user.id },
       data: updateData,
     })
+
+    // Invalidate cache so next GET picks up new data
+    await cache.del(cacheKeys.onboardingStatus(user.id))
 
     return NextResponse.json({ success: true })
   } catch (error) {

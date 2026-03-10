@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { cache, cacheKeys } from '@/lib/cache'
 
 export async function POST() {
   try {
@@ -17,6 +18,9 @@ export async function POST() {
         onboardingCompletedAt: new Date(),
       },
     })
+
+    // Invalidate onboarding cache after skip
+    await cache.del(cacheKeys.onboardingStatus(session.user.id))
 
     return NextResponse.json({ success: true })
   } catch (error) {

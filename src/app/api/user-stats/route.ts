@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { resolveUser } from '@/lib/resolve-user'
+import { cache, cacheKeys } from '@/lib/cache'
 
 // GET - Fetch user stats
 export async function GET(request: NextRequest) {
@@ -17,6 +18,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found. Please log out and log back in.' }, { status: 404 })
     }
     const userId = user.id
+
+    // ── Try cache first (30s TTL) ──
+    const cacheKey = cacheKeys.userStats(userId)
+    const cached = await cache.get<Record<string, unknown>>(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
 
     // Get or create user stats
     let userStats = await prisma.userStats.findUnique({
@@ -96,6 +104,9 @@ export async function GET(request: NextRequest) {
         }
       }
     }
+
+    // Cache for 30 seconds
+    await cache.set(cacheKey, response, 30)
 
     return NextResponse.json(response)
   } catch (error) {
@@ -253,6 +264,12 @@ export async function POST(request: NextRequest) {
         improvements: improvements || null,
       }
     })
+
+    // Invalidate caches that depend on stats
+    await cache.del(
+      cacheKeys.userStats(userId),
+      cacheKeys.heatmap(userId),
+    )
 
     return NextResponse.json({ 
       success: true, 

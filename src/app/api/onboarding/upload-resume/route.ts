@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { resolveUser } from '@/lib/resolve-user'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import { cache, cacheKeys } from '@/lib/cache'
 
 export async function POST(req: Request) {
   try {
@@ -75,6 +76,9 @@ export async function POST(req: Request) {
         resumeUploadedAt: new Date(),
       },
     })
+
+    // Invalidate onboarding cache since resume info changed
+    await cache.del(cacheKeys.onboardingStatus(user.id))
 
     return NextResponse.json({ success: true, url, filename: resume.name })
   } catch (error) {

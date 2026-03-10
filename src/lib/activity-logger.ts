@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { cache, cacheKeys } from '@/lib/cache';
 
 interface ActivityData {
   activityType: string;
@@ -35,6 +36,12 @@ export async function logActivity(userId: string, data: ActivityData): Promise<v
         metadata: data.metadata ?? null,
       },
     });
+
+    // Invalidate caches that depend on activity data
+    await cache.del(
+      cacheKeys.heatmap(userId),
+      cacheKeys.userStats(userId),
+    );
 
     // Update aggregated stats
     await updateUserStats(userId, data);

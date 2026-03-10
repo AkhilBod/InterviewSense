@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { cache, cacheKeys } from '@/lib/cache';
 
 // GET /api/stats/heatmap — Get daily activity counts for the calendar heatmap
 export async function GET() {
@@ -18,6 +19,13 @@ export async function GET() {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // ── Try cache first (5 min TTL) ──
+    const cacheKey = cacheKeys.heatmap(user.id);
+    const cached = await cache.get<{ heatmap: { day: string; count: number }[] }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
     }
 
     const oneYearAgo = new Date();
@@ -54,7 +62,12 @@ export async function GET() {
       count,
     }));
 
-    return NextResponse.json({ heatmap: heatmapData });
+    const payload = { heatmap: heatmapData };
+
+    // Cache for 5 minutes — heatmap data barely changes
+    await cache.set(cacheKey, payload, 300);
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('Error fetching heatmap data:', error);
     return NextResponse.json({ error: 'Failed to fetch heatmap' }, { status: 500 });
