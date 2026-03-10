@@ -24,6 +24,13 @@ export const BOT_CONFIG = {
     { name: 'Slackbot', pattern: /slackbot/i },
     { name: 'TelegramBot', pattern: /telegrambot/i },
     { name: 'Discordbot', pattern: /discordbot/i },
+    // Google services
+    { name: 'Google-PrefetchProxy', pattern: /chrome privacy preserving prefetch proxy/i },
+    { name: 'Googlebot-Image', pattern: /googlebot-image/i },
+    { name: 'Googlebot-Video', pattern: /googlebot-video/i },
+    { name: 'Google-InspectionTool', pattern: /google-inspectiontool/i },
+    { name: 'GoogleOther', pattern: /googleother/i },
+    { name: 'Storebot-Google', pattern: /storebot-google/i },
   ],
 
   // ============================================
@@ -190,6 +197,23 @@ export const BOT_CONFIG = {
       '/sitemap',
       '/sw.js',
     ],
+    // Paths that always return 404 immediately (attack probes, CMS scans)
+    blockedPaths: [
+      '/wp-admin',
+      '/wp-login',
+      '/wp-content',
+      '/wp-includes',
+      '/xmlrpc.php',
+      '/administrator',
+      '/admin.php',
+      '/phpmyadmin',
+      '/.env',
+      '/.git',
+      '/config.php',
+      '/shell.php',
+      '/eval-stdin.php',
+      '/vendor/phpunit',
+    ],
   },
 
   // ============================================
@@ -219,4 +243,9 @@ export function classifyRoute(pathname: string): 'auth' | 'api' | 'protected' | 
 // Check if path should skip bot protection
 export function shouldSkipProtection(pathname: string): boolean {
   return BOT_CONFIG.bypass.skipPaths.some(p => pathname.startsWith(p));
+}
+
+// Check if path is a known attack probe that should be hard-blocked with 404
+export function isBlockedPath(pathname: string): boolean {
+  return BOT_CONFIG.bypass.blockedPaths.some(p => pathname.startsWith(p) || pathname.toLowerCase().includes(p.replace('/', '')));
 }

@@ -7,6 +7,7 @@ import {
   getClientIP,
   getRequestFingerprint,
   shouldSkipProtection,
+  isBlockedPath,
   logBlockedRequest,
   protectionStats,
   BOT_CONFIG,
@@ -55,21 +56,28 @@ export default async function middleware(request: NextRequestWithAuth) {
   const ip = getClientIP(request)
 
   // ----------------------------------------
-  // 1. Skip bot protection for static assets
+  // 1. Hard-block known attack probe paths (WordPress scans, shell probes, etc.)
+  // ----------------------------------------
+  if (isBlockedPath(pathname)) {
+    return new NextResponse(null, { status: 404 })
+  }
+
+  // ----------------------------------------
+  // 2. Skip bot protection for static assets
   // ----------------------------------------
   if (shouldSkipProtection(pathname)) {
     return NextResponse.next()
   }
 
   // ----------------------------------------
-  // 2. Check if IP is on allowlist
+  // 3. Check if IP is on allowlist
   // ----------------------------------------
   if (BOT_CONFIG.bypass.allowedIPs.includes(ip)) {
     return handleAuth(request, pathname)
   }
 
   // ----------------------------------------
-  // 3. Bot Detection
+  // 4. Bot Detection
   // ----------------------------------------
   const botResult = detectBot(request)
 

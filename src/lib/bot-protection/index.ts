@@ -4,7 +4,7 @@
  * Import everything from this file for convenience.
  */
 
-export { BOT_CONFIG, classifyRoute, shouldSkipProtection } from './config';
+export { BOT_CONFIG, classifyRoute, shouldSkipProtection, isBlockedPath } from './config';
 export { detectBot, isAllowedBot, isBlockedBot, getClientIP, getRequestFingerprint } from './detect';
 export type { BotDetectionResult } from './detect';
 export { checkRateLimit, getRateLimitInfo, isApproachingLimit } from './rate-limit';
