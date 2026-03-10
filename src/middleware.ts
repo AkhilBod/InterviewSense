@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { NextRequestWithAuth } from 'next-auth/middleware'
+import {
+  detectBot,
+  checkRateLimit,
+  getClientIP,
+  getRequestFingerprint,
+  shouldSkipProtection,
+  logBlockedRequest,
+  protectionStats,
+  BOT_CONFIG,
+} from '@/lib/bot-protection'
 
-// List of public routes that don't require authentication
+// ============================================
+// PUBLIC ROUTES (no auth required)
+// ============================================
 const publicRoutes = [
   '/',
   '/login',
@@ -20,10 +32,10 @@ const publicRoutes = [
   '/api/auth/signup',
   '/api/auth/verify',
   '/api/auth/forgot-password',
-  '/api/auth/reset-password'
+  '/api/auth/reset-password',
 ]
 
-// SEO and opportunity routes that should be crawlable without auth
+// SEO routes that crawlers can access
 const seoRoutes = [
   '/opportunities/',
   '/internship-opportunities',
@@ -35,15 +47,118 @@ const seoRoutes = [
   '/compare/',
 ]
 
+// ============================================
+// MIDDLEWARE
+// ============================================
 export default async function middleware(request: NextRequestWithAuth) {
   const pathname = request.nextUrl.pathname
+  const ip = getClientIP(request)
 
-  // Always allow access to the homepage for SEO crawlers
+  // ----------------------------------------
+  // 1. Skip bot protection for static assets
+  // ----------------------------------------
+  if (shouldSkipProtection(pathname)) {
+    return NextResponse.next()
+  }
+
+  // ----------------------------------------
+  // 2. Check if IP is on allowlist
+  // ----------------------------------------
+  if (BOT_CONFIG.bypass.allowedIPs.includes(ip)) {
+    return handleAuth(request, pathname)
+  }
+
+  // ----------------------------------------
+  // 3. Bot Detection
+  // ----------------------------------------
+  const botResult = detectBot(request)
+
+  // Allow verified search engine bots (Googlebot, Bingbot, etc.)
+  if (botResult.isAllowedBot) {
+    return handleAuth(request, pathname)
+  }
+
+  // Block known bad bots (AI scrapers, aggressive crawlers)
+  if (botResult.isBlocked) {
+    logBlockedRequest(request, 'bot_blocked', botResult)
+    protectionStats.increment('blocked', botResult.botName)
+    
+    return new NextResponse(
+      BOT_CONFIG.responses.includeBlockReason
+        ? JSON.stringify({ error: 'Access denied', reason: botResult.reasons.join(', ') })
+        : 'Access denied',
+      {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
+  // ----------------------------------------
+  // 4. Rate Limiting
+  // ----------------------------------------
+  const fingerprint = getRequestFingerprint(request)
+  const rateLimitResult = await checkRateLimit(fingerprint, pathname)
+
+  if (!rateLimitResult.success) {
+    logBlockedRequest(request, 'rate_limited', botResult, rateLimitResult)
+    protectionStats.increment('rate_limited')
+
+    return new NextResponse(
+      JSON.stringify({ error: 'Too many requests', retryAfter: rateLimitResult.retryAfter }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(rateLimitResult.retryAfter || BOT_CONFIG.responses.retryAfterSeconds),
+          'X-RateLimit-Limit': String(rateLimitResult.limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(rateLimitResult.reset),
+        },
+      }
+    )
+  }
+
+  // ----------------------------------------
+  // 5. Challenge suspicious but not blocked requests
+  // ----------------------------------------
+  if (botResult.isChallenge) {
+    logBlockedRequest(request, 'bot_challenged', botResult)
+    protectionStats.increment('challenged')
+    
+    // For now, we log but allow through
+    // In the future, you could:
+    // - Return a CAPTCHA page
+    // - Add a JavaScript challenge
+    // - Slow down the response
+  }
+
+  // ----------------------------------------
+  // 6. Add rate limit headers to response
+  // ----------------------------------------
+  const response = await handleAuth(request, pathname)
+  
+  // Add rate limit headers for transparency
+  response.headers.set('X-RateLimit-Limit', String(rateLimitResult.limit))
+  response.headers.set('X-RateLimit-Remaining', String(rateLimitResult.remaining))
+  response.headers.set('X-RateLimit-Reset', String(rateLimitResult.reset))
+
+  return response
+}
+
+// ============================================
+// AUTH HANDLING (original logic)
+// ============================================
+async function handleAuth(
+  request: NextRequestWithAuth,
+  pathname: string
+): Promise<NextResponse> {
+  // Always allow homepage
   if (pathname === '/') {
     return NextResponse.next()
   }
 
-  // Allow all SEO and opportunity routes
+  // Allow SEO routes
   if (seoRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next()
   }
@@ -53,7 +168,6 @@ export default async function middleware(request: NextRequestWithAuth) {
     pathname === route || pathname.startsWith(route + '/')
   )
 
-  // Allow public routes and API routes that don't require auth
   if (isPublicRoute) {
     return NextResponse.next()
   }
@@ -61,7 +175,6 @@ export default async function middleware(request: NextRequestWithAuth) {
   // For protected routes, check authentication
   const token = await getToken({ req: request })
 
-  // Redirect to login if not authenticated
   if (!token) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', request.url)
@@ -71,20 +184,19 @@ export default async function middleware(request: NextRequestWithAuth) {
   return NextResponse.next()
 }
 
-// Configure which routes to run middleware on
+// ============================================
+// MATCHER CONFIG
+// ============================================
 export const config = {
   matcher: [
     /*
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico, favicon.svg (favicon files)
-     * - logo.webp, og-image.png (static images)
-     * - manifest.json (PWA manifest)
+     * - favicon files
      * - public folder assets
      * - API auth routes (handled by NextAuth)
-     * - Static assets
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|logo\\.webp|og-image\\.png|manifest\\.json|api/auth|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|eot|ttf|otf)).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|logo\\.webp|og-image\\.png|manifest\\.json|api/auth|robots\\.txt|sitemap\\.xml|articles-sitemap\\.xml|sitemap-internships\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|eot|ttf|otf)).*)',
   ],
 } 
