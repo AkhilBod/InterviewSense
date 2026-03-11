@@ -261,10 +261,19 @@ function StartPageInner() {
     }
   }
 
+  const MAX_QUESTIONS = 10
+
+  const textLineCount = customText
+    .split('\n')
+    .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim())
+    .filter(l => l.length > 5).length
+
   const toggleQuestion = (q: string) => {
-    setSelectedQuestions(prev =>
-      prev.includes(q) ? prev.filter(x => x !== q) : [...prev, q]
-    )
+    setSelectedQuestions(prev => {
+      if (prev.includes(q)) return prev.filter(x => x !== q)
+      if (prev.length + textLineCount >= MAX_QUESTIONS) return prev
+      return [...prev, q]
+    })
   }
 
   const selectAllInCategory = (questions: string[]) => {
@@ -272,7 +281,9 @@ function StartPageInner() {
     if (allSelected) {
       setSelectedQuestions(prev => prev.filter(q => !questions.includes(q)))
     } else {
-      setSelectedQuestions(prev => [...new Set([...prev, ...questions])])
+      const slotsLeft = MAX_QUESTIONS - textLineCount - selectedQuestions.length
+      const toAdd = questions.filter(q => !selectedQuestions.includes(q)).slice(0, Math.max(0, slotsLeft))
+      setSelectedQuestions(prev => [...new Set([...prev, ...toAdd])])
     }
   }
 
@@ -299,6 +310,7 @@ function StartPageInner() {
       .split('\n')
       .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim())
       .filter(l => l.length > 5)
+      .slice(0, Math.max(0, MAX_QUESTIONS - selectedQuestions.length))
 
     const questions = [...selectedQuestions, ...textLines]
     if (questions.length === 0) return
@@ -307,11 +319,6 @@ function StartPageInner() {
     localStorage.setItem('interviewType', 'Behavioral')
     router.push('/interview')
   }
-
-  const textLineCount = customText
-    .split('\n')
-    .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim())
-    .filter(l => l.length > 5).length
 
   const customTotalCount = selectedQuestions.length + textLineCount
 
@@ -340,6 +347,8 @@ function StartPageInner() {
   const activeCategoryData = selectedCategory
     ? BEHAVIORAL_CATEGORIES.find(c => c.name === selectedCategory)
     : null
+
+  const atMax = customTotalCount >= MAX_QUESTIONS
 
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
@@ -452,10 +461,15 @@ function StartPageInner() {
 
               {/* Section A: Quick Presets */}
               <div style={{ marginBottom: 28 }}>
-                <p style={{ ...labelStyle, marginBottom: 12 }}>Quick Presets</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <p style={{ ...labelStyle, marginBottom: 0 }}>Quick Presets</p>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: customTotalCount >= MAX_QUESTIONS ? '#f87171' : '#4a5370' }}>
+                    {customTotalCount}/{MAX_QUESTIONS} max
+                  </span>
+                </div>
 
-                {/* Category pill chips */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: selectedCategory ? 18 : 0 }}>
+                {/* Category grid — 2 columns, even */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: selectedCategory ? 16 : 0 }}>
                   {BEHAVIORAL_CATEGORIES.map(cat => {
                     const catSelected = selectedCategory === cat.name
                     const catCount = cat.questions.filter(q => selectedQuestions.includes(q)).length
@@ -465,39 +479,40 @@ function StartPageInner() {
                         type="button"
                         onClick={() => setSelectedCategory(catSelected ? null : cat.name)}
                         style={{
-                          padding: '7px 16px',
-                          borderRadius: 20,
-                          border: `1px solid ${catSelected ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.1)'}`,
-                          background: catSelected ? 'rgba(59,130,246,0.14)' : 'rgba(255,255,255,0.03)',
+                          padding: '9px 14px',
+                          borderRadius: 8,
+                          border: `1px solid ${catSelected ? 'rgba(59,130,246,0.55)' : 'rgba(255,255,255,0.08)'}`,
+                          background: catSelected ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.03)',
                           fontFamily: "'Inter', sans-serif",
-                          fontSize: '0.78rem',
+                          fontSize: '0.8rem',
                           fontWeight: 500,
                           color: catSelected ? '#93c5fd' : '#8892b0',
                           cursor: 'pointer',
                           transition: 'all 0.15s',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 6,
+                          justifyContent: 'space-between',
+                          textAlign: 'left',
                         }}
                         onMouseEnter={e => {
                           if (!catSelected) {
-                            e.currentTarget.style.borderColor = 'rgba(59,130,246,0.4)'
+                            e.currentTarget.style.borderColor = 'rgba(59,130,246,0.35)'
                             e.currentTarget.style.color = '#dde2f0'
                           }
                         }}
                         onMouseLeave={e => {
                           if (!catSelected) {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
                             e.currentTarget.style.color = '#8892b0'
                           }
                         }}
                       >
-                        {cat.name}
+                        <span>{cat.name}</span>
                         {catCount > 0 && (
                           <span style={{
                             background: '#2563eb', color: '#fff',
-                            borderRadius: 10, fontSize: '0.65rem', fontWeight: 600,
-                            padding: '1px 6px', lineHeight: 1.5,
+                            borderRadius: 10, fontSize: '0.6rem', fontWeight: 700,
+                            padding: '1px 6px', lineHeight: 1.6, flexShrink: 0,
                           }}>
                             {catCount}
                           </span>
@@ -551,32 +566,24 @@ function StartPageInner() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {activeCategoryData.questions.map(q => {
                         const sel = selectedQuestions.includes(q)
+                        const disabled = atMax && !sel
                         return (
                           <button
                             key={q}
                             type="button"
                             onClick={() => toggleQuestion(q)}
                             style={{
-                              display: 'flex', alignItems: 'flex-start', gap: 10,
-                              padding: '9px 12px', borderRadius: 8, textAlign: 'left',
-                              border: `1px solid ${sel ? 'rgba(59,130,246,0.45)' : 'rgba(255,255,255,0.06)'}`,
-                              background: sel ? 'rgba(59,130,246,0.09)' : 'transparent',
-                              cursor: 'pointer', transition: 'all 0.12s',
+                              display: 'block', width: '100%',
+                              padding: '10px 14px', borderRadius: 8, textAlign: 'left',
+                              borderLeft: `3px solid ${sel ? '#3b82f6' : 'transparent'}`,
+                              border: `1px solid ${sel ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                              borderLeftColor: sel ? '#3b82f6' : 'transparent',
+                              background: sel ? 'rgba(59,130,246,0.08)' : 'transparent',
+                              cursor: disabled ? 'default' : 'pointer',
+                              opacity: disabled ? 0.35 : 1,
+                              transition: 'all 0.12s',
                             }}
                           >
-                            <span style={{
-                              flexShrink: 0, marginTop: 2,
-                              width: 15, height: 15, borderRadius: 4,
-                              border: `1.5px solid ${sel ? '#3b82f6' : 'rgba(255,255,255,0.18)'}`,
-                              background: sel ? '#3b82f6' : 'transparent',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
-                              {sel && (
-                                <svg width="9" height="7" viewBox="0 0 10 8" fill="none">
-                                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              )}
-                            </span>
                             <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: sel ? '#93c5fd' : '#8892b0', lineHeight: 1.5 }}>
                               {q}
                             </span>
