@@ -169,6 +169,9 @@ function InterviewPage() {
   
   // Ref to prevent race conditions in TTS initialization
   const ttsStartingRef = useRef(false);
+  // Prevents React Strict Mode double-invocation from consuming behavioralCustomSession
+  // on the first run and then falling through to AI generation on the second run.
+  const questionsFetchedRef = useRef(false);
   
   // AssemblyAI will be initialized in the transcription function
 
@@ -201,8 +204,26 @@ function InterviewPage() {
 
   useEffect(() => {
     const fetchQuestions = async () => {
+      // Guard against React Strict Mode double-invocation eating behavioralCustomSession
+      if (questionsFetchedRef.current) return;
+      questionsFetchedRef.current = true;
+
       try {
         setLoadingMessage('Generating personalized questions...');
+
+        // Check if user wants to practice a custom behavioral session (preset or typed questions)
+        const customSessionStr = localStorage.getItem('behavioralCustomSession');
+        if (customSessionStr) {
+          localStorage.removeItem('behavioralCustomSession');
+          const customQs = JSON.parse(customSessionStr) as string[];
+          const sessionQuestions = customQs.map((q, i) => ({ id: i + 1, question: q, type: 'behavioral' }));
+          setQuestions(sessionQuestions);
+          setVisibleQuestions(sessionQuestions);
+          localStorage.setItem('allQuestions', JSON.stringify(sessionQuestions));
+          setIsLoading(false);
+          setInterviewPhase('speaking');
+          return;
+        }
 
         // Check if user wants to practice a specific saved question
         const practiceQuestionStr = localStorage.getItem('practiceQuestion');
