@@ -90,12 +90,12 @@ export const BOT_CONFIG = {
   rateLimits: {
     // General pages - generous limit for normal browsing
     general: {
-      requests: 100,
+      requests: 60,
       windowSeconds: 60,
     },
     // Opportunities pages - most targeted by scrapers
     opportunities: {
-      requests: 40,
+      requests: 20,
       windowSeconds: 60,
     },
     // API routes - stricter
@@ -119,6 +119,40 @@ export const BOT_CONFIG = {
       windowSeconds: 60,
     },
   },
+
+  // ============================================
+  // KNOWN BOT-HOSTING IP RANGES (CIDR prefixes)
+  // These cloud providers are almost never real users on SEO pages.
+  // Tencent Cloud (Singapore): 43.128.0.0/11, 43.152.0.0/14, 43.163.0.0/16, 43.173.0.0/16
+  // Alibaba Cloud: 47.0.0.0/8 broad, specific SG: 47.128.0.0/14
+  // ============================================
+  blockedIPRanges: [
+    // Tencent Cloud Singapore (source of the bot traffic in your logs)
+    { prefix: '43.128.', label: 'Tencent-SG' },
+    { prefix: '43.129.', label: 'Tencent-SG' },
+    { prefix: '43.130.', label: 'Tencent-SG' },
+    { prefix: '43.131.', label: 'Tencent-SG' },
+    { prefix: '43.132.', label: 'Tencent-SG' },
+    { prefix: '43.133.', label: 'Tencent-SG' },
+    { prefix: '43.134.', label: 'Tencent-SG' },
+    { prefix: '43.135.', label: 'Tencent-SG' },
+    { prefix: '43.136.', label: 'Tencent-SG' },
+    { prefix: '43.137.', label: 'Tencent-SG' },
+    { prefix: '43.138.', label: 'Tencent-SG' },
+    { prefix: '43.139.', label: 'Tencent-SG' },
+    { prefix: '43.140.', label: 'Tencent-SG' },
+    { prefix: '43.141.', label: 'Tencent-SG' },
+    { prefix: '43.142.', label: 'Tencent-SG' },
+    { prefix: '43.143.', label: 'Tencent-SG' },
+    { prefix: '43.152.', label: 'Tencent-SG' },
+    { prefix: '43.153.', label: 'Tencent-SG' },
+    { prefix: '43.154.', label: 'Tencent-SG' },
+    { prefix: '43.155.', label: 'Tencent-SG' },
+    { prefix: '43.156.', label: 'Tencent-SG' },
+    { prefix: '43.157.', label: 'Tencent-SG' },
+    { prefix: '43.163.', label: 'Tencent-SG' },
+    { prefix: '43.173.', label: 'Tencent-SG' },
+  ] as { prefix: string; label: string }[],
 
   // ============================================
   // BOT SCORING THRESHOLDS
@@ -248,4 +282,10 @@ export function shouldSkipProtection(pathname: string): boolean {
 // Check if path is a known attack probe that should be hard-blocked with 404
 export function isBlockedPath(pathname: string): boolean {
   return BOT_CONFIG.bypass.blockedPaths.some(p => pathname.startsWith(p) || pathname.toLowerCase().includes(p.replace('/', '')));
+}
+
+// Check if IP is in a known bot-hosting range
+export function isBlockedIPRange(ip: string): { blocked: boolean; label?: string } {
+  const match = BOT_CONFIG.blockedIPRanges.find(r => ip.startsWith(r.prefix));
+  return match ? { blocked: true, label: match.label } : { blocked: false };
 }

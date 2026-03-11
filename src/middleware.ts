@@ -8,6 +8,7 @@ import {
   getRequestFingerprint,
   shouldSkipProtection,
   isBlockedPath,
+  isBlockedIPRange,
   logBlockedRequest,
   protectionStats,
   BOT_CONFIG,
@@ -77,6 +78,25 @@ export default async function middleware(request: NextRequestWithAuth) {
   }
 
   // ----------------------------------------
+  // 3b. Block known bot-hosting IP ranges (Tencent Cloud SG, etc.)
+  //     Only applies to SEO/public pages — never blocks auth or dashboard
+  // ----------------------------------------
+  const isSEOPage = pathname.startsWith('/opportunities') ||
+    pathname.startsWith('/companies') ||
+    pathname.startsWith('/topics') ||
+    pathname.startsWith('/best') ||
+    pathname.startsWith('/difficulty') ||
+    pathname.startsWith('/articles') ||
+    pathname.startsWith('/internship')
+
+  if (isSEOPage) {
+    const ipRangeCheck = isBlockedIPRange(ip)
+    if (ipRangeCheck.blocked) {
+      return new NextResponse(null, { status: 403 })
+    }
+  }
+
+  // ----------------------------------------
   // 4. Bot Detection
   // ----------------------------------------
   const botResult = detectBot(request)
@@ -103,7 +123,7 @@ export default async function middleware(request: NextRequestWithAuth) {
   }
 
   // ----------------------------------------
-  // 4. Rate Limiting
+  // 5. Rate Limiting
   // ----------------------------------------
   const fingerprint = getRequestFingerprint(request)
   const rateLimitResult = await checkRateLimit(fingerprint, pathname)
@@ -128,21 +148,20 @@ export default async function middleware(request: NextRequestWithAuth) {
   }
 
   // ----------------------------------------
-  // 5. Challenge suspicious but not blocked requests
+  // 5. Challenge = block on sensitive routes, pass on others
   // ----------------------------------------
   if (botResult.isChallenge) {
     logBlockedRequest(request, 'bot_challenged', botResult)
     protectionStats.increment('challenged')
-    
-    // For now, we log but allow through
-    // In the future, you could:
-    // - Return a CAPTCHA page
-    // - Add a JavaScript challenge
-    // - Slow down the response
+
+    // Block suspicious requests on high-value scraping targets
+    if (isSEOPage) {
+      return new NextResponse(null, { status: 403 })
+    }
   }
 
   // ----------------------------------------
-  // 6. Add rate limit headers to response
+  // 7. Add rate limit headers to response
   // ----------------------------------------
   const response = await handleAuth(request, pathname)
   
