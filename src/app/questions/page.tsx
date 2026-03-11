@@ -187,7 +187,7 @@ export default function QuestionsPage() {
                       if (question.type === 'BEHAVIORAL') {
                         router.push('/interview/behavioral')
                       } else {
-                        router.push('/interview')
+                        router.push('/dashboard/technical')
                       }
                     }}
                   >
