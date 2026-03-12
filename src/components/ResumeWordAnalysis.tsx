@@ -31,9 +31,22 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
     }
   };
 
+  const allImprovements = analysis.wordImprovements || [];
+
+  // Calculate breakdowns from the actual data since API might not provide them
+  const severityBreakdown = allImprovements.reduce((acc, item) => {
+    acc[item.severity] = (acc[item.severity] || 0) + 1;
+    return acc;
+  }, { red: 0, yellow: 0, green: 0 } as { red: number, yellow: number, green: number });
+
+  const categoryBreakdown = allImprovements.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   const filteredImprovements = filter === 'all'
-    ? analysis.wordImprovements
-    : analysis.wordImprovements.filter(i => i.severity === filter);
+    ? allImprovements
+    : allImprovements.filter(i => i.severity === filter);
 
   const categoryLabels: Record<string, string> = {
     quantify_impact: 'Add Metrics',
@@ -51,10 +64,10 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
   };
 
   const tabs = [
-    { key: 'all',    label: 'All',       count: analysis.wordImprovements.length },
-    { key: 'red',    label: 'Critical',  count: analysis.severityBreakdown?.red    || 0 },
-    { key: 'yellow', label: 'Important', count: analysis.severityBreakdown?.yellow || 0 },
-    { key: 'green',  label: 'Minor',     count: analysis.severityBreakdown?.green  || 0 },
+    { key: 'all',    label: 'All',       count: allImprovements.length },
+    { key: 'red',    label: 'Critical',  count: severityBreakdown.red },
+    { key: 'yellow', label: 'Important', count: severityBreakdown.yellow },
+    { key: 'green',  label: 'Minor',     count: severityBreakdown.green },
   ];
 
   return (
@@ -91,9 +104,9 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
         {/* Severity breakdown row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
           {[
-            { count: analysis.severityBreakdown?.red    || 0, color: '#ef4444', label: 'Critical'  },
-            { count: analysis.severityBreakdown?.yellow || 0, color: '#eab308', label: 'Important' },
-            { count: analysis.severityBreakdown?.green  || 0, color: '#22c55e', label: 'Minor'     },
+            { count: severityBreakdown.red,    color: '#ef4444', label: 'Critical'  },
+            { count: severityBreakdown.yellow, color: '#eab308', label: 'Important' },
+            { count: severityBreakdown.green,  color: '#22c55e', label: 'Minor'     },
           ].map((s) => (
             <div key={s.label} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '10px', padding: '16px', textAlign: 'center' as const }}>
               <div style={{ fontSize: '28px', fontWeight: 700, color: s.color, fontFamily: 'ui-monospace, monospace', lineHeight: 1 }}>{s.count}</div>
@@ -103,11 +116,11 @@ export default function ResumeWordAnalysis({ analysis, fileName, jobTitle, compa
         </div>
 
         {/* Category tags */}
-        {analysis.categoryBreakdown && (
+        {Object.keys(categoryBreakdown).length > 0 && (
           <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
             <div style={{ fontSize: '11px', color: '#4b5563', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '12px' }}>By Category</div>
             <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
-              {Object.entries(analysis.categoryBreakdown)
+              {Object.entries(categoryBreakdown)
                 .filter(([, v]) => (v as number) > 0)
                 .map(([cat, count]) => (
                   <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: '#0a0f1e', border: '1px solid #1f2937', borderRadius: '5px' }}>

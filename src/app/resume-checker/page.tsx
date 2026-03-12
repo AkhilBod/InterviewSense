@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Upload, FileText, AlertCircle } from "lucide-react";
+import { Upload, FileText, AlertCircle, Sparkles, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import ResumeWordAnalysis from '@/components/ResumeWordAnalysis';
 import PDFHighlightViewer from '@/components/PDFHighlightViewer';
 import ResumeAnalysisLoadingModal from '@/components/ResumeAnalysisLoadingModal';
+import OnboardingDialog from '@/components/OnboardingDialog';
 import { WordAnalysisData, ResumeHighlight } from '@/types/resume';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { PrefilledChip } from '@/components/ProfileFormComponents';
@@ -190,11 +191,6 @@ export default function ResumeCheckerPage() {
         atsCompatibility: data.stats.atsCompatibility || undefined,
       });
 
-      if (data.wordAnalysis) {
-        setWordAnalysisData(data.wordAnalysis);
-        setShowWordAnalysis(true);
-      }
-
       setShowResults(true);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -209,6 +205,43 @@ export default function ResumeCheckerPage() {
     setError(null);
     setShowWordAnalysis(false);
     setWordAnalysisData(null);
+    setIsWordAnalysisLoading(false);
+  };
+
+  // Trigger word analysis on demand (lazy-loaded)
+  const handleRunWordAnalysis = async () => {
+    if (!resume || isWordAnalysisLoading || wordAnalysisData) return;
+
+    setIsWordAnalysisLoading(true);
+    setShowWordAnalysis(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('resume', resume);
+      formData.append('jobTitle', profile?.targetRole || 'Software Engineer');
+      if (company) formData.append('company', company);
+      if (jobDescription) formData.append('jobDescription', jobDescription);
+
+      const response = await fetch('/api/resume-word-analysis', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Word analysis failed');
+      }
+
+      console.log("Word analysis API response:", data);
+      setWordAnalysisData(data.analysis); // Extract the analysis part
+    } catch (err: any) {
+      console.error('Word analysis error:', err);
+      setShowWordAnalysis(false);
+      setError('Word analysis failed: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsWordAnalysisLoading(false);
+    }
   };
 
   // When word analysis is available, scale ALL scores proportionally so they're consistent.
@@ -735,18 +768,6 @@ export default function ResumeCheckerPage() {
                         </div>
                       </div>
 
-                      {/* Word-Level Analysis */}
-                      {wordAnalysisData && (
-                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden' }}>
-                          <ResumeWordAnalysis
-                            analysis={wordAnalysisData}
-                            fileName={resume?.name || profile?.resumeFilename || "Resume"}
-                            jobTitle={profile?.targetRole || 'Software Engineer'}
-                            company={company}
-                          />
-                        </div>
-                      )}
-
                       {/* Actions */}
                       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 16 }}>
                         <button
@@ -773,8 +794,141 @@ export default function ResumeCheckerPage() {
 
                     </div>
 
-                    {/* Right Column - Resume Viewer - Hidden on mobile */}
-                    <div className="hidden lg:block" style={{ position: 'sticky', top: 24, height: 'fit-content' }}>
+                    {/* Mobile Word Analysis CTA — visible below lg */}
+                    <div className="lg:hidden" id="word-analysis-section-mobile" style={{ marginTop: 4 }}>
+                      {!wordAnalysisData && !isWordAnalysisLoading && (
+                        <button
+                          onClick={handleRunWordAnalysis}
+                          disabled={!resume}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: '16px 20px',
+                            background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.10) 100%)',
+                            border: '1px solid rgba(99,102,241,0.25)',
+                            borderRadius: 14,
+                            cursor: resume ? 'pointer' : 'not-allowed',
+                            opacity: resume ? 1 : 0.5,
+                          }}
+                        >
+                          <Sparkles style={{ width: 18, height: 18, color: '#818cf8', flexShrink: 0 }} />
+                          <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 600, color: '#e2e8f0' }}>
+                              Run Word-Level Analysis
+                            </div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#94a3b8', marginTop: 1 }}>
+                              Line-by-line suggestions highlighted on your resume
+                            </div>
+                          </div>
+                        </button>
+                      )}
+                      {isWordAnalysisLoading && (
+                        <div style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: '16px 20px',
+                          background: 'rgba(255,255,255,0.02)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: 14,
+                        }}>
+                          <Loader2 style={{ width: 18, height: 18, color: '#818cf8', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 500, color: '#e2e8f0' }}>Analyzing each line…</div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', marginTop: 1 }}>This takes 15-30 seconds</div>
+                          </div>
+                        </div>
+                      )}
+                      {wordAnalysisData && (
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden' }}>
+                          <ResumeWordAnalysis
+                            analysis={wordAnalysisData}
+                            fileName={resume?.name || profile?.resumeFilename || "Resume"}
+                            jobTitle={profile?.targetRole || 'Software Engineer'}
+                            company={company}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Column - Word Analysis + Resume Viewer - Hidden on mobile */}
+                    <div className="hidden lg:flex" style={{ position: 'sticky', top: 24, height: 'fit-content', flexDirection: 'column', gap: 16 }}>
+
+                      {/* Word Analysis CTA / Loading / Results — sits above PDF */}
+                      <div id="word-analysis-section">
+                        {!wordAnalysisData && !isWordAnalysisLoading && (
+                          <button
+                            onClick={handleRunWordAnalysis}
+                            disabled={!resume}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 12,
+                              padding: '16px 20px',
+                              background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.10) 100%)',
+                              border: '1px solid rgba(99,102,241,0.25)',
+                              borderRadius: 14,
+                              cursor: resume ? 'pointer' : 'not-allowed',
+                              opacity: resume ? 1 : 0.5,
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={e => { if (resume) { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.15) 100%)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; } }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.10) 100%)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)'; }}
+                          >
+                            <Sparkles style={{ width: 18, height: 18, color: '#818cf8', flexShrink: 0 }} />
+                            <div style={{ textAlign: 'left' }}>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 600, color: '#e2e8f0' }}>
+                                Run Word-Level Analysis
+                              </div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#94a3b8', marginTop: 1 }}>
+                                Line-by-line suggestions highlighted on your resume
+                              </div>
+                            </div>
+                          </button>
+                        )}
+
+                        {isWordAnalysisLoading && (
+                          <div style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: '16px 20px',
+                            background: 'rgba(255,255,255,0.02)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: 14,
+                          }}>
+                            <Loader2 style={{ width: 18, height: 18, color: '#818cf8', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+                            <div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 500, color: '#e2e8f0' }}>
+                                Analyzing each line…
+                              </div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#64748b', marginTop: 1 }}>
+                                This takes 15-30 seconds
+                              </div>
+                            </div>
+                            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Word Analysis Results (expands above PDF when loaded) */}
+                      {wordAnalysisData && (
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden', maxHeight: '50vh', overflowY: 'auto' }}>
+                          <ResumeWordAnalysis
+                            analysis={wordAnalysisData}
+                            fileName={resume?.name || profile?.resumeFilename || "Resume"}
+                            jobTitle={profile?.targetRole || 'Software Engineer'}
+                            company={company}
+                          />
+                        </div>
+                      )}
+
+                      {/* PDF Viewer */}
                       <div style={{
                         background: 'rgba(255,255,255,0.02)',
                         border: '1px solid rgba(255,255,255,0.06)',
@@ -852,6 +1006,21 @@ export default function ResumeCheckerPage() {
           isOpen={isLoading}
           onClose={() => setIsLoading(false)}
         />
+
+        {/* Onboarding for word analysis — shows first time user lands on results */}
+        {showResults && !wordAnalysisData && !isWordAnalysisLoading && (
+          <OnboardingDialog
+            activityType="resume_word_analysis"
+            steps={[
+              {
+                title: "Deep-Dive Word Analysis",
+                description: "Get line-by-line feedback on every bullet point in your resume. Each suggestion highlights exact text on your PDF with color-coded severity — red for critical issues, yellow for improvements, and green for minor polish.",
+                target: "#word-analysis-section",
+                position: "left",
+              },
+            ]}
+          />
+        )}
       </DashboardLayout>
     </ProtectedRoute>
   );

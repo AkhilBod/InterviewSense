@@ -235,18 +235,8 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
 
         // Generate resume stats
         const stats = generateResumeStats(file, analysisText, jobDescription);
-        
-        // Generate word analysis automatically
-        console.log("Starting automatic word analysis...");
-        let wordAnalysisData = null;
-        try {
-            const wordAnalysisResult = await generateWordAnalysis(file, jobTitle, company, jobDescription, null, base64File, pdfText);
-            wordAnalysisData = wordAnalysisResult;
-            console.log("Word analysis completed successfully");
-        } catch (wordError) {
-            console.error("Word analysis failed, but continuing with main analysis:", wordError);
-            // Don't fail the main request if word analysis fails
-        }        const successResponse = {
+
+        const successResponse = {
             analysis: analysisText, 
             score: structuredAnalysis.overallScore ?? 0,
             impactScore: structuredAnalysis.impactScore ?? structuredAnalysis.overallScore ?? 0,
@@ -257,7 +247,6 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
             formattedAnalysis,
             stats,
             structuredData: structuredAnalysis,
-            wordAnalysis: wordAnalysisData // Include word analysis in response
         };
         
         // Track progress for resume analysis completion using new stats system

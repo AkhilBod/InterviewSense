@@ -26,25 +26,25 @@ const analysisSteps: AnalysisStep[] = [
     id: 1,
     icon: FileText,
     title: "Processing your resume",
-    duration: 8000,
+    duration: 3000,
   },
   {
     id: 2,
     icon: Brain,
     title: "Analyzing content & word choices",
-    duration: 10000,
+    duration: 4000,
   },
   {
     id: 3,
     icon: Target,
     title: "Checking role match",
-    duration: 8000,
+    duration: 3000,
   },
   {
     id: 4,
     icon: TrendingUp,
     title: "Generating scores & suggestions",
-    duration: 6000,
+    duration: 2000,
   }
 ];
 
@@ -67,6 +67,7 @@ const ResumeAnalysisLoadingModal: React.FC<ResumeAnalysisLoadingModalProps> = ({
       startTimeRef.current = Date.now();
       startAnalysis();
     } else {
+      // Immediately clear timers and set completion when closing
       if (stepTimerRef.current) {
         clearTimeout(stepTimerRef.current);
         stepTimerRef.current = null;
@@ -75,6 +76,9 @@ const ResumeAnalysisLoadingModal: React.FC<ResumeAnalysisLoadingModalProps> = ({
         clearInterval(progressTimerRef.current);
         progressTimerRef.current = null;
       }
+      // Show completion briefly before unmounting
+      setProgress(100);
+      setCurrentStep(analysisSteps.length);
     }
   }, [isOpen]);
 
