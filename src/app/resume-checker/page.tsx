@@ -176,10 +176,10 @@ export default function ResumeCheckerPage() {
       setResumeData({
         jobTitle,
         company: company || undefined,
-        overallScore: data.score,
-        impactScore: data.impactScore ?? data.score,
-        styleScore: data.styleScore ?? data.score,
-        skillsScore: data.skillsScore ?? data.score,
+        overallScore: Number(data.score) || 0,
+        impactScore: Number(data.impactScore ?? data.score) || 0,
+        styleScore: Number(data.styleScore ?? data.score) || 0,
+        skillsScore: Number(data.skillsScore ?? data.score) || 0,
         strengths: data.strengths || [],
         improvementAreas: data.areasForImprovement || [],
         analysis: data.analysis,
@@ -411,6 +411,7 @@ export default function ResumeCheckerPage() {
                           type="file"
                           style={{ display: 'none' }}
                           accept=".pdf,.doc,.docx,.txt,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                           onChange={handleResumeChange}
                         />
                       </div>

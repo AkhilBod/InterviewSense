@@ -51,6 +51,11 @@ export default function PDFHighlightViewer({
   const [pdfjsLoaded, setPdfjsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Stabilize the highlights reference so useEffect doesn't re-fire every render
+  const highlightsKey = highlights.map(h => h.id).join(',');
+  const highlightsRef = useRef(highlights);
+  highlightsRef.current = highlights;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -170,169 +175,187 @@ export default function PDFHighlightViewer({
     };
     reMatch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlights, visibleColors]);
+  }, [highlightsKey, visibleColors]);
 
   const matchHighlights = async (page: any, viewport: any, scale: number) => {
+    const currentHighlights = highlightsRef.current;
     try {
       const textContent = await page.getTextContent();
       const textItems: TextItem[] = [];
 
-      // PDF.js text items have:
-      //   item.str        — the text string
-      //   item.transform   — [scaleX, skewX, skewY, scaleY, translateX, translateY]
-      //   item.width       — advance width of the string in device (PDF user) space units
-      //   item.height      — height of the string in device (PDF user) space units
-      //
-      // We scale from PDF user space → canvas pixels, and flip Y (PDF is bottom-up).
+      // Build a full-page text string and track the position of each text item within it.
+      // This lets us match phrases that span across arbitrary PDF text-item boundaries.
+      let fullPageText = '';
+      const itemRanges: { start: number; end: number; itemIdx: number }[] = [];
+
+      // Also build a "normalized" version where we strip all whitespace for fuzzy matching.
+      // normalMap[i] = index into fullPageText for normalized position i
+      let normalizedText = '';
+      const normalToFull: number[] = []; // normalizedText position → fullPageText position
 
       (textContent.items as any[]).forEach((item: any) => {
-        if (!item.str || !item.str.trim()) return;
+        if (!item.str) return;
 
         const tx = item.transform;
-        const fontHeight = Math.abs(tx[3]); // vertical font scale
-        const pdfX = tx[4]; // x position in PDF user space
-        const pdfY = tx[5]; // y position in PDF user space (baseline, bottom-left origin)
-
-        // item.width and item.height are already in PDF user-space units
+        const fontHeight = Math.abs(tx[3]);
+        const pdfX = tx[4];
+        const pdfY = tx[5];
         const wPdf = item.width ?? 0;
-        const hPdf = item.height || fontHeight; // fallback to font scale if height is 0
+        const hPdf = item.height || fontHeight;
 
-        // Convert to canvas pixel coordinates (top-left origin)
         const canvasX = pdfX * scale;
         const canvasY = viewport.height - (pdfY * scale) - (hPdf * scale);
         const canvasW = wPdf * scale;
         const canvasH = hPdf * scale;
 
+        const idx = textItems.length;
         textItems.push({
           str: item.str,
           x: canvasX,
           y: canvasY,
-          width: Math.max(canvasW, 10), // at least 10px so it's visible
+          width: Math.max(canvasW, 10),
           height: Math.max(canvasH, 8),
         });
+
+        // Track where this item sits in the full-page string
+        const start = fullPageText.length;
+        fullPageText += item.str;
+        itemRanges.push({ start, end: fullPageText.length, itemIdx: idx });
+
+        // Build normalized (no-whitespace) mapping
+        for (let ci = 0; ci < item.str.length; ci++) {
+          const ch = item.str[ci];
+          if (/\s/.test(ch)) continue; // skip whitespace in normalized
+          normalToFull.push(start + ci);
+          normalizedText += ch.toLowerCase();
+        }
+
+        // Add space separator in the full text
+        fullPageText += ' ';
       });
 
+      const fullPageLower = fullPageText.toLowerCase();
+
+      console.log(`[PDFHighlight] Page ${pageNum}: ${textItems.length} text items, ${currentHighlights.length} highlights to match`);
+      if (textItems.length > 0) {
+        console.log(`[PDFHighlight] First 200 chars of page text: "${fullPageText.substring(0, 200)}"`);
+      }
+
       const boxes: HighlightBox[] = [];
-      highlights.forEach((h) => {
+      currentHighlights.forEach((h) => {
         if (h.page !== pageNum) return;
         if (!visibleColors.has(h.color)) return;
         const textExcerpt = h.textExcerpt || h.title || h.feedback.substring(0, 50);
-        const bbox = findTextBoundingBox(textItems, textExcerpt);
+        const bbox = findTextBoundingBox(textItems, itemRanges, fullPageLower, normalizedText, normalToFull, textExcerpt);
         if (bbox) {
           boxes.push({
             id: h.id || `h-${Math.random()}`,
             x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height,
             highlight: h,
           });
+          console.log(`[PDFHighlight] MATCHED: "${textExcerpt.substring(0, 50)}..." → box at (${Math.round(bbox.x)}, ${Math.round(bbox.y)})`);
+        } else {
+          console.log(`[PDFHighlight] NO MATCH: "${textExcerpt.substring(0, 60)}..."`);
         }
       });
+
+      console.log(`[PDFHighlight] Total matched: ${boxes.length}/${currentHighlights.filter(h => h.page === pageNum).length}`);
       setHighlightBoxes(boxes);
     } catch (err) {
       console.error('Error matching highlights:', err);
     }
   };
 
-  const findTextBoundingBox = (items: TextItem[], search: string): { x: number; y: number; width: number; height: number } | null => {
-    const query = search.toLowerCase().trim();
-    if (!query) return null;
+  const findTextBoundingBox = (
+    items: TextItem[],
+    itemRanges: { start: number; end: number; itemIdx: number }[],
+    fullPageLower: string,
+    normalizedText: string,
+    normalToFull: number[],
+    search: string,
+  ): { x: number; y: number; width: number; height: number } | null => {
+    if (!search || !search.trim()) return null;
 
-    // Truncate very long excerpts — the AI often returns full bullet points.
-    // We only need enough to locate the right line, not highlight the whole paragraph.
-    const maxQueryLen = 80;
-    const trimmedQuery = query.length > maxQueryLen ? query.substring(0, maxQueryLen) : query;
+    // Normalize the query — strip leading bullet chars, collapse whitespace
+    const rawQuery = search.toLowerCase().trim()
+      .replace(/^[-•·▪▸►●○◦‣⁃]\s*/, '') // strip leading bullet markers
+      .replace(/\s+/g, ' ');
 
-    // Strategy 1: Find a single text item that contains the full query
-    for (const item of items) {
-      const itemText = item.str.toLowerCase();
-      if (itemText.includes(trimmedQuery)) {
-        // Only highlight the portion of the item that matches
-        const idx = itemText.indexOf(trimmedQuery);
-        const charWidth = item.width / Math.max(item.str.length, 1);
-        return {
-          x: item.x + idx * charWidth,
-          y: item.y,
-          width: Math.min(trimmedQuery.length * charWidth, item.width - idx * charWidth),
-          height: item.height,
-        };
-      }
+    if (!rawQuery || rawQuery.length < 3) return null;
+
+    // Helper: given a character position in fullPageText, find the bounding box of overlapping items
+    const bboxFromFullRange = (pos: number, matchEnd: number) => {
+      const overlapping = itemRanges.filter(
+        r => r.end > pos && r.start < matchEnd
+      );
+      if (overlapping.length === 0) return null;
+
+      const firstItem = items[overlapping[0].itemIdx];
+      const lastItem = items[overlapping[overlapping.length - 1].itemIdx];
+      const top = Math.min(...overlapping.map(r => items[r.itemIdx].y));
+      const bottom = Math.max(...overlapping.map(r => items[r.itemIdx].y + items[r.itemIdx].height));
+
+      return {
+        x: firstItem.x,
+        y: top,
+        width: (lastItem.x + lastItem.width) - firstItem.x,
+        height: bottom - top,
+      };
+    };
+
+    // Helper: try exact match in fullPageLower
+    const tryExact = (q: string) => {
+      const pos = fullPageLower.indexOf(q);
+      if (pos === -1) return null;
+      return bboxFromFullRange(pos, pos + q.length);
+    };
+
+    // Helper: try normalized (whitespace-agnostic) match
+    const tryNormalized = (q: string) => {
+      const normQ = q.replace(/\s+/g, '').toLowerCase();
+      if (normQ.length < 4) return null;
+      const nPos = normalizedText.indexOf(normQ);
+      if (nPos === -1) return null;
+
+      // Map back to fullPageText positions
+      const fullStart = normalToFull[nPos];
+      const fullEnd = normalToFull[Math.min(nPos + normQ.length - 1, normalToFull.length - 1)] + 1;
+      return bboxFromFullRange(fullStart, fullEnd);
+    };
+
+    // Strategy 1: Try the full query (up to 120 chars) — exact match
+    const maxLen = 120;
+    const fullQuery = rawQuery.length > maxLen ? rawQuery.substring(0, maxLen) : rawQuery;
+    const result1 = tryExact(fullQuery);
+    if (result1) return result1;
+
+    // Strategy 2: Try normalized (whitespace-agnostic) match of the full query
+    const result2 = tryNormalized(fullQuery);
+    if (result2) return result2;
+
+    // Strategy 3: Try progressively shorter prefixes (exact, then normalized)
+    for (let len = Math.min(fullQuery.length - 5, 80); len >= 15; len -= 8) {
+      const sub = fullQuery.substring(0, len);
+      const r = tryExact(sub) || tryNormalized(sub);
+      if (r) return r;
     }
 
-    // Strategy 2: Find consecutive items whose combined text contains the query.
-    // Only include the items that actually overlap with the matched substring.
-    for (let i = 0; i < items.length; i++) {
-      let combined = '';
-      const spans: { idx: number; start: number; end: number }[] = [];
-      for (let j = i; j < Math.min(i + 8, items.length); j++) {
-        const start = combined.length + (j > i ? 1 : 0);
-        combined += (j > i ? ' ' : '') + items[j].str;
-        spans.push({ idx: j, start, end: combined.length });
+    // Strategy 4: Try matching individual significant words (5+ chars)
+    const words = rawQuery.split(/\s+/).filter(w => w.length >= 5);
 
-        const matchPos = combined.toLowerCase().indexOf(trimmedQuery);
-        if (matchPos !== -1) {
-          const matchEnd = matchPos + trimmedQuery.length;
-          // Only include items that overlap with the matched range
-          const overlapping = spans.filter(s => s.end > matchPos && s.start < matchEnd);
-          if (overlapping.length === 0) break;
-
-          const firstItem = items[overlapping[0].idx];
-          const lastItem = items[overlapping[overlapping.length - 1].idx];
-          const top = Math.min(...overlapping.map(s => items[s.idx].y));
-          const bottom = Math.max(...overlapping.map(s => items[s.idx].y + items[s.idx].height));
-
-          return {
-            x: firstItem.x,
-            y: top,
-            width: (lastItem.x + lastItem.width) - firstItem.x,
-            height: bottom - top,
-          };
-        }
-      }
+    // Try pairs of consecutive words
+    for (let i = 0; i < words.length - 1; i++) {
+      const pair = words[i] + ' ' + words[i + 1];
+      const r = tryExact(pair) || tryNormalized(pair);
+      if (r) return r;
     }
 
-    // Strategy 3: Match the first few significant words of the query
-    const queryWords = trimmedQuery.split(/\s+/).filter(w => w.length > 2);
-    if (queryWords.length >= 2) {
-      for (let wordCount = Math.min(4, queryWords.length); wordCount >= 2; wordCount--) {
-        const partial = queryWords.slice(0, wordCount).join(' ');
-        for (let i = 0; i < items.length; i++) {
-          let combined = '';
-          const spans: { idx: number; start: number; end: number }[] = [];
-          for (let j = i; j < Math.min(i + 6, items.length); j++) {
-            const start = combined.length + (j > i ? 1 : 0);
-            combined += (j > i ? ' ' : '') + items[j].str;
-            spans.push({ idx: j, start, end: combined.length });
-
-            const matchPos = combined.toLowerCase().indexOf(partial);
-            if (matchPos !== -1) {
-              const matchEnd = matchPos + partial.length;
-              const overlapping = spans.filter(s => s.end > matchPos && s.start < matchEnd);
-              if (overlapping.length === 0) break;
-
-              const firstItem = items[overlapping[0].idx];
-              const lastItem = items[overlapping[overlapping.length - 1].idx];
-              const top = Math.min(...overlapping.map(s => items[s.idx].y));
-              const bottom = Math.max(...overlapping.map(s => items[s.idx].y + items[s.idx].height));
-
-              return {
-                x: firstItem.x,
-                y: top,
-                width: (lastItem.x + lastItem.width) - firstItem.x,
-                height: bottom - top,
-              };
-            }
-          }
-        }
-      }
-    }
-
-    // Strategy 4: Match any single item that contains a significant word (4+ chars)
-    for (const word of queryWords) {
-      if (word.length < 4) continue;
-      for (const item of items) {
-        if (item.str.toLowerCase().includes(word)) {
-          return { x: item.x, y: item.y, width: item.width, height: item.height };
-        }
-      }
+    // Single distinctive word as last resort — prefer longer/more unique words
+    const sortedWords = [...words].sort((a, b) => b.length - a.length);
+    for (const word of sortedWords) {
+      if (word.length < 5) continue;
+      const r = tryExact(word) || tryNormalized(word);
+      if (r) return r;
     }
 
     return null;

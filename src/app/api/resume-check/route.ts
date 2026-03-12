@@ -79,29 +79,48 @@ export async function POST(req: Request) {
         let pdfText: string | null = null;
         if (file.type === 'application/pdf') {
           try {
-            const pdfParse = (await import('pdf-parse')).default;
+            // Use require() to avoid pdf-parse triggering its test suite on dynamic import
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const pdfParse = require('pdf-parse/lib/pdf-parse.js');
             const pdfData = await pdfParse(buffer);
             if (pdfData.text && pdfData.text.trim().length > 50) {
               pdfText = pdfData.text;
-              console.log(`PDF text extracted: ${pdfText.length} characters`);
+              console.log(`PDF text extracted: ${pdfData.text.length} characters`);
             }
           } catch (pdfErr) {
             console.warn("pdf-parse extraction failed, falling back to vision:", pdfErr);
           }
         }
 
-        const textPrompt = `You are a senior hiring manager and resume expert who has reviewed thousands of resumes for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Your job is to give honest, constructive, and specific feedback. Do not be artificially harsh or artificially generous — be accurate.
+        const textPrompt = `You are a senior hiring manager and resume expert who has reviewed thousands of resumes for the "${jobTitle}" role${company ? ` at "${company}"` : ""}. Your job is to give honest, blunt, accurate feedback. The user needs a real score — not encouragement.
 ${jobDescription ? `\nJob description to evaluate against:\n---\n${jobDescription}\n---\n` : ""}
 
-SCORING CALIBRATION — read carefully before assigning any score:
-- 90-100: Exceptional. This resume would immediately land interviews at top-tier companies. Nearly flawless for this role.
-- 80-89: Strong. Most bullets quantified, good action verbs, clear impact. Minor improvements possible.
-- 70-79: Good but improvable. Some bullets lack metrics, a few vague areas, but overall solid.
-- 60-69: Needs significant work. Many vague bullets, weak verbs, unclear impact.
-- 50-59: Weak. Almost no quantification, generic phrasing throughout.
+SCORING CALIBRATION — be strict:
+- 90-100: Exceptional. Every bullet quantified, compelling narrative, perfect role alignment. Top 1% of candidates.
+- 80-89: Strong. Most bullets quantified, clear impact, strong action verbs throughout.
+- 70-79: Decent. Some bullets have metrics, but at least half are vague, lack outcomes, or use weak verbs.
+- 60-69: Weak. Most bullets are duty-lists with no measurable outcomes. Generic phrasing dominates.
+- 50-59: Very weak. Almost no quantification, vague throughout, poor formatting.
 - Below 50: Needs a full rewrite. Would be auto-rejected.
 
-A solid resume with relevant experience and some metrics should score 70-79. A great resume with quantified impact throughout scores 80+. Be as accurate as possible.
+IMPORTANT: Most real-world resumes score 55-70. Only award 75+ if the majority of bullets are genuinely quantified with real numbers. If you see bullets like "helped with X", "responsible for Y", "worked on Z" — these are red flags that should pull the score toward 50-65. Do not default to 70. Be accurate.
+
+RED FLAGS — actively look for and call these out in your feedback:
+- High school activities, clubs, awards, or GPA listed on a college student/grad resume (immediate red flag — remove everything pre-college)
+- GPA listed when it's below 3.5 (should be omitted)
+- Objective statements or summaries that are generic (e.g., "Seeking a challenging position...")
+- Job titles listed without any bullets or description
+- Responsibilities written as job duties ("Responsible for...", "Duties included...") with zero outcomes
+- Bullets starting with the same weak verb repeated multiple times (e.g., 5 bullets all starting with "Worked on")
+- No GitHub link, portfolio, or project links for a CS/engineering role
+- Projects section missing or only listing academic assignments with no deployed link or measurable outcome
+- Skills section listing irrelevant tools (e.g., Microsoft Word, Google Docs for a SWE role)
+- Resume longer than 1 page for a student/new grad with under 3 years experience
+- Missing core CS skills expected for the role (e.g., no Git, no testing frameworks, no cloud platforms)
+- Education section missing expected info (graduation date, GPA if strong, relevant coursework)
+- Dates missing or inconsistent (gaps unexplained, or future graduation date formatted incorrectly)
+- Email addresses that are unprofessional (e.g., coolkid123@gmail.com)
+- Using first-person pronouns ("I built", "My project")
 
 Please analyze the resume below and respond using ONLY this exact structure, with plain text and no markdown:
 
@@ -199,6 +218,9 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
         }
 
         console.log("Resume analysis generated successfully.");
+        console.log("=== RAW AI RESPONSE (first 800 chars) ===");
+        console.log(analysisText.slice(0, 800));
+        console.log("=========================================");
         
         // Parse the analysis text into structured sections
         const structuredAnalysis = parseAnalysisText(analysisText);
@@ -226,10 +248,10 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
             // Don't fail the main request if word analysis fails
         }        const successResponse = {
             analysis: analysisText, 
-            score: structuredAnalysis.overallScore,
-            impactScore: structuredAnalysis.impactScore,
-            styleScore: structuredAnalysis.styleScore,
-            skillsScore: structuredAnalysis.skillsScore,
+            score: structuredAnalysis.overallScore ?? 0,
+            impactScore: structuredAnalysis.impactScore ?? structuredAnalysis.overallScore ?? 0,
+            styleScore: structuredAnalysis.styleScore ?? structuredAnalysis.overallScore ?? 0,
+            skillsScore: structuredAnalysis.skillsScore ?? structuredAnalysis.overallScore ?? 0,
             strengths: structuredAnalysis.strengths,
             areasForImprovement: structuredAnalysis.improvements,
             formattedAnalysis,
@@ -327,82 +349,102 @@ function parseAnalysisText(analysisText: string) {
         formatFeedback: [] as string[]
     };
 
-    // Parse overall score
-    const scoreMatch = analysisText.match(/Overall Score: (\d{1,3})\/100/);
-    if (scoreMatch && scoreMatch[1]) {
-        sections.overallScore = parseInt(scoreMatch[1], 10);
-    }
+    // Strip ALL markdown formatting variants the model might use
+    const cleanedText = analysisText
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/#{1,6}\s*/g, '')
+        .replace(/_/g, '');
 
-    // Parse impact score
-    const impactMatch = analysisText.match(/Impact Score: (\d{1,3})\/100/);
-    if (impactMatch && impactMatch[1]) {
-        sections.impactScore = parseInt(impactMatch[1], 10);
-    }
+    // Helper: extract first integer from a line matching a label
+    const extractScore = (label: string): number | null => {
+        // Matches things like:
+        //   "Overall Score: 72/100"
+        //   "Overall Score: 72 / 100 - ..."
+        //   "Overall Score: 72 out of 100"
+        //   "Overall Score (72/100)"
+        //   "72/100" anywhere after the label
+        const re = new RegExp(
+            label + '[^\\d]{0,20}(\\d{1,3})\\s*(?:\\/|out of)\\s*100',
+            'i'
+        );
+        const m = cleanedText.match(re);
+        if (m) return parseInt(m[1], 10);
 
-    // Parse style score
-    const styleMatch = analysisText.match(/Style Score: (\d{1,3})\/100/);
-    if (styleMatch && styleMatch[1]) {
-        sections.styleScore = parseInt(styleMatch[1], 10);
-    }
+        // Fallback: label followed by standalone number on same line
+        const re2 = new RegExp(label + '[^\\n]{0,40}?[:\\s(]+(\\d{1,3})(?:\\s*\\/\\s*100)?', 'i');
+        const m2 = cleanedText.match(re2);
+        if (m2) {
+            const n = parseInt(m2[1], 10);
+            if (n >= 0 && n <= 100) return n;
+        }
+        return null;
+    };
 
-    // Parse skills score
-    const skillsMatch = analysisText.match(/Skills Score: (\d{1,3})\/100/);
-    if (skillsMatch && skillsMatch[1]) {
-        sections.skillsScore = parseInt(skillsMatch[1], 10);
-    }
+    sections.overallScore = extractScore('Overall Score');
+    sections.impactScore  = extractScore('Impact Score');
+    sections.styleScore   = extractScore('Style Score');
+    sections.skillsScore  = extractScore('Skills Score');
 
-    // Parse strengths (plain text format)
-    const strengthsRegex = /ROLE-SPECIFIC STRENGTHS\s*([\s\S]*?)(?=AREAS FOR IMPROVEMENT|$)/;
-    const strengthsMatch = analysisText.match(strengthsRegex);
+    console.log('Parsed scores:', {
+        overall: sections.overallScore,
+        impact: sections.impactScore,
+        style: sections.styleScore,
+        skills: sections.skillsScore,
+    });
+
+    // Parse strengths
+    const strengthsRegex = /ROLE-SPECIFIC STRENGTHS\s*([\s\S]*?)(?=AREAS FOR IMPROVEMENT|$)/i;
+    const strengthsMatch = cleanedText.match(strengthsRegex);
     if (strengthsMatch && strengthsMatch[1]) {
         sections.strengths = strengthsMatch[1]
             .split(/\.\s+/)
             .map(item => item.trim())
-            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/i))
             .map(item => item.endsWith('.') ? item : item + '.');
     }
 
-    // Parse improvements (plain text format)
-    const improvementsRegex = /AREAS FOR IMPROVEMENT\s*([\s\S]*?)(?=INDUSTRY-SPECIFIC RECOMMENDATIONS|ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/;
-    const improvementsMatch = analysisText.match(improvementsRegex);
+    // Parse improvements
+    const improvementsRegex = /AREAS FOR IMPROVEMENT\s*([\s\S]*?)(?=INDUSTRY-SPECIFIC RECOMMENDATIONS|ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/i;
+    const improvementsMatch = cleanedText.match(improvementsRegex);
     if (improvementsMatch && improvementsMatch[1]) {
         sections.improvements = improvementsMatch[1]
             .split(/\.\s+/)
             .map(item => item.trim())
-            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/i))
             .map(item => item.endsWith('.') ? item : item + '.');
     }
 
-    // Parse ATS optimization (plain text format)
-    const atsRegex = /ATS OPTIMIZATION SUGGESTIONS\s*([\s\S]*?)(?=FORMAT AND PRESENTATION|INDUSTRY-SPECIFIC|$)/;
-    const atsMatch = analysisText.match(atsRegex);
+    // Parse ATS optimization
+    const atsRegex = /ATS OPTIMIZATION SUGGESTIONS\s*([\s\S]*?)(?=FORMAT AND PRESENTATION|INDUSTRY-SPECIFIC|$)/i;
+    const atsMatch = cleanedText.match(atsRegex);
     if (atsMatch && atsMatch[1]) {
         sections.atsOptimization = atsMatch[1]
             .split(/\.\s+/)
             .map(item => item.trim())
-            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/i))
             .map(item => item.endsWith('.') ? item : item + '.');
     }
 
-    // Parse industry recommendations (plain text format)
-    const industryRegex = /INDUSTRY-SPECIFIC RECOMMENDATIONS\s*([\s\S]*?)(?=ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/;
-    const industryMatch = analysisText.match(industryRegex);
+    // Parse industry recommendations
+    const industryRegex = /INDUSTRY-SPECIFIC RECOMMENDATIONS\s*([\s\S]*?)(?=ATS OPTIMIZATION|FORMAT AND PRESENTATION|$)/i;
+    const industryMatch = cleanedText.match(industryRegex);
     if (industryMatch && industryMatch[1]) {
         sections.industryRecommendations = industryMatch[1]
             .split(/\.\s+/)
             .map(item => item.trim())
-            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/i))
             .map(item => item.endsWith('.') ? item : item + '.');
     }
 
     // Parse format feedback (plain text format)
-    const formatRegex = /FORMAT AND PRESENTATION FEEDBACK\s*([\s\S]*?)$/;
-    const formatMatch = analysisText.match(formatRegex);
+    const formatRegex = /FORMAT AND PRESENTATION FEEDBACK\s*([\s\S]*?)$/i;
+    const formatMatch = cleanedText.match(formatRegex);
     if (formatMatch && formatMatch[1]) {
         sections.formatFeedback = formatMatch[1]
             .split(/\.\s+/)
             .map(item => item.trim())
-            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/))
+            .filter(item => item.length > 10 && !item.match(/^(ROLE-SPECIFIC|AREAS FOR|ATS OPTIMIZATION|INDUSTRY-SPECIFIC|FORMAT AND)/i))
             .map(item => item.endsWith('.') ? item : item + '.');
     }
 
@@ -494,20 +536,36 @@ async function generateWordAnalysis(file: File, jobTitle: string, company: strin
 
     const wordAnalysisPrompt = `You are a senior resume reviewer with experience screening resumes for top tech companies. You are reviewing this resume for the "${jobTitle}" role${company ? ` at "${company}"` : ""}.
 
-Your job is to give honest, constructive, and specific feedback. Do not be artificially harsh or artificially generous — be accurate. A solid resume with good metrics and relevant experience should score in the 70-85 range. A great resume scores 85+. A weak resume scores below 60.
+Your job is to give honest, blunt, accurate feedback. The user needs a real score — not encouragement.
 
-SCORING GUIDE:
-- 90-100: Exceptional. Every bullet is quantified, compelling narrative, perfect role alignment. Top 1%.
-- 80-89: Strong. Most bullets quantified, good action verbs, clear impact. Minor improvements possible.
-- 70-79: Good but improvable. Some bullets lack metrics, a few vague areas, but overall solid.
-- 60-69: Needs significant work. Many vague bullets, weak verbs, unclear impact.
-- 50-59: Weak. Almost no quantification, generic phrasing throughout.
+SCORING GUIDE — be strict:
+- 90-100: Exceptional. Every bullet quantified, compelling narrative, perfect role alignment. Top 1%.
+- 80-89: Strong. Most bullets quantified, strong verbs, clear impact throughout.
+- 70-79: Decent. Some bullets have metrics but at least half are vague duty-lists.
+- 60-69: Weak. Most bullets are generic with no measurable outcomes.
+- 50-59: Very weak. Almost no quantification, vague throughout.
 - Below 50: Needs a full rewrite. Would be auto-rejected.
+
+IMPORTANT: Most real-world resumes score 55-70. Bullets like "helped with X", "responsible for Y", "worked on Z" are red flags pulling toward 50-65. Do not default to 70. Be accurate.
+
+RED FLAGS — actively look for these and flag them as "red" severity in wordImprovements, and call them out in weaknesses:
+- High school activities, clubs, honors, or awards listed anywhere on the resume (massive red flag for college/post-grad candidates — should be removed entirely)
+- GPA below 3.5 listed (suggest omitting it)
+- Objective/summary statements that are generic filler
+- Bullets starting with "Responsible for", "Helped with", "Worked on", "Assisted with" — zero-impact phrasing
+- Same weak verb used to start 3+ bullets in a row
+- No GitHub link or project portfolio for a CS/SWE role
+- Projects that are only coursework with no real link, deployment, or measurable outcome
+- Skills section listing irrelevant tools (Microsoft Word, PowerPoint, Google Docs for a SWE role)
+- Resume over 1 page for a student or new grad with under 3 years of experience
+- Missing Git, testing frameworks, or cloud platforms for a CS/engineering role
+- First-person pronouns used ("I built", "My project", "I worked on")
+- Unprofessional email address
 
 ${jobDescription ? `\nJob Description Context:\n${jobDescription}\n` : ""}
 
 ANALYSIS RULES:
-1. For EVERY item in wordImprovements, the "original" field must be the EXACT text of ONE bullet point or ONE short phrase from the resume — NOT a full paragraph or multiple lines. Keep it under 100 characters. Quote just the specific line that needs improvement.
+1. CRITICAL — "original" must be the EXACT verbatim text copied character-for-character from the resume. Do NOT paraphrase, summarize, or rewrite it. It must match what is literally written on the resume so it can be highlighted. If a bullet says "Created lesson plans for elementary students", write exactly "Created lesson plans for elementary students".
 2. For each improvement, explain WHY it matters specifically for the "${jobTitle}" role, not in generic terms.
 3. The "improved" version must be a realistic rewrite the candidate could actually use — not an exaggerated fantasy with made-up numbers.
 4. Assign severity accurately:

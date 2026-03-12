@@ -121,7 +121,6 @@ const ResumeAnalysisLoadingModal: React.FC<ResumeAnalysisLoadingModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
       />
       <div className="relative mx-4 w-full max-w-md">
         <div 
