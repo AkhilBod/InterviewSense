@@ -201,7 +201,7 @@ Critical rule: Use only plain text. No asterisks, no bullet points, no dashes, n
 
         console.log("Sending request to OpenAI API...");
         const completion = await openai.chat.completions.create({
-            model: 'gpt-4o',
+            model: 'gpt-4.1',
             messages,
             temperature: 0.3,
             max_completion_tokens: 4096,
@@ -649,7 +649,7 @@ Return your analysis in this EXACT JSON format - no additional text, markdown, o
     }
 
     const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1',
         messages,
         temperature: 0.3,
         max_completion_tokens: 6144,
