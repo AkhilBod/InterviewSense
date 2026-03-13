@@ -55,6 +55,10 @@ export default function BillingPage() {
           >
             {loading ? 'Loading...' : 'Manage Billing'}
           </Button>
+
+          <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            You can cancel your subscription at any time — no questions asked. Your access continues until the end of your current billing period.
+          </p>
         </div>
       </div>
     </div>

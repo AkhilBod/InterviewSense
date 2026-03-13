@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe-server';
 import { prisma } from '@/lib/prisma';
 import { DAILY_CREDIT_LIMITS } from '@/lib/credits';
+import { sendAbandonedCheckoutEmail } from '@/lib/email';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -216,6 +217,21 @@ export async function POST(req: Request) {
               where: { stripeSubscriptionId: subId },
               data: { status: 'PAST_DUE' },
             });
+          }
+        }
+        break;
+      }
+
+      case 'checkout.session.expired': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer as string | null;
+
+        if (customerId) {
+          const customer = await stripe.customers.retrieve(customerId);
+          if (!customer.deleted && customer.email) {
+            const name = (customer.name || customer.email.split('@')[0]);
+            await sendAbandonedCheckoutEmail(customer.email, name);
+            console.log(`📧 Abandoned checkout email sent to ${customer.email}`);
           }
         }
         break;
