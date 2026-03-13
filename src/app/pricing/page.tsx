@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, LogOut } from 'lucide-react';
 
 const plans = [
   {
@@ -38,7 +39,12 @@ const plans = [
 
 export default function PricingPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: '/' });
+  };
 
   const handleSubscribe = async (priceId: string | undefined, planName: string) => {
     if (!priceId) {
@@ -77,6 +83,30 @@ export default function PricingPage() {
     <div
       className="min-h-screen bg-black text-white py-24 px-4"
     >
+      {/* Sign out button for logged in users */}
+      {session && (
+        <button
+          onClick={handleSignOut}
+          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200"
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: 'rgba(255,255,255,0.8)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
+          }}
+        >
+          <LogOut size={16} />
+          <span style={{ fontSize: '14px' }}>Sign Out</span>
+        </button>
+      )}
+      
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">Pricing</h1>

@@ -320,7 +320,7 @@ function StartPageInner() {
     router.push('/interview')
   }
 
-  const customTotalCount = selectedQuestions.length + textLineCount
+  const customTotalCount = Math.min(selectedQuestions.length + textLineCount, MAX_QUESTIONS)
 
   const canStart = mode === 'ai' ? true : customTotalCount > 0
 

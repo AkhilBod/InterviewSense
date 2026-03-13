@@ -31,7 +31,7 @@ const BEHAVIORAL_ONBOARDING_STEPS = [
   },
   {
     title: 'Tap here to record your answer',
-    description: 'When the circle stops, this button activates. Speak naturally — your voice is transcribed automatically. Hit "Stop" when you\'re done.',
+    description: 'When the circle stops, this button activates. Speak naturally — your voice is transcribed automatically. Hit the "Stop" button when you\'re done.',
     target: '[data-onboarding="bh-controls"]',
     position: 'top' as const,
   },
