@@ -35,6 +35,8 @@ const publicRoutes = [
   '/api/auth/verify',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
+  '/unsubscribe',
+  '/api/unsubscribe',
 ]
 
 // SEO routes that crawlers can access

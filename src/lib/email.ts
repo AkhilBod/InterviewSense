@@ -757,12 +757,12 @@ export async function sendAbandonedCheckoutEmail(email: string, name: string) {
 export async function sendReEngagementEmail(email: string, name: string) {
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.interviewsense.org';
-    const unsubToken = Buffer.from(email).toString('base64');
+    const unsubToken = Buffer.from(email).toString('base64url');
     const unsubUrl = `${appUrl}/unsubscribe?token=${unsubToken}`;
 
     await sendEmail({
       to: email,
-      subject: `${name}, you haven't practiced today`,
+      subject: `${name}, you haven't practiced in a while`,
       html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -803,11 +803,11 @@ export async function sendReEngagementEmail(email: string, name: string) {
                   <tr>
                     <td align="center" style="padding:28px 32px 0;">
 
-                      <!-- GIF -->
-                      <img src="https://image2url.com/r2/default/gifs/1773447154419-b7026021-5a26-41b8-accf-671a6a8b68a5.gif"
+                      <!-- Brain illustration -->
+                      <img src="https://i.ibb.co/qLdhbRNX/Untitled.png"
                            alt="Practice your interview skills"
                            width="280"
-                           style="display:block;margin:0 auto;max-width:100%;border-radius:12px;" />
+                           style="display:block;margin:0 auto;max-width:100%;" />
 
                     </td>
                   </tr>

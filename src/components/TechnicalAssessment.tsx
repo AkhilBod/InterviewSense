@@ -91,6 +91,42 @@ const TECH_JOB_TITLES = [
 ];
 
 // Add type definition for category
+// ── Company list (GitHub: snehasishroy/leetcode-companywise-interview-questions) ──
+const FEATURED_COMPANIES = ['google','amazon','meta','microsoft','apple','netflix','uber','airbnb','bloomberg','linkedin','stripe','shopify','snowflake','databricks','coinbase','doordash'];
+const ALL_COMPANIES = [
+  'adobe','agoda','airbnb','airtel','akamai','amazon','american-express','amplitude','apple',
+  'applied-intuition','arcesium','atlassian','audible','baidu','bloomberg','bytedance',
+  'capital-one','cisco','citadel','citi','cloudflare','coinbase','coupang','coursera',
+  'crowdstrike','databricks','datadog','de-shaw','deloitte','discord','disney','doordash',
+  'dropbox','duolingo','ebay','epic-games','expedia','figma','flipkart','freshworks',
+  'github','goldman-sachs','google','grab','grammarly','groww','hsbc','hubspot','hulu',
+  'ibm','instacart','intel','intuit','jane-street','jpmorgan','juspay','karat','lacework',
+  'linkedin','lyft','mastercard','meesho','meta','microsoft','mongodb','morgan-stanley',
+  'netflix','nvidia','okta','openai','oracle','palantir-technologies','palo-alto-networks',
+  'paypal','paytm','phonepe','pinterest','plaid','postman','qualcomm','quora','razorpay',
+  'reddit','roblox','robinhood','rubrik','salesforce','samsung','sap','scale-ai',
+  'servicenow','shopify','siemens','snapchat','snowflake','spotify','square','stripe',
+  'swiggy','target','tcs','tesla','the-trade-desk','tiktok','tinder','two-sigma','uber',
+  'upstart','visa','vmware','walmart-labs','wayfair','waymo','wells-fargo','wise','workday',
+  'yahoo','yelp','zillow','zoom','zomato','zoho','zscaler',
+].sort();
+
+const COMPANY_TIMEFRAMES = [
+  { value: 'thirty-days',           label: '30 Days' },
+  { value: 'three-months',          label: '3 Months' },
+  { value: 'six-months',            label: '6 Months' },
+  { value: 'more-than-six-months',  label: '6+ Months' },
+  { value: 'all',                   label: 'All Time' },
+];
+
+function fmtCompany(slug: string): string {
+  return slug.split('-').map(w =>
+    w === 'jp' ? 'JP' : w === 'bnp' ? 'BNP' : w === 'sap' ? 'SAP' :
+    w === 'ibm' ? 'IBM' : w === 'tcs' ? 'TCS' : w === 'hsbc' ? 'HSBC' :
+    w.charAt(0).toUpperCase() + w.slice(1)
+  ).join(' ');
+}
+
 interface PresetCategory {
   name: string;
   count: number;
@@ -519,6 +555,32 @@ export function TechnicalAssessment({ onComplete }: TechnicalAssessmentProps) {
   const [problemMode, setProblemMode] = useState<'ai' | 'specific' | 'preset'>('ai');
   const [selectedPreset, setSelectedPreset] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  // Company questions state
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [companyTimeframe, setCompanyTimeframe] = useState('all');
+  const [companyQuestions, setCompanyQuestions] = useState<Array<{id:number;title:string;difficulty:string;frequency:string}> | null>(null);
+  const [isLoadingCompany, setIsLoadingCompany] = useState(false);
+  const [companySearch, setCompanySearch] = useState('');
+  const [companyError, setCompanyError] = useState<string | null>(null);
+
+  // Terminal resize
+  const [terminalHeight, setTerminalHeight] = useState(220);
+  const isDraggingTerminal = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartH = useRef(0);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isDraggingTerminal.current) return;
+      const delta = dragStartY.current - e.clientY;
+      setTerminalHeight(Math.max(80, Math.min(600, dragStartH.current + delta)));
+    };
+    const onUp = () => { isDraggingTerminal.current = false; };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+  }, []);
   
   // Add state for microphone permission guide
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
@@ -869,11 +931,77 @@ public class Solution {
     }
   };
 
-  const runCode = () => {
-    toast({
-      title: "Code Runner",
-      description: "Code execution feature coming soon! For now, test your solution locally.",
-    });
+  // Test execution state
+  const [isRunning, setIsRunning] = useState(false);
+  const [customInput, setCustomInput] = useState('');
+  const [testResults, setTestResults] = useState<{
+    passed: number;
+    total: number;
+    status: string;
+    error?: string;
+    stderr?: string;
+    results: Array<{ passed: boolean | null; output: string; expected: string | null; isCustom?: boolean }>;
+    customResults?: Array<{ output: string }>;
+  } | null>(null);
+
+  const loadCompanyQuestions = async (company: string, timeframe: string) => {
+    setIsLoadingCompany(true);
+    setCompanyError(null);
+    setCompanyQuestions(null);
+    try {
+      const url = `https://raw.githubusercontent.com/snehasishroy/leetcode-companywise-interview-questions/master/${company}/${timeframe}.csv`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Not available for this timeframe');
+      const text = await res.text();
+      const lines = text.trim().split('\n').filter(Boolean);
+      // Skip header row if present (starts with non-numeric)
+      const start = isNaN(parseInt(lines[0]?.split(',')[0])) ? 1 : 0;
+      const parsed = lines.slice(start).map(line => {
+        const cols = line.split(',');
+        return {
+          id: parseInt(cols[0]) || 0,
+          title: (cols[2] || '').replace(/"/g, '').trim(),
+          difficulty: (cols[3] || '').replace(/"/g, '').trim(),
+          frequency: (cols[5] || '').replace(/"/g, '').trim(),
+        };
+      }).filter(q => q.id > 0 && q.title);
+      setCompanyQuestions(parsed);
+    } catch {
+      setCompanyError('Questions not available for this timeframe — try "All Time"');
+    } finally {
+      setIsLoadingCompany(false);
+    }
+  };
+
+  const runCode = async () => {
+    if (!code || !problemId || isRunning) return;
+    setIsRunning(true);
+    setTestResults(null);
+    try {
+      const res = await fetch('/api/execute-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code, language, problemId,
+          customInputs: customInput.trim() ? [customInput.trim()] : [],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setTestResults({
+          passed: 0, total: 0, status: data.status || 'error',
+          error: data.error || 'Execution failed',
+          stderr: data.stderr,
+          results: [],
+        });
+      } else {
+        setTestResults(data);
+      }
+    } catch {
+      setTestResults({ passed: 0, total: 0, status: 'error', error: 'Network error', results: [] });
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   // Add state for tracking current LeetCode number
@@ -891,6 +1019,8 @@ public class Solution {
       setApiCodeTemplates(null);
       setSolutions([]);
       setSolutionsGenerated(false);
+      setTestResults(null);
+      setCustomInput('');
 
       // If a specific question is selected, use its ID
       const response = await fetch('/api/technical-assessment', {
@@ -2284,7 +2414,7 @@ public class Solution {
                       <button
                         key={preset}
                         type="button"
-                        onClick={() => { setSelectedPreset(preset); setSelectedCategory(''); setSelectedQuestion(null); }}
+                        onClick={() => { setSelectedPreset(preset); setSelectedCategory(''); setSelectedQuestion(null); setSelectedCompany(null); setCompanyQuestions(null); }}
                         style={{
                           flex: 1,
                           padding: '18px 14px',
@@ -2307,6 +2437,26 @@ public class Solution {
                         </div>
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedPreset('companies'); setSelectedCategory(''); setSelectedQuestion(null); setSelectedCompany(null); setCompanyQuestions(null); setCompanySearch(''); }}
+                      style={{
+                        flex: 1,
+                        padding: '18px 14px',
+                        borderRadius: 10,
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.04)',
+                        cursor: 'pointer',
+                        fontFamily: "'Inter', sans-serif",
+                        transition: 'all 0.15s',
+                        textAlign: 'center' as const,
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; e.currentTarget.style.background = 'rgba(59,130,246,0.07)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                    >
+                      <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: '1.25rem', color: '#dde2f0', marginBottom: 4 }}>🏢 Companies</div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#5a6380' }}>80+ company question sets</div>
+                    </button>
                   </div>
                 </>
               ) : (
@@ -2315,16 +2465,132 @@ public class Solution {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                     <button
                       type="button"
-                      onClick={() => { setSelectedPreset(''); setSelectedCategory(''); setSelectedQuestion(null); }}
+                      onClick={() => { setSelectedPreset(''); setSelectedCategory(''); setSelectedQuestion(null); setSelectedCompany(null); setCompanyQuestions(null); }}
                       style={{ background: 'none', border: 'none', color: '#5a6380', cursor: 'pointer', padding: '2px 0', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}
                     >
                       ← Back
                     </button>
+                    {selectedCompany && (
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedCompany(null); setCompanyQuestions(null); setSelectedQuestion(null); }}
+                        style={{ background: 'none', border: 'none', color: '#5a6380', cursor: 'pointer', padding: '2px 4px', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}
+                      >
+                        / {fmtCompany(selectedCompany)}
+                      </button>
+                    )}
                     <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#3b82f6', fontWeight: 600 }}>
-                      {selectedPreset === 'neetcode75' ? 'NeetCode 75' : 'NeetCode 150'}
+                      {selectedPreset === 'neetcode75' ? 'NeetCode 75' : selectedPreset === 'neetcode150' ? 'NeetCode 150' : selectedCompany ? fmtCompany(selectedCompany) : 'Companies'}
                     </span>
                   </div>
 
+                  {/* ── Companies mode ── */}
+                  {selectedPreset === 'companies' && !selectedCompany && (
+                    <>
+                      {/* Search */}
+                      <input
+                        type="text"
+                        placeholder="Search companies…"
+                        value={companySearch}
+                        onChange={e => setCompanySearch(e.target.value)}
+                        style={{
+                          width: '100%', boxSizing: 'border-box' as const, marginBottom: 12,
+                          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 8, padding: '7px 12px',
+                          fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: '#c0caf5', outline: 'none',
+                        }}
+                      />
+                      {/* Featured row */}
+                      {!companySearch && (
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', color: '#4a5370', textTransform: 'uppercase' as const, marginBottom: 7 }}>Featured</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 7 }}>
+                            {FEATURED_COMPANIES.map(c => (
+                              <button key={c} type="button"
+                                onClick={() => { setSelectedCompany(c); loadCompanyQuestions(c, companyTimeframe); setSelectedQuestion(null); }}
+                                style={{ padding: '5px 12px', borderRadius: 20, border: '1px solid rgba(59,130,246,0.3)', background: 'rgba(59,130,246,0.07)', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#93c5fd', cursor: 'pointer' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.07)'; }}
+                              >{fmtCompany(c)}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* All companies grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                        {ALL_COMPANIES.filter(c => !companySearch || c.includes(companySearch.toLowerCase()) || fmtCompany(c).toLowerCase().includes(companySearch.toLowerCase())).map(c => (
+                          <button key={c} type="button"
+                            onClick={() => { setSelectedCompany(c); loadCompanyQuestions(c, companyTimeframe); setSelectedQuestion(null); }}
+                            style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', color: '#8892b0', cursor: 'pointer', textAlign: 'left' as const, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#c0caf5'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#8892b0'; }}
+                          >{fmtCompany(c)}</button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* ── Company questions ── */}
+                  {selectedPreset === 'companies' && selectedCompany && (
+                    <>
+                      {/* Timeframe selector */}
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const }}>
+                        {COMPANY_TIMEFRAMES.map(tf => (
+                          <button key={tf.value} type="button"
+                            onClick={() => { setCompanyTimeframe(tf.value); loadCompanyQuestions(selectedCompany, tf.value); setSelectedQuestion(null); }}
+                            style={{
+                              padding: '4px 12px', borderRadius: 20, fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+                              border: companyTimeframe === tf.value ? '1px solid rgba(59,130,246,0.6)' : '1px solid rgba(255,255,255,0.1)',
+                              background: companyTimeframe === tf.value ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
+                              color: companyTimeframe === tf.value ? '#93c5fd' : '#5a6380',
+                            }}
+                          >{tf.label}</button>
+                        ))}
+                      </div>
+
+                      {/* Loading / error / list */}
+                      {isLoadingCompany && (
+                        <div style={{ color: '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid #3b82f6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                          Loading questions…
+                        </div>
+                      )}
+                      {companyError && !isLoadingCompany && (
+                        <div style={{ color: '#f87171', fontFamily: "'Inter', sans-serif", fontSize: '0.78rem' }}>{companyError}</div>
+                      )}
+                      {companyQuestions && !isLoadingCompany && (
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.68rem', color: '#4a5370', marginBottom: 4 }}>
+                            {companyQuestions.length} questions · sorted by frequency
+                          </div>
+                          {companyQuestions.map(prob => (
+                            <button key={prob.id} type="button"
+                              onClick={() => setSelectedQuestion({ id: prob.id, title: prob.title, difficulty: prob.difficulty })}
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, textAlign: 'left' as const, cursor: 'pointer',
+                                border: `1px solid ${selectedQuestion?.id === prob.id ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                                background: selectedQuestion?.id === prob.id ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.02)',
+                                fontFamily: "'Inter', sans-serif", fontSize: '0.8rem',
+                                color: selectedQuestion?.id === prob.id ? '#93c5fd' : '#8892b0',
+                              }}
+                            >
+                              <span>
+                                <span style={{ color: '#4a5370', marginRight: 8, fontSize: '0.7rem' }}>#{prob.id}</span>
+                                {prob.title}
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 8 }}>
+                                {prob.frequency && <span style={{ fontSize: '0.65rem', color: '#4a5370' }}>{parseFloat(prob.frequency).toFixed(0)}%</span>}
+                                <span style={{ fontSize: '0.68rem', fontWeight: 600, color: prob.difficulty === 'Easy' ? '#34d399' : prob.difficulty === 'Medium' ? '#fbbf24' : '#f87171' }}>{prob.difficulty}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── NeetCode topic/problem grid (existing) ── */}
+                  {selectedPreset !== 'companies' && (<>
                   <label style={{
                     display: 'block',
                     fontFamily: "'Inter', sans-serif",
@@ -2416,6 +2682,7 @@ public class Solution {
                       </div>
                     </>
                   )}
+                  </>)} {/* end selectedPreset !== 'companies' */}
                 </>
               )}
             </div>
@@ -2531,11 +2798,19 @@ public class Solution {
               {/* Run */}
               <button
                 onClick={runCode}
-                style={btnBase}
-                onMouseEnter={e => { e.currentTarget.style.color = '#dde2f0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#8892b0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                disabled={isRunning || !code || !problemId}
+                style={{
+                  ...btnBase,
+                  color: isRunning ? '#5a6380' : '#34d399',
+                  borderColor: isRunning ? 'rgba(255,255,255,0.08)' : 'rgba(52,211,153,0.35)',
+                  background: isRunning ? 'rgba(255,255,255,0.03)' : 'rgba(52,211,153,0.07)',
+                  cursor: (isRunning || !code || !problemId) ? 'not-allowed' : 'pointer',
+                  opacity: (!code || !problemId) ? 0.4 : 1,
+                }}
               >
-                ▶ Run
+                {isRunning ? (
+                  <><span style={{ display: 'inline-block', width: 9, height: 9, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Running…</>
+                ) : '▶ Run'}
               </button>
               {/* Record - Highlighted to be more visible */}
               <button
@@ -2735,28 +3010,122 @@ public class Solution {
                 </div>
 
                 {/* Editor fills all remaining space */}
-                <div style={{ flex: 1, minHeight: 0 }}>
-                  <Editor
-                    height="100%"
-                    language={language}
-                    value={code}
-                    onChange={v => setCode(v || '')}
-                    onMount={handleEditorDidMount}
-                    theme="vs-dark"
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      lineNumbers: 'on',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      tabSize: 2,
-                      wordWrap: 'on',
-                      fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-                      padding: { top: 14, bottom: 14 },
-                      bracketPairColorization: { enabled: true },
-                      cursorBlinking: 'blink',
-                    }}
-                  />
+                <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <Editor
+                      height="100%"
+                      language={language}
+                      value={code}
+                      onChange={v => setCode(v || '')}
+                      onMount={handleEditorDidMount}
+                      theme="vs-dark"
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        lineNumbers: 'on',
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        tabSize: 2,
+                        wordWrap: 'on',
+                        fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
+                        padding: { top: 14, bottom: 14 },
+                        bracketPairColorization: { enabled: true },
+                        cursorBlinking: 'blink',
+                      }}
+                    />
+                  </div>
+                  {/* Bottom panel: test results + custom input */}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0d1117', flexShrink: 0, height: terminalHeight, overflowY: 'auto', position: 'relative' }}>
+                    {/* Drag handle */}
+                    <div
+                      onMouseDown={e => { isDraggingTerminal.current = true; dragStartY.current = e.clientY; dragStartH.current = terminalHeight; e.preventDefault(); }}
+                      style={{ position: 'sticky', top: 0, height: 5, cursor: 'ns-resize', background: 'rgba(255,255,255,0.04)', zIndex: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <div style={{ width: 28, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
+                    </div>
+                    {/* Results when running or complete */}
+                    {isRunning ? (
+                      <div style={{ padding: '12px 16px', color: '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid #34d399', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        Running test cases…
+                      </div>
+                    ) : testResults && (
+                      <div style={{ padding: '10px 16px 6px' }}>
+                        {/* Status header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                          <span style={{
+                            fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 700,
+                            color: testResults.status === 'accepted' ? '#34d399' : testResults.status === 'wrong_answer' ? '#f87171' : '#fbbf24',
+                          }}>
+                            {testResults.status === 'accepted' ? '✓ Accepted' : testResults.status === 'wrong_answer' ? '✗ Wrong Answer' : testResults.status === 'compile_error' ? '⚠ Compile Error' : '⚠ Runtime Error'}
+                          </span>
+                          {testResults.total > 0 && (
+                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#5a6380' }}>
+                              {testResults.passed}/{testResults.total} passed
+                            </span>
+                          )}
+                        </div>
+                        {/* Error / stderr */}
+                        {(testResults.error || testResults.stderr) && (
+                          <pre style={{ margin: '0 0 8px', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem', color: '#f87171', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                            {testResults.error}{testResults.stderr ? '\n' + testResults.stderr : ''}
+                          </pre>
+                        )}
+                        {/* Example test cases — always show output */}
+                        {testResults.results.map((r, i) => (
+                          <div key={i} style={{ marginBottom: 5, padding: '5px 10px', borderRadius: 6, background: r.passed ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.06)', border: `1px solid ${r.passed ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.2)'}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: r.passed ? '#34d399' : '#f87171', flexShrink: 0 }}>
+                                {r.passed ? '✓' : '✗'} Case {i + 1}
+                              </span>
+                              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
+                                Output: <span style={{ color: r.passed ? '#a3e4c8' : '#f87171' }}>{r.output}</span>
+                              </span>
+                              {!r.passed && r.expected && (
+                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
+                                  Expected: <span style={{ color: '#34d399' }}>{r.expected}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        {/* Custom test results */}
+                        {testResults.customResults && testResults.customResults.length > 0 && (
+                          <div style={{ marginTop: 6 }}>
+                            {testResults.customResults.map((r, i) => (
+                              <div key={i} style={{ marginBottom: 5, padding: '5px 10px', borderRadius: 6, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.2)' }}>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#60a5fa', marginRight: 8 }}>Custom</span>
+                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
+                                  Output: <span style={{ color: '#93c5fd' }}>{r.output}</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Custom test case input — always visible */}
+                    <div style={{ padding: '8px 16px 10px', borderTop: (isRunning || testResults) ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#5a6380', letterSpacing: '0.04em', textTransform: 'uppercase' as const }}>Custom Test</span>
+                      </div>
+                      <textarea
+                        value={customInput}
+                        onChange={e => setCustomInput(e.target.value)}
+                        placeholder={`e.g. [2,7,11,15], 9`}
+                        rows={1}
+                        style={{
+                          width: '100%', boxSizing: 'border-box' as const,
+                          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: 6, padding: '5px 10px',
+                          fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#c0caf5',
+                          resize: 'none', outline: 'none',
+                        }}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runCode(); } }}
+                      />
+                      <div style={{ fontSize: '0.65rem', color: '#3a4060', marginTop: 3, fontFamily: "'Inter', sans-serif" }}>Enter to run · values in parameter order</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

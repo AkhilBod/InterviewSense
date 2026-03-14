@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 330" width="260" height="330">
+
+  <!-- transparent bg -->
+
+  <!-- ground shadow -->
+  <ellipse cx="130" cy="322" rx="62" ry="9" fill="#b0c8e8" opacity="0.35"/>
+
+  <!-- ═══════════════════════════════════
+       BRAIN BODY  — cloud/bumpy top
+  ════════════════════════════════════ -->
+  <!-- main fill -->
+  <path d="
+    M 30 168
+    C 28 128, 42 88, 68 72
+    C 70 52, 85 40, 100 46
+    C 104 30, 120 22, 132 30
+    C 136 18, 152 16, 162 28
+    C 170 20, 184 26, 188 42
+    C 202 42, 218 58, 218 76
+    C 238 88, 244 120, 238 158
+    C 242 188, 232 218, 212 232
+    C 194 250, 168 256, 140 256
+    C 112 258, 86 250, 66 234
+    C 44 218, 32 196, 30 168 Z
+  " fill="#9dc8f0" stroke="#3a7ac8" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- lighter inner highlight to give volume -->
+  <path d="
+    M 52 158
+    C 50 128, 62 96, 82 82
+    C 86 68, 96 60, 108 64
+    C 112 52, 122 46, 132 52
+    C 136 42, 148 40, 155 50
+    C 162 44, 172 50, 174 62
+    C 184 62, 196 74, 196 88
+    C 210 98, 214 122, 210 150
+    C 212 170, 205 195, 192 210
+    C 178 228, 160 234, 140 234
+    C 120 235, 100 228, 86 212
+    C 70 196, 54 180, 52 158 Z
+  " fill="#b8d9f8" opacity="0.45"/>
+
+  <!-- brain wrinkle lines - left half -->
+  <path d="M 52 152 Q 68 141 83 152" fill="none" stroke="#5a9ad8" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 50 170 Q 66 159 81 170" fill="none" stroke="#5a9ad8" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 54 188 Q 70 177 85 188" fill="none" stroke="#5a9ad8" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- brain wrinkle lines - right half -->
+  <path d="M 178 152 Q 194 141 210 152" fill="none" stroke="#6aaae0" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 180 170 Q 196 159 212 170" fill="none" stroke="#6aaae0" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M 176 188 Q 192 177 208 188" fill="none" stroke="#6aaae0" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- center divide -->
+  <path d="M 130 30 Q 133 143 130 256" fill="none" stroke="#4a88c8" stroke-width="2" opacity="0.2"/>
+
+  <!-- gloss highlights on brain top -->
+  <ellipse cx="105" cy="60" rx="20" ry="9" fill="white" opacity="0.4" transform="rotate(-25,105,60)"/>
+  <ellipse cx="148" cy="50" rx="14" ry="7" fill="white" opacity="0.28" transform="rotate(-10,148,50)"/>
+
+  <!-- ═══════════════════════════════════
+       GLASSES
+  ════════════════════════════════════ -->
+  <!-- left lens -->
+  <circle cx="100" cy="170" r="30" fill="white" stroke="#111" stroke-width="5"/>
+  <!-- right lens -->
+  <circle cx="168" cy="170" r="30" fill="white" stroke="#111" stroke-width="5"/>
+  <!-- bridge -->
+  <line x1="130" y1="170" x2="138" y2="170" stroke="#111" stroke-width="5"/>
+  <!-- left arm -->
+  <path d="M 70 168 Q 54 162 44 156" stroke="#111" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- right arm -->
+  <path d="M 198 168 Q 214 162 224 156" stroke="#111" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- left pupil -->
+  <circle cx="100" cy="170" r="19" fill="#1a1a2e"/>
+  <circle cx="106" cy="163" r="7" fill="white"/>
+  <circle cx="95"  cy="176" r="3" fill="white" opacity="0.4"/>
+  <!-- right pupil -->
+  <circle cx="168" cy="170" r="19" fill="#1a1a2e"/>
+  <circle cx="174" cy="163" r="7" fill="white"/>
+  <circle cx="163" cy="176" r="3" fill="white" opacity="0.4"/>
+
+  <!-- ═══════════════════════════════════
+       MOUTH
+  ════════════════════════════════════ -->
+  <path d="M 108 206 Q 134 228 160 206" fill="#d94f6a" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- teeth / inner mouth -->
+  <path d="M 108 206 Q 134 218 160 206" fill="white"/>
+
+  <!-- rosy cheeks -->
+  <ellipse cx="72"  cy="196" rx="14" ry="9" fill="#ff9bb5" opacity="0.38"/>
+  <ellipse cx="196" cy="196" rx="14" ry="9" fill="#ff9bb5" opacity="0.38"/>
+
+  <!-- ═══════════════════════════════════
+       ARMS — raised high reaching up
+  ════════════════════════════════════ -->
+  <!-- left arm -->
+  <path d="M 46 162 Q 18 132 26 96" stroke="#7ab8f0" stroke-width="17" fill="none" stroke-linecap="round"/>
+  <!-- left hand -->
+  <circle cx="26" cy="92" r="15" fill="#9dc8f0" stroke="#3a7ac8" stroke-width="3.5"/>
+
+  <!-- right arm -->
+  <path d="M 214 162 Q 242 132 234 96" stroke="#7ab8f0" stroke-width="17" fill="none" stroke-linecap="round"/>
+  <!-- right hand -->
+  <circle cx="234" cy="92" r="15" fill="#9dc8f0" stroke="#3a7ac8" stroke-width="3.5"/>
+
+  <!-- ═══════════════════════════════════
+       LEGS
+  ════════════════════════════════════ -->
+  <rect x="101" y="252" width="28" height="46" rx="12" fill="#7ab8f0" stroke="#3a7ac8" stroke-width="3"/>
+  <rect x="141" y="252" width="28" height="46" rx="12" fill="#7ab8f0" stroke="#3a7ac8" stroke-width="3"/>
+
+  <!-- ═══════════════════════════════════
+       SHOES
+  ════════════════════════════════════ -->
+  <!-- left shoe -->
+  <rect x="82"  y="280" width="58" height="24" rx="11" fill="#f5a623" stroke="#111" stroke-width="2.5"/>
+  <ellipse cx="111" cy="303" rx="30" ry="8" fill="white" stroke="#111" stroke-width="2"/>
+  <line x1="93"  y1="288" x2="128" y2="288" stroke="white" stroke-width="2.2" opacity="0.85"/>
+  <line x1="93"  y1="294" x2="128" y2="294" stroke="white" stroke-width="2.2" opacity="0.85"/>
+
+  <!-- right shoe -->
+  <rect x="122" y="280" width="58" height="24" rx="11" fill="#f5a623" stroke="#111" stroke-width="2.5"/>
+  <ellipse cx="151" cy="303" rx="30" ry="8" fill="white" stroke="#111" stroke-width="2"/>
+  <line x1="133" y1="288" x2="168" y2="288" stroke="white" stroke-width="2.2" opacity="0.85"/>
+  <line x1="133" y1="294" x2="168" y2="294" stroke="white" stroke-width="2.2" opacity="0.85"/>
+
+  <!-- ═══════════════════════════════════
+       SPARKLES near hands (reaching for button above)
+  ════════════════════════════════════ -->
+  <g opacity="0.75">
+    <!-- left sparkle -->
+    <line x1="8"  y1="76" x2="8"  y2="60" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="0"  y1="68" x2="16" y2="68" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="2"  y1="62" x2="14" y2="74" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+    <line x1="14" y1="62" x2="2"  y2="74" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+    <!-- right sparkle -->
+    <line x1="252" y1="76" x2="252" y2="60" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="244" y1="68" x2="260" y2="68" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="246" y1="62" x2="258" y2="74" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+    <line x1="258" y1="62" x2="246" y2="74" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+    <!-- small dots -->
+    <circle cx="20"  cy="55" r="3" fill="#60a5fa"/>
+    <circle cx="240" cy="55" r="3" fill="#60a5fa"/>
+    <circle cx="12"  cy="46" r="2" fill="#93c5fd"/>
+    <circle cx="248" cy="46" r="2" fill="#93c5fd"/>
+  </g>
+
+</svg>

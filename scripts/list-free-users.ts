@@ -7,23 +7,24 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+
   const users = await prisma.user.findMany({
     where: {
       emailUnsubscribed: false,
       emailVerified: { not: null },
+      createdAt: { lt: tenDaysAgo },
       OR: [
         { subscription: null },
         {
           subscription: {
             plan: 'FREE',
+            status: { not: 'TRIALING' },
           },
         },
       ],
     },
-    select: {
-      email: true,
-      name: true,
-      createdAt: true,
+    include: {
       subscription: { select: { plan: true, status: true } },
     },
     orderBy: { createdAt: 'desc' },

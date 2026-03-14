@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const email = Buffer.from(token, 'base64').toString('utf-8');
+    const email = Buffer.from(token, 'base64url').toString('utf-8');
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const email = Buffer.from(token, 'base64').toString('utf-8');
+    const email = Buffer.from(token, 'base64url').toString('utf-8');
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
