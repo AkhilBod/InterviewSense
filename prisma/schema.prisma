@@ -57,6 +57,7 @@ model User {
   jobDescription          String?
   preferredCodingLanguage String?
   onboardingCompletedAt   DateTime?
+  emailUnsubscribed       Boolean              @default(false)
   accounts                Account[]
   featureUsage            FeatureUsage[]
   passwordResetTokens PasswordResetToken[]

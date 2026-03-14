@@ -753,3 +753,133 @@ export async function sendAbandonedCheckoutEmail(email: string, name: string) {
     throw error;
   }
 }
+
+export async function sendReEngagementEmail(email: string, name: string) {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.interviewsense.org';
+    const unsubToken = Buffer.from(email).toString('base64');
+    const unsubUrl = `${appUrl}/unsubscribe?token=${unsubToken}`;
+
+    await sendEmail({
+      to: email,
+      subject: `${name}, you haven't practiced today`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Practice your interview skills</title>
+        </head>
+        <body style="margin:0;padding:0;background:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:16px;color:#4b4b4b;">
+
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;">
+            <tr>
+              <td align="center" style="padding:32px 16px 0;">
+
+                <!-- Logo -->
+                <table width="600" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding-bottom:24px;">
+                      <span style="font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#2563eb;letter-spacing:-0.5px;">
+                        InterviewSense
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Main card -->
+                <table width="500" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;border:1px solid #e5e5e5;">
+                  <tr>
+                    <td align="center" style="padding:36px 32px 0;">
+
+                      <!-- CTA button top -->
+                      <a href="${appUrl}/dashboard" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.5px;border-radius:9px;line-height:44px;width:260px;text-align:center;">
+                        START PRACTICING
+                      </a>
+
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:28px 32px 0;">
+
+                      <!-- GIF -->
+                      <img src="https://image2url.com/r2/default/gifs/1773447154419-b7026021-5a26-41b8-accf-671a6a8b68a5.gif"
+                           alt="Practice your interview skills"
+                           width="280"
+                           style="display:block;margin:0 auto;max-width:100%;border-radius:12px;" />
+
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:24px 32px 0;">
+                      <h1 style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:700;color:#1a1a1a;text-align:center;">
+                        Practice your interview skills!
+                      </h1>
+                      <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6b6b6b;text-align:center;line-height:1.5;">
+                        When you skip a session, your competition doesn't.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Streak-style week bar -->
+                  <tr>
+                    <td style="padding:28px 32px;">
+                      <div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:12px;padding:20px 24px;">
+                        <p style="margin:0 0 14px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#1a1a1a;">
+                          Your practice this week
+                        </p>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Mo</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Tu</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">We</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Th</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Fr</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Sa</td>
+                            <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#afafaf;padding-bottom:8px;">Su</td>
+                          </tr>
+                          <tr>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#e5e5e5;margin:0 auto;"></div></td>
+                            <td align="center"><div style="width:28px;height:28px;border-radius:50%;background:#f0f0f0;border:2px dashed #d0d0d0;margin:0 auto;"></div></td>
+                          </tr>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Footer -->
+                <table width="500" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding:28px 0 40px;">
+                      <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#afafaf;">
+                        &copy; ${new Date().getFullYear()} InterviewSense. All rights reserved.
+                      </p>
+                      <a href="${unsubUrl}" style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#afafaf;text-decoration:underline;">
+                        Unsubscribe
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+
+        </body>
+        </html>
+      `,
+    });
+
+    console.log('Re-engagement email sent to:', email);
+  } catch (error) {
+    console.error('Re-engagement email error:', error);
+    throw error;
+  }
+}
