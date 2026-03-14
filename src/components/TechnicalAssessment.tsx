@@ -934,12 +934,19 @@ public class Solution {
   // Test execution state
   const [isRunning, setIsRunning] = useState(false);
   const [customInput, setCustomInput] = useState('');
+  const [bottomTab, setBottomTab] = useState<'testcase' | 'testresult'>('testcase');
+  const [selectedCaseIdx, setSelectedCaseIdx] = useState<number>(0);
+  const [paramNames, setParamNames] = useState<string[]>([]);
+  const [exampleCaseInputs, setExampleCaseInputs] = useState<string[][]>([]);
   const [testResults, setTestResults] = useState<{
     passed: number;
     total: number;
     status: string;
     error?: string;
     stderr?: string;
+    paramNames?: string[];
+    testCaseInputs?: string[][];
+    customInputsList?: string[][];
     results: Array<{ passed: boolean | null; output: string; expected: string | null; isCustom?: boolean }>;
     customResults?: Array<{ output: string }>;
   } | null>(null);
@@ -994,11 +1001,17 @@ public class Solution {
           stderr: data.stderr,
           results: [],
         });
+        setBottomTab('testresult');
       } else {
         setTestResults(data);
+        setParamNames(data.paramNames || []);
+        setExampleCaseInputs(data.testCaseInputs || []);
+        setBottomTab('testresult');
+        setSelectedCaseIdx(0);
       }
     } catch {
       setTestResults({ passed: 0, total: 0, status: 'error', error: 'Network error', results: [] });
+      setBottomTab('testresult');
     } finally {
       setIsRunning(false);
     }
@@ -3034,96 +3047,166 @@ public class Solution {
                       }}
                     />
                   </div>
-                  {/* Bottom panel: test results + custom input */}
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0d1117', flexShrink: 0, height: terminalHeight, overflowY: 'auto', position: 'relative' }}>
+                  {/* Bottom panel: LeetCode-style Testcase / Test Result */}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0d1117', flexShrink: 0, height: terminalHeight, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {/* Drag handle */}
                     <div
                       onMouseDown={e => { isDraggingTerminal.current = true; dragStartY.current = e.clientY; dragStartH.current = terminalHeight; e.preventDefault(); }}
-                      style={{ position: 'sticky', top: 0, height: 5, cursor: 'ns-resize', background: 'rgba(255,255,255,0.04)', zIndex: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ height: 5, cursor: 'ns-resize', background: 'rgba(255,255,255,0.04)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       <div style={{ width: 28, height: 2, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
                     </div>
-                    {/* Results when running or complete */}
-                    {isRunning ? (
-                      <div style={{ padding: '12px 16px', color: '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid #34d399', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                        Running test cases…
-                      </div>
-                    ) : testResults && (
-                      <div style={{ padding: '10px 16px 6px' }}>
-                        {/* Status header */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                          <span style={{
-                            fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', fontWeight: 700,
-                            color: testResults.status === 'accepted' ? '#34d399' : testResults.status === 'wrong_answer' ? '#f87171' : '#fbbf24',
-                          }}>
-                            {testResults.status === 'accepted' ? '✓ Accepted' : testResults.status === 'wrong_answer' ? '✗ Wrong Answer' : testResults.status === 'compile_error' ? '⚠ Compile Error' : '⚠ Runtime Error'}
-                          </span>
-                          {testResults.total > 0 && (
-                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#5a6380' }}>
-                              {testResults.passed}/{testResults.total} passed
+                    {/* Tab bar */}
+                    <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+                      {(['testcase', 'testresult'] as const).map(tab => (
+                        <button key={tab} onClick={() => setBottomTab(tab)} style={{ padding: '6px 14px', fontFamily: "'Inter', sans-serif", fontSize: '0.74rem', fontWeight: 500, color: bottomTab === tab ? '#e2e8f0' : '#5a6380', background: 'none', border: 'none', borderBottom: bottomTab === tab ? '2px solid #2563eb' : '2px solid transparent', marginBottom: -1, cursor: 'pointer' }}>
+                          {tab === 'testcase' ? 'Testcase' : 'Test Result'}
+                          {tab === 'testresult' && testResults && testResults.total > 0 && (
+                            <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 9, fontSize: '0.65rem', fontWeight: 700, background: testResults.passed === testResults.total ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)', color: testResults.passed === testResults.total ? '#34d399' : '#f87171' }}>
+                              {testResults.passed}/{testResults.total}
                             </span>
                           )}
-                        </div>
-                        {/* Error / stderr */}
-                        {(testResults.error || testResults.stderr) && (
-                          <pre style={{ margin: '0 0 8px', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem', color: '#f87171', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                            {testResults.error}{testResults.stderr ? '\n' + testResults.stderr : ''}
-                          </pre>
-                        )}
-                        {/* Example test cases — always show output */}
-                        {testResults.results.map((r, i) => (
-                          <div key={i} style={{ marginBottom: 5, padding: '5px 10px', borderRadius: 6, background: r.passed ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.06)', border: `1px solid ${r.passed ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.2)'}` }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
-                              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: r.passed ? '#34d399' : '#f87171', flexShrink: 0 }}>
-                                {r.passed ? '✓' : '✗'} Case {i + 1}
-                              </span>
-                              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
-                                Output: <span style={{ color: r.passed ? '#a3e4c8' : '#f87171' }}>{r.output}</span>
-                              </span>
-                              {!r.passed && r.expected && (
-                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
-                                  Expected: <span style={{ color: '#34d399' }}>{r.expected}</span>
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                        {/* Custom test results */}
-                        {testResults.customResults && testResults.customResults.length > 0 && (
-                          <div style={{ marginTop: 6 }}>
-                            {testResults.customResults.map((r, i) => (
-                              <div key={i} style={{ marginBottom: 5, padding: '5px 10px', borderRadius: 6, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.2)' }}>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#60a5fa', marginRight: 8 }}>Custom</span>
-                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.71rem', color: '#8892b0' }}>
-                                  Output: <span style={{ color: '#93c5fd' }}>{r.output}</span>
-                                </span>
-                              </div>
+                        </button>
+                      ))}
+                      {/* Status / spinner on right */}
+                      {isRunning ? (
+                        <span style={{ marginLeft: 'auto', marginRight: 14, fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', color: '#5a6380', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ display: 'inline-block', width: 8, height: 8, border: '2px solid #34d399', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Running…
+                        </span>
+                      ) : testResults ? (
+                        <span style={{ marginLeft: 'auto', marginRight: 14, fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', fontWeight: 700, color: testResults.status === 'accepted' ? '#34d399' : testResults.status === 'wrong_answer' ? '#f87171' : '#fbbf24' }}>
+                          {testResults.status === 'accepted' ? 'Accepted' : testResults.status === 'wrong_answer' ? 'Wrong Answer' : testResults.status === 'compile_error' ? 'Compile Error' : testResults.status === 'runtime_error' ? 'Runtime Error' : ''}
+                        </span>
+                      ) : null}
+                    </div>
+                    {/* Tab content */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
+                      {bottomTab === 'testcase' ? (
+                        /* ── Testcase tab ── */
+                        <>
+                          {/* Case chips */}
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const, marginBottom: 10 }}>
+                            {exampleCaseInputs.map((_, i) => (
+                              <button key={i} onClick={() => setSelectedCaseIdx(i)} style={{ padding: '3px 11px', borderRadius: 5, border: `1px solid ${selectedCaseIdx === i ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)'}`, background: selectedCaseIdx === i ? 'rgba(255,255,255,0.08)' : 'transparent', color: selectedCaseIdx === i ? '#e2e8f0' : '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', cursor: 'pointer' }}>
+                                Case {i + 1}
+                              </button>
                             ))}
+                            <button onClick={() => setSelectedCaseIdx(-1)} style={{ padding: '3px 11px', borderRadius: 5, border: `1px solid ${selectedCaseIdx === -1 ? 'rgba(96,165,250,0.4)' : 'rgba(96,165,250,0.15)'}`, background: selectedCaseIdx === -1 ? 'rgba(96,165,250,0.1)' : 'transparent', color: selectedCaseIdx === -1 ? '#60a5fa' : '#3a6080', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', cursor: 'pointer' }}>
+                              Custom
+                            </button>
                           </div>
-                        )}
-                      </div>
-                    )}
-                    {/* Custom test case input — always visible */}
-                    <div style={{ padding: '8px 16px 10px', borderTop: (isRunning || testResults) ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#5a6380', letterSpacing: '0.04em', textTransform: 'uppercase' as const }}>Custom Test</span>
-                      </div>
-                      <textarea
-                        value={customInput}
-                        onChange={e => setCustomInput(e.target.value)}
-                        placeholder={`e.g. [2,7,11,15], 9`}
-                        rows={1}
-                        style={{
-                          width: '100%', boxSizing: 'border-box' as const,
-                          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: 6, padding: '5px 10px',
-                          fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#c0caf5',
-                          resize: 'none', outline: 'none',
-                        }}
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runCode(); } }}
-                      />
-                      <div style={{ fontSize: '0.65rem', color: '#3a4060', marginTop: 3, fontFamily: "'Inter', sans-serif" }}>Enter to run · values in parameter order</div>
+                          {selectedCaseIdx === -1 ? (
+                            /* Custom input editor */
+                            <div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.67rem', color: '#5a6380', marginBottom: 5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Input</div>
+                              <textarea
+                                value={customInput}
+                                onChange={e => setCustomInput(e.target.value)}
+                                placeholder={paramNames.length ? paramNames.map(n => `${n} = `).join('\n') : 'one value per line'}
+                                rows={Math.max(3, paramNames.length || 2)}
+                                style={{ width: '100%', boxSizing: 'border-box' as const, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '7px 10px', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#c0caf5', resize: 'none', outline: 'none' }}
+                                onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runCode(); } }}
+                              />
+                              <div style={{ fontSize: '0.65rem', color: '#3a4060', marginTop: 3, fontFamily: "'Inter', sans-serif" }}>Ctrl+Enter to run · one value per line</div>
+                            </div>
+                          ) : exampleCaseInputs[selectedCaseIdx] ? (
+                            /* Example case input — read-only labeled boxes */
+                            <div>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.67rem', color: '#5a6380', marginBottom: 5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Input</div>
+                              {exampleCaseInputs[selectedCaseIdx].map((val, j) => (
+                                <div key={j} style={{ marginBottom: 8 }}>
+                                  {paramNames[j] && <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#5a6380', marginBottom: 3 }}>{paramNames[j]} =</div>}
+                                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#c0caf5', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '5px 9px' }}>{val}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ color: '#3a4060', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem' }}>Run your code to see example inputs</div>
+                          )}
+                        </>
+                      ) : (
+                        /* ── Test Result tab ── */
+                        <>
+                          {isRunning ? (
+                            <div style={{ color: '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ display: 'inline-block', width: 9, height: 9, border: '2px solid #34d399', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Running test cases…
+                            </div>
+                          ) : testResults ? (
+                            <>
+                              {/* Error only (compile/runtime with no case results) */}
+                              {(testResults.error || testResults.stderr) && testResults.results.length === 0 ? (
+                                <pre style={{ margin: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem', color: '#f87171', whiteSpace: 'pre-wrap', wordBreak: 'break-all' as const }}>
+                                  {testResults.error}{testResults.stderr ? '\n' + testResults.stderr : ''}
+                                </pre>
+                              ) : (
+                                <>
+                                  {/* Case chips with pass/fail dots */}
+                                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' as const, marginBottom: 12 }}>
+                                    {testResults.results.map((r, i) => (
+                                      <button key={i} onClick={() => setSelectedCaseIdx(i)} style={{ padding: '3px 11px', borderRadius: 5, border: `1px solid ${selectedCaseIdx === i ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)'}`, background: selectedCaseIdx === i ? 'rgba(255,255,255,0.08)' : 'transparent', color: selectedCaseIdx === i ? '#e2e8f0' : '#5a6380', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.passed === true ? '#34d399' : r.passed === null ? '#60a5fa' : '#f87171', flexShrink: 0 }} />
+                                        {r.isCustom ? 'Custom' : `Case ${i + 1}`}
+                                      </button>
+                                    ))}
+                                    {testResults.customResults?.map((r, i) => (
+                                      <button key={`c${i}`} onClick={() => setSelectedCaseIdx(testResults.results.length + i)} style={{ padding: '3px 11px', borderRadius: 5, border: `1px solid ${selectedCaseIdx === testResults.results.length + i ? 'rgba(96,165,250,0.4)' : 'rgba(96,165,250,0.15)'}`, background: selectedCaseIdx === testResults.results.length + i ? 'rgba(96,165,250,0.1)' : 'transparent', color: selectedCaseIdx === testResults.results.length + i ? '#60a5fa' : '#3a6080', fontFamily: "'Inter', sans-serif", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
+                                        Custom
+                                      </button>
+                                    ))}
+                                  </div>
+                                  {/* Selected case detail */}
+                                  {(() => {
+                                    const isCustomCase = selectedCaseIdx >= testResults.results.length;
+                                    const customIdx = selectedCaseIdx - testResults.results.length;
+                                    const r = isCustomCase ? testResults.customResults?.[customIdx] : testResults.results[selectedCaseIdx];
+                                    if (!r) return null;
+                                    const inputs = isCustomCase
+                                      ? testResults.customInputsList?.[customIdx]
+                                      : testResults.testCaseInputs?.[selectedCaseIdx];
+                                    const pNames = testResults.paramNames || paramNames;
+                                    const passed = isCustomCase ? null : (r as any).passed;
+                                    const expected = isCustomCase ? null : (r as any).expected;
+                                    return (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        {/* stderr/error for this run (if whole run failed) */}
+                                        {(testResults.error || testResults.stderr) && (
+                                          <pre style={{ margin: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem', color: '#f87171', whiteSpace: 'pre-wrap', wordBreak: 'break-all' as const }}>
+                                            {testResults.error}{testResults.stderr ? '\n' + testResults.stderr : ''}
+                                          </pre>
+                                        )}
+                                        {inputs && inputs.length > 0 && (
+                                          <div>
+                                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.67rem', color: '#5a6380', marginBottom: 5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Input</div>
+                                            {inputs.map((val, j) => (
+                                              <div key={j} style={{ marginBottom: 5 }}>
+                                                {pNames[j] && <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', color: '#5a6380' }}>{pNames[j]} = </span>}
+                                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#c0caf5' }}>{val}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                        <div>
+                                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.67rem', color: '#5a6380', marginBottom: 5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Output</div>
+                                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: passed === true ? '#34d399' : passed === false ? '#f87171' : '#93c5fd', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '5px 9px' }}>{r.output}</div>
+                                        </div>
+                                        {expected !== null && expected !== undefined && (
+                                          <div>
+                                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.67rem', color: '#5a6380', marginBottom: 5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Expected</div>
+                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: '#34d399', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5, padding: '5px 9px' }}>{expected}</div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <div style={{ color: '#3a4060', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem' }}>Run your code to see test results</div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

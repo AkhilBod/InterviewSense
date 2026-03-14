@@ -88,10 +88,14 @@ function bracketSplit(input: string): string[] {
 }
 
 function parseCustomInput(input: string): string[] {
+  const trimmed = input.trim();
+  // LeetCode raw format: one param per line
+  const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length > 1) return lines;
   // "param = val, param = val" format
-  if (/[a-zA-Z_]\w*\s*=/.test(input)) return splitInputValues(input);
+  if (/[a-zA-Z_]\w*\s*=/.test(trimmed)) return splitInputValues(trimmed);
   // bare "val, val" format
-  return bracketSplit(input);
+  return bracketSplit(trimmed);
 }
 
 function parseFuncInfo(pyCode: string): FuncInfo | null {
@@ -304,6 +308,7 @@ string _vs(const vector<int>&v){string s="[";for(int i=0;i<(int)v.size();i++){if
 // ── Harness builders ──────────────────────────────────────────────────────
 
 function buildPythonHarness(code: string, funcName: string, cases: TestCase[]): string {
+  const casesJson = JSON.stringify(cases).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   return `import json
 
 ${code}
@@ -321,7 +326,7 @@ def _eq(a, b):
     return str(a) == str(b)
 
 _sol = Solution()
-_cases = ${JSON.stringify(cases)}
+_cases = json.loads('${casesJson}')
 _passed = 0; _results = []
 for _tc in _cases:
     try:
@@ -732,6 +737,9 @@ export async function POST(req: Request) {
         results: exampleResults,
         customResults,
         status: examplePassed === exampleCount ? 'accepted' : 'wrong_answer',
+        paramNames: fi.params.map(p => p.name),
+        testCaseInputs: cases.slice(0, exampleCount).map(c => c.inputs),
+        customInputsList: cases.slice(exampleCount).map(c => c.inputs),
       });
     } catch {
       return NextResponse.json({ success: false, status: 'error', error: 'Unexpected output', raw: stdout });
